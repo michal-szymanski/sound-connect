@@ -1,7 +1,11 @@
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
+import { getUserById } from '@/services/api-service';
 
-const Page = () => {
+const Page = async ({ params }: { params: Promise<{ userId: string }> }) => {
+    const { userId } = await params;
+    const user = await getUserById(userId);
+
     return (
         <>
             <div className="container mx-auto px-4">
@@ -17,7 +21,9 @@ const Page = () => {
                         height={160}
                     />
                     <div>
-                        <h1 className="relative -top-10 left-10 text-xl">Michał Szymański</h1>
+                        <h1 className="relative -top-10 left-10 text-xl">
+                            {user.firstName} {user.lastName}
+                        </h1>
                     </div>
                 </Card>
             </div>
