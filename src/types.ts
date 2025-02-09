@@ -12,3 +12,7 @@ export const userSchema = z.object({
 });
 
 export type User = z.infer<typeof userSchema>;
+
+export const postSchema = z.object({ id: z.number(), userId: z.number(), content: z.string() });
+
+export type Post = z.infer<typeof postSchema>;

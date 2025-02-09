@@ -1,5 +1,15 @@
-const Page = () => {
-    return <div>Home</div>;
+import FeedCard from '@/components/feed-card';
+import { getFeed } from '@/services/api-service';
+
+const Page = async () => {
+    const feed = await getFeed();
+    return (
+        <div className="container mx-auto flex flex-col gap-5 px-52 pt-10">
+            {feed.map((post) => (
+                <FeedCard key={post.id} post={post} />
+            ))}
+        </div>
+    );
 };
 
 export default Page;
