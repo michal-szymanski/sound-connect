@@ -12,7 +12,6 @@ RUN npm install -g pnpm
 WORKDIR /usr/src/app
 
 COPY src/backend/. tsconfig.json ./
-# COPY .env .env
 
 RUN pnpm install --force
 # RUN pnpm tsc:check
