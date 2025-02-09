@@ -1,10 +1,19 @@
 import Image from 'next/image';
+import { notFound } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { getFollowers, getFollowings, getPosts, getUserById } from '@/services/api-service';
+import { User } from '@/types';
 
 const Page = async ({ params }: { params: Promise<{ userId: string }> }) => {
     const { userId } = await params;
-    const user = await getUserById(userId);
+    let user: User | null = null;
+
+    try {
+        user = await getUserById(userId);
+    } catch {
+        notFound();
+    }
+
     const followers = await getFollowers(userId);
     const followings = await getFollowings(userId);
     const posts = await getPosts(userId);

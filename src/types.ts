@@ -10,3 +10,5 @@ export const userSchema = z.object({
     about: z.string(),
     gender: genderEnum.nullable()
 });
+
+export type User = z.infer<typeof userSchema>;
