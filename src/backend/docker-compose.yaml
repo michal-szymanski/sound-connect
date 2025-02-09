@@ -9,7 +9,7 @@ services:
             DB_HOST: '${DB_HOST}'
             POSTGRES_DB: '${DB_NAME}'
         ports:
-            - '5432:5432'
+            - '${DB_PORT}:${DB_PORT}'
         volumes:
             - pgdata:/var/lib/postgresql/data
     server:
@@ -18,7 +18,7 @@ services:
             context: ../../
             dockerfile: src/backend/Dockerfile
         ports:
-            - '${PORT}:${PORT}'
+            - '${SERVER_PORT}:${SERVER_PORT}'
         env_file:
             - .env
         # depends_on:

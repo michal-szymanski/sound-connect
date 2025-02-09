@@ -1,11 +1,10 @@
-import { bigint, date, pgEnum, pgTable, text } from 'drizzle-orm/pg-core';
-import { integer } from 'drizzle-orm/pg-core/columns/integer';
+import { bigint, boolean, date, pgEnum, pgTable, text } from 'drizzle-orm/pg-core';
 
 export const genderEnum = pgEnum('gender', ['male', 'female', 'unknown']);
 
 export const usersTable = pgTable('users', {
     id: bigint('id', { mode: 'number' }).primaryKey(),
-    age: integer('age').notNull(),
+    birthday: date('birthday', { mode: 'date' }).notNull(),
     firstName: text('first_name').notNull(),
     lastName: text('last_name').notNull(),
     about: text('about').notNull(),
@@ -47,4 +46,32 @@ export const commentsTable = pgTable('comments', {
     content: text('content').notNull(),
     createdAt: date('created_at', { mode: 'date' }).notNull(),
     updatedAt: date('updated_at', { mode: 'date' })
+});
+
+export const musicGroupsTable = pgTable('music_groups', {
+    id: bigint('id', { mode: 'number' }).primaryKey(),
+    name: text('name').notNull(),
+    createdAt: date('created_at', { mode: 'date' }).notNull(),
+    updatedAt: date('updated_at', { mode: 'date' })
+});
+
+export const musicGroupMembersTable = pgTable('music_groups', {
+    id: bigint('id', { mode: 'number' }).primaryKey(),
+    userId: bigint('user_id', { mode: 'number' }).notNull(),
+    musicGroupId: bigint('music_group_id', { mode: 'number' }).notNull(),
+    isAdmin: boolean('is_admin')
+});
+
+export const usersFollowersTable = pgTable('users_followers', {
+    id: bigint('id', { mode: 'number' }).primaryKey(),
+    followerId: bigint('follower_id', { mode: 'number' }).notNull(),
+    userId: bigint('user_id', { mode: 'number' }).notNull(),
+    createdAt: date('created_at', { mode: 'date' }).notNull()
+});
+
+export const musicGroupsFollowersTable = pgTable('music_groups_followers', {
+    id: bigint('id', { mode: 'number' }).primaryKey(),
+    followerId: bigint('follower_id', { mode: 'number' }).notNull(),
+    musicGroupId: bigint('music_group_id', { mode: 'number' }).notNull(),
+    createdAt: date('created_at', { mode: 'date' }).notNull()
 });
