@@ -1,10 +1,13 @@
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
-import { getUserById } from '@/services/api-service';
+import { getFollowers, getFollowings, getPosts, getUserById } from '@/services/api-service';
 
 const Page = async ({ params }: { params: Promise<{ userId: string }> }) => {
     const { userId } = await params;
     const user = await getUserById(userId);
+    const followers = await getFollowers(userId);
+    const followings = await getFollowings(userId);
+    const posts = await getPosts(userId);
 
     return (
         <>
@@ -24,6 +27,11 @@ const Page = async ({ params }: { params: Promise<{ userId: string }> }) => {
                         <h1 className="relative -top-10 left-10 text-xl">
                             {user.firstName} {user.lastName}
                         </h1>
+                        <div className="inline-flex w-full justify-end gap-2 p-5 text-muted-foreground">
+                            <div>{posts.length} posts</div>
+                            <div>{followers.length} followers</div>
+                            <div>{followings.length} following</div>
+                        </div>
                     </div>
                 </Card>
             </div>
