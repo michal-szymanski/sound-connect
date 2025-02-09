@@ -1,0 +1,16 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "tsx server.ts",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "drizzle-kit": "^0.30.4",
+    "drizzle-orm": "^0.39.2",
+    "express": "^4.21.2",
+    "tsx": "^4.19.2"
+  }
+}
