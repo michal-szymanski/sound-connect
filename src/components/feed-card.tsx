@@ -11,9 +11,10 @@ import Link from 'next/link';
 
 type Props = {
     post: Post;
+    isFollowing?: boolean;
 };
 
-const FeedCard = ({ post }: Props) => {
+const FeedCard = ({ post, isFollowing }: Props) => {
     const { data: user } = useUser({ userId: post.userId });
 
     return (
@@ -32,6 +33,14 @@ const FeedCard = ({ post }: Props) => {
                 </Button>
                 <div className="text-muted-foreground">•</div>
                 <div className="text-muted-foreground">{formatDistanceToNowStrict(new Date(post.createdAt), { addSuffix: true })}</div>
+                {!isFollowing && (
+                    <>
+                        <div className="text-muted-foreground">•</div>
+                        <Button variant="ghost" className="p-0 font-semibold text-blue-500 hover:bg-transparent hover:text-card-foreground">
+                            Follow
+                        </Button>
+                    </>
+                )}
             </CardHeader>
             <CardContent>{post.content}</CardContent>
             <CardFooter className="justify-end">
