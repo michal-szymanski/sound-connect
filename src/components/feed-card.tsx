@@ -6,6 +6,8 @@ import { Heart } from 'lucide-react';
 import { Post } from '@/types';
 import { useUser } from '@/lib/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { formatDistanceToNowStrict } from 'date-fns';
+import Link from 'next/link';
 
 type Props = {
     post: Post;
@@ -16,14 +18,20 @@ const FeedCard = ({ post }: Props) => {
 
     return (
         <Card key={post.id}>
-            <CardHeader className="flex-row items-start space-x-3 space-y-0">
-                <Avatar>
-                    <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                    <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <div className="text-sm">
-                    {user?.firstName} {user?.lastName}
-                </div>
+            <CardHeader className="flex-row items-center space-x-2 space-y-0 text-sm">
+                <Button variant="link" className="px-0" size="lg" asChild>
+                    <Link href={`/user/${user?.id}`}>
+                        <Avatar>
+                            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                            <AvatarFallback>CN</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            {user?.firstName} {user?.lastName}
+                        </div>
+                    </Link>
+                </Button>
+                <div className="text-muted-foreground">•</div>
+                <div className="text-muted-foreground">{formatDistanceToNowStrict(new Date(post.createdAt), { addSuffix: true })}</div>
             </CardHeader>
             <CardContent>{post.content}</CardContent>
             <CardFooter className="justify-end">
