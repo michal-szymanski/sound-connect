@@ -4,7 +4,7 @@ import { getFeed } from '@/services/api-service';
 const Page = async () => {
     const feed = await getFeed();
     return (
-        <div className="container mx-auto flex flex-col gap-5 px-52 pt-10">
+        <div className="container mx-auto flex flex-col items-center gap-5 px-52 pt-10">
             {feed.map((post, i) => (
                 <FeedCard key={post.id} post={post} isFollowing={i % 2 === 0} />
             ))}

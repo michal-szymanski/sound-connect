@@ -18,7 +18,7 @@ const FeedCard = ({ post, isFollowing }: Props) => {
     const { data: user } = useUser({ userId: post.userId });
 
     return (
-        <Card key={post.id}>
+        <Card key={post.id} className="w-[600px]">
             <CardHeader className="flex-row items-center space-x-2 space-y-0 text-sm">
                 <Button variant="link" className="px-0" size="lg" asChild>
                     <Link href={`/user/${user?.id}`}>
