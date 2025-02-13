@@ -16,3 +16,5 @@ export type User = z.infer<typeof userSchema>;
 export const postSchema = z.object({ id: z.number(), userId: z.number(), content: z.string(), createdAt: z.string() });
 
 export type Post = z.infer<typeof postSchema>;
+
+export const postReactionSchema = z.object({ id: z.number(), userId: z.number() });

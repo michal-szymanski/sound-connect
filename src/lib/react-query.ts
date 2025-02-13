@@ -1,3 +1,4 @@
+import { getReactions } from '@/services/api-service';
 import { userSchema } from '@/types';
 import { QueryClient, defaultShouldDehydrateQuery, isServer, useQuery } from '@tanstack/react-query';
 
@@ -45,4 +46,10 @@ export const useUser = ({ userId }: { userId: number }) =>
             const json = await response.json();
             return userSchema.parse(json);
         }
+    });
+
+export const useReactions = ({ postId }: { postId: number }) =>
+    useQuery({
+        queryKey: ['reactions', postId],
+        queryFn: async () => await getReactions(postId)
     });

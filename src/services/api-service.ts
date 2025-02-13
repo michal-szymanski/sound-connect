@@ -1,4 +1,4 @@
-import { postSchema, userSchema } from '@/types';
+import { postReactionSchema, postSchema, userSchema } from '@/types';
 import { z } from 'zod';
 
 export const getUserById = async (userId: string) => {
@@ -24,4 +24,9 @@ export const getPosts = async (userId: string) => {
 export const getFeed = async () => {
     const response = await (await fetch('http://0.0.0.0:4000/feed')).json();
     return z.array(postSchema).parse(response);
+};
+
+export const getReactions = async (postId: number) => {
+    const response = await (await fetch(`http://0.0.0.0:4000/posts/${postId}/reactions`)).json();
+    return z.array(postReactionSchema).parse(response);
 };

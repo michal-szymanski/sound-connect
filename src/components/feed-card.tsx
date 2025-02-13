@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Heart } from 'lucide-react';
 import { Post } from '@/types';
-import { useUser } from '@/lib/react-query';
+import { useReactions, useUser } from '@/lib/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistanceToNowStrict } from 'date-fns';
 import Link from 'next/link';
@@ -16,6 +16,13 @@ type Props = {
 
 const FeedCard = ({ post, isFollowing }: Props) => {
     const { data: user } = useUser({ userId: post.userId });
+    const { data: reactions } = useReactions({ postId: post.id });
+
+    const renderLikes = () => {
+        if (!reactions) return null;
+        const suffix = reactions.length === 1 ? 'like' : 'likes';
+        return `${reactions.length} ${suffix}`;
+    };
 
     return (
         <Card key={post.id} className="w-[600px]">
@@ -43,10 +50,13 @@ const FeedCard = ({ post, isFollowing }: Props) => {
                 )}
             </CardHeader>
             <CardContent>{post.content}</CardContent>
-            <CardFooter className="justify-end">
-                <Button variant="ghost" size="sm" className="group hover:bg-transparent hover:text-red-500 [&_svg]:size-6">
-                    <Heart className="group-hover:fill-red-500" />
-                </Button>
+            <CardFooter className="flex-col items-start gap-1">
+                <div className="inline-flex gap-1">
+                    <Button variant="ghost" size="sm" className="group p-0 hover:bg-transparent hover:text-red-500 [&_svg]:size-6">
+                        <Heart className="group-hover:fill-red-500" />
+                    </Button>
+                </div>
+                <div className="text-sm font-semibold">{renderLikes()}</div>
             </CardFooter>
         </Card>
     );
