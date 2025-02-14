@@ -1,12 +1,15 @@
-// import ThemeToggle from '@/components/theme-toggle';
+import AccountButton from '@/components/account-button';
+import ThemeToggle from '@/components/theme-toggle';
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
-import { SignedIn, SignOutButton } from '@clerk/nextjs';
+import { currentUser } from '@clerk/nextjs/server';
 import { House } from 'lucide-react';
 import Link from 'next/link';
 
-const Header = () => {
+const Header = async () => {
+    const user = await currentUser();
+
     return (
-        <header className="border-grid sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="border-grid fixed top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="container mx-auto flex h-14 max-w-[1200px] items-center px-10">
                 <NavigationMenu className="flex w-full max-w-full flex-1 items-center justify-between gap-2">
                     <NavigationMenuList>
@@ -18,13 +21,11 @@ const Header = () => {
                             </Link>
                         </NavigationMenuItem>
                     </NavigationMenuList>
-                    <NavigationMenuList>
+                    <NavigationMenuList className="gap-5">
                         <NavigationMenuItem>
-                            {/* <ThemeToggle /> */}
-                            <SignedIn>
-                                <SignOutButton />
-                            </SignedIn>
+                            <ThemeToggle />
                         </NavigationMenuItem>
+                        <NavigationMenuItem>{user && <AccountButton user={user} />}</NavigationMenuItem>
                     </NavigationMenuList>
                 </NavigationMenu>
             </div>

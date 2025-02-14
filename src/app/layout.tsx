@@ -17,7 +17,7 @@ export default function RootLayout({
     return (
         <ClerkProvider>
             <html lang="en" suppressHydrationWarning>
-                <body>
+                <body className="overflow-y-scroll">
                     <Providers>
                         <Header />
                         {children}

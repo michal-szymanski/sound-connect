@@ -1,4 +1,4 @@
-import { getReactions } from '@/services/api-service';
+import { getFeed, getReactions } from '@/services/api-service';
 import { userSchema } from '@/types';
 import { QueryClient, defaultShouldDehydrateQuery, isServer, useQuery } from '@tanstack/react-query';
 
@@ -52,4 +52,10 @@ export const useReactions = ({ postId }: { postId: number }) =>
     useQuery({
         queryKey: ['reactions', postId],
         queryFn: async () => await getReactions(postId)
+    });
+
+export const useFeed = () =>
+    useQuery({
+        queryKey: ['feed'],
+        queryFn: async () => await getFeed()
     });

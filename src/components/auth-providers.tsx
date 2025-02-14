@@ -32,7 +32,7 @@ const AuthProviders = () => {
     return (
         <Button type="button" variant="outline" onClick={() => signInWith('oauth_spotify')}>
             <div className="relative size-20">
-                <Image src="/Spotify_Full_Logo_RGB_Green.png" alt="Spotify" fill className="object-contain" />
+                <Image src="/Spotify_Full_Logo_RGB_Green.png" alt="Spotify" fill priority className="object-contain" />
             </div>
         </Button>
     );
