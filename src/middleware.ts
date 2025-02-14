@@ -1,9 +1,12 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
 const isPublicRoute = createRouteMatcher(['/auth/sign-in(.*)', '/auth/sso-callback(.*)']);
 
 export default clerkMiddleware(async (auth, request) => {
-    if (!isPublicRoute(request)) {
+    if (isPublicRoute(request) && (await auth()).userId) {
+        return NextResponse.redirect(new URL('/', request.url));
+    } else if (!isPublicRoute(request)) {
         await auth.protect();
     }
 });
