@@ -1,5 +1,6 @@
-import ThemeToggle from '@/components/theme-toggle';
+// import ThemeToggle from '@/components/theme-toggle';
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
+import { SignedIn, SignOutButton } from '@clerk/nextjs';
 import { House } from 'lucide-react';
 import Link from 'next/link';
 
@@ -19,7 +20,10 @@ const Header = () => {
                     </NavigationMenuList>
                     <NavigationMenuList>
                         <NavigationMenuItem>
-                            <ThemeToggle />
+                            {/* <ThemeToggle /> */}
+                            <SignedIn>
+                                <SignOutButton />
+                            </SignedIn>
                         </NavigationMenuItem>
                     </NavigationMenuList>
                 </NavigationMenu>
