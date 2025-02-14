@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { User } from '@clerk/nextjs/server';
+import Link from 'next/link';
 
 type Props = {
     user: User;
@@ -23,6 +24,11 @@ const AccountButton = ({ user }: Props) => {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
+                <DropdownMenuItem>
+                    <Link href={`/users/${user.id}`} className="block w-full">
+                        Profile
+                    </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer">Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <SignOutButton />
