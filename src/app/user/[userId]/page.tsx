@@ -1,18 +1,16 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Card } from '@/components/ui/card';
-import { getFollowers, getFollowings, getPosts, getUserById } from '@/services/api-service';
-import { User } from '@/types';
+import { getFollowers, getFollowings, getPosts } from '@/services/api-service';
+import { clerkClient } from '@clerk/nextjs/server';
 
 const Page = async ({ params }: { params: Promise<{ userId: string }> }) => {
     const { userId } = await params;
-    let user: User | null = null;
 
-    try {
-        user = await getUserById(userId);
-    } catch {
-        notFound();
-    }
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+
+    if (!user) notFound();
 
     const followers = await getFollowers(userId);
     const followings = await getFollowings(userId);
@@ -25,13 +23,7 @@ const Page = async ({ params }: { params: Promise<{ userId: string }> }) => {
                     <div className="relative h-60 max-h-60">
                         <Image src="https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80" alt="Photo by Drew Beamer" fill />
                     </div>
-                    <Image
-                        src="https://github.com/shadcn.png"
-                        alt="Shadcn"
-                        className="relative -top-20 left-10 rounded-full object-cover"
-                        width={160}
-                        height={160}
-                    />
+                    <Image src={user.imageUrl} alt="Shadcn" className="relative -top-20 left-10 rounded-full object-cover" width={160} height={160} />
                     <div>
                         <h1 className="relative -top-10 left-10 text-xl">
                             {user.firstName} {user.lastName}

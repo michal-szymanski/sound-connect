@@ -1,5 +1,5 @@
 import { getFeed, getReactions } from '@/services/api-service';
-import { userSchema } from '@/types';
+import { userDTOSchema } from '@/types';
 import { QueryClient, defaultShouldDehydrateQuery, isServer, useQuery } from '@tanstack/react-query';
 
 function makeQueryClient() {
@@ -32,11 +32,11 @@ export function getQueryClient() {
     }
 }
 
-export const useUser = ({ userId }: { userId: number }) =>
+export const useUser = ({ userId }: { userId: string }) =>
     useQuery({
         queryKey: ['users', userId],
         queryFn: async () => {
-            const url = `http://localhost:4000/users/${userId}`;
+            const url = `http://localhost:3000/api/users/${userId}`;
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
@@ -44,7 +44,7 @@ export const useUser = ({ userId }: { userId: number }) =>
                 }
             });
             const json = await response.json();
-            return userSchema.parse(json);
+            return userDTOSchema.parse(json);
         }
     });
 

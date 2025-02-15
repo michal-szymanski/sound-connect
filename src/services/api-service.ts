@@ -1,32 +1,27 @@
-import { postReactionSchema, postSchema, userSchema } from '@/types';
+import { postReactionSchema, postSchema } from '@/types';
 import { z } from 'zod';
 
-export const getUserById = async (userId: string) => {
-    const response = await (await fetch(`http://0.0.0.0:4000/users/${userId}`)).json();
-    return userSchema.parse(response);
-};
-
 export const getFollowers = async (userId: string) => {
-    const response = await (await fetch(`http://0.0.0.0:4000/followers/${userId}`)).json();
-    return z.array(z.object({ followerId: z.number() })).parse(response);
+    const response = await (await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/followers/${userId}`)).json();
+    return z.array(z.object({ followerId: z.string() })).parse(response);
 };
 
 export const getFollowings = async (userId: string) => {
-    const response = await (await fetch(`http://0.0.0.0:4000/followings/${userId}`)).json();
-    return z.array(z.object({ userId: z.number() })).parse(response);
+    const response = await (await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/followings/${userId}`)).json();
+    return z.array(z.object({ userId: z.string() })).parse(response);
 };
 
 export const getPosts = async (userId: string) => {
-    const response = await (await fetch(`http://0.0.0.0:4000/posts/${userId}`)).json();
-    return z.array(z.object({ id: z.number(), userId: z.number(), content: z.string() })).parse(response);
+    const response = await (await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/posts/${userId}`)).json();
+    return z.array(z.object({ id: z.number(), userId: z.string(), content: z.string() })).parse(response);
 };
 
 export const getFeed = async () => {
-    const response = await (await fetch('http://0.0.0.0:4000/feed')).json();
+    const response = await (await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/feed`)).json();
     return z.array(postSchema).parse(response);
 };
 
 export const getReactions = async (postId: number) => {
-    const response = await (await fetch(`http://0.0.0.0:4000/posts/${postId}/reactions`)).json();
+    const response = await (await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/posts/${postId}/reactions`)).json();
     return z.array(postReactionSchema).parse(response);
 };

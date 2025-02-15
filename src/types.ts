@@ -1,20 +1,16 @@
 import { z } from 'zod';
 
-export const genderEnum = z.enum(['male', 'female']);
-
-export const userSchema = z.object({
-    id: z.number(),
-    birthday: z.string(),
+export const userDTOSchema = z.object({
+    id: z.string(),
+    imageUrl: z.string(),
     firstName: z.string(),
-    lastName: z.string(),
-    about: z.string(),
-    gender: genderEnum.nullable()
+    lastName: z.string()
 });
 
-export type User = z.infer<typeof userSchema>;
+export type UserDTO = z.infer<typeof userDTOSchema>;
 
-export const postSchema = z.object({ id: z.number(), userId: z.number(), content: z.string(), createdAt: z.string() });
+export const postSchema = z.object({ id: z.number(), userId: z.string(), content: z.string(), createdAt: z.string() });
 
 export type Post = z.infer<typeof postSchema>;
 
-export const postReactionSchema = z.object({ id: z.number(), userId: z.number() });
+export const postReactionSchema = z.object({ id: z.number(), userId: z.string() });

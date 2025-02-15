@@ -1,22 +1,22 @@
+import ProfileButton from '@/components/profile-button';
 import SignOutButton from '@/components/singn-out-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User } from '@clerk/nextjs/server';
-import Link from 'next/link';
+import { UserDTO } from '@/types';
 
 type Props = {
-    user: User;
+    userDTO: UserDTO;
 };
 
-const AccountButton = ({ user }: Props) => {
+const AccountButton = ({ userDTO }: Props) => {
     return (
         <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="size-10 select-none rounded-full focus-visible:outline-none focus-visible:ring-0">
                     <Avatar>
-                        <AvatarImage src={user.imageUrl} />
+                        <AvatarImage src={userDTO.imageUrl} />
                         <AvatarFallback>
                             <Skeleton />
                         </AvatarFallback>
@@ -24,11 +24,7 @@ const AccountButton = ({ user }: Props) => {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-                <DropdownMenuItem>
-                    <Link href={`/users/${user.id}`} className="block w-full">
-                        Profile
-                    </Link>
-                </DropdownMenuItem>
+                <ProfileButton userDTO={userDTO} />
                 <DropdownMenuItem className="cursor-pointer">Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <SignOutButton />
