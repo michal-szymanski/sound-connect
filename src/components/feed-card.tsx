@@ -30,7 +30,7 @@ const FeedCard = ({ post, isFollowing }: Props) => {
                 <Button variant="link" className="px-0" size="lg" asChild>
                     <Link href={`/user/${user?.id}`}>
                         <Avatar>
-                            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                            <AvatarImage src={user?.imageUrl} alt="avatar" />
                             <AvatarFallback>CN</AvatarFallback>
                         </Avatar>
                         <div>
