@@ -36,7 +36,7 @@ export const useUser = ({ userId }: { userId: string }) =>
     useQuery({
         queryKey: ['users', userId],
         queryFn: async () => {
-            const url = `http://localhost:3000/api/users/${userId}`;
+            const url = `/api/users/${userId}`;
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
