@@ -1,17 +1,16 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { useSignIn, useSignUp } from '@clerk/nextjs';
+import { useSignIn } from '@clerk/nextjs';
 import { OAuthStrategy } from '@clerk/types';
 import Image from 'next/image';
 
 const AuthProviders = () => {
     const { signIn } = useSignIn();
-    const { signUp } = useSignUp();
-
-    if (!signIn || !signUp) return null;
 
     const signInWith = (strategy: OAuthStrategy) => {
+        if (!signIn) return;
+
         return signIn
             .authenticateWithRedirect({
                 strategy,
@@ -31,9 +30,7 @@ const AuthProviders = () => {
 
     return (
         <Button type="button" variant="outline" onClick={() => signInWith('oauth_spotify')}>
-            <div className="relative size-20">
-                <Image src="/Spotify_Full_Logo_RGB_Green.png" alt="Spotify" fill priority className="object-contain" />
-            </div>
+            <Image src="/Spotify_Full_Logo_RGB_Green.png" width={80} height={22} alt="Spotify" priority />
         </Button>
     );
 };
