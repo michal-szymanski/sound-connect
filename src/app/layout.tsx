@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Header from '@/components/header';
 import Providers from '@/providers';
 import { ClerkProvider } from '@clerk/nextjs';
 
@@ -18,10 +17,7 @@ export default function RootLayout({
         <ClerkProvider>
             <html lang="en" suppressHydrationWarning>
                 <body className="overflow-y-scroll">
-                    <Providers>
-                        <Header />
-                        {children}
-                    </Providers>
+                    <Providers>{children}</Providers>
                 </body>
             </html>
         </ClerkProvider>
