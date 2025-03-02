@@ -9,13 +9,13 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from '@/components/ui/sidebar';
-import { Bell, Cog, House, Mail, UserRound } from 'lucide-react';
+import { Bell, Cog, House, LucideIcon, Mail, UserRound } from 'lucide-react';
 import Link from 'next/link';
 
 type Item = {
     title: string;
     url: string;
-    icon: React.ElementType;
+    icon: LucideIcon;
 };
 
 const items: Item[] = [
@@ -48,11 +48,14 @@ const items: Item[] = [
 
 const LeftSidebar = () => {
     return (
-        <Sidebar collapsible="none" className="fixed inset-y-0 z-51 w-min">
-            <SidebarContent>
-                <SidebarGroup>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
+        <Sidebar
+            collapsible="none"
+            className="fixed bottom-0 z-51 h-min w-full flex-row items-center justify-center lg:flex lg:h-full lg:w-min lg:flex-col xl:items-start"
+        >
+            <SidebarContent className="flex-none lg:flex-1">
+                <SidebarGroup className="w-min lg:w-full">
+                    <SidebarGroupContent className="w-min lg:w-full">
+                        <SidebarMenu className="w-min flex-row lg:w-full lg:flex-col">
                             {items.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild>
