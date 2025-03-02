@@ -1,32 +1,37 @@
-import ProfileButton from '@/components/profile-button';
 import SignOutButton from '@/components/singn-out-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { UserDTO } from '@/types';
+import { userDTOSchema } from '@/types';
+import { currentUser } from '@clerk/nextjs/server';
 
-type Props = {
-    userDTO: UserDTO;
-};
+const AccountButton = async () => {
+    const user = await currentUser();
 
-const AccountButton = ({ userDTO }: Props) => {
+    if (!user) return null;
+
+    const userDTO = userDTOSchema.parse({
+        id: user.id,
+        imageUrl: user.imageUrl,
+        firstName: user.firstName,
+        lastName: user.lastName
+    });
+
     return (
         <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="size-10 select-none rounded-full focus-visible:outline-none focus-visible:ring-0">
-                    <Avatar>
+                <Button variant="ghost" className="h-full max-h-fit w-full select-none justify-start focus-visible:outline-none focus-visible:ring-0">
+                    <Avatar className="size-10">
                         <AvatarImage src={userDTO.imageUrl} />
                         <AvatarFallback>
                             <Skeleton />
                         </AvatarFallback>
                     </Avatar>
+                    <span>{`${user.firstName} ${user.lastName}`}</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-                <ProfileButton userDTO={userDTO} />
-                <DropdownMenuItem className="cursor-pointer">Settings</DropdownMenuItem>
-                <DropdownMenuSeparator />
+            <DropdownMenuContent className="min-w-max">
                 <SignOutButton />
             </DropdownMenuContent>
         </DropdownMenu>

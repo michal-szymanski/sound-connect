@@ -4,9 +4,17 @@ import { NextResponse } from 'next/server';
 const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sso-callback(.*)']);
 
 export default clerkMiddleware(async (auth, request) => {
-    if (isPublicRoute(request) && (await auth()).userId) {
+    const userId = (await auth()).userId;
+
+    if (isPublicRoute(request) && userId) {
         return NextResponse.redirect(new URL('/', request.url));
-    } else if (!isPublicRoute(request)) {
+    }
+
+    if (request.nextUrl.pathname === '/profile' && userId) {
+        return NextResponse.redirect(new URL(`/user/${userId}`, request.url));
+    }
+
+    if (!isPublicRoute(request)) {
         await auth.protect();
     }
 });

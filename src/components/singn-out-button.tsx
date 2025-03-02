@@ -2,11 +2,13 @@
 
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useClerk } from '@clerk/nextjs';
+import { LogOut } from 'lucide-react';
 
 const SignOutButton = () => {
     const { signOut } = useClerk();
     return (
-        <DropdownMenuItem className="cursor-pointer" onClick={() => signOut()}>
+        <DropdownMenuItem className="w-56 cursor-pointer" onClick={() => signOut()}>
+            <LogOut />
             Log Out
         </DropdownMenuItem>
     );
