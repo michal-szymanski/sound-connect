@@ -9,7 +9,7 @@ const Page = () => {
     if (!feed) return null;
 
     return (
-        <div className="container mx-auto flex flex-col items-center gap-5 px-52">
+        <div className="container mx-auto flex flex-col items-center gap-5 xl:px-52">
             {feed.map((post, i) => (
                 <FeedCard key={post.id} post={post} isFollowing={i % 2 === 0} />
             ))}

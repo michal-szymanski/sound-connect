@@ -31,10 +31,10 @@ const AccountButton = async () => {
                             <Skeleton />
                         </AvatarFallback>
                     </Avatar>
-                    <span>{`${user.firstName} ${user.lastName}`}</span>
+                    <span className="hidden xl:inline">{`${user.firstName} ${user.lastName}`}</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="min-w-max">
+            <DropdownMenuContent className="z-51" align="start">
                 <SignOutButton />
             </DropdownMenuContent>
         </DropdownMenu>

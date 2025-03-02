@@ -48,7 +48,7 @@ const items: Item[] = [
 
 const LeftSidebar = () => {
     return (
-        <Sidebar>
+        <Sidebar collapsible="none" className="fixed inset-y-0 z-51 w-min">
             <SidebarContent>
                 <SidebarGroup>
                     <SidebarGroupContent>
@@ -56,9 +56,9 @@ const LeftSidebar = () => {
                             {items.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild>
-                                        <Link href={item.url}>
+                                        <Link href={item.url} className="flex justify-center xl:justify-start [&>svg]:size-6">
                                             <item.icon />
-                                            <span>{item.title}</span>
+                                            <span className="hidden xl:inline">{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>

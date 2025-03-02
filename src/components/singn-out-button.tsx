@@ -7,7 +7,7 @@ import { LogOut } from 'lucide-react';
 const SignOutButton = () => {
     const { signOut } = useClerk();
     return (
-        <DropdownMenuItem className="w-56 cursor-pointer" onClick={() => signOut()}>
+        <DropdownMenuItem className="min-w-46 cursor-pointer" onClick={() => signOut()}>
             <LogOut />
             Log Out
         </DropdownMenuItem>

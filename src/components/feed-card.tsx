@@ -25,8 +25,8 @@ const FeedCard = ({ post, isFollowing }: Props) => {
     };
 
     return (
-        <Card key={post.id} className="max-w-[600px]">
-            <CardHeader className="flex-row items-center space-x-2 space-y-0 text-sm">
+        <Card key={post.id} className="w-[600px]">
+            <CardHeader className="flex-row items-center space-y-0 space-x-2 text-sm">
                 <Button variant="link" className="px-0" size="lg" asChild>
                     <Link href={`/user/${user?.id}`}>
                         <Avatar>
@@ -43,7 +43,7 @@ const FeedCard = ({ post, isFollowing }: Props) => {
                 {!isFollowing && (
                     <>
                         <div className="text-muted-foreground">•</div>
-                        <Button variant="ghost" className="p-0 font-semibold text-blue-500 hover:bg-transparent hover:text-card-foreground">
+                        <Button variant="ghost" className="hover:text-card-foreground p-0 font-semibold text-blue-500 hover:bg-transparent">
                             Follow
                         </Button>
                     </>
