@@ -21,7 +21,10 @@ const AccountButton = async () => {
     return (
         <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-full max-h-fit w-full select-none justify-start focus-visible:outline-hidden focus-visible:ring-0">
+                <Button
+                    variant="ghost"
+                    className="h-full max-h-fit w-full cursor-pointer justify-start select-none focus-visible:ring-0 focus-visible:outline-hidden"
+                >
                     <Avatar className="size-10">
                         <AvatarImage src={userDTO.imageUrl} />
                         <AvatarFallback>

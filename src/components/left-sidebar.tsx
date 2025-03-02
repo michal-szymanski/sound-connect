@@ -9,7 +9,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from '@/components/ui/sidebar';
-import { Bell, House, UserRound } from 'lucide-react';
+import { Bell, Cog, House, Mail, UserRound } from 'lucide-react';
 import Link from 'next/link';
 
 type Item = {
@@ -30,9 +30,19 @@ const items: Item[] = [
         icon: Bell
     },
     {
+        title: 'Messages',
+        url: '/messages',
+        icon: Mail
+    },
+    {
         title: 'Profile',
         url: '/profile',
         icon: UserRound
+    },
+    {
+        title: 'Settings',
+        url: '/settings',
+        icon: Cog
     }
 ];
 

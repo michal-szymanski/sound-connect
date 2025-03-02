@@ -12,9 +12,9 @@ export default function MainLayout({
             <div>
                 <SidebarProvider>
                     <LeftSidebar />
-                    <main className="w-full pb-10 pt-20">
+                    <main className="w-full py-20">
                         <Header />
-                        {children}
+                        <div className="px-10">{children}</div>
                     </main>
                 </SidebarProvider>
             </div>
