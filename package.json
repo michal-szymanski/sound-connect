@@ -12,7 +12,9 @@
     "build:worker": "opennextjs-cloudflare",
     "dev:worker": "wrangler dev --port 8771",
     "preview:worker": "pnpm build:worker && pnpm dev:worker",
-    "deploy:worker": "pnpm build:worker && wrangler deploy"
+    "deploy:worker": "pnpm build:worker && wrangler deploy",
+    "tail:worker": "pnpm wrangler tail",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.11.3",
@@ -61,6 +63,6 @@
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4.0.9",
     "typescript": "^5",
-    "wrangler": "^3.114.1"
+    "wrangler": "^4.0.0"
   }
 }
