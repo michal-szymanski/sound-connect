@@ -11,142 +11,201 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as IndexImport } from './routes/index'
-import { Route as SettingsIndexImport } from './routes/settings/index'
-import { Route as NotificationsIndexImport } from './routes/notifications/index'
-import { Route as MessagesIndexImport } from './routes/messages/index'
-import { Route as UserIdImport } from './routes/user/$id'
+import { Route as mainRouteImport } from './routes/(main)/route'
+import { Route as mainIndexImport } from './routes/(main)/index'
+import { Route as mainSettingsIndexImport } from './routes/(main)/settings/index'
+import { Route as mainNotificationsIndexImport } from './routes/(main)/notifications/index'
+import { Route as mainMessagesIndexImport } from './routes/(main)/messages/index'
+import { Route as authSignInIndexImport } from './routes/(auth)/sign-in/index'
+import { Route as mainUserIdImport } from './routes/(main)/user/$id'
 
 // Create/Update Routes
 
-const IndexRoute = IndexImport.update({
+const mainRouteRoute = mainRouteImport.update({
+  id: '/(main)',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const mainIndexRoute = mainIndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => mainRouteRoute,
 } as any)
 
-const SettingsIndexRoute = SettingsIndexImport.update({
+const mainSettingsIndexRoute = mainSettingsIndexImport.update({
   id: '/settings/',
   path: '/settings/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => mainRouteRoute,
 } as any)
 
-const NotificationsIndexRoute = NotificationsIndexImport.update({
+const mainNotificationsIndexRoute = mainNotificationsIndexImport.update({
   id: '/notifications/',
   path: '/notifications/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => mainRouteRoute,
 } as any)
 
-const MessagesIndexRoute = MessagesIndexImport.update({
+const mainMessagesIndexRoute = mainMessagesIndexImport.update({
   id: '/messages/',
   path: '/messages/',
+  getParentRoute: () => mainRouteRoute,
+} as any)
+
+const authSignInIndexRoute = authSignInIndexImport.update({
+  id: '/(auth)/sign-in/',
+  path: '/sign-in/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const UserIdRoute = UserIdImport.update({
+const mainUserIdRoute = mainUserIdImport.update({
   id: '/user/$id',
   path: '/user/$id',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => mainRouteRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/(main)': {
+      id: '/(main)'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexImport
+      preLoaderRoute: typeof mainRouteImport
       parentRoute: typeof rootRoute
     }
-    '/user/$id': {
-      id: '/user/$id'
+    '/(main)/': {
+      id: '/(main)/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof mainIndexImport
+      parentRoute: typeof mainRouteImport
+    }
+    '/(main)/user/$id': {
+      id: '/(main)/user/$id'
       path: '/user/$id'
       fullPath: '/user/$id'
-      preLoaderRoute: typeof UserIdImport
+      preLoaderRoute: typeof mainUserIdImport
+      parentRoute: typeof mainRouteImport
+    }
+    '/(auth)/sign-in/': {
+      id: '/(auth)/sign-in/'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof authSignInIndexImport
       parentRoute: typeof rootRoute
     }
-    '/messages/': {
-      id: '/messages/'
+    '/(main)/messages/': {
+      id: '/(main)/messages/'
       path: '/messages'
       fullPath: '/messages'
-      preLoaderRoute: typeof MessagesIndexImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof mainMessagesIndexImport
+      parentRoute: typeof mainRouteImport
     }
-    '/notifications/': {
-      id: '/notifications/'
+    '/(main)/notifications/': {
+      id: '/(main)/notifications/'
       path: '/notifications'
       fullPath: '/notifications'
-      preLoaderRoute: typeof NotificationsIndexImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof mainNotificationsIndexImport
+      parentRoute: typeof mainRouteImport
     }
-    '/settings/': {
-      id: '/settings/'
+    '/(main)/settings/': {
+      id: '/(main)/settings/'
       path: '/settings'
       fullPath: '/settings'
-      preLoaderRoute: typeof SettingsIndexImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof mainSettingsIndexImport
+      parentRoute: typeof mainRouteImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface mainRouteRouteChildren {
+  mainIndexRoute: typeof mainIndexRoute
+  mainUserIdRoute: typeof mainUserIdRoute
+  mainMessagesIndexRoute: typeof mainMessagesIndexRoute
+  mainNotificationsIndexRoute: typeof mainNotificationsIndexRoute
+  mainSettingsIndexRoute: typeof mainSettingsIndexRoute
+}
+
+const mainRouteRouteChildren: mainRouteRouteChildren = {
+  mainIndexRoute: mainIndexRoute,
+  mainUserIdRoute: mainUserIdRoute,
+  mainMessagesIndexRoute: mainMessagesIndexRoute,
+  mainNotificationsIndexRoute: mainNotificationsIndexRoute,
+  mainSettingsIndexRoute: mainSettingsIndexRoute,
+}
+
+const mainRouteRouteWithChildren = mainRouteRoute._addFileChildren(
+  mainRouteRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/user/$id': typeof UserIdRoute
-  '/messages': typeof MessagesIndexRoute
-  '/notifications': typeof NotificationsIndexRoute
-  '/settings': typeof SettingsIndexRoute
+  '/': typeof mainIndexRoute
+  '/user/$id': typeof mainUserIdRoute
+  '/sign-in': typeof authSignInIndexRoute
+  '/messages': typeof mainMessagesIndexRoute
+  '/notifications': typeof mainNotificationsIndexRoute
+  '/settings': typeof mainSettingsIndexRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/user/$id': typeof UserIdRoute
-  '/messages': typeof MessagesIndexRoute
-  '/notifications': typeof NotificationsIndexRoute
-  '/settings': typeof SettingsIndexRoute
+  '/': typeof mainIndexRoute
+  '/user/$id': typeof mainUserIdRoute
+  '/sign-in': typeof authSignInIndexRoute
+  '/messages': typeof mainMessagesIndexRoute
+  '/notifications': typeof mainNotificationsIndexRoute
+  '/settings': typeof mainSettingsIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/user/$id': typeof UserIdRoute
-  '/messages/': typeof MessagesIndexRoute
-  '/notifications/': typeof NotificationsIndexRoute
-  '/settings/': typeof SettingsIndexRoute
+  '/(main)': typeof mainRouteRouteWithChildren
+  '/(main)/': typeof mainIndexRoute
+  '/(main)/user/$id': typeof mainUserIdRoute
+  '/(auth)/sign-in/': typeof authSignInIndexRoute
+  '/(main)/messages/': typeof mainMessagesIndexRoute
+  '/(main)/notifications/': typeof mainNotificationsIndexRoute
+  '/(main)/settings/': typeof mainSettingsIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/user/$id' | '/messages' | '/notifications' | '/settings'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/user/$id' | '/messages' | '/notifications' | '/settings'
-  id:
-    | '__root__'
+  fullPaths:
     | '/'
     | '/user/$id'
-    | '/messages/'
-    | '/notifications/'
-    | '/settings/'
+    | '/sign-in'
+    | '/messages'
+    | '/notifications'
+    | '/settings'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/user/$id'
+    | '/sign-in'
+    | '/messages'
+    | '/notifications'
+    | '/settings'
+  id:
+    | '__root__'
+    | '/(main)'
+    | '/(main)/'
+    | '/(main)/user/$id'
+    | '/(auth)/sign-in/'
+    | '/(main)/messages/'
+    | '/(main)/notifications/'
+    | '/(main)/settings/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  UserIdRoute: typeof UserIdRoute
-  MessagesIndexRoute: typeof MessagesIndexRoute
-  NotificationsIndexRoute: typeof NotificationsIndexRoute
-  SettingsIndexRoute: typeof SettingsIndexRoute
+  mainRouteRoute: typeof mainRouteRouteWithChildren
+  authSignInIndexRoute: typeof authSignInIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  UserIdRoute: UserIdRoute,
-  MessagesIndexRoute: MessagesIndexRoute,
-  NotificationsIndexRoute: NotificationsIndexRoute,
-  SettingsIndexRoute: SettingsIndexRoute,
+  mainRouteRoute: mainRouteRouteWithChildren,
+  authSignInIndexRoute: authSignInIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -159,27 +218,42 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
-        "/user/$id",
-        "/messages/",
-        "/notifications/",
-        "/settings/"
+        "/(main)",
+        "/(auth)/sign-in/"
       ]
     },
-    "/": {
-      "filePath": "index.tsx"
+    "/(main)": {
+      "filePath": "(main)/route.tsx",
+      "children": [
+        "/(main)/",
+        "/(main)/user/$id",
+        "/(main)/messages/",
+        "/(main)/notifications/",
+        "/(main)/settings/"
+      ]
     },
-    "/user/$id": {
-      "filePath": "user/$id.tsx"
+    "/(main)/": {
+      "filePath": "(main)/index.tsx",
+      "parent": "/(main)"
     },
-    "/messages/": {
-      "filePath": "messages/index.tsx"
+    "/(main)/user/$id": {
+      "filePath": "(main)/user/$id.tsx",
+      "parent": "/(main)"
     },
-    "/notifications/": {
-      "filePath": "notifications/index.tsx"
+    "/(auth)/sign-in/": {
+      "filePath": "(auth)/sign-in/index.tsx"
     },
-    "/settings/": {
-      "filePath": "settings/index.tsx"
+    "/(main)/messages/": {
+      "filePath": "(main)/messages/index.tsx",
+      "parent": "/(main)"
+    },
+    "/(main)/notifications/": {
+      "filePath": "(main)/notifications/index.tsx",
+      "parent": "/(main)"
+    },
+    "/(main)/settings/": {
+      "filePath": "(main)/settings/index.tsx",
+      "parent": "/(main)"
     }
   }
 }
