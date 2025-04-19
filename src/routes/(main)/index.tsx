@@ -1,5 +1,5 @@
 import FeedCard from "src/components/feed-card";
-import { feedQueryOptions } from "src/lib/react-query";
+import { feedQueryOptions, userQueryOptions } from "src/lib/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
@@ -19,16 +19,19 @@ const Home = () => {
 
 export const Route = createFileRoute("/(main)/")({
   component: Home,
-  beforeLoad: ({ context }) => {
-    if (!context.session) {
+  beforeLoad: async ({ context: { session } }) => {
+    if (!session) {
       throw redirect({
         to: "/sign-in",
       });
     }
+
+    return { session };
   },
   loader: async ({ context }) => {
     const feed = await context.queryClient.ensureQueryData(feedQueryOptions());
+    const user = await context.queryClient.ensureQueryData(userQueryOptions());
 
-    return { feed };
+    return { feed, user };
   },
 });

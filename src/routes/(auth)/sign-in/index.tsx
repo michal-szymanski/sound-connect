@@ -1,9 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/(auth)/sign-in/")({
   component: SignIn,
+  beforeLoad: ({ context: { session } }) => {
+    if (session) {
+      throw redirect({
+        to: "/",
+      });
+    }
+  },
 });
 
 function SignIn() {

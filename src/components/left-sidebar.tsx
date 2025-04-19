@@ -11,6 +11,7 @@ import {
 } from "src/components/ui/sidebar";
 import { Bell, Cog, House, LucideIcon, Mail, UserRound } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import AccountButton from "@/components/account-button";
 
 type Item = {
   title: string;
@@ -75,7 +76,9 @@ const LeftSidebar = () => {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>{/* <AccountButton /> */}</SidebarMenuItem>
+          <SidebarMenuItem>
+            <AccountButton />
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

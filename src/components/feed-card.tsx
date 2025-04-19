@@ -7,7 +7,7 @@ import {
 } from "src/components/ui/card";
 import { Heart } from "lucide-react";
 import { Post } from "src/types";
-import { useReactions, useUser } from "src/lib/react-query";
+import { useReactions } from "src/lib/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "src/components/ui/avatar";
 import { formatDistanceToNowStrict } from "date-fns";
 import { Link } from "@tanstack/react-router";
@@ -18,7 +18,9 @@ type Props = {
 };
 
 const FeedCard = ({ post, isFollowing }: Props) => {
-  const { data: user } = useUser({ userId: post.userId });
+  return null;
+  // const { data: user } = useUser({ userId: post.userId });
+
   const { data: reactions } = useReactions({ postId: post.id });
 
   const renderLikes = () => {

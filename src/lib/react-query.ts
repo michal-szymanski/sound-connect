@@ -7,6 +7,7 @@ import {
   queryOptions,
   useQuery,
 } from "@tanstack/react-query";
+import { getSession } from "@/server-functions";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -40,21 +41,21 @@ export function getQueryClient() {
   }
 }
 
-export const useUser = ({ userId }: { userId: string }) =>
-  useQuery({
-    queryKey: ["users", userId],
-    queryFn: async () => {
-      const url = `/api/users/${userId}`;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const json = await response.json();
-      return userDTOSchema.parse(json);
-    },
-  });
+// export const useUser = ({ userId }: { userId: string }) =>
+//   useQuery({
+//     queryKey: ["users", userId],
+//     queryFn: async () => {
+//       const url = `/api/users/${userId}`;
+//       const response = await fetch(url, {
+//         method: "GET",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//       });
+//       const json = await response.json();
+//       return userDTOSchema.parse(json);
+//     },
+//   });
 
 export const useReactions = ({ postId }: { postId: number }) =>
   useQuery({
@@ -67,3 +68,22 @@ export const feedQueryOptions = () =>
     queryKey: ["feed"],
     queryFn: async () => await getFeed(),
   });
+
+export const userQueryOptions = () =>
+  queryOptions({
+    queryKey: ["user"],
+    queryFn: async () => {
+      const data = await getSession();
+      return data?.user;
+    },
+  });
+
+// export const useUser = () =>
+//   useQuery({
+//     queryKey: ["user"],
+//     queryFn: async () => {
+//       const { data } = await authClient.getSession();
+
+//       return data?.user;
+//     },
+//   });
