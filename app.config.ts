@@ -2,6 +2,7 @@ import { defineConfig } from "@tanstack/react-start/config";
 import tsConfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import { cloudflare } from "unenv";
+import nitroCloudflareBindings from "nitro-cloudflare-dev";
 
 export default defineConfig({
   tsr: {
@@ -19,7 +20,8 @@ export default defineConfig({
     },
   },
   server: {
-    preset: "cloudflare-pages",
+    preset: "cloudflare-module",
     unenv: cloudflare,
+    modules: [nitroCloudflareBindings],
   },
 });

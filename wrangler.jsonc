@@ -1,1 +1,27 @@
-{}
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sound-connect",
+  "main": ".output/server/index.mjs",
+  "compatibility_date": "2025-04-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".output/public",
+  },
+  "observability": {
+    "enabled": true,
+  },
+  "env": {
+    "production": {
+      "name": "sound-connect",
+      "vars": {
+        "BACKEND_URL": "https://sound-connect-server.michal-szymanski92.workers.dev",
+      },
+    },
+    "develop": {
+      "name": "sound-connect",
+      "vars": {
+        "BACKEND_URL": "http://localhost:8787",
+      },
+    },
+  },
+}
