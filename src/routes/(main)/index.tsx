@@ -30,7 +30,9 @@ export const Route = createFileRoute("/(main)/")({
   },
   loader: async ({ context }) => {
     const feed = await context.queryClient.ensureQueryData(feedQueryOptions());
-    const user = await context.queryClient.ensureQueryData(userQueryOptions());
+    const user = await context.queryClient.ensureQueryData(
+      userQueryOptions(context.session)
+    );
 
     return { feed, user };
   },
