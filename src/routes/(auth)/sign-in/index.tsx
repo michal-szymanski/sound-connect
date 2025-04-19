@@ -41,9 +41,9 @@ function SignIn() {
               onClick={() =>
                 authClient.signIn.social({
                   provider: "spotify",
-                  callbackURL: "http://localhost:3000",
+                  callbackURL: process.env.CLIENT_URL,
                   errorCallbackURL: "/error",
-                  newUserCallbackURL: "http://localhost:3000",
+                  newUserCallbackURL: process.env.CLIENT_URL,
                   disableRedirect: false,
                 })
               }

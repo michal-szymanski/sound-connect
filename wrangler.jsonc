@@ -18,12 +18,14 @@
       "name": "sound-connect",
       "vars": {
         "BACKEND_URL": "https://sound-connect-server.michal-szymanski92.workers.dev",
+        "CLIENT_URL": "https://sound-connect.michal-szymanski92.workers.dev",
       },
     },
     "develop": {
       "name": "sound-connect",
       "vars": {
         "BACKEND_URL": "http://localhost:8787",
+        "CLIENT_URL": "http://localhost:3000",
       },
     },
   },
