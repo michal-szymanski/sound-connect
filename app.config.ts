@@ -14,6 +14,7 @@ export default defineConfig({
         projects: ["./tsconfig.json"],
       }),
       tailwindcss(),
+      // cloudflarePlugin(),
     ],
     define: {
       "process.env": process.env,
