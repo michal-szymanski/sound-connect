@@ -9,6 +9,7 @@ export const getSession = createServerFn().handler(async () => {
 
   const response = await fetch(`${process.env.BACKEND_URL}/session`, {
     headers: request.headers,
+    credentials: "include",
   });
 
   if (!response.ok) {
