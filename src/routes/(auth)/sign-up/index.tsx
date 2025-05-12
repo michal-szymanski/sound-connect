@@ -12,6 +12,7 @@ import { z } from "zod";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-export const Route = createFileRoute("/(auth)/sign-in/")({
+export const Route = createFileRoute("/(auth)/sign-up/")({
   component: SignIn,
   beforeLoad: ({ context: { session } }) => {
     if (session) {
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/(auth)/sign-in/")({
 
 function SignIn() {
   const formSchema = z.object({
+    name: z.string().min(1),
     email: z.string().email(),
     password: z.string().min(8).max(128),
   });
@@ -39,6 +41,7 @@ function SignIn() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
     },
@@ -47,7 +50,7 @@ function SignIn() {
   const router = useRouter();
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const { data, error } = await authClient.signIn.email(values);
+    const { data, error } = await authClient.signUp.email(values);
     if (data !== null) {
       router.navigate({ to: "/" });
       return;
@@ -63,7 +66,7 @@ function SignIn() {
       <div className="lg:p-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <h1 className="text-center text-2xl font-semibold tracking-tight">
-            Sign in
+            Create an account
           </h1>
           <div className="flex flex-col gap-6">
             <Form {...form}>
@@ -71,6 +74,19 @@ function SignIn() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="flex flex-col gap-3"
               >
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="email"
@@ -97,13 +113,13 @@ function SignIn() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit">Sign In</Button>
+                <Button type="submit">Sign Up</Button>
               </form>
             </Form>
             <div className="text-center text-sm">
-              Don't have an account?{" "}
-              <Link to="/sign-up" className="underline underline-offset-4">
-                Sign Up
+              Already have an account?{" "}
+              <Link to="/sign-in" className="underline underline-offset-4">
+                Sign In
               </Link>
             </div>
           </div>

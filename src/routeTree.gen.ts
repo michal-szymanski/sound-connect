@@ -16,6 +16,7 @@ import { Route as mainIndexImport } from './routes/(main)/index'
 import { Route as mainSettingsIndexImport } from './routes/(main)/settings/index'
 import { Route as mainNotificationsIndexImport } from './routes/(main)/notifications/index'
 import { Route as mainMessagesIndexImport } from './routes/(main)/messages/index'
+import { Route as authSignUpIndexImport } from './routes/(auth)/sign-up/index'
 import { Route as authSignInIndexImport } from './routes/(auth)/sign-in/index'
 import { Route as mainUserIdImport } from './routes/(main)/user/$id'
 
@@ -48,6 +49,12 @@ const mainMessagesIndexRoute = mainMessagesIndexImport.update({
   id: '/messages/',
   path: '/messages/',
   getParentRoute: () => mainRouteRoute,
+} as any)
+
+const authSignUpIndexRoute = authSignUpIndexImport.update({
+  id: '/(auth)/sign-up/',
+  path: '/sign-up/',
+  getParentRoute: () => rootRoute,
 } as any)
 
 const authSignInIndexRoute = authSignInIndexImport.update({
@@ -92,6 +99,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof authSignInIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/(auth)/sign-up/': {
+      id: '/(auth)/sign-up/'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof authSignUpIndexImport
       parentRoute: typeof rootRoute
     }
     '/(main)/messages/': {
@@ -144,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/': typeof mainIndexRoute
   '/user/$id': typeof mainUserIdRoute
   '/sign-in': typeof authSignInIndexRoute
+  '/sign-up': typeof authSignUpIndexRoute
   '/messages': typeof mainMessagesIndexRoute
   '/notifications': typeof mainNotificationsIndexRoute
   '/settings': typeof mainSettingsIndexRoute
@@ -153,6 +168,7 @@ export interface FileRoutesByTo {
   '/': typeof mainIndexRoute
   '/user/$id': typeof mainUserIdRoute
   '/sign-in': typeof authSignInIndexRoute
+  '/sign-up': typeof authSignUpIndexRoute
   '/messages': typeof mainMessagesIndexRoute
   '/notifications': typeof mainNotificationsIndexRoute
   '/settings': typeof mainSettingsIndexRoute
@@ -164,6 +180,7 @@ export interface FileRoutesById {
   '/(main)/': typeof mainIndexRoute
   '/(main)/user/$id': typeof mainUserIdRoute
   '/(auth)/sign-in/': typeof authSignInIndexRoute
+  '/(auth)/sign-up/': typeof authSignUpIndexRoute
   '/(main)/messages/': typeof mainMessagesIndexRoute
   '/(main)/notifications/': typeof mainNotificationsIndexRoute
   '/(main)/settings/': typeof mainSettingsIndexRoute
@@ -175,6 +192,7 @@ export interface FileRouteTypes {
     | '/'
     | '/user/$id'
     | '/sign-in'
+    | '/sign-up'
     | '/messages'
     | '/notifications'
     | '/settings'
@@ -183,6 +201,7 @@ export interface FileRouteTypes {
     | '/'
     | '/user/$id'
     | '/sign-in'
+    | '/sign-up'
     | '/messages'
     | '/notifications'
     | '/settings'
@@ -192,6 +211,7 @@ export interface FileRouteTypes {
     | '/(main)/'
     | '/(main)/user/$id'
     | '/(auth)/sign-in/'
+    | '/(auth)/sign-up/'
     | '/(main)/messages/'
     | '/(main)/notifications/'
     | '/(main)/settings/'
@@ -201,11 +221,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   mainRouteRoute: typeof mainRouteRouteWithChildren
   authSignInIndexRoute: typeof authSignInIndexRoute
+  authSignUpIndexRoute: typeof authSignUpIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   mainRouteRoute: mainRouteRouteWithChildren,
   authSignInIndexRoute: authSignInIndexRoute,
+  authSignUpIndexRoute: authSignUpIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -219,7 +241,8 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/(main)",
-        "/(auth)/sign-in/"
+        "/(auth)/sign-in/",
+        "/(auth)/sign-up/"
       ]
     },
     "/(main)": {
@@ -242,6 +265,9 @@ export const routeTree = rootRoute
     },
     "/(auth)/sign-in/": {
       "filePath": "(auth)/sign-in/index.tsx"
+    },
+    "/(auth)/sign-up/": {
+      "filePath": "(auth)/sign-up/index.tsx"
     },
     "/(main)/messages/": {
       "filePath": "(main)/messages/index.tsx",

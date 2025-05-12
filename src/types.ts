@@ -39,7 +39,7 @@ export const sessionSchema = z.object({
     name: z.string(),
     email: z.string(),
     emailVerified: z.boolean(),
-    image: z.string().url(),
+    image: z.string().url().nullable(),
     createdAt: z.string(),
     updatedAt: z.string(),
   }),
