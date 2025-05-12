@@ -9,10 +9,18 @@ export const getSession = createServerFn().handler(async () => {
 
   const response = await fetch(`${process.env.BACKEND_URL}/session`, {
     headers: request.headers,
-    credentials: "include",
   });
 
   if (!response.ok) {
+    console.error(
+      `Failed to fetch session: ${response.status} ${response.statusText}`
+    );
+    try {
+      const errorBody = await response.text();
+      console.error("Response body:", errorBody);
+    } catch (e) {
+      console.error("Could not read response body:", e);
+    }
     return null;
   }
 
