@@ -5,20 +5,16 @@ import { cloudflare } from "unenv";
 import nitroCloudflareBindings from "nitro-cloudflare-dev";
 
 export default defineConfig({
-  tsr: {
-    appDirectory: "src",
-  },
   vite: {
     plugins: [
       tsConfigPaths({
         projects: ["./tsconfig.json"],
       }),
       tailwindcss(),
-      // cloudflarePlugin(),
-    ],
-    define: {
-      "process.env": process.env,
-    },
+    ] as any,
+  },
+  tsr: {
+    appDirectory: "src",
   },
   server: {
     preset: "cloudflare-module",

@@ -1,7 +1,7 @@
 import { getFeed, getReactions } from "src/services/api-service";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { getSession } from "@/server-functions";
-import { Session } from "@/types";
+import { Session, User } from "@/types";
 
 export const useReactions = ({ postId }: { postId: number }) =>
   useQuery({
@@ -15,11 +15,14 @@ export const feedQueryOptions = () =>
     queryFn: async () => await getFeed(),
   });
 
-export const userQueryOptions = (session?: Session) =>
+export const userQueryOptions = (currentSession?: {
+  session: Session;
+  user: User;
+}) =>
   queryOptions({
     queryKey: ["user"],
     queryFn: async () => {
-      const data = session ?? (await getSession());
+      const data = currentSession ?? (await getSession());
       return data?.user;
     },
   });

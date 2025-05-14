@@ -23,26 +23,27 @@ export const postReactionSchema = z.object({
   userId: z.string(),
 });
 
+export const userSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().email(),
+  emailVerified: z.boolean(),
+  image: z.string().url().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export type User = z.infer<typeof userSchema>;
+
 export const sessionSchema = z.object({
-  session: z.object({
-    id: z.string(),
-    expiresAt: z.string(),
-    token: z.string(),
-    createdAt: z.string(),
-    updatedAt: z.string(),
-    ipAddress: z.string(),
-    userAgent: z.string(),
-    userId: z.string(),
-  }),
-  user: z.object({
-    id: z.string(),
-    name: z.string(),
-    email: z.string(),
-    emailVerified: z.boolean(),
-    image: z.string().url().nullable(),
-    createdAt: z.string(),
-    updatedAt: z.string(),
-  }),
+  id: z.string(),
+  expiresAt: z.string(),
+  token: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  ipAddress: z.string(),
+  userAgent: z.string(),
+  userId: z.string(),
 });
 
 export type Session = z.infer<typeof sessionSchema>;

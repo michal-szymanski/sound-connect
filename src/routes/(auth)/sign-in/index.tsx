@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
 import {
   createFileRoute,
   Link,
@@ -18,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { signIn } from "@/server-functions";
 
 export const Route = createFileRoute("/(auth)/sign-in/")({
   component: SignIn,
@@ -47,12 +47,10 @@ function SignIn() {
   const router = useRouter();
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const { data, error } = await authClient.signIn.email(values);
+    const data = await signIn({ data: { ...values, rememberMe: true } });
     if (data !== null) {
       router.navigate({ to: "/" });
-      return;
     }
-    console.log({ data, error });
   };
 
   return (
