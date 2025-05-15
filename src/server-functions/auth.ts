@@ -98,7 +98,6 @@ export const signOut = createServerFn({
     method: "POST",
     headers: {
       Cookie: cookie,
-      "Content-Type": "application/json",
     },
     body: JSON.stringify({}),
   });
@@ -111,7 +110,6 @@ export const signOut = createServerFn({
   try {
     const json = await response.json();
     const schema = z.object({ success: z.boolean() });
-
     const result = schema.parse(json);
 
     if (result.success) {
