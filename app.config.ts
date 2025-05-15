@@ -11,7 +11,7 @@ export default defineConfig({
         projects: ["./tsconfig.json"],
       }),
       tailwindcss(),
-    ] as any,
+    ],
   },
   tsr: {
     appDirectory: "src",
