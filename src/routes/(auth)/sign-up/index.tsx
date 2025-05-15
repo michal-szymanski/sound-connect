@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
 import {
   createFileRoute,
   Link,
@@ -12,7 +11,6 @@ import { z } from "zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,

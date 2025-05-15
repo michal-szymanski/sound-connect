@@ -1,14 +1,5 @@
 import { z } from "zod";
 
-export const userDTOSchema = z.object({
-  id: z.string(),
-  imageUrl: z.string(),
-  firstName: z.string(),
-  lastName: z.string(),
-});
-
-export type UserDTO = z.infer<typeof userDTOSchema>;
-
 export const postSchema = z.object({
   id: z.number(),
   userId: z.string(),

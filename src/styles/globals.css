@@ -123,4 +123,8 @@
   body {
     @apply bg-background text-foreground h-full;
   }
+
+  button {
+    @apply cursor-pointer;
+  }
 }
