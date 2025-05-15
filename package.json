@@ -8,7 +8,7 @@
     "start": "vinxi start",
     "types": "wrangler types --env-interface CloudflareBindings",
     "tail": "wrangler tail",
-    "deploy": "pnpm build && wrangler deploy"
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.1.1",
