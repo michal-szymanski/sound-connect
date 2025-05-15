@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { signUp } from "@/server-functions/auth";
 
 export const Route = createFileRoute("/(auth)/sign-up/")({
   component: SignIn,
@@ -50,12 +51,11 @@ function SignIn() {
   const router = useRouter();
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const { data, error } = await authClient.signUp.email(values);
+    const data = await signUp({ data: values });
+
     if (data !== null) {
       router.navigate({ to: "/" });
-      return;
     }
-    console.log({ data, error });
   };
 
   return (

@@ -1,15 +1,13 @@
 import { getBindings } from "@/lib/cloudflare-bindings";
-import { handleError } from "@/server-functions/helpers";
+import {
+  deleteSessionCookie,
+  handleError,
+  setSessionCookie,
+} from "@/server-functions/helpers";
 import { sessionSchema, userSchema } from "@/types";
 import { createServerFn } from "@tanstack/react-start";
-import {
-  getWebRequest,
-  setHeader,
-  getHeader,
-} from "@tanstack/react-start/server";
+import { getWebRequest, getHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
-
-const COOKIE_NAME = "better-auth.session_token";
 
 export const getSession = createServerFn().handler(async () => {
   const { headers } = getWebRequest()!;
@@ -62,13 +60,9 @@ export const signIn = createServerFn({ method: "POST" })
       return null;
     }
 
-    const sessionCookie = response.headers
-      .getSetCookie()
-      .find((cookie) => cookie.startsWith(COOKIE_NAME));
+    const isCookieSet = setSessionCookie(response);
 
-    if (!sessionCookie) return null;
-
-    setHeader("Set-Cookie", sessionCookie);
+    if (!isCookieSet) return null;
 
     try {
       const json = await response.json();
@@ -113,10 +107,7 @@ export const signOut = createServerFn({
     const result = schema.parse(json);
 
     if (result.success) {
-      setHeader(
-        "Set-Cookie",
-        `${COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`
-      );
+      deleteSessionCookie();
     }
 
     return result;
@@ -125,3 +116,44 @@ export const signOut = createServerFn({
     return null;
   }
 });
+
+export const signUp = createServerFn({
+  method: "POST",
+})
+  .validator((data: { name: string; email: string; password: string }) => data)
+  .handler(async ({ data }) => {
+    const { BACKEND_URL, CLIENT_URL } = await getBindings();
+
+    const response = await fetch(`${BACKEND_URL}/api/auth/sign-up/email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...data,
+        callbackURL: CLIENT_URL,
+      }),
+    });
+
+    if (!response.ok) {
+      await handleError(response);
+      return null;
+    }
+
+    const isCookieSet = setSessionCookie(response);
+
+    if (!isCookieSet) return null;
+
+    try {
+      const json = await response.json();
+      const schema = z.object({
+        token: z.string(),
+        user: userSchema,
+      });
+
+      return schema.parse(json);
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  });

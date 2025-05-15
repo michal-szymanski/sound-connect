@@ -48,6 +48,7 @@ function SignIn() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const data = await signIn({ data: { ...values, rememberMe: true } });
+
     if (data !== null) {
       router.navigate({ to: "/" });
     }
