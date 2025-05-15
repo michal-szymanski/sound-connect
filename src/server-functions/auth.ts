@@ -5,9 +5,11 @@ import { createServerFn } from "@tanstack/react-start";
 import {
   getWebRequest,
   setHeader,
-  getCookie,
+  getHeader,
 } from "@tanstack/react-start/server";
 import { z } from "zod";
+
+const COOKIE_NAME = "better-auth.session_token";
 
 export const getSession = createServerFn().handler(async () => {
   const { headers } = getWebRequest()!;
@@ -60,10 +62,9 @@ export const signIn = createServerFn({ method: "POST" })
       return null;
     }
 
-    const cookieName = "better-auth.session_token";
     const sessionCookie = response.headers
       .getSetCookie()
-      .find((cookie) => cookie.startsWith(cookieName));
+      .find((cookie) => cookie.startsWith(COOKIE_NAME));
 
     if (!sessionCookie) return null;
 
@@ -85,23 +86,19 @@ export const signIn = createServerFn({ method: "POST" })
     }
   });
 
-export const signOut = createServerFn({ method: "POST" }).handler(async () => {
-  const { headers } = getWebRequest()!;
+export const signOut = createServerFn({
+  method: "POST",
+}).handler(async () => {
   const { BACKEND_URL } = await getBindings();
+  const cookie = getHeader("Cookie");
 
-  const cookieName = "better-auth.session_token";
-  const cookieValue = getCookie("better-auth.session_token");
-  const sessionCookie = `${cookieName}=${cookieValue}`;
-
-  console.log({ sessionCookie });
+  if (!cookie) return null;
 
   const response = await fetch(`${BACKEND_URL}/api/auth/sign-out`, {
     method: "POST",
     headers: {
-      Cookie: sessionCookie,
+      Cookie: cookie,
       "Content-Type": "application/json",
-      Accept: "*/*",
-      Authorization: "Bearer",
     },
     body: JSON.stringify({}),
   });
@@ -115,7 +112,16 @@ export const signOut = createServerFn({ method: "POST" }).handler(async () => {
     const json = await response.json();
     const schema = z.object({ success: z.boolean() });
 
-    return schema.parse(json);
+    const result = schema.parse(json);
+
+    if (result.success) {
+      setHeader(
+        "Set-Cookie",
+        `${COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`
+      );
+    }
+
+    return result;
   } catch (error) {
     console.error(error);
     return null;
