@@ -47,3 +47,11 @@ export const sessionSchema = z.object({
 });
 
 export type Session = z.infer<typeof sessionSchema>;
+
+export const followerSchema = z.object({ followerId: z.string() });
+
+export type Follower = z.infer<typeof followerSchema>;
+
+export const followingSchema = z.object({ userId: z.string() });
+
+export type Following = z.infer<typeof followingSchema>;

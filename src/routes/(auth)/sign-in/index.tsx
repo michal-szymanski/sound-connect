@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { signIn } from "@/server-functions";
+import { signIn } from "@/server-functions/auth";
 
 export const Route = createFileRoute("/(auth)/sign-in/")({
   component: SignIn,

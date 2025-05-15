@@ -9,7 +9,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import globalsCss from "@/styles/globals.css?url";
 import type { QueryClient } from "@tanstack/react-query";
-import { getSession } from "@/server-functions";
+import { getSession } from "@/server-functions/auth";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;

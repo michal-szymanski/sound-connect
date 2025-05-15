@@ -1,14 +1,17 @@
 import { getBindings } from "@/lib/cloudflare-bindings";
+import { handleError } from "@/server-functions/helpers";
 import { sessionSchema, userSchema } from "@/types";
 import { createServerFn } from "@tanstack/react-start";
-import { getWebRequest, setHeader } from "@tanstack/react-start/server";
+import {
+  getWebRequest,
+  setHeader,
+  getCookie,
+} from "@tanstack/react-start/server";
 import { z } from "zod";
 
 export const getSession = createServerFn().handler(async () => {
   const { headers } = getWebRequest()!;
   const { BACKEND_URL } = await getBindings();
-
-  if (!headers) return null;
 
   const response = await fetch(`${BACKEND_URL}/api/auth/get-session`, {
     headers,
@@ -82,16 +85,39 @@ export const signIn = createServerFn({ method: "POST" })
     }
   });
 
-const handleError = async (response: Response) => {
-  console.error(
-    `Failed to fetch ${response.url} (${response.status} ${response.statusText})`
-  );
-  try {
-    const errorBody = await response.text();
-    if (errorBody.length) {
-      console.error("Response body:", errorBody);
-    }
-  } catch (e) {
-    console.error("Could not read response body:", e);
+export const signOut = createServerFn({ method: "POST" }).handler(async () => {
+  const { headers } = getWebRequest()!;
+  const { BACKEND_URL } = await getBindings();
+
+  const cookieName = "better-auth.session_token";
+  const cookieValue = getCookie("better-auth.session_token");
+  const sessionCookie = `${cookieName}=${cookieValue}`;
+
+  console.log({ sessionCookie });
+
+  const response = await fetch(`${BACKEND_URL}/api/auth/sign-out`, {
+    method: "POST",
+    headers: {
+      Cookie: sessionCookie,
+      "Content-Type": "application/json",
+      Accept: "*/*",
+      Authorization: "Bearer",
+    },
+    body: JSON.stringify({}),
+  });
+
+  if (!response.ok) {
+    await handleError(response);
+    return null;
   }
-};
+
+  try {
+    const json = await response.json();
+    const schema = z.object({ success: z.boolean() });
+
+    return schema.parse(json);
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+});
