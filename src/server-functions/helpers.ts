@@ -1,6 +1,7 @@
 import { setHeader } from "@tanstack/react-start/server";
 
-const SESSION_COOKIE_NAME = "better-auth.session_token";
+//const SESSION_COOKIE_NAME = "better-auth.session_token";
+const SESSION_COOKIE_NAME = "sound-connect.session_token";
 
 export const handleError = async (response: Response) => {
   console.error(
