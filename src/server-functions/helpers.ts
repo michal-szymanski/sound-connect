@@ -23,7 +23,7 @@ export const setSessionCookie = (response: Response) => {
 
   if (!sessionCookie) {
     console.error(
-      `Could not create session cookie. Headers: \n${response.headers}`
+      `Could not create session cookie. Headers from /api/auth: \n${response.headers.entries()}`
     );
     return false;
   }
