@@ -1,7 +1,7 @@
 import { setHeader } from "@tanstack/react-start/server";
 
-//const SESSION_COOKIE_NAME = "better-auth.session_token";
 const SESSION_COOKIE_NAME = "sound-connect.session_token";
+const SECURE_SESSION_COOKIE_NAME = `__Secure-${SESSION_COOKIE_NAME}`;
 
 export const handleError = async (response: Response) => {
   console.error(
@@ -20,7 +20,11 @@ export const handleError = async (response: Response) => {
 export const setSessionCookie = (response: Response) => {
   const sessionCookie = response.headers
     .getSetCookie()
-    .find((cookie) => cookie.startsWith(SESSION_COOKIE_NAME));
+    .find(
+      (cookie) =>
+        cookie.startsWith(SESSION_COOKIE_NAME) ||
+        cookie.startsWith(SECURE_SESSION_COOKIE_NAME)
+    );
 
   if (!sessionCookie) {
     console.error(
@@ -34,8 +38,8 @@ export const setSessionCookie = (response: Response) => {
 };
 
 export const deleteSessionCookie = () => {
-  setHeader(
-    "Set-Cookie",
-    `${SESSION_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`
-  );
+  setHeader("Set-Cookie", [
+    `${SESSION_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
+    `${SECURE_SESSION_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
+  ]);
 };
