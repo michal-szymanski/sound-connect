@@ -21,7 +21,12 @@ export const setSessionCookie = (response: Response) => {
     .getSetCookie()
     .find((cookie) => cookie.startsWith(SESSION_COOKIE_NAME));
 
-  if (!sessionCookie) return false;
+  if (!sessionCookie) {
+    console.error(
+      `Could not create session cookie. Headers: \n${response.headers}`
+    );
+    return false;
+  }
 
   setHeader("Set-Cookie", sessionCookie);
   return true;

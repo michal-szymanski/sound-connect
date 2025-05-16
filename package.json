@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vinxi dev",
+    "dev:wrangler": "wrangler dev --port=3000",
     "build": "vinxi build",
     "start": "vinxi start",
     "types": "wrangler types --env-interface CloudflareBindings",
