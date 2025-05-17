@@ -1,3 +1,4 @@
+import { AuthError, authErrorSchema } from "@/types/auth";
 import { setHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 
@@ -17,12 +18,11 @@ export const errorHandler = async (response: Response) => {
     }
 
     const json = JSON.parse(errorBody);
-    const schema = z.object({
-      code: z.string(),
-      message: z.string(),
-    });
 
-    return { success: false, body: schema.parse(json) } as const;
+    return {
+      success: false,
+      body: authErrorSchema.parse(json) as AuthError,
+    } as const;
   } catch (e) {
     console.error("[App] Could not read response body:", e);
     return { success: false, body: null } as const;

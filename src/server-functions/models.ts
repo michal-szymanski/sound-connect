@@ -5,7 +5,7 @@ import {
   followingSchema,
   postReactionSchema,
   postSchema,
-} from "@/types";
+} from "@/types/models";
 import { createServerFn } from "@tanstack/react-start";
 import { getWebRequest } from "@tanstack/react-start/server";
 import { z } from "zod";

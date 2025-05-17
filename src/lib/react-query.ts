@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
-import { Session, User } from "@/types";
+import { User } from "@/types/auth";
 import { getFeed, getReactions } from "@/server-functions/models";
 import { getSession } from "@/server-functions/auth";
 
@@ -23,23 +23,18 @@ export const feedQueryOptions = () =>
     },
   });
 
-export const userQueryOptions = (
-  currentSession: {
-    session: Session;
-    user: User;
-  } | null
-) =>
+export const userQueryOptions = (user: User | null) =>
   queryOptions({
     queryKey: ["user"],
     queryFn: async () => {
-      if (currentSession) {
-        return currentSession.user;
+      if (user) {
+        return user;
       }
 
       const response = await getSession();
 
       if (response.success) {
-        return response.body.user;
+        return response.body;
       }
 
       return null;

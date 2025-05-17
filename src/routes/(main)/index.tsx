@@ -19,8 +19,8 @@ const Home = () => {
 
 export const Route = createFileRoute("/(main)/")({
   component: Home,
-  beforeLoad: async ({ context: { session } }) => {
-    if (!session) {
+  beforeLoad: async ({ context: { user } }) => {
+    if (!user) {
       const path = "/sign-in";
       console.info(`[App] Redirecting to: ${path}`);
 
@@ -29,11 +29,11 @@ export const Route = createFileRoute("/(main)/")({
       });
     }
 
-    return { session };
+    return { user };
   },
   loader: async ({ context }) => {
     const user = await context.queryClient.ensureQueryData(
-      userQueryOptions(context.session)
+      userQueryOptions(context.user)
     );
     const feed = await context.queryClient.ensureQueryData(feedQueryOptions());
 

@@ -18,11 +18,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { signIn } from "@/server-functions/auth";
+import { AuthError } from "@/types/auth";
 
 export const Route = createFileRoute("/(auth)/sign-in/")({
   component: SignIn,
-  beforeLoad: ({ context: { session } }) => {
-    if (session) {
+  beforeLoad: ({ context: { user } }) => {
+    if (user) {
       const path = "/";
       console.info(`[App] Redirecting to: ${path}`);
 
@@ -49,24 +50,23 @@ function SignIn() {
 
   const router = useRouter();
 
-  const handleServerError = (body: { code: string; message: string }) => {
-    const { code, message } = body;
+  const handleServerError = ({ code, message: error }: AuthError) => {
     switch (code) {
       case "INVALID_EMAIL_OR_PASSWORD":
-        form.setError("email", { message });
-        form.setError("password", { message });
+        form.setError("email", { message: error });
+        form.setError("password", { message: error });
         break;
       case "INVALID_EMAIL":
       case "USER_EMAIL_NOT_FOUND":
       case "EMAIL_NOT_VERIFIED":
-        form.setError("email", { message });
+        form.setError("email", { message: error });
         break;
       case "PROVIDER_NOT_FOUND":
       case "ID_TOKEN_NOT_SUPPORTED":
       case "FAILED_TO_GET_USER_INFO":
         break;
       default:
-        form.setError("email", { message });
+        form.setError("email", { message: error });
         break;
     }
   };

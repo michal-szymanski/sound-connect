@@ -4,7 +4,7 @@ import {
   errorHandler,
   setSessionCookie,
 } from "@/server-functions/helpers";
-import { sessionSchema, userSchema } from "@/types";
+import { sessionSchema, userSchema } from "@/types/auth";
 import { createServerFn } from "@tanstack/react-start";
 import { getWebRequest, getHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
@@ -31,7 +31,7 @@ export const getSession = createServerFn().handler(async () => {
     const json = JSON.parse(text);
     const schema = z.object({ session: sessionSchema, user: userSchema });
 
-    return { success: true, body: schema.parse(json) } as const;
+    return { success: true, body: schema.parse(json).user } as const;
   } catch (error) {
     console.error(error);
     return { success: false, body: null } as const;

@@ -39,10 +39,10 @@ export const Route = createRootRouteWithContext<{
     const result = await getSession();
 
     if (result.success) {
-      return { session: result.body };
+      return { user: result.body };
     }
 
-    return { session: null };
+    return { user: null };
   },
 });
 

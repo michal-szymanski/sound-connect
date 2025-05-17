@@ -18,11 +18,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { signUp } from "@/server-functions/auth";
+import { AuthError } from "@/types/auth";
 
 export const Route = createFileRoute("/(auth)/sign-up/")({
-  component: SignIn,
-  beforeLoad: ({ context: { session } }) => {
-    if (session) {
+  component: SignUp,
+  beforeLoad: ({ context: { user } }) => {
+    if (user) {
       const path = "/";
       console.info(`[App] Redirecting to: ${path}`);
 
@@ -33,7 +34,7 @@ export const Route = createFileRoute("/(auth)/sign-up/")({
   },
 });
 
-function SignIn() {
+function SignUp() {
   const formSchema = z.object({
     name: z.string().min(1),
     email: z.string().email(),
@@ -51,20 +52,19 @@ function SignIn() {
 
   const router = useRouter();
 
-  const handleServerError = (body: { code: string; message: string }) => {
-    const { code, message } = body;
+  const handleServerError = ({ code, message: error }: AuthError) => {
     switch (code) {
       case "USER_ALREADY_EXISTS":
       case "INVALID_EMAIL":
       case "FAILED_TO_CREATE_USER":
-        form.setError("email", { message });
+        form.setError("email", { message: error });
         break;
       case "PASSWORD_TOO_SHORT":
       case "PASSWORD_TOO_LONG":
-        form.setError("password", { message });
+        form.setError("password", { message: error });
         break;
       default:
-        form.setError("email", { message });
+        form.setError("email", { message: error });
         break;
     }
   };
