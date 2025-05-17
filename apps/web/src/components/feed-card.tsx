@@ -13,7 +13,6 @@ type Props = {
 };
 
 const FeedCard = ({ post, isFollowing }: Props) => {
-    return null;
     // const { data: user } = useUser({ userId: post.userId });
 
     const { data: reactions } = useReactions({ postId: post.id });
@@ -29,13 +28,13 @@ const FeedCard = ({ post, isFollowing }: Props) => {
             <CardHeader className="flex-row items-center space-x-2 space-y-0 text-sm">
                 <Button variant="link" className="px-0" size="lg" asChild>
                     <Link to={`/user/$id`} params={{ id: post.userId }}>
-                        <Avatar>
+                        {/* <Avatar>
                             <AvatarImage src={user?.imageUrl} alt="avatar" />
                             <AvatarFallback>CN</AvatarFallback>
                         </Avatar>
                         <div>
                             {user?.firstName} {user?.lastName}
-                        </div>
+                        </div> */}
                     </Link>
                 </Button>
                 <div className="text-muted-foreground">•</div>
