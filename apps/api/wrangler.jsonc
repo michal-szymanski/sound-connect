@@ -15,8 +15,8 @@
         "production": {
             "name": "sound-connect-api",
             "vars": {
-                "CLIENT_URL": "https://sound-connect.michal-szymanski92.workers.dev",
-                "SERVER_URL": "https://sound-connect-server.michal-szymanski92.workers.dev"
+                "API_URL": "https://sound-connect-api.michal-szymanski92.workers.dev",
+                "CLIENT_URL": "https://sound-connect-web.michal-szymanski92.workers.dev"
             },
             "d1_databases": [
                 {
