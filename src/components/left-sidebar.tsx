@@ -62,6 +62,7 @@ const LeftSidebar = () => {
                   <SidebarMenuButton asChild>
                     <Link
                       to={item.url}
+                      preload={false}
                       className="flex justify-center xl:justify-start [&>svg]:size-6"
                     >
                       <item.icon />
