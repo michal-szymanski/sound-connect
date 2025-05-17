@@ -1,0 +1,29 @@
+services:
+    postgres:
+        image: postgres:latest
+        container_name: postgres
+        environment:
+            DB_USER: '${DB_USER}'
+            POSTGRES_PASSWORD: '${DB_PASSWORD}'
+            DB_HOST: '${DB_HOST}'
+            POSTGRES_DB: '${DB_NAME}'
+        ports:
+            - '${DB_PORT}:${DB_PORT}'
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U ${DB_USER} -d ${DB_NAME}']
+            interval: 5s
+            retries: 5
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+    server:
+        container_name: server
+        build: .
+        ports:
+            - '${SERVER_PORT}:${SERVER_PORT}'
+        env_file:
+            - .env
+        depends_on:
+            postgres:
+                condition: service_healthy
+volumes:
+    pgdata:
