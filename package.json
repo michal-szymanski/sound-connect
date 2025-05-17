@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm run -r --parallel --aggregate-output dev",
+    "types": "pnpm run -r --parallel --aggregate-output types",
     "prettier:format": "prettier ./apps --write",
     "prettier:check": "prettier ./apps --check"
   },
