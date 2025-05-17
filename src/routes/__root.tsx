@@ -10,6 +10,7 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import globalsCss from "@/styles/globals.css?url";
 import type { QueryClient } from "@tanstack/react-query";
 import { getSession } from "@/server-functions/auth";
+import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -64,6 +65,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
         {children}
         <TanStackRouterDevtools position="bottom-right" />
         <ReactQueryDevtools buttonPosition="bottom-left" />
+        <Toaster position="top-right" duration={7000} />
         <Scripts />
       </body>
     </html>

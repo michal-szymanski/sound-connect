@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { signIn } from "@/server-functions/auth";
 import { AuthError } from "@/types/auth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/(auth)/sign-in/")({
   component: SignIn,
@@ -66,7 +67,9 @@ function SignIn() {
       case "FAILED_TO_GET_USER_INFO":
         break;
       default:
-        form.setError("email", { message: error });
+        toast.error("Could not sign in", {
+          description: error,
+        });
         break;
     }
   };

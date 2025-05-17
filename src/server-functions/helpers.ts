@@ -1,6 +1,5 @@
-import { AuthError, authErrorSchema } from "@/types/auth";
+import { authErrorSchema } from "@/types/auth";
 import { setHeader } from "@tanstack/react-start/server";
-import { z } from "zod";
 
 const SESSION_COOKIE_NAME = "sound-connect.session_token";
 const SECURE_SESSION_COOKIE_NAME = `__Secure-${SESSION_COOKIE_NAME}`;
@@ -21,7 +20,7 @@ export const errorHandler = async (response: Response) => {
 
     return {
       success: false,
-      body: authErrorSchema.parse(json) as AuthError,
+      body: authErrorSchema.parse(json),
     } as const;
   } catch (e) {
     console.error("[App] Could not read response body:", e);

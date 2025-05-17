@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { signUp } from "@/server-functions/auth";
 import { AuthError } from "@/types/auth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/(auth)/sign-up/")({
   component: SignUp,
@@ -64,7 +65,9 @@ function SignUp() {
         form.setError("password", { message: error });
         break;
       default:
-        form.setError("email", { message: error });
+        toast.error("Could not sign out", {
+          description: error,
+        });
         break;
     }
   };

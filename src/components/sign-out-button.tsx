@@ -2,15 +2,20 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/server-functions/auth";
 import { useRouter } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 const SignOutButton = () => {
   const router = useRouter();
 
   const handleSignOut = async () => {
-    const isSuccess = await signOut();
+    const result = await signOut();
 
-    if (isSuccess) {
+    if (result.success) {
       router.navigate({ to: "/sign-in" });
+    } else if (result.body) {
+      toast.error("Could not sign out", {
+        description: result.body.message,
+      });
     }
   };
 
