@@ -31,7 +31,7 @@
             "name": "sound-connect-api",
             "vars": {
                 "CLIENT_URL": "http://localhost:3000",
-                "SERVER_URL": "http://localhost:8787"
+                "API_URL": "http://localhost:8787"
             },
             "d1_databases": [
                 {
