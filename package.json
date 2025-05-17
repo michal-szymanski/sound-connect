@@ -4,6 +4,9 @@
   "scripts": {
     "dev": "pnpm run -r --parallel --aggregate-output dev",
     "types": "pnpm run -r --parallel --aggregate-output types",
+    "tail": "pnpm run -r --parallel --aggregate-output tail",
+    "tail:web": "pnpm --filter @sound-connect/web tail",
+    "tail:api": "pnpm --filter @sound-connect/api tail",
     "prettier:format": "prettier ./apps --write",
     "prettier:check": "prettier ./apps --check"
   },
