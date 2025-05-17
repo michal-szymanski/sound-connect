@@ -4,9 +4,9 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import * as schema from '@/api/db/schema';
 import { DrizzleDB } from 'types';
 
-export const auth = (db: DrizzleDB, { SERVER_URL, CLIENT_URL }: CloudflareBindings) =>
+export const auth = (db: DrizzleDB, { API_URL, CLIENT_URL }: CloudflareBindings) =>
     betterAuth({
-        baseURL: SERVER_URL,
+        baseURL: API_URL,
         database: drizzleAdapter(db, {
             provider: 'sqlite',
             schema,
