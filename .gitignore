@@ -1,7 +1,13 @@
-.vinxi
-.output
+# Web
+apps/web/dist
+apps/web/app.config.timestamp*
+apps/web/.vinxi
+apps/web/.output
+apps/web/dist
+
+# Api
+
+# Common
 node_modules
-*.env
-app.config.timestamp*
-dist
 .wrangler
+*.env
