@@ -6,17 +6,25 @@ import { getSession } from '@/web/server-functions/auth';
 export const useReactions = ({ postId }: { postId: number }) =>
     useQuery({
         queryKey: ['reactions', postId],
-        queryFn: async () => await getReactions({ data: { postId } })
+        queryFn: async () => {
+          const result = await getReactions({ data: { postId } })
+
+          if (result.success) {
+            return result.body;
+          }
+
+          return [];
+        }
     });
 
 export const feedQueryOptions = () =>
     queryOptions({
         queryKey: ['feed'],
         queryFn: async () => {
-            const response = await getFeed();
+            const result = await getFeed();
 
-            if (response.success) {
-                return response.body;
+            if (result.success) {
+                return result.body;
             }
 
             return [];
@@ -31,10 +39,10 @@ export const userQueryOptions = (user: User | null) =>
                 return user;
             }
 
-            const response = await getSession();
+            const result = await getSession();
 
-            if (response.success) {
-                return response.body;
+            if (result.success) {
+                return result.body;
             }
 
             return null;
