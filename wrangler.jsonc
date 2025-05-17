@@ -1,16 +1,23 @@
 {
-    "main": ".open-next/worker.js",
-    "name": "sound-connect",
-    "compatibility_date": "2024-09-23",
-    "compatibility_flags": ["nodejs_compat"],
-    "assets": {
-        "directory": ".open-next/assets",
-        "binding": "ASSETS"
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sound-connect",
+  "main": ".output/server/index.mjs",
+  "compatibility_date": "2025-04-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".output/public",
+  },
+  "observability": {
+    "enabled": true,
+  },
+  "vars": {
+    "API_URL": "https://sound-connect-server.michal-szymanski92.workers.dev",
+    "CLIENT_URL": "https://sound-connect.michal-szymanski92.workers.dev",
+  },
+  "services": [
+    {
+      "binding": "API",
+      "service": "sound-connect-server",
     },
-    "kv_namespaces": [
-        {
-            "binding": "NEXT_CACHE_WORKERS_KV",
-            "id": "95e737e0957c465f97452648b037cadc"
-        }
-    ]
+  ],
 }

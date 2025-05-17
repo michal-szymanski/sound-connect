@@ -1,44 +1,41 @@
-import SignOutButton from '@/components/singn-out-button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/ui/skeleton';
-import { userDTOSchema } from '@/types';
-import { currentUser } from '@clerk/nextjs/server';
+import SignOutButton from "@/components/sign-out-button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Skeleton } from "@/components/ui/skeleton";
+import { userQueryOptions } from "@/lib/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
-const AccountButton = async () => {
-    const user = await currentUser();
+const AccountButton = () => {
+  const { data: user } = useSuspenseQuery(userQueryOptions());
 
-    if (!user) return null;
+  if (!user) return null;
 
-    const userDTO = userDTOSchema.parse({
-        id: user.id,
-        imageUrl: user.imageUrl,
-        firstName: user.firstName,
-        lastName: user.lastName
-    });
-
-    return (
-        <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    className="h-full max-h-fit w-full cursor-pointer justify-start select-none focus-visible:ring-0 focus-visible:outline-hidden"
-                >
-                    <Avatar className="size-10">
-                        <AvatarImage src={userDTO.imageUrl} />
-                        <AvatarFallback>
-                            <Skeleton />
-                        </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden xl:inline">{`${user.firstName} ${user.lastName}`}</span>
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="z-51" align="start">
-                <SignOutButton />
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="h-full max-h-fit w-full cursor-pointer justify-start select-none focus-visible:ring-0 focus-visible:outline-hidden"
+        >
+          <Avatar className="size-10">
+            <AvatarImage src={user.image ?? ""} />
+            <AvatarFallback>
+              <Skeleton />
+            </AvatarFallback>
+          </Avatar>
+          <span className="hidden xl:inline">{user.name}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="z-51" align="start">
+        <SignOutButton />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 };
 
 export default AccountButton;
