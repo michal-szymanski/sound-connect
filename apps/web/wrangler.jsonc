@@ -1,6 +1,6 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
-    "name": "sound-connect",
+    "name": "sound-connect-web",
     "main": ".output/server/index.mjs",
     "compatibility_date": "2025-04-10",
     "compatibility_flags": ["nodejs_compat"],
@@ -17,7 +17,7 @@
     "services": [
         {
             "binding": "API",
-            "service": "sound-connect-server"
+            "service": "sound-connect-api"
         }
     ]
 }
