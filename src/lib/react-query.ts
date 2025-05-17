@@ -12,17 +12,36 @@ export const useReactions = ({ postId }: { postId: number }) =>
 export const feedQueryOptions = () =>
   queryOptions({
     queryKey: ["feed"],
-    queryFn: async () => await getFeed(),
+    queryFn: async () => {
+      const response = await getFeed();
+
+      if (response.success) {
+        return response.body;
+      }
+
+      return [];
+    },
   });
 
-export const userQueryOptions = (currentSession?: {
-  session: Session;
-  user: User;
-}) =>
+export const userQueryOptions = (
+  currentSession: {
+    session: Session;
+    user: User;
+  } | null
+) =>
   queryOptions({
     queryKey: ["user"],
     queryFn: async () => {
-      const data = currentSession ?? (await getSession());
-      return data?.user;
+      if (currentSession) {
+        return currentSession.user;
+      }
+
+      const response = await getSession();
+
+      if (response.success) {
+        return response.body.user;
+      }
+
+      return null;
     },
   });

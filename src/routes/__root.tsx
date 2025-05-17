@@ -36,9 +36,13 @@ export const Route = createRootRouteWithContext<{
   }),
   component: RootComponent,
   beforeLoad: async () => {
-    const session = await getSession();
+    const result = await getSession();
 
-    return { session };
+    if (result.success) {
+      return { session: result.body };
+    }
+
+    return { session: null };
   },
 });
 

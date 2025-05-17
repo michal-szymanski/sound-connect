@@ -23,8 +23,11 @@ export const Route = createFileRoute("/(auth)/sign-up/")({
   component: SignIn,
   beforeLoad: ({ context: { session } }) => {
     if (session) {
+      const path = "/";
+      console.info(`[App] Redirecting to: ${path}`);
+
       throw redirect({
-        to: "/",
+        to: path,
       });
     }
   },
@@ -48,11 +51,31 @@ function SignIn() {
 
   const router = useRouter();
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const data = await signUp({ data: values });
+  const handleServerError = (body: { code: string; message: string }) => {
+    const { code, message } = body;
+    switch (code) {
+      case "USER_ALREADY_EXISTS":
+      case "INVALID_EMAIL":
+      case "FAILED_TO_CREATE_USER":
+        form.setError("email", { message });
+        break;
+      case "PASSWORD_TOO_SHORT":
+      case "PASSWORD_TOO_LONG":
+        form.setError("password", { message });
+        break;
+      default:
+        form.setError("email", { message });
+        break;
+    }
+  };
 
-    if (data !== null) {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const result = await signUp({ data: values });
+
+    if (result.success) {
       router.navigate({ to: "/" });
+    } else if (result.body) {
+      handleServerError(result.body);
     }
   };
 

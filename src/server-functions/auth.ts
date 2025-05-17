@@ -1,7 +1,7 @@
 import { getBindings } from "@/lib/cloudflare-bindings";
 import {
   deleteSessionCookie,
-  handleError,
+  errorHandler,
   setSessionCookie,
 } from "@/server-functions/helpers";
 import { sessionSchema, userSchema } from "@/types";
@@ -18,22 +18,23 @@ export const getSession = createServerFn().handler(async () => {
   });
 
   if (!response.ok) {
-    await handleError(response);
-    return null;
+    return await errorHandler(response);
   }
 
   try {
     const text = await response.text();
 
-    if (!text) return null;
+    if (!text) {
+      return { success: false, body: null } as const;
+    }
 
     const json = JSON.parse(text);
     const schema = z.object({ session: sessionSchema, user: userSchema });
 
-    return schema.parse(json);
+    return { success: true, body: schema.parse(json) } as const;
   } catch (error) {
     console.error(error);
-    return null;
+    return { success: false, body: null } as const;
   }
 });
 
@@ -56,13 +57,14 @@ export const signIn = createServerFn({ method: "POST" })
     });
 
     if (!response.ok) {
-      await handleError(response);
-      return null;
+      return await errorHandler(response);
     }
 
     const isCookieSet = setSessionCookie(response);
 
-    if (!isCookieSet) return null;
+    if (!isCookieSet) {
+      return { success: false, body: null } as const;
+    }
 
     try {
       const json = await response.json();
@@ -73,10 +75,10 @@ export const signIn = createServerFn({ method: "POST" })
         token: z.string(),
       });
 
-      return schema.parse(json);
+      return { success: true, body: schema.parse(json) } as const;
     } catch (error) {
       console.error(error);
-      return null;
+      return { success: false, body: null } as const;
     }
   });
 
@@ -86,7 +88,9 @@ export const signOut = createServerFn({
   const { API, API_URL } = await getBindings();
   const cookie = getHeader("Cookie");
 
-  if (!cookie) return null;
+  if (!cookie) {
+    return { success: false, body: null } as const;
+  }
 
   const response = await API.fetch(`${API_URL}/api/auth/sign-out`, {
     method: "POST",
@@ -97,8 +101,7 @@ export const signOut = createServerFn({
   });
 
   if (!response.ok) {
-    await handleError(response);
-    return null;
+    return await errorHandler(response);
   }
 
   try {
@@ -110,10 +113,10 @@ export const signOut = createServerFn({
       deleteSessionCookie();
     }
 
-    return result;
+    return { success: true, body: schema.parse(json) } as const;
   } catch (error) {
     console.error(error);
-    return null;
+    return { success: false, body: null } as const;
   }
 });
 
@@ -136,13 +139,14 @@ export const signUp = createServerFn({
     });
 
     if (!response.ok) {
-      await handleError(response);
-      return null;
+      return await errorHandler(response);
     }
 
     const isCookieSet = setSessionCookie(response);
 
-    if (!isCookieSet) return null;
+    if (!isCookieSet) {
+      return { success: false, body: null } as const;
+    }
 
     try {
       const json = await response.json();
@@ -151,9 +155,9 @@ export const signUp = createServerFn({
         user: userSchema,
       });
 
-      return schema.parse(json);
+      return { success: true, body: schema.parse(json) } as const;
     } catch (error) {
       console.error(error);
-      return null;
+      return { success: false, body: null } as const;
     }
   });

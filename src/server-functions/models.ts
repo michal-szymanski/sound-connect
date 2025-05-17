@@ -1,5 +1,5 @@
 import { getBindings } from "@/lib/cloudflare-bindings";
-import { handleError } from "@/server-functions/helpers";
+import { errorHandler } from "@/server-functions/helpers";
 import {
   followerSchema,
   followingSchema,
@@ -19,18 +19,17 @@ export const getFeed = createServerFn().handler(async () => {
   });
 
   if (!response.ok) {
-    await handleError(response);
-    return null;
+    return await errorHandler(response);
   }
 
   try {
     const json = await response.json();
     const schema = z.array(postSchema);
 
-    return schema.parse(json);
+    return { success: true, body: schema.parse(json) } as const;
   } catch (error) {
     console.error(error);
-    return null;
+    return { success: false, body: null } as const;
   }
 });
 
@@ -45,18 +44,17 @@ export const getPosts = createServerFn()
     });
 
     if (!response.ok) {
-      await handleError(response);
-      return null;
+      return await errorHandler(response);
     }
 
     try {
       const json = await response.json();
       const schema = z.array(postSchema);
 
-      return schema.parse(json);
+      return { success: true, body: schema.parse(json) } as const;
     } catch (error) {
       console.error(error);
-      return null;
+      return { success: false, body: null } as const;
     }
   });
 
@@ -74,18 +72,17 @@ export const getReactions = createServerFn()
     );
 
     if (!response.ok) {
-      await handleError(response);
-      return null;
+      return await errorHandler(response);
     }
 
     try {
       const json = await response.json();
       const schema = z.array(postReactionSchema);
 
-      return schema.parse(json);
+      return { success: true, body: schema.parse(json) } as const;
     } catch (error) {
       console.error(error);
-      return null;
+      return { success: false, body: null } as const;
     }
   });
 
@@ -100,18 +97,17 @@ export const getFollowers = createServerFn()
     });
 
     if (!response.ok) {
-      await handleError(response);
-      return null;
+      return await errorHandler(response);
     }
 
     try {
       const json = await response.json();
       const schema = z.array(followerSchema);
 
-      return schema.parse(json);
+      return { success: true, body: schema.parse(json) } as const;
     } catch (error) {
       console.error(error);
-      return null;
+      return { success: false, body: null } as const;
     }
   });
 
@@ -126,17 +122,16 @@ export const getFollowings = createServerFn()
     });
 
     if (!response.ok) {
-      await handleError(response);
-      return null;
+      return await errorHandler(response);
     }
 
     try {
       const json = await response.json();
       const schema = z.array(followingSchema);
 
-      return schema.parse(json);
+      return { success: true, body: schema.parse(json) } as const;
     } catch (error) {
       console.error(error);
-      return null;
+      return { success: false, body: null } as const;
     }
   });

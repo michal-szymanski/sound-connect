@@ -23,8 +23,11 @@ export const Route = createFileRoute("/(auth)/sign-in/")({
   component: SignIn,
   beforeLoad: ({ context: { session } }) => {
     if (session) {
+      const path = "/";
+      console.info(`[App] Redirecting to: ${path}`);
+
       throw redirect({
-        to: "/",
+        to: path,
       });
     }
   },
@@ -46,11 +49,35 @@ function SignIn() {
 
   const router = useRouter();
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const data = await signIn({ data: { ...values, rememberMe: true } });
+  const handleServerError = (body: { code: string; message: string }) => {
+    const { code, message } = body;
+    switch (code) {
+      case "INVALID_EMAIL_OR_PASSWORD":
+        form.setError("email", { message });
+        form.setError("password", { message });
+        break;
+      case "INVALID_EMAIL":
+      case "USER_EMAIL_NOT_FOUND":
+      case "EMAIL_NOT_VERIFIED":
+        form.setError("email", { message });
+        break;
+      case "PROVIDER_NOT_FOUND":
+      case "ID_TOKEN_NOT_SUPPORTED":
+      case "FAILED_TO_GET_USER_INFO":
+        break;
+      default:
+        form.setError("email", { message });
+        break;
+    }
+  };
 
-    if (data !== null) {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const result = await signIn({ data: { ...values, rememberMe: true } });
+
+    if (result.success) {
       router.navigate({ to: "/" });
+    } else if (result.body) {
+      handleServerError(result.body);
     }
   };
 

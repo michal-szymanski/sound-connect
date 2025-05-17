@@ -21,19 +21,22 @@ export const Route = createFileRoute("/(main)/")({
   component: Home,
   beforeLoad: async ({ context: { session } }) => {
     if (!session) {
+      const path = "/sign-in";
+      console.info(`[App] Redirecting to: ${path}`);
+
       throw redirect({
-        to: "/sign-in",
+        to: path,
       });
     }
 
     return { session };
   },
   loader: async ({ context }) => {
-    const feed = await context.queryClient.ensureQueryData(feedQueryOptions());
     const user = await context.queryClient.ensureQueryData(
       userQueryOptions(context.session)
     );
+    const feed = await context.queryClient.ensureQueryData(feedQueryOptions());
 
-    return { feed, user };
+    return { user, feed };
   },
 });

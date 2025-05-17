@@ -1,19 +1,31 @@
 import { setHeader } from "@tanstack/react-start/server";
+import { z } from "zod";
 
 const SESSION_COOKIE_NAME = "sound-connect.session_token";
 const SECURE_SESSION_COOKIE_NAME = `__Secure-${SESSION_COOKIE_NAME}`;
 
-export const handleError = async (response: Response) => {
+export const errorHandler = async (response: Response) => {
   console.error(
-    `Failed to fetch ${response.url} (${response.status} ${response.statusText})`
+    `[App] Failed to fetch ${response.url} (${response.status} ${response.statusText})`
   );
+
   try {
     const errorBody = await response.text();
+
     if (errorBody.length) {
-      console.error("Response body:", errorBody);
+      console.error("[App] Response body:", errorBody);
     }
+
+    const json = JSON.parse(errorBody);
+    const schema = z.object({
+      code: z.string(),
+      message: z.string(),
+    });
+
+    return { success: false, body: schema.parse(json) } as const;
   } catch (e) {
-    console.error("Could not read response body:", e);
+    console.error("[App] Could not read response body:", e);
+    return { success: false, body: null } as const;
   }
 };
 
@@ -28,7 +40,7 @@ export const setSessionCookie = (response: Response) => {
 
   if (!sessionCookie) {
     console.error(
-      `Could not create session cookie. Cookies from /api/auth: \n${response.headers.getSetCookie()}`
+      `[App] Could not create session cookie. Cookies from /api/auth: \n${response.headers.getSetCookie()}`
     );
     return false;
   }
