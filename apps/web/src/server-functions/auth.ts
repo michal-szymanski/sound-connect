@@ -1,11 +1,17 @@
 import { getBindings } from '@/web/lib/cloudflare-bindings';
-import { deleteSessionCookie, errorHandler, setSessionCookie } from '@/web/server-functions/helpers';
+import { deleteSessionCookies, errorHandler, getSessionFromCookie, setSessionCookies } from '@/web/server-functions/helpers';
 import { sessionSchema, userSchema } from '@/web/types/auth';
 import { createServerFn } from '@tanstack/react-start';
 import { getWebRequest, getHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 
 export const getSession = createServerFn().handler(async () => {
+    const sessionDataCookie = getSessionFromCookie();
+
+    if (sessionDataCookie) {
+        return { success: true, body: sessionDataCookie.user } as const;
+    }
+
     const { headers } = getWebRequest()!;
     const { API, API_URL } = await getBindings();
 
@@ -18,14 +24,12 @@ export const getSession = createServerFn().handler(async () => {
     }
 
     try {
-        const text = await response.text();
+        const json = await response.json();
+        const schema = z.object({ session: sessionSchema, user: userSchema });
 
-        if (!text) {
+        if (!json) {
             return { success: false, body: null } as const;
         }
-
-        const json = JSON.parse(text);
-        const schema = z.object({ session: sessionSchema, user: userSchema });
 
         return { success: true, body: schema.parse(json).user } as const;
     } catch (error) {
@@ -54,9 +58,9 @@ export const signIn = createServerFn({ method: 'POST' })
             return await errorHandler(response);
         }
 
-        const isCookieSet = setSessionCookie(response);
+        const isSessionCreated = setSessionCookies(response);
 
-        if (!isCookieSet) {
+        if (!isSessionCreated) {
             return { success: false, body: null } as const;
         }
 
@@ -104,7 +108,7 @@ export const signOut = createServerFn({
         const result = schema.parse(json);
 
         if (result.success) {
-            deleteSessionCookie();
+            deleteSessionCookies();
         }
 
         return { success: true, body: schema.parse(json) } as const;
@@ -136,9 +140,9 @@ export const signUp = createServerFn({
             return await errorHandler(response);
         }
 
-        const isCookieSet = setSessionCookie(response);
+        const isSessionCreated = setSessionCookies(response);
 
-        if (!isCookieSet) {
+        if (!isSessionCreated) {
             return { success: false, body: null } as const;
         }
 

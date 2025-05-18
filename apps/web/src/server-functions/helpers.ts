@@ -1,8 +1,12 @@
-import { authErrorSchema } from '@/web/types/auth';
-import { setHeader } from '@tanstack/react-start/server';
+import { authErrorSchema, sessionSchema, userSchema } from '@/web/types/auth';
+import { getCookie, setHeader } from '@tanstack/react-start/server';
+import { z } from 'zod';
 
-const SESSION_COOKIE_NAME = 'sound-connect.session_token';
-const SECURE_SESSION_COOKIE_NAME = `__Secure-${SESSION_COOKIE_NAME}`;
+const SECURE_PREFIX = '__Secure-';
+const SESSION_TOKEN_COOKIE_NAME = 'sound-connect.session_token';
+const SECURE_SESSION_TOKEN_COOKIE_NAME = `${SECURE_PREFIX}${SESSION_TOKEN_COOKIE_NAME}`;
+const SESSION_DATA_COOKIE_NAME = 'sound-connect.session_data';
+const SECURE_SESSION_DATA_COOKIE_NAME = `${SECURE_PREFIX}${SESSION_DATA_COOKIE_NAME}`;
 
 export const errorHandler = async (response: Response) => {
     console.error(`[App] Failed to fetch ${response.url} (${response.status} ${response.statusText})`);
@@ -26,23 +30,45 @@ export const errorHandler = async (response: Response) => {
     }
 };
 
-export const setSessionCookie = (response: Response) => {
-    const sessionCookie = response.headers
+export const setSessionCookies = (response: Response) => {
+    const sessionTokenCookie = response.headers
         .getSetCookie()
-        .find((cookie) => cookie.startsWith(SESSION_COOKIE_NAME) || cookie.startsWith(SECURE_SESSION_COOKIE_NAME));
+        .find((cookie) => cookie.startsWith(SESSION_TOKEN_COOKIE_NAME) || cookie.startsWith(SECURE_SESSION_TOKEN_COOKIE_NAME));
 
-    if (!sessionCookie) {
+    if (!sessionTokenCookie) {
         console.error(`[App] Could not create session cookie. Cookies from /api/auth: \n${response.headers.getSetCookie()}`);
         return false;
     }
 
-    setHeader('Set-Cookie', sessionCookie);
+    const sessionDataCookie = response.headers
+        .getSetCookie()
+        .find((cookie) => cookie.startsWith(SESSION_DATA_COOKIE_NAME) || cookie.startsWith(SECURE_SESSION_DATA_COOKIE_NAME));
+
+    setHeader('Set-Cookie', [sessionTokenCookie, sessionDataCookie]);
     return true;
 };
 
-export const deleteSessionCookie = () => {
+export const deleteSessionCookies = () => {
     setHeader('Set-Cookie', [
-        `${SESSION_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
-        `${SECURE_SESSION_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`
+        `${SESSION_TOKEN_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
+        `${SECURE_SESSION_TOKEN_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
+        `${SESSION_DATA_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
+        `${SECURE_SESSION_DATA_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`
     ]);
+};
+
+export const getSessionFromCookie = () => {
+    try {
+        const cookieValue = getCookie(SECURE_SESSION_DATA_COOKIE_NAME) ?? getCookie(SESSION_DATA_COOKIE_NAME);
+
+        if (!cookieValue) return null;
+
+        const decodedValue = Buffer.from(cookieValue, 'base64').toString('utf-8');
+        const json = JSON.parse(decodedValue);
+        const schema = z.object({ session: z.object({ session: sessionSchema, user: userSchema }), expiresAt: z.number(), signature: z.string() });
+        const { session } = schema.parse(json);
+        return session;
+    } catch (error) {
+        return null;
+    }
 };

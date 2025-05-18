@@ -6,7 +6,7 @@ export type HonoContext = {
     Bindings: CloudflareBindings;
     Variables: {
         user: typeof auth.$Infer.Session.user | null;
-		session: typeof auth.$Infer.Session.session | null
+        session: typeof auth.$Infer.Session.session | null;
     };
 };
 

@@ -9,18 +9,6 @@ import { auth } from 'auth';
 const app = new Hono<HonoContext>();
 
 app.use(
-    '/health',
-    cors({
-        origin: (_, c) => c.env.CLIENT_URL,
-        allowHeaders: ['Content-Type', 'Authorization'],
-        allowMethods: ['POST', 'GET', 'OPTIONS'],
-        exposeHeaders: ['Content-Length'],
-        maxAge: 600,
-        credentials: true
-    })
-);
-
-app.use(
     '/api/auth/*',
     cors({
         origin: (_, c) => c.env.CLIENT_URL,
