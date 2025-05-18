@@ -2,18 +2,11 @@ import { DrizzleD1Database } from 'drizzle-orm/d1';
 import * as schema from '@/api/db/schema';
 import { auth } from 'auth';
 
-declare module 'hono' {
-    interface ContextVariableMap {
-        db: DrizzleDB;
-        auth: ReturnType<typeof auth>;
-    }
-}
-
 export type HonoContext = {
     Bindings: CloudflareBindings;
     Variables: {
-        user: any | null;
-        session: any | null;
+        user: typeof auth.$Infer.Session.user | null;
+		session: typeof auth.$Infer.Session.session | null
     };
 };
 

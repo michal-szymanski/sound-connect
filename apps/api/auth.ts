@@ -2,17 +2,18 @@ import { betterAuth } from 'better-auth';
 import { openAPI } from 'better-auth/plugins';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import * as schema from '@/api/db/schema';
-import { DrizzleDB } from 'types';
+import { env } from "cloudflare:workers";
+import { db } from '@/api/db';
 
-export const auth = (db: DrizzleDB, { API_URL, CLIENT_URL }: CloudflareBindings) =>
+export const auth =
     betterAuth({
-        baseURL: API_URL,
+        baseURL: env.API_URL,
         database: drizzleAdapter(db, {
             provider: 'sqlite',
             schema,
             usePlural: true
         }),
-        trustedOrigins: [CLIENT_URL],
+        trustedOrigins: [env.CLIENT_URL],
         emailAndPassword: {
             enabled: true
         },
@@ -25,10 +26,4 @@ export const auth = (db: DrizzleDB, { API_URL, CLIENT_URL }: CloudflareBindings)
             cookiePrefix: 'sound-connect'
         },
         plugins: [openAPI()]
-        // socialProviders: {
-        //     spotify: {
-        //         clientId: SPOTIFY_CLIENT_ID,
-        //         clientSecret: SPOTIFY_CLIENT_SECRET
-        //     }
-        // }
     });
