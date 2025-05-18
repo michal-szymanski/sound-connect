@@ -7,13 +7,13 @@ export const useReactions = ({ postId }: { postId: number }) =>
     useQuery({
         queryKey: ['reactions', postId],
         queryFn: async () => {
-          const result = await getReactions({ data: { postId } })
+            const result = await getReactions({ data: { postId } });
 
-          if (result.success) {
-            return result.body;
-          }
+            if (result.success) {
+                return result.body;
+            }
 
-          return [];
+            return [];
         }
     });
 
