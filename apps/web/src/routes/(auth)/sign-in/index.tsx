@@ -63,12 +63,19 @@ function SignIn() {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const result = await signIn({ data: { ...values, rememberMe: true } });
+        try {
+            const result = await signIn({ data: { ...values, rememberMe: true } });
 
-        if (result.success) {
-            router.navigate({ to: '/' });
-        } else if (result.body) {
-            handleServerError(result.body);
+            if (result.success) {
+                router.navigate({ to: '/' });
+            } else if (result.body) {
+                handleServerError(result.body);
+            }
+        } catch (error) {
+            toast.error('Could not sign in', {
+                description: 'Unknown error occurred'
+            });
+            console.error('[App] Sign in error:', error);
         }
     };
 

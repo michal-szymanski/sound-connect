@@ -61,12 +61,19 @@ function SignUp() {
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        const result = await signUp({ data: values });
+        try {
+            const result = await signUp({ data: values });
 
-        if (result.success) {
-            router.navigate({ to: '/' });
-        } else if (result.body) {
-            handleServerError(result.body);
+            if (result.success) {
+                router.navigate({ to: '/' });
+            } else if (result.body) {
+                handleServerError(result.body);
+            }
+        } catch (error) {
+            toast.error('Could not sign up', {
+                description: 'Unknown error occurred'
+            });
+            console.error('[App] Sign up error:', error);
         }
     };
 
