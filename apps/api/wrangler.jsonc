@@ -11,38 +11,18 @@
     "observability": {
         "enabled": true
     },
-    "env": {
-        "production": {
-            "name": "sound-connect-api",
-            "vars": {
-                "API_URL": "https://sound-connect-api.michal-szymanski92.workers.dev",
-                "CLIENT_URL": "https://sound-connect-web.michal-szymanski92.workers.dev"
-            },
-            "d1_databases": [
-                {
-                    "binding": "DB",
-                    "database_name": "sound-connect-db",
-                    "database_id": "ce66ac7f-5b4a-47e8-9db6-7143d996b13c",
-                    "migrations_dir": "src/db/migrations"
-                }
-            ]
-        },
-        "develop": {
-            "name": "sound-connect-api",
-            "vars": {
-                "CLIENT_URL": "http://localhost:3000",
-                "API_URL": "http://localhost:8787"
-            },
-            "d1_databases": [
-                {
-                    "binding": "DB",
-                    "database_name": "sound-connect-db",
-                    "database_id": "ce66ac7f-5b4a-47e8-9db6-7143d996b13c",
-                    "migrations_dir": "src/db/migrations"
-                }
-            ]
+    "vars": {
+        "API_URL": "https://sound-connect-api.michal-szymanski92.workers.dev",
+        "CLIENT_URL": "https://sound-connect-web.michal-szymanski92.workers.dev"
+    },
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "sound-connect-db",
+            "database_id": "ce66ac7f-5b4a-47e8-9db6-7143d996b13c",
+            "migrations_dir": "src/db/migrations"
         }
-    }
+    ]
     /**
      * Smart Placement
      * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
