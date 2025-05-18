@@ -45,21 +45,21 @@ app.notFound((c) => {
 });
 
 app.get('/followers/:userId', async (c) => {
-    const { userId } = z.object({ userId: z.string() }).parse(c.req.param);
+    const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
     const followersResults = await getFollowers(userId);
 
     return c.json(followersResults);
 });
 
 app.get('/followings/:userId', async (c) => {
-    const { userId } = z.object({ userId: z.string() }).parse(c.req.param);
+    const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
     const followingsResults = await getFollowings(userId);
 
     return c.json(followingsResults);
 });
 
 app.get('/posts/:userId', async (c) => {
-    const { userId } = z.object({ userId: z.string() }).parse(c.req.param);
+    const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
     const postsResults = await getPostsByUserId(userId);
 
     return c.json(postsResults);
@@ -72,7 +72,7 @@ app.get('/feed', async (c) => {
 });
 
 app.get('/posts/:postId/reactions', async (c) => {
-    const { postId } = z.object({ postId: z.coerce.number().positive() }).parse(c.req.param);
+    const { postId } = z.object({ postId: z.coerce.number().positive() }).parse(c.req.param());
     const reactionsResults = await getReactions(postId);
 
     return c.json(reactionsResults);
