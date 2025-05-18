@@ -6,10 +6,10 @@ import { getWebRequest, getHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 
 export const getSession = createServerFn().handler(async () => {
-    const sessionDataCookie = getSessionFromCookie();
+    const session = getSessionFromCookie();
 
-    if (sessionDataCookie) {
-        return { success: true, body: sessionDataCookie.user } as const;
+    if (session) {
+        return { success: true, body: session.user } as const;
     }
 
     const { headers } = getWebRequest()!;
