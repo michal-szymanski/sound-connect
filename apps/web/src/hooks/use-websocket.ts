@@ -4,6 +4,8 @@ const useWebsocket = (url: string) => {
     const [websocket, setWebsocket] = useState<WebSocket>();
 
     useEffect(() => {
+        if (!url) return;
+
         const ws = new WebSocket(`${url}/ws`);
 
         ws.onopen = (e) => {
@@ -28,7 +30,7 @@ const useWebsocket = (url: string) => {
         return () => {
             ws.close();
         };
-    }, []);
+    }, [url]);
 
     return [websocket];
 };
