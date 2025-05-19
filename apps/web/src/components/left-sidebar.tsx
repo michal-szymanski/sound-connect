@@ -12,6 +12,8 @@ import {
 import { Bell, Cog, House, LucideIcon, Mail, UserRound } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import AccountButton from '@/web/components/account-button';
+import { useQuery } from '@tanstack/react-query';
+import { userQueryOptions } from '@/web/lib/react-query';
 
 type Item = {
     title: string;
@@ -37,7 +39,7 @@ const items: Item[] = [
     },
     {
         title: 'Profile',
-        url: '/profile',
+        url: '',
         icon: UserRound
     },
     {
@@ -48,6 +50,13 @@ const items: Item[] = [
 ];
 
 const LeftSidebar = () => {
+    const { data: user } = useQuery(userQueryOptions(null));
+    let links = items;
+
+    if (user) {
+        links = items.map((item) => (item.title === 'Profile' ? { ...item, url: `/users/${user.id}` } : item));
+    }
+
     return (
         <Sidebar
             collapsible="none"
@@ -57,12 +66,12 @@ const LeftSidebar = () => {
                 <SidebarGroup className="w-min lg:w-full">
                     <SidebarGroupContent className="w-min lg:w-full">
                         <SidebarMenu className="w-min flex-row lg:w-full lg:flex-col">
-                            {items.map((item) => (
-                                <SidebarMenuItem key={item.title}>
+                            {links.map((link) => (
+                                <SidebarMenuItem key={link.title}>
                                     <SidebarMenuButton asChild>
-                                        <Link to={item.url} preload={false} className="flex justify-center xl:justify-start [&>svg]:size-6">
-                                            <item.icon />
-                                            <span className="hidden xl:inline">{item.title}</span>
+                                        <Link to={link.url} preload={false} className="flex justify-center xl:justify-start [&>svg]:size-6">
+                                            <link.icon />
+                                            <span className="hidden xl:inline">{link.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>

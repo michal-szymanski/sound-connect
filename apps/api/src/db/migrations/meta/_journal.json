@@ -15,6 +15,13 @@
       "when": 1741907071110,
       "tag": "0001_happy_nekra",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1747661190237,
+      "tag": "0002_bent_shotgun",
+      "breakpoints": true
     }
   ]
 }

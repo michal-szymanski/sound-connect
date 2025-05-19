@@ -1,38 +1,47 @@
-import { useEffect, useState } from 'react';
+import { getEnvs } from '@/web/server-functions/utils';
+import { useEffect, useRef, useState } from 'react';
 
-const useWebsocket = (url: string) => {
-    const [websocket, setWebsocket] = useState<WebSocket>();
+const useWebSocket = () => {
+    const wsRef = useRef<WebSocket | null>(null);
 
     useEffect(() => {
-        if (!url) return;
+        getEnvs().then((res) => {
+            if (!res.success) {
+                console.error('[App] Failed to fetch envs');
+                return;
+            }
 
-        const ws = new WebSocket(`${url}/ws`);
+            const { API_URL } = res.body;
 
-        ws.onopen = (e) => {
-            console.log('WebSocket connected.', e);
-            ws.send('message');
-        };
+            const ws = new WebSocket(`${API_URL}/ws`);
 
-        ws.onclose = (e) => {
-            console.log('WebSocket disconnected.', e);
-        };
+            ws.onopen = (e) => {
+                console.log('WebSocket connected.', e);
+                ws.send('message');
+            };
 
-        ws.onerror = (e) => {
-            console.error(e);
-        };
+            ws.onclose = (e) => {
+                console.log('WebSocket disconnected.', e);
+            };
 
-        ws.onmessage = (e) => {
-            console.log(e);
-        };
+            ws.onerror = (e) => {
+                console.error(e);
+            };
 
-        setWebsocket(ws);
+            ws.onmessage = (e) => {
+                console.log(e);
+            };
+            wsRef.current = ws;
+        });
 
         return () => {
-            ws.close();
-        };
-    }, [url]);
+            if (!wsRef.current) return;
 
-    return [websocket];
+            wsRef.current.close();
+        };
+    }, []);
+
+    return [wsRef.current];
 };
 
-export default useWebsocket;
+export default useWebSocket;
