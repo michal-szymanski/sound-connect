@@ -1,4 +1,4 @@
-import { getFollowers, getFollowings } from '@/api//db/queries/users-queries';
+import { getFollowers, getFollowings, getUserById } from '@/api//db/queries/users-queries';
 import { z } from 'zod';
 import { getFeed, getPostsByUserId, getReactions } from '@/api//db/queries/posts-queries';
 import { cors } from 'hono/cors';
@@ -106,6 +106,15 @@ app.on(['GET', 'POST'], '/ws', async (c) => {
         console.error({ error });
         return c.json({ error }, 400);
     }
+});
+
+app.get('/users/:userId', async (c) => {
+    const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
+    const [user] = await getUserById(userId);
+    if (!user) {
+        return c.json(`User with ID ${userId} not found`, 404);
+    }
+    return c.json(user);
 });
 
 export { WebSocketServer } from '@/api/websocket';

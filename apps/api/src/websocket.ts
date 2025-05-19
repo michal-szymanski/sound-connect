@@ -1,8 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 
 export class WebSocketServer extends DurableObject {
-    currentlyConnectedWebSockets: number;
-
     constructor(ctx: DurableObjectState, env: Cloudflare.Env) {
         // This is reset whenever the constructor runs because
         // regular WebSockets do not survive Durable Object resets.
@@ -10,11 +8,6 @@ export class WebSocketServer extends DurableObject {
         // WebSockets accepted via the Hibernation API can survive
         // a certain type of eviction, but we will not cover that here.
         super(ctx, env);
-        this.currentlyConnectedWebSockets = 0;
-    }
-
-    async test() {
-        return { message: 'test' };
     }
 
     async fetch(_request: Request): Promise<Response> {
@@ -26,17 +19,15 @@ export class WebSocketServer extends DurableObject {
         // request within the Durable Object. It has the effect of "accepting" the connection,
         // and allowing the WebSocket to send and receive messages.
         server.accept();
-        this.currentlyConnectedWebSockets += 1;
 
         // Upon receiving a message from the client, the server replies with the same message,
         // and the total number of connections with the "[Durable Object]: " prefix
         server.addEventListener('message', (_event: MessageEvent) => {
-            server.send(`[Durable Object] currentlyConnectedWebSockets: ${this.currentlyConnectedWebSockets}`);
+            server.send(`[Durable Object] currentlyConnectedWebSockets:`);
         });
 
         // If the client closes the connection, the runtime will close the connection too.
         server.addEventListener('close', (cls: CloseEvent) => {
-            this.currentlyConnectedWebSockets -= 1;
             server.close(cls.code, 'Durable Object is closing WebSocket');
         });
 

@@ -1,5 +1,6 @@
 import { getBindings } from '@/web/lib/cloudflare-bindings';
 import { errorHandler } from '@/web/server-functions/helpers';
+import { userSchema } from '@/web/types/auth';
 import { followerSchema, followingSchema, postReactionSchema, postSchema } from '@/web/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { getWebRequest } from '@tanstack/react-start/server';
@@ -120,6 +121,28 @@ export const getFollowings = createServerFn()
         try {
             const json = await response.json();
             const schema = z.array(followingSchema);
+
+            return { success: true, body: schema.parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: null } as const;
+        }
+    });
+
+export const getUser = createServerFn()
+    .validator((data: { userId: string }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL, CLIENT_URL } = await getBindings();
+
+        const response = await API.fetch(`${API_URL}/users/${data.userId}`);
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = userSchema.omit({ email: true, emailVerified: true, createdAt: true, updatedAt: true });
 
             return { success: true, body: schema.parse(json) } as const;
         } catch (error) {

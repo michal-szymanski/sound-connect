@@ -19,7 +19,7 @@ const AccountButton = () => {
                     className="focus-visible:outline-hidden h-full max-h-fit w-full cursor-pointer select-none justify-start focus-visible:ring-0"
                 >
                     <Avatar className="size-10">
-                        <AvatarImage src={user.image ?? ''} />
+                        <AvatarImage src={user.image ?? 'https://github.com/shadcn.png'} />
                         <AvatarFallback>
                             <Skeleton />
                         </AvatarFallback>
