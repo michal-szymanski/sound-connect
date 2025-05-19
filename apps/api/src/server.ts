@@ -44,6 +44,14 @@ app.notFound((c) => {
     return c.text('Not Found', 404);
 });
 
+app.get('/health', (c) => {
+    return c.body('OK', 200);
+});
+
+app.on(['POST', 'GET'], '/api/auth/*', (c) => {
+    return auth.handler(c.req.raw);
+});
+
 app.get('/followers/:userId', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
     const followersResults = await getFollowers(userId);
@@ -78,12 +86,28 @@ app.get('/posts/:postId/reactions', async (c) => {
     return c.json(reactionsResults);
 });
 
-app.on(['POST', 'GET'], '/api/auth/*', (c) => {
-    return auth.handler(c.req.raw);
+app.on(['GET', 'POST'], '/ws', async (c) => {
+    const upgradeHeader = c.req.header('Upgrade');
+
+    if (!upgradeHeader || upgradeHeader !== 'websocket') {
+        return c.json('Durable Object expected Upgrade: websocket', {
+            status: 426
+        });
+    }
+
+    try {
+        // This example will refer to the same Durable Object,
+        // since the name "foo" is hardcoded.
+        let id = c.env.WS.idFromName('foo');
+        let stub = c.env.WS.get(id);
+
+        return stub.fetch(c.req.raw);
+    } catch (error) {
+        console.error({ error });
+        return c.json({ error }, 400);
+    }
 });
 
-app.get('/health', (c) => {
-    return c.body('OK', 200);
-});
+export { WebSocketServer } from '@/api/websocket';
 
 export default app;

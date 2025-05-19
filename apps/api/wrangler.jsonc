@@ -22,6 +22,20 @@
             "database_id": "ce66ac7f-5b4a-47e8-9db6-7143d996b13c",
             "migrations_dir": "src/db/migrations"
         }
+    ],
+    "durable_objects": {
+        "bindings": [
+            {
+                "name": "WS",
+                "class_name": "WebSocketServer"
+            }
+        ]
+    },
+    "migrations": [
+        {
+            "tag": "v1",
+            "new_sqlite_classes": ["WebSocketServer"]
+        }
     ]
     /**
      * Smart Placement
