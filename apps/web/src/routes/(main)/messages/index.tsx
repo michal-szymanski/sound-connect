@@ -6,6 +6,7 @@ export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent,
     loader: async () => {
         const { API_URL } = await getBindings();
+        return { API_URL };
     }
 });
 
