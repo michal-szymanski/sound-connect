@@ -20,21 +20,21 @@ app.use(
     })
 );
 
-app.use('*', async (c, next) => {
-    const session = await auth.api.getSession({
-        headers: c.req.raw.headers
-    });
+// app.use('*', async (c, next) => {
+//     const session = await auth.api.getSession({
+//         headers: c.req.raw.headers
+//     });
 
-    if (!session) {
-        c.set('user', null);
-        c.set('session', null);
-        return next();
-    }
+//     if (!session) {
+//         c.set('user', null);
+//         c.set('session', null);
+//         return next();
+//     }
 
-    c.set('user', session.user);
-    c.set('session', session.session);
-    return next();
-});
+//     c.set('user', session.user);
+//     c.set('session', session.session);
+//     return next();
+// });
 
 app.onError(({ name, message, stack, cause }, c) => {
     return c.json({ name, message, stack, cause }, 400);
