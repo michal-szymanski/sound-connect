@@ -1,4 +1,3 @@
-// import AccountButton from "@/components/account-button";
 import {
     Sidebar,
     SidebarContent,
@@ -14,6 +13,7 @@ import { Link } from '@tanstack/react-router';
 import AccountButton from '@/web/components/account-button';
 import { useQuery } from '@tanstack/react-query';
 import { userQueryOptions } from '@/web/lib/react-query';
+import { User } from '@/web/types/auth';
 
 type Item = {
     title: string;
@@ -21,41 +21,40 @@ type Item = {
     icon: LucideIcon;
 };
 
-const items: Item[] = [
-    {
-        title: 'Home',
-        url: '/',
-        icon: House
-    },
-    {
-        title: 'Notifications',
-        url: '/notifications',
-        icon: Bell
-    },
-    {
-        title: 'Messages',
-        url: '/messages',
-        icon: Mail
-    },
-    {
-        title: 'Profile',
-        url: '',
-        icon: UserRound
-    },
-    {
-        title: 'Settings',
-        url: '/settings',
-        icon: Cog
-    }
-];
+const getLinks = (user: User): Item[] => {
+    return [
+        {
+            title: 'Home',
+            url: '/',
+            icon: House
+        },
+        {
+            title: 'Notifications',
+            url: '/notifications',
+            icon: Bell
+        },
+        {
+            title: 'Messages',
+            url: '/messages',
+            icon: Mail
+        },
+        {
+            title: 'Profile',
+            url: `/users/${user.id}`,
+            icon: UserRound
+        },
+        {
+            title: 'Settings',
+            url: '/settings',
+            icon: Cog
+        }
+    ];
+};
 
 const LeftSidebar = () => {
     const { data: user } = useQuery(userQueryOptions(null));
-    let links = items;
 
-    if (user) {
-        links = items.map((item) => (item.title === 'Profile' ? { ...item, url: `/users/${user.id}` } : item));
-    }
+    if (!user) return null;
 
     return (
         <Sidebar
@@ -66,7 +65,7 @@ const LeftSidebar = () => {
                 <SidebarGroup className="w-min lg:w-full">
                     <SidebarGroupContent className="w-min lg:w-full">
                         <SidebarMenu className="w-min flex-row lg:w-full lg:flex-col">
-                            {links.map((link) => (
+                            {getLinks(user).map((link) => (
                                 <SidebarMenuItem key={link.title}>
                                     <SidebarMenuButton asChild>
                                         <Link to={link.url} preload={false} className="flex justify-center xl:justify-start [&>svg]:size-6">
