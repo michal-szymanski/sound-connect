@@ -1,4 +1,3 @@
-import { Button } from '@/web/components/ui/button';
 import { createFileRoute, Link, redirect, useRouter } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,6 +7,7 @@ import { Input } from '@/web/components/ui/input';
 import { signIn } from '@/web/server-functions/auth';
 import { AuthError } from '@/web/types/auth';
 import { toast } from 'sonner';
+import SubmitButton from '@/web/components/submit-button';
 
 export const Route = createFileRoute('/(auth)/sign-in/')({
     component: SignIn,
@@ -79,6 +79,8 @@ function SignIn() {
         }
     };
 
+    const isSpinner = form.formState.isSubmitting || form.formState.isSubmitSuccessful;
+
     return (
         <div className="container relative hidden h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
             <div className="bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r">
@@ -116,7 +118,7 @@ function SignIn() {
                                         </FormItem>
                                     )}
                                 />
-                                <Button type="submit">Sign In</Button>
+                                <SubmitButton isSpinner={isSpinner}>Sign in</SubmitButton>
                             </form>
                         </Form>
                         <div className="text-center text-sm">

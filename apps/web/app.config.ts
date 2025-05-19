@@ -3,6 +3,7 @@ import tsConfigPaths from 'vite-tsconfig-paths';
 import tailwindcss from '@tailwindcss/vite';
 import { cloudflare } from 'unenv';
 import nitroCloudflareBindings from 'nitro-cloudflare-dev';
+import svgr from 'vite-plugin-svgr';
 
 export default defineConfig({
     vite: {
@@ -10,7 +11,8 @@ export default defineConfig({
             tsConfigPaths({
                 projects: ['./tsconfig.json']
             }),
-            tailwindcss()
+            tailwindcss(),
+            svgr()
         ]
     },
     tsr: {
