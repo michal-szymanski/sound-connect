@@ -21,7 +21,9 @@ type Item = {
     icon: LucideIcon;
 };
 
-const getLinks = (user: User): Item[] => {
+const getLinks = (user?: User | null): Item[] => {
+    if (!user) return [];
+
     return [
         {
             title: 'Home',
@@ -53,8 +55,6 @@ const getLinks = (user: User): Item[] => {
 
 const LeftSidebar = () => {
     const { data: user } = useQuery(userQueryOptions(null));
-
-    if (!user) return null;
 
     return (
         <Sidebar
