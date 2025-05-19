@@ -8,6 +8,7 @@ import { Input } from '@/web/components/ui/input';
 import { signUp } from '@/web/server-functions/auth';
 import { AuthError } from '@/web/types/auth';
 import { toast } from 'sonner';
+import SubmitButton from '@/web/components/submit-button';
 
 export const Route = createFileRoute('/(auth)/sign-up/')({
     component: SignUp,
@@ -77,6 +78,8 @@ function SignUp() {
         }
     };
 
+    const isSpinner = form.formState.isSubmitting || form.formState.isSubmitSuccessful;
+
     return (
         <div className="container relative hidden h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
             <div className="bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r">
@@ -127,7 +130,7 @@ function SignUp() {
                                         </FormItem>
                                     )}
                                 />
-                                <Button type="submit">Sign Up</Button>
+                                <SubmitButton isSpinner={isSpinner}>Sign up</SubmitButton>
                             </form>
                         </Form>
                         <div className="text-center text-sm">

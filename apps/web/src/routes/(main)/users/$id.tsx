@@ -11,6 +11,7 @@ export const Route = createFileRoute('/(main)/users/$id')({
         if (!result.success) {
             throw notFound();
         }
+
         const user = result.body;
 
         const followersResult = await getFollowers({ data: { userId } });
