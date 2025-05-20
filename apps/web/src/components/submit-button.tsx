@@ -19,7 +19,7 @@ const SubmitButton = ({ isSpinner, children }: Props) => {
                 })}
             >
                 <Spinner aria-hidden="true" />
-                <span className="sr-only">{children}…</span>
+                <span className="sr-only">Please wait...</span>
             </div>
             <div
                 className={clsx('absolute inset-0 flex items-center justify-center', 'transition-opacity duration-200 ease-in-out', {

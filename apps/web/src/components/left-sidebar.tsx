@@ -11,7 +11,7 @@ import {
 import { Bell, Cog, House, LucideIcon, Mail, UserRound } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import AccountButton from '@/web/components/account-button';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { userQueryOptions } from '@/web/lib/react-query';
 import { User } from '@/web/types/auth';
 
@@ -54,7 +54,7 @@ const getLinks = (user?: User | null): Item[] => {
 };
 
 const LeftSidebar = () => {
-    const { data: user } = useQuery(userQueryOptions(null));
+    const { data: user } = useSuspenseQuery(userQueryOptions(null));
 
     return (
         <Sidebar

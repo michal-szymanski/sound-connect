@@ -50,34 +50,14 @@ export const userQueryOptions = (user: User | null) =>
         }
     });
 
-export const useWebSocket = () =>
+export const useEnvs = () =>
     useQuery({
-        queryKey: ['websocket'],
+        queryKey: ['envs'],
         queryFn: async () => {
             const result = await getEnvs();
 
             if (result.success) {
-                const { API_URL } = result.body;
-                const ws = new WebSocket(`${API_URL}/ws`);
-
-                ws.onopen = (e) => {
-                    console.log('WebSocket connected.', e);
-                    ws.send('message');
-                };
-
-                ws.onclose = (e) => {
-                    console.log('WebSocket disconnected.', e);
-                };
-
-                ws.onerror = (e) => {
-                    console.error(e);
-                };
-
-                ws.onmessage = (e) => {
-                    console.log(e);
-                };
-
-                return ws;
+                return result.body;
             }
 
             return null;

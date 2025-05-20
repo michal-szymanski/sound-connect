@@ -1,14 +1,27 @@
-import useWebSocket from '@/web/hooks/use-websocket';
+import { useWebSocket } from '@/web/providers/websocket-provider';
 import { createFileRoute } from '@tanstack/react-router';
+import { useEffect } from 'react';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
 });
 
 function RouteComponent() {
-    const [websocket] = useWebSocket();
+    const { send, lastMessage, status } = useWebSocket();
 
-    if (!websocket) return null;
+    useEffect(() => {
+        if (status === 'open') {
+            // send({ type: 'join', roomId: 'lobby' });
+        }
+    }, [status, send]);
 
-    return <div>WebSocket connected.</div>;
+    return (
+        <div>
+            <p>Connection status: {status}</p>
+            <p>Last message: {JSON.stringify(lastMessage)}</p>
+            <button onClick={() => send({ type: 'chat', text: 'hello everyone!' })} disabled={status !== 'open'}>
+                Send greeting
+            </button>
+        </div>
+    );
 }
