@@ -1,4 +1,6 @@
+import { useMutualFollowers, userQueryOptions } from '@/web/lib/react-query';
 import { useWebSocket } from '@/web/providers/websocket-provider';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
 
@@ -8,10 +10,11 @@ export const Route = createFileRoute('/(main)/messages/')({
 
 function RouteComponent() {
     const { send, lastMessage, status } = useWebSocket();
+    const { data: user } = useSuspenseQuery(userQueryOptions(null));
+    const { data: users } = useMutualFollowers(user);
 
     useEffect(() => {
         if (status === 'open') {
-            // send({ type: 'join', roomId: 'lobby' });
         }
     }, [status, send]);
 

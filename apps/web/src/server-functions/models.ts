@@ -189,3 +189,28 @@ export const unfollowUser = createServerFn({ method: 'POST' })
 
         return { success: true, body: null } as const;
     });
+
+export const getMutualFollowers = createServerFn()
+    .validator((data: { userId: string }) => data)
+    .handler(async ({ data }) => {
+        const { headers } = getWebRequest()!;
+        const { API, API_URL } = await getBindings();
+
+        const response = await API.fetch(`${API_URL}/users/mutual-followers/${data.userId}`, {
+            headers
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = z.array(userDTOSchema);
+
+            return { success: true, body: schema.parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: null } as const;
+        }
+    });
