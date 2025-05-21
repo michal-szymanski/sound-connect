@@ -1,6 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { User } from '@/web/types/auth';
-import { getFeed, getReactions } from '@/web/server-functions/models';
+import { getFeed, getMutualFollowers, getReactions } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
 import { getEnvs } from '@/web/server-functions/utils';
 
@@ -61,5 +61,23 @@ export const useEnvs = () =>
             }
 
             return null;
+        }
+    });
+
+export const useMutualFollowers = (user: User | null) =>
+    useQuery({
+        queryKey: ['mutual-followers'],
+        queryFn: async () => {
+            if (!user) {
+                return [];
+            }
+
+            const result = await getMutualFollowers({ data: { userId: user.id } });
+
+            if (result.success) {
+                return result.body;
+            }
+
+            return [];
         }
     });

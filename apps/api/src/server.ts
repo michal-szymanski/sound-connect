@@ -1,4 +1,4 @@
-import { getFollowedUsers, getUserFollowers, getUserById, followUser, unfollowUser } from '@/api//db/queries/users-queries';
+import { getFollowedUsers, getUserFollowers, getUserById, followUser, unfollowUser, getMutualFollowers } from '@/api//db/queries/users-queries';
 import { z } from 'zod';
 import { getFeed, getPostsByUserId, getReactions } from '@/api//db/queries/posts-queries';
 import { cors } from 'hono/cors';
@@ -104,6 +104,20 @@ app.post('/users/unfollow', async (c) => {
     await unfollowUser(currentUser.id, userId);
 
     return c.json('ok');
+});
+
+app.get('/users/mutual-followers/:userId', async (c) => {
+    const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
+    const session = await auth.api.getSession({
+        headers: c.req.raw.headers
+    });
+
+    if (!session) {
+        return c.json('Unauthorized', 401);
+    }
+
+    const results = await getMutualFollowers(userId);
+    return c.json(results);
 });
 
 app.get('/posts/:userId', async (c) => {
