@@ -1,4 +1,4 @@
-import { getFollowers, getFollowings, getUserById } from '@/api//db/queries/users-queries';
+import { getFollowedUsers, getUserFollowers, getUserById, followUser, unfollowUser } from '@/api//db/queries/users-queries';
 import { z } from 'zod';
 import { getFeed, getPostsByUserId, getReactions } from '@/api//db/queries/posts-queries';
 import { cors } from 'hono/cors';
@@ -52,18 +52,58 @@ app.on(['POST', 'GET'], '/api/auth/*', (c) => {
     return auth.handler(c.req.raw);
 });
 
-app.get('/followers/:userId', async (c) => {
+app.get('/users/followers/:userId', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
-    const followersResults = await getFollowers(userId);
+    const followersResults = await getFollowedUsers(userId);
 
     return c.json(followersResults);
 });
 
-app.get('/followings/:userId', async (c) => {
+app.get('/users/followings/:userId', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
-    const followingsResults = await getFollowings(userId);
+    const followingsResults = await getUserFollowers(userId);
 
     return c.json(followingsResults);
+});
+
+app.post('/users/follow', async (c) => {
+    const body = await c.req.json();
+    const { userId } = z.object({ userId: z.string() }).parse(body);
+
+    const session = await auth.api.getSession({
+        headers: c.req.raw.headers
+    });
+    // const user = c.get('user');
+
+    console.log({ serverHeaders: c.req.raw.headers });
+    console.log({ serverSession: session });
+
+    if (!session) {
+        return c.json('Unauthorized', 401);
+    }
+
+    const { user: currentUser } = session;
+    await followUser(currentUser.id, userId);
+
+    return c.json('ok');
+});
+
+app.post('/users/unfollow', async (c) => {
+    const body = await c.req.json();
+    const { userId } = z.object({ userId: z.string() }).parse(body);
+
+    const session = await auth.api.getSession({
+        headers: c.req.raw.headers
+    });
+
+    if (!session) {
+        return c.json('Unauthorized', 401);
+    }
+
+    const { user: currentUser } = session;
+    await unfollowUser(currentUser.id, userId);
+
+    return c.json('ok');
 });
 
 app.get('/posts/:userId', async (c) => {

@@ -22,6 +22,13 @@
       "when": 1747661190237,
       "tag": "0002_bent_shotgun",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1747841418115,
+      "tag": "0003_needy_living_tribunal",
+      "breakpoints": true
     }
   ]
 }

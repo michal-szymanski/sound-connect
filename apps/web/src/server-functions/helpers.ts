@@ -35,10 +35,10 @@ export const setSessionCookies = (response: Response) => {
         .getSetCookie()
         .find((cookie) => cookie.startsWith(SESSION_TOKEN_COOKIE_NAME) || cookie.startsWith(SECURE_SESSION_TOKEN_COOKIE_NAME));
 
-    if (!sessionTokenCookie) {
-        console.error(`[App] Could not create session cookie. Cookies from /api/auth: \n${response.headers.getSetCookie()}`);
-        return false;
-    }
+    // if (!sessionTokenCookie) {
+    //     console.error(`[App] Could not create session cookie. Cookies from /api/auth: \n${response.headers.getSetCookie()}`);
+    //     return false;
+    // }
 
     const sessionDataCookie = response.headers
         .getSetCookie()
@@ -55,6 +55,22 @@ export const deleteSessionCookies = () => {
         `${SESSION_DATA_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
         `${SECURE_SESSION_DATA_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`
     ]);
+};
+
+export const getSessionCookie = () => {
+    const secureSessionTokenCookie = getCookie(SECURE_SESSION_TOKEN_COOKIE_NAME);
+
+    if (secureSessionTokenCookie) {
+        return `${SECURE_SESSION_TOKEN_COOKIE_NAME}=${secureSessionTokenCookie}`;
+    }
+
+    const sessionTokenCookie = getCookie(SESSION_TOKEN_COOKIE_NAME);
+
+    if (sessionTokenCookie) {
+        return `${SESSION_TOKEN_COOKIE_NAME}=${sessionTokenCookie}`;
+    }
+
+    return null;
 };
 
 export const getSessionFromCookie = () => {
