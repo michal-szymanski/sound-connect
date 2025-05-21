@@ -1,7 +1,7 @@
 import { getBindings } from '@/web/lib/cloudflare-bindings';
 import { errorHandler, getSessionCookie } from '@/web/server-functions/helpers';
 import { userDTOSchema } from '@/web/types/auth';
-import { followerSchema, followingSchema, postReactionSchema, postSchema } from '@/web/types/models';
+import { followerSchema, followingSchema, messageSchema, postReactionSchema, postSchema } from '@/web/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { getWebRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
@@ -207,6 +207,31 @@ export const getMutualFollowers = createServerFn()
         try {
             const json = await response.json();
             const schema = z.array(userDTOSchema);
+
+            return { success: true, body: schema.parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: null } as const;
+        }
+    });
+
+export const getMessages = createServerFn()
+    .validator((data: { senderId: string; receiverId: string }) => data)
+    .handler(async ({ data }) => {
+        const { headers } = getWebRequest()!;
+        const { API, API_URL } = await getBindings();
+
+        const response = await API.fetch(`${API_URL}/messages/${data.senderId}/${data.receiverId}`, {
+            headers
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = z.array(messageSchema);
 
             return { success: true, body: schema.parse(json) } as const;
         } catch (error) {

@@ -12,11 +12,11 @@ function RouteComponent() {
     const { send, lastMessage, status } = useWebSocket();
     const { data: user } = useSuspenseQuery(userQueryOptions(null));
     const { data: users } = useMutualFollowers(user);
-
-    useEffect(() => {
-        if (status === 'open') {
-        }
-    }, [status, send]);
+    // this component is for social media messages module (chat). Generate UI for chat messanger using Shadcn UI. User = current user and users = list of people I can chat with. Use react-query to fetch the data and use react-router to create the route. Use useWebSocket to send and receive messages. Use useEffect to handle the connection status and send a message when the connection is open.
+    // useEffect(() => {
+    //     if (status === 'open') {
+    //     }
+    // }, [status, send]);
 
     return (
         <div>
