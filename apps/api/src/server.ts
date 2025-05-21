@@ -5,6 +5,7 @@ import { cors } from 'hono/cors';
 import { Hono } from 'hono';
 import { HonoContext } from 'types';
 import { auth } from 'auth';
+import { getMessagesByUserIds } from '@/api/db/queries/messages-queries';
 
 const app = new Hono<HonoContext>();
 
@@ -73,10 +74,6 @@ app.post('/users/follow', async (c) => {
     const session = await auth.api.getSession({
         headers: c.req.raw.headers
     });
-    // const user = c.get('user');
-
-    console.log({ serverHeaders: c.req.raw.headers });
-    console.log({ serverSession: session });
 
     if (!session) {
         return c.json('Unauthorized', 401);
@@ -116,8 +113,19 @@ app.get('/users/mutual-followers/:userId', async (c) => {
         return c.json('Unauthorized', 401);
     }
 
-    const results = await getMutualFollowers(userId);
-    return c.json(results);
+    const usersResults = await getMutualFollowers(userId);
+    return c.json(usersResults);
+});
+
+app.get('/users/:userId', async (c) => {
+    const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
+    const [user] = await getUserById(userId);
+
+    if (!user) {
+        return c.json(`User with ID ${userId} not found`, 404);
+    }
+
+    return c.json(user);
 });
 
 app.get('/posts/:userId', async (c) => {
@@ -140,35 +148,44 @@ app.get('/posts/:postId/reactions', async (c) => {
     return c.json(reactionsResults);
 });
 
+app.get('/messages/:senderId/:receiverId', async (c) => {
+    const { senderId, receiverId } = z
+        .object({
+            senderId: z.string(),
+            receiverId: z.string()
+        })
+        .parse(c.req.param());
+
+    const messagesResults = await getMessagesByUserIds(senderId, receiverId);
+
+    return c.json(messagesResults);
+});
+
 app.on(['GET', 'POST'], '/ws', async (c) => {
     const upgradeHeader = c.req.header('Upgrade');
 
-    if (!upgradeHeader || upgradeHeader !== 'websocket') {
-        return c.json('Durable Object expected Upgrade: websocket', {
-            status: 426
-        });
+    // Check if the request is a WebSocket upgrade request
+    if (!upgradeHeader || upgradeHeader.toLowerCase() !== 'websocket') {
+        return c.json({ message: 'Durable Object expected Upgrade: websocket' }, { status: 426 });
     }
 
     try {
-        // This example will refer to the same Durable Object,
-        // since the name "foo" is hardcoded.
-        let id = c.env.WS.idFromName('foo');
-        let stub = c.env.WS.get(id);
+        // Generate a Durable Object ID based on a unique identifier (e.g., user ID or session)
+        const userId = c.req.query('userId'); // Example: Extract userId from query params
+        if (!userId) {
+            return c.json({ message: 'Missing userId in query parameters' }, { status: 400 });
+        }
 
+        // Create a Durable Object ID using the userId
+        const id = c.env.WS.idFromName(userId);
+        const stub = c.env.WS.get(id);
+
+        // Forward the WebSocket upgrade request to the Durable Object
         return stub.fetch(c.req.raw);
     } catch (error) {
-        console.error({ error });
-        return c.json({ error }, 400);
+        console.error('Error handling WebSocket connection:', error);
+        return c.json({ error }, { status: 500 });
     }
-});
-
-app.get('/users/:userId', async (c) => {
-    const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
-    const [user] = await getUserById(userId);
-    if (!user) {
-        return c.json(`User with ID ${userId} not found`, 404);
-    }
-    return c.json(user);
 });
 
 export { WebSocketServer } from '@/api/websocket';

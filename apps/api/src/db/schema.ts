@@ -141,10 +141,10 @@ export const musicGroupsFollowersTable = sqliteTable('music_groups_followers', {
 
 export const messagesTable = sqliteTable('messages', {
     id: integer().primaryKey(),
-    senderId: integer()
+    senderId: text()
         .notNull()
         .references(() => users.id),
-    receiverId: integer()
+    receiverId: text()
         .notNull()
         .references(() => users.id),
     content: text().notNull(),
