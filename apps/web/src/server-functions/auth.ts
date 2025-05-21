@@ -24,6 +24,8 @@ export const getSession = createServerFn().handler(async () => {
     }
 
     try {
+        setSessionCookies(response);
+
         const json = await response.json();
         const schema = z.object({ session: sessionSchema, user: userSchema });
 

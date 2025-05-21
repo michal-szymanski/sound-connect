@@ -109,6 +109,10 @@ export const userSchema = z.object({
 
 export type User = z.infer<typeof userSchema>;
 
+export const userDTOSchema = userSchema.omit({ email: true, emailVerified: true, createdAt: true, updatedAt: true });
+
+export type UserDTO = z.infer<typeof userDTOSchema>;
+
 export const sessionSchema = z.object({
     id: z.string(),
     expiresAt: z.string(),

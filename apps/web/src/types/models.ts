@@ -14,7 +14,7 @@ export const postReactionSchema = z.object({
     userId: z.string()
 });
 
-export const followerSchema = z.object({ followerId: z.string() });
+export const followerSchema = z.object({ followedUserId: z.string() });
 
 export type Follower = z.infer<typeof followerSchema>;
 

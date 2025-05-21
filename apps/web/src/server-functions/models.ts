@@ -1,6 +1,6 @@
 import { getBindings } from '@/web/lib/cloudflare-bindings';
-import { errorHandler } from '@/web/server-functions/helpers';
-import { userSchema } from '@/web/types/auth';
+import { errorHandler, getSessionCookie } from '@/web/server-functions/helpers';
+import { userDTOSchema } from '@/web/types/auth';
 import { followerSchema, followingSchema, postReactionSchema, postSchema } from '@/web/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { getWebRequest } from '@tanstack/react-start/server';
@@ -85,7 +85,7 @@ export const getFollowers = createServerFn()
         const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
 
-        const response = await API.fetch(`${API_URL}/followers/${data.userId}`, {
+        const response = await API.fetch(`${API_URL}/users/followers/${data.userId}`, {
             headers
         });
 
@@ -110,7 +110,7 @@ export const getFollowings = createServerFn()
         const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
 
-        const response = await API.fetch(`${API_URL}/followings/${data.userId}`, {
+        const response = await API.fetch(`${API_URL}/users/followings/${data.userId}`, {
             headers
         });
 
@@ -132,7 +132,7 @@ export const getFollowings = createServerFn()
 export const getUser = createServerFn()
     .validator((data: { userId: string }) => data)
     .handler(async ({ data }) => {
-        const { API, API_URL, CLIENT_URL } = await getBindings();
+        const { API, API_URL } = await getBindings();
 
         const response = await API.fetch(`${API_URL}/users/${data.userId}`);
 
@@ -142,11 +142,50 @@ export const getUser = createServerFn()
 
         try {
             const json = await response.json();
-            const schema = userSchema.omit({ email: true, emailVerified: true, createdAt: true, updatedAt: true });
 
-            return { success: true, body: schema.parse(json) } as const;
+            return { success: true, body: userDTOSchema.parse(json) } as const;
         } catch (error) {
             console.error(error);
             return { success: false, body: null } as const;
         }
+    });
+
+export const followUser = createServerFn({ method: 'POST' })
+    .validator((data: { userId: string }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/users/follow`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
+            body: JSON.stringify(data),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
+    });
+
+export const unfollowUser = createServerFn({ method: 'POST' })
+    .validator((data: { userId: string }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/users/unfollow`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
+            body: JSON.stringify(data),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
     });

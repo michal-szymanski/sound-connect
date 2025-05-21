@@ -121,8 +121,12 @@ export const musicGroupMembersTable = sqliteTable('music_groups_members', {
 
 export const usersFollowersTable = sqliteTable('users_followers', {
     id: integer().primaryKey(),
-    followerId: text('follower_id').notNull(),
-    userId: text('user_id').notNull(),
+    followedUserId: text('followed_user_id')
+        .notNull()
+        .references(() => users.id),
+    userId: text('user_id')
+        .notNull()
+        .references(() => users.id),
     createdAt: text().notNull()
 });
 
