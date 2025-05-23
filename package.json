@@ -5,6 +5,7 @@
     "dev": "pnpm run -r --parallel --aggregate-output dev",
     "dev:web": "pnpm --filter @sound-connect/web dev",
     "dev:api": "pnpm --filter @sound-connect/api dev",
+    "build": "pnpm run -r --parallel --aggregate-output build",
     "types": "pnpm run -r --parallel --aggregate-output types",
     "tail": "pnpm run -r --parallel --aggregate-output tail",
     "tail:web": "pnpm --filter @sound-connect/web tail",

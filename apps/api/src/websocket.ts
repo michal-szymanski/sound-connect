@@ -1,4 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
+import { ChatMessage, chatMessageSchema } from '@sound-connect/types';
 
 export class WebSocketServer extends DurableObject {
     private connections: Map<string, WebSocket> = new Map();
@@ -12,10 +13,10 @@ export class WebSocketServer extends DurableObject {
         this.state = state;
     }
 
-    async handleConnection(webSocket: WebSocket, userId: string) {
-        // Validate userId (add your authentication logic here)
-        if (!userId) {
-            webSocket.close(4001, 'Invalid user ID');
+    async handleConnection(webSocket: WebSocket, userId: string, peerId: string) {
+        // Validate userId and peerId (add your authentication logic here)
+        if (!userId || !peerId) {
+            webSocket.close(4001, 'Invalid user or peer ID');
             return;
         }
 
@@ -27,11 +28,17 @@ export class WebSocketServer extends DurableObject {
         await this.state.storage.put(userId, true);
 
         // WebSocket event listeners
-        webSocket.addEventListener('message', (event: MessageEvent) => {
+        webSocket.addEventListener('message', async (event: MessageEvent<string>) => {
             try {
-                this.broadcastMessage(event.data, userId);
+                const message = event.data;
+                const history = (await this.state.storage.get<Array<ChatMessage>>('messages')) || [];
+                const parsedMessage = chatMessageSchema.parse(JSON.parse(message));
+                history.push(parsedMessage);
+                await this.state.storage.put('messages', history);
+
+                this.broadcastMessage(message, userId);
             } catch (error) {
-                console.error(`Error broadcasting message from user ${userId}:`, error);
+                console.error(`[DO] Error broadcasting message from user ${userId}:`, error);
             }
         });
 
@@ -40,7 +47,7 @@ export class WebSocketServer extends DurableObject {
         });
 
         webSocket.addEventListener('error', (event: Event) => {
-            console.error(`WebSocket error for user ${userId}:`, event);
+            console.error(`[DO] WebSocket error for user ${userId}:`, event);
             this.cleanup(userId);
         });
     }
@@ -49,9 +56,9 @@ export class WebSocketServer extends DurableObject {
         for (const [userId, connection] of this.connections) {
             if (userId !== senderId) {
                 try {
-                    connection.send(JSON.stringify({ senderId, message }));
+                    connection.send(message);
                 } catch (error) {
-                    console.error(`Error sending message to user ${userId}:`, error);
+                    console.error(`[DO] Error sending message to user ${userId}:`, error);
                     this.cleanup(userId);
                 }
             }
@@ -66,11 +73,45 @@ export class WebSocketServer extends DurableObject {
         await this.state.storage.delete(userId);
 
         if (this.userIds.size === 0) {
-            // Cleanup the Durable Object instance if no users are left
+            // Only delete user connection keys, not 'messages'
             const keys = await this.state.storage.list();
             for (const key of keys.keys()) {
-                await this.state.storage.delete(key);
+                if (key !== 'messages') {
+                    await this.state.storage.delete(key);
+                }
             }
         }
+    }
+
+    async fetch(request: Request) {
+        const url = new URL(request.url);
+        const upgradeHeader = request.headers.get('Upgrade');
+        const userId = url.searchParams.get('userId');
+        const peerId = url.searchParams.get('peerId');
+
+        if (upgradeHeader && upgradeHeader.toLowerCase() === 'websocket' && userId && peerId) {
+            const wsPair = new WebSocketPair();
+
+            const client = wsPair[0];
+            const server = wsPair[1];
+            await this.handleConnection(server, userId, peerId);
+            server.accept(); // <-- Accept the server WebSocket so it receives events
+
+            return new Response(null, { status: 101, webSocket: client });
+        }
+        // HTTP GET /history: return chat history
+        if (request.method === 'GET' && url.pathname.match(/^\/ws\/[\w:]+\/history$/)) {
+            const history = (await this.state.storage.get<Array<any>>('messages')) || [];
+
+            return new Response(JSON.stringify(history), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        }
+        // No CORS preflight here; let the API route handle CORS
+
+        return new Response('Not found', { status: 404 });
     }
 }

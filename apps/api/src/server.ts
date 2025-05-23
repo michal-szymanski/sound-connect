@@ -163,29 +163,54 @@ app.get('/messages/:senderId/:receiverId', async (c) => {
 
 app.on(['GET', 'POST'], '/ws', async (c) => {
     const upgradeHeader = c.req.header('Upgrade');
-
-    // Check if the request is a WebSocket upgrade request
     if (!upgradeHeader || upgradeHeader.toLowerCase() !== 'websocket') {
         return c.json({ message: 'Durable Object expected Upgrade: websocket' }, { status: 426 });
     }
-
     try {
-        // Generate a Durable Object ID based on a unique identifier (e.g., user ID or session)
-        const userId = c.req.query('userId'); // Example: Extract userId from query params
-        if (!userId) {
-            return c.json({ message: 'Missing userId in query parameters' }, { status: 400 });
+        const userId = c.req.query('userId');
+        const peerId = c.req.query('peerId');
+        if (!userId || !peerId) {
+            return c.json({ message: 'Missing userId or peerId in query parameters' }, { status: 400 });
         }
-
-        // Create a Durable Object ID using the userId
-        const id = c.env.WS.idFromName(userId);
+        // Use a unique room id for the pair (order-independent)
+        const roomId = [userId, peerId].sort().join(':');
+        const id = c.env.WS.idFromName(roomId);
         const stub = c.env.WS.get(id);
-
-        // Forward the WebSocket upgrade request to the Durable Object
-        return stub.fetch(c.req.raw);
+        // Forward the WebSocket upgrade request, including both userId and peerId in the query
+        const url = new URL(c.req.raw.url);
+        url.searchParams.set('userId', userId);
+        url.searchParams.set('peerId', peerId);
+        const reqWithParams = new Request(url.toString(), c.req.raw);
+        return stub.fetch(reqWithParams);
     } catch (error) {
         console.error('Error handling WebSocket connection:', error);
         return c.json({ error }, { status: 500 });
     }
+});
+
+// Fix the proxy route for /ws/:roomId/history
+app.get('/ws/:roomId/history', async (c) => {
+    const { roomId } = c.req.param();
+    const id = c.env.WS.idFromName(roomId);
+    const stub = c.env.WS.get(id);
+    // Use a full URL for the Durable Object fetch
+    const origin = c.req.header('origin') || 'http://localhost:8787';
+    const url = `${origin}/ws/${roomId}/history`;
+    // Only forward Content-Type header if present
+    const headers = new Headers();
+    const contentType = c.req.header('content-type');
+    if (contentType) {
+        headers.set('content-type', contentType);
+    }
+    const req = new Request(url, { method: 'GET', headers });
+    const resp = await stub.fetch(req);
+    const body = await resp.text();
+    const responseHeaders = new Headers(resp.headers);
+    responseHeaders.set('Content-Type', 'application/json');
+    responseHeaders.set('Access-Control-Allow-Origin', '*');
+    responseHeaders.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    responseHeaders.set('Access-Control-Allow-Headers', 'Content-Type');
+    return new Response(body, { status: resp.status, headers: responseHeaders });
 });
 
 export { WebSocketServer } from '@/api/websocket';

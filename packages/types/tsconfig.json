@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "outDir": "./dist",
+        "emitDeclarationOnly": true,
+        "noEmit": true,
+        "composite": false,
+        "declaration": true,
+        "declarationDir": "./dist",
+        "declarationMap": true,
+        "rootDir": "./src"
+    },
+    "include": ["./src/**/*.ts"],
+    "exclude": ["node_modules", "**/*.spec.ts"]
+}
