@@ -190,10 +190,16 @@ app.on(['GET', 'POST'], '/ws', async (c) => {
 
 app.get('/ws/history', async (c) => {
     const { userId, peerId } = c.req.query();
-    const roomId = [userId, peerId].sort().join(':');
+    const roomId = getRoomId(userId, peerId);
     const id = c.env.WS.idFromName(roomId);
     const stub = c.env.WS.get(id);
 
+    return await stub.fetch(c.req.raw);
+});
+
+app.get('/ws/debug', async (c) => {
+    const id = c.env.WS.idFromName('debug');
+    const stub = c.env.WS.get(id);
     return await stub.fetch(c.req.raw);
 });
 

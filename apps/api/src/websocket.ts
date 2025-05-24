@@ -29,6 +29,11 @@ export class WebSocketServer extends DurableObject {
             return this.getHistory(roomId);
         }
 
+        if (request.method === 'GET' && url.pathname === '/ws/debug') {
+            return this.debug();
+        }
+
+        console.warn(`[App] Invalid request: ${request.method} ${url.pathname}`);
         return new Response('Not found', { status: 404 });
     }
 
@@ -131,4 +136,11 @@ export class WebSocketServer extends DurableObject {
             }
         }
     };
+
+    async debug() {
+        const storedData = await this.state.storage.list();
+        return new Response(JSON.stringify(storedData), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
 }
