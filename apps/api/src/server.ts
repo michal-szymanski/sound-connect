@@ -23,18 +23,21 @@ app.use(
 );
 
 app.use('*', async (c, next) => {
+    if (c.req.path.startsWith('/api/auth/') || c.req.path === '/health') {
+        return next();
+    }
+
     const session = await auth.api.getSession({
         headers: c.req.raw.headers
     });
 
     if (!session) {
-        c.set('user', null);
-        c.set('session', null);
-        return next();
+        return c.json({ message: 'Unauthorized' }, 401);
     }
 
     c.set('user', session.user);
     c.set('session', session.session);
+
     return next();
 });
 
@@ -72,16 +75,8 @@ app.post('/users/follow', async (c) => {
     const body = await c.req.json();
     const { userId } = z.object({ userId: z.string() }).parse(body);
 
-    const session = await auth.api.getSession({
-        headers: c.req.raw.headers
-    });
-
-    if (!session) {
-        return c.json('Unauthorized', 401);
-    }
-
-    const { user: currentUser } = session;
-    await followUser(currentUser.id, userId);
+    const user = c.get('user');
+    await followUser(user.id, userId);
 
     return c.json('ok');
 });
@@ -90,31 +85,16 @@ app.post('/users/unfollow', async (c) => {
     const body = await c.req.json();
     const { userId } = z.object({ userId: z.string() }).parse(body);
 
-    const session = await auth.api.getSession({
-        headers: c.req.raw.headers
-    });
-
-    if (!session) {
-        return c.json('Unauthorized', 401);
-    }
-
-    const { user: currentUser } = session;
-    await unfollowUser(currentUser.id, userId);
+    const user = c.get('user');
+    await unfollowUser(user.id, userId);
 
     return c.json('ok');
 });
 
 app.get('/users/mutual-followers/:userId', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
-    const session = await auth.api.getSession({
-        headers: c.req.raw.headers
-    });
-
-    if (!session) {
-        return c.json('Unauthorized', 401);
-    }
-
     const usersResults = await getMutualFollowers(userId);
+
     return c.json(usersResults);
 });
 
@@ -171,19 +151,13 @@ app.on(['GET', 'POST'], '/ws', async (c) => {
 
     try {
         const user = c.get('user');
-
-        if (!user) {
-            return c.json({ message: 'Unauthorized' }, { status: 401 });
-        }
-
-        const userId = user.id;
         const peerId = c.req.query('peerId');
 
-        if (!userId || !peerId) {
-            return c.json({ message: 'Missing userId or peerId in query parameters' }, { status: 400 });
+        if (!peerId) {
+            return c.json({ message: 'Missing peerId in query parameters' }, { status: 400 });
         }
 
-        const roomId = getRoomId(userId, peerId);
+        const roomId = getRoomId(user.id, peerId);
         const id = c.env.WS.idFromName(roomId);
         const stub = c.env.WS.get(id);
 
@@ -196,6 +170,12 @@ app.on(['GET', 'POST'], '/ws', async (c) => {
 
 app.get('/ws/:roomId/history', async (c) => {
     const { roomId } = c.req.param();
+    const user = c.get('user');
+
+    if (!roomId.includes(user.id)) {
+        return c.json({ message: 'Forbidden: You are not part of this room' }, 403);
+    }
+
     const id = c.env.WS.idFromName(roomId);
     const stub = c.env.WS.get(id);
 
