@@ -11,20 +11,10 @@ import { toast } from 'sonner';
 import SubmitButton from '@/web/components/submit-button';
 
 export const Route = createFileRoute('/(auth)/sign-up/')({
-    component: SignUp,
-    beforeLoad: ({ context: { user } }) => {
-        if (user) {
-            const path = '/';
-            console.info(`[App] Redirecting to: ${path}`);
-
-            throw redirect({
-                to: path
-            });
-        }
-    }
+    component: RouteComponent
 });
 
-function SignUp() {
+function RouteComponent() {
     const formSchema = z.object({
         name: z.string().min(1),
         email: z.string().email(),

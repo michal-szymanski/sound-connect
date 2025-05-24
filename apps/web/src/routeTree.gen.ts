@@ -12,6 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as mainRouteImport } from './routes/(main)/route'
+import { Route as authRouteImport } from './routes/(auth)/route'
 import { Route as mainIndexImport } from './routes/(main)/index'
 import { Route as mainSettingsIndexImport } from './routes/(main)/settings/index'
 import { Route as mainNotificationsIndexImport } from './routes/(main)/notifications/index'
@@ -24,6 +25,11 @@ import { Route as mainUsersIdImport } from './routes/(main)/users/$id'
 
 const mainRouteRoute = mainRouteImport.update({
   id: '/(main)',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const authRouteRoute = authRouteImport.update({
+  id: '/(auth)',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -52,15 +58,15 @@ const mainMessagesIndexRoute = mainMessagesIndexImport.update({
 } as any)
 
 const authSignUpIndexRoute = authSignUpIndexImport.update({
-  id: '/(auth)/sign-up/',
+  id: '/sign-up/',
   path: '/sign-up/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => authRouteRoute,
 } as any)
 
 const authSignInIndexRoute = authSignInIndexImport.update({
-  id: '/(auth)/sign-in/',
+  id: '/sign-in/',
   path: '/sign-in/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => authRouteRoute,
 } as any)
 
 const mainUsersIdRoute = mainUsersIdImport.update({
@@ -73,6 +79,13 @@ const mainUsersIdRoute = mainUsersIdImport.update({
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/(auth)': {
+      id: '/(auth)'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof authRouteImport
+      parentRoute: typeof rootRoute
+    }
     '/(main)': {
       id: '/(main)'
       path: '/'
@@ -99,14 +112,14 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof authSignInIndexImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof authRouteImport
     }
     '/(auth)/sign-up/': {
       id: '/(auth)/sign-up/'
       path: '/sign-up'
       fullPath: '/sign-up'
       preLoaderRoute: typeof authSignUpIndexImport
-      parentRoute: typeof rootRoute
+      parentRoute: typeof authRouteImport
     }
     '/(main)/messages/': {
       id: '/(main)/messages/'
@@ -133,6 +146,20 @@ declare module '@tanstack/react-router' {
 }
 
 // Create and export the route tree
+
+interface authRouteRouteChildren {
+  authSignInIndexRoute: typeof authSignInIndexRoute
+  authSignUpIndexRoute: typeof authSignUpIndexRoute
+}
+
+const authRouteRouteChildren: authRouteRouteChildren = {
+  authSignInIndexRoute: authSignInIndexRoute,
+  authSignUpIndexRoute: authSignUpIndexRoute,
+}
+
+const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
+  authRouteRouteChildren,
+)
 
 interface mainRouteRouteChildren {
   mainIndexRoute: typeof mainIndexRoute
@@ -176,6 +203,7 @@ export interface FileRoutesByTo {
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
+  '/(auth)': typeof authRouteRouteWithChildren
   '/(main)': typeof mainRouteRouteWithChildren
   '/(main)/': typeof mainIndexRoute
   '/(main)/users/$id': typeof mainUsersIdRoute
@@ -207,6 +235,7 @@ export interface FileRouteTypes {
     | '/settings'
   id:
     | '__root__'
+    | '/(auth)'
     | '/(main)'
     | '/(main)/'
     | '/(main)/users/$id'
@@ -219,15 +248,13 @@ export interface FileRouteTypes {
 }
 
 export interface RootRouteChildren {
+  authRouteRoute: typeof authRouteRouteWithChildren
   mainRouteRoute: typeof mainRouteRouteWithChildren
-  authSignInIndexRoute: typeof authSignInIndexRoute
-  authSignUpIndexRoute: typeof authSignUpIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  authRouteRoute: authRouteRouteWithChildren,
   mainRouteRoute: mainRouteRouteWithChildren,
-  authSignInIndexRoute: authSignInIndexRoute,
-  authSignUpIndexRoute: authSignUpIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -240,7 +267,13 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/(main)",
+        "/(auth)",
+        "/(main)"
+      ]
+    },
+    "/(auth)": {
+      "filePath": "(auth)/route.tsx",
+      "children": [
         "/(auth)/sign-in/",
         "/(auth)/sign-up/"
       ]
@@ -264,10 +297,12 @@ export const routeTree = rootRoute
       "parent": "/(main)"
     },
     "/(auth)/sign-in/": {
-      "filePath": "(auth)/sign-in/index.tsx"
+      "filePath": "(auth)/sign-in/index.tsx",
+      "parent": "/(auth)"
     },
     "/(auth)/sign-up/": {
-      "filePath": "(auth)/sign-up/index.tsx"
+      "filePath": "(auth)/sign-up/index.tsx",
+      "parent": "/(auth)"
     },
     "/(main)/messages/": {
       "filePath": "(main)/messages/index.tsx",

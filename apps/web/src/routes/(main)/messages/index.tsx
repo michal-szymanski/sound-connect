@@ -7,7 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/web/components/ui/avatar'
 import { Input } from '@/web/components/ui/input';
 import { Card } from '@/web/components/ui/card';
 import { Button } from '@/web/components/ui/button';
-import { ChatMessage } from '@sound-connect/types';
+import { ChatMessage } from '@sound-connect/api/types';
+import { getChatHistory } from '@/web/server-functions/models';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
@@ -34,16 +35,27 @@ function RouteComponent() {
     useEffect(() => {
         if (envs && user && selectedUser) {
             setPeerId(selectedUser.id);
-            const roomId = [user.id, selectedUser.id].sort().join(':');
-            fetch(`${envs.API_URL}/ws/${roomId}/history`)
-                .then((res) => res.json())
-                .then((history) => {
-                    if (Array.isArray(history)) {
-                        setMessages(history);
-                    } else {
-                        setMessages([]);
-                    }
-                });
+            // const roomId = [user.id, selectedUser.id].sort().join(':');
+            // fetch(`${envs.API_URL}/ws/${roomId}/history`, {
+            //     headers: {
+            //         'Content-Type': 'application/json'
+            //     }
+            // })
+            //     .then((res) => res.json())
+            //     .then((history) => {
+            //         if (Array.isArray(history)) {
+            //             setMessages(history);
+            //         } else {
+            //             setMessages([]);
+            //         }
+            //     });
+            getChatHistory({ data: { senderId: user.id, receiverId: selectedUser.id } }).then((res) => {
+                if (res.success) {
+                    setMessages(res.body);
+                } else {
+                    console.error('[App] Error fetching chat history:', res.body);
+                }
+            });
         }
     }, [selectedUser, setPeerId, envs, user]);
 

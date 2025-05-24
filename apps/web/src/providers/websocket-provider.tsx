@@ -1,7 +1,7 @@
 import { useEnvs, userQueryOptions } from '@/web/lib/react-query';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
-import { ChatMessage, chatMessageSchema } from '@sound-connect/types';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { chatMessageSchema, ChatMessage } from '@sound-connect/api/types';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 
