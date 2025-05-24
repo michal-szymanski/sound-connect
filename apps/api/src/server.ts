@@ -6,6 +6,7 @@ import { Hono } from 'hono';
 import { HonoContext } from 'types';
 import { auth } from 'auth';
 import { getMessagesByUserIds } from '@/api/db/queries/messages-queries';
+import { getRoomId } from '@/api/helpers';
 
 const app = new Hono<HonoContext>();
 
@@ -163,25 +164,24 @@ app.get('/messages/:senderId/:receiverId', async (c) => {
 
 app.on(['GET', 'POST'], '/ws', async (c) => {
     const upgradeHeader = c.req.header('Upgrade');
+
     if (!upgradeHeader || upgradeHeader.toLowerCase() !== 'websocket') {
         return c.json({ message: 'Durable Object expected Upgrade: websocket' }, { status: 426 });
     }
+
     try {
         const userId = c.req.query('userId');
         const peerId = c.req.query('peerId');
+
         if (!userId || !peerId) {
             return c.json({ message: 'Missing userId or peerId in query parameters' }, { status: 400 });
         }
-        // Use a unique room id for the pair (order-independent)
-        const roomId = [userId, peerId].sort().join(':');
+
+        const roomId = getRoomId(userId, peerId);
         const id = c.env.WS.idFromName(roomId);
         const stub = c.env.WS.get(id);
-        // Forward the WebSocket upgrade request, including both userId and peerId in the query
-        const url = new URL(c.req.raw.url);
-        url.searchParams.set('userId', userId);
-        url.searchParams.set('peerId', peerId);
-        const reqWithParams = new Request(url.toString(), c.req.raw);
-        return stub.fetch(reqWithParams);
+
+        return stub.fetch(c.req.raw);
     } catch (error) {
         console.error('Error handling WebSocket connection:', error);
         return c.json({ error }, { status: 500 });

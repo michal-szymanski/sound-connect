@@ -7,6 +7,7 @@ import { chatMessageSchema } from '@sound-connect/api/types';
 import { createServerFn } from '@tanstack/react-start';
 import { getWebRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
+import { getRoomId } from '@sound-connect/api/src/helpers';
 
 export const getFeed = createServerFn().handler(async () => {
     const { headers } = getWebRequest()!;
@@ -230,7 +231,7 @@ export const getChatHistory = createServerFn()
         }
 
         const user = result.body;
-        const roomId = [user.id, data.peerId].sort().join(':');
+        const roomId = getRoomId(user.id, data.peerId);
         const response = await API.fetch(`${API_URL}/ws/${roomId}/history`, {
             headers
         });
