@@ -21,15 +21,14 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
     const [status, setStatus] = useState<WSStatus>('connecting');
     const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
     const { data: envs } = useEnvs();
-    const { data: user } = useSuspenseQuery(userQueryOptions(null));
     const [peerId, setPeerId] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!envs || !user || !peerId) return;
+        if (!envs || !peerId) return;
 
         const { API_URL } = envs;
 
-        ws.current = new WebSocket(`${API_URL}/ws?userId=${user.id}&peerId=${peerId}`);
+        ws.current = new WebSocket(`${API_URL}/ws/chat/${peerId}`);
 
         const handleOpen = () => {
             setStatus('open');
@@ -70,7 +69,7 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
 
             ws.current.close();
         };
-    }, [envs, user, peerId]);
+    }, [envs, peerId]);
 
     const send = (message: ChatMessage) => {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {

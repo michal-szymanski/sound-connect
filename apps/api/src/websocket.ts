@@ -86,21 +86,23 @@ export class WebSocketServer extends DurableObject {
     async fetch(request: Request) {
         const url = new URL(request.url);
         const upgradeHeader = request.headers.get('Upgrade');
-        const userId = url.searchParams.get('userId');
+        const userId = request.headers.get('X-User-Id');
 
-        if (upgradeHeader && upgradeHeader.toLowerCase() === 'websocket' && userId) {
+        if (!userId) {
+            return new Response('Unauthorized: Missing user ID', { status: 401 });
+        }
+
+        if (upgradeHeader && upgradeHeader.toLowerCase() === 'websocket') {
             const wsPair = new WebSocketPair();
-
-            const client = wsPair[0];
-            const server = wsPair[1];
+            const [client, server] = Object.values(wsPair);
             await this.handleConnection(server, userId);
-            server.accept(); // <-- Accept the server WebSocket so it receives events
+            server.accept();
 
             return new Response(null, { status: 101, webSocket: client });
         }
-        // HTTP GET /history: return chat history
-        if (request.method === 'GET' && url.pathname.match(/^\/ws\/[\w:]+\/history$/)) {
-            const history = (await this.state.storage.get<Array<any>>('messages')) || [];
+
+        if (request.method === 'GET' && url.pathname.match(/^\/ws\/chat\/[^/]+\/history$/)) {
+            const history = (await this.state.storage.get<Array<ChatMessage>>('messages')) || [];
 
             return new Response(JSON.stringify(history), {
                 status: 200,
