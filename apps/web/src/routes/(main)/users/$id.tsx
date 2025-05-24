@@ -1,5 +1,6 @@
 import { Button } from '@/web/components/ui/button';
 import { Card } from '@/web/components/ui/card';
+import consts from '@/web/lib/consts';
 import { followUser, getFollowers, getFollowings, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
 import { User, UserDTO } from '@/web/types/auth';
 import { Follower, Following, Post } from '@/web/types/models';
@@ -84,7 +85,7 @@ function RouteComponent() {
                     />
                 </div>
                 <img
-                    src={user.image ?? 'https://github.com/shadcn.png'}
+                    src={user.image ?? consts.SHADCN_DEFAULT_AVATAR}
                     alt="Shadcn"
                     className="relative -top-20 left-10 rounded-full object-cover"
                     width={160}

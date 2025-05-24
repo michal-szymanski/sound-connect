@@ -9,6 +9,9 @@ import { Card } from '@/web/components/ui/card';
 import { Button } from '@/web/components/ui/button';
 import { ChatMessage } from '@sound-connect/api/types';
 import { getChatHistory } from '@/web/server-functions/models';
+import { UserDTO } from '@/web/types/auth';
+import consts from '@/web/lib/consts';
+import clsx from 'clsx';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
@@ -18,38 +21,22 @@ function RouteComponent() {
     const { send, lastMessage, status, setPeerId } = useWebSocket();
     const { data: user } = useSuspenseQuery(userQueryOptions(null));
     const { data: users } = useMutualFollowers(user);
-    const [selectedUser, setSelectedUser] = useState(users?.[0] || null);
+    const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const { data: envs } = useEnvs();
 
-    // Set peerId in WebSocketProvider when selectedUser changes
     useEffect(() => {
-        if (selectedUser) {
-            setPeerId(selectedUser.id);
+        if (selectedPeer) {
+            setPeerId(selectedPeer.id);
         }
-    }, [selectedUser, setPeerId]);
+    }, [selectedPeer, setPeerId]);
 
-    // Fetch chat history when selectedUser changes
     useEffect(() => {
-        if (envs && user && selectedUser) {
-            setPeerId(selectedUser.id);
-            // const roomId = [user.id, selectedUser.id].sort().join(':');
-            // fetch(`${envs.API_URL}/ws/${roomId}/history`, {
-            //     headers: {
-            //         'Content-Type': 'application/json'
-            //     }
-            // })
-            //     .then((res) => res.json())
-            //     .then((history) => {
-            //         if (Array.isArray(history)) {
-            //             setMessages(history);
-            //         } else {
-            //             setMessages([]);
-            //         }
-            //     });
-            getChatHistory({ data: { senderId: user.id, receiverId: selectedUser.id } }).then((res) => {
+        if (envs && user && selectedPeer) {
+            setPeerId(selectedPeer.id);
+            getChatHistory({ data: { peerId: selectedPeer.id } }).then((res) => {
                 if (res.success) {
                     setMessages(res.body);
                 } else {
@@ -57,7 +44,7 @@ function RouteComponent() {
                 }
             });
         }
-    }, [selectedUser, setPeerId, envs, user]);
+    }, [selectedPeer, setPeerId, envs, user]);
 
     useEffect(() => {
         if (!lastMessage) return;
@@ -70,20 +57,11 @@ function RouteComponent() {
     }, [messages]);
 
     const handleSend = () => {
-        if (input.trim() && selectedUser && user && envs) {
-            const newMessage: ChatMessage = { type: 'chat', text: input, receiverId: selectedUser.id, senderId: user.id };
+        if (input.trim() && selectedPeer && user) {
+            const newMessage: ChatMessage = { type: 'chat', text: input, receiverId: selectedPeer.id, senderId: user.id };
             send(newMessage);
             setMessages((prev) => [...prev, newMessage]);
             setInput('');
-            // Refetch history after sending
-            const roomId = [user.id, selectedUser.id].sort().join(':');
-            fetch(`${envs.API_URL}/ws/${roomId}/history`)
-                .then((res) => res.json())
-                .then((history) => {
-                    if (Array.isArray(history)) {
-                        setMessages(history);
-                    }
-                });
         }
     };
 
@@ -95,35 +73,43 @@ function RouteComponent() {
                     {users?.map((u) => (
                         <button
                             key={u.id}
-                            className={`hover:bg-accent flex w-full items-center gap-2 p-3 transition ${selectedUser?.id === u.id ? 'bg-accent' : ''}`}
-                            onClick={() => setSelectedUser(u)}
+                            className={`hover:bg-accent flex w-full items-center gap-2 p-3 transition ${selectedPeer?.id === u.id ? 'bg-accent' : ''}`}
+                            onClick={() => setSelectedPeer(u)}
                         >
                             <Avatar>
-                                <AvatarImage src={u.image ?? undefined} />
-                                <AvatarFallback>{u.name?.[0]}</AvatarFallback>
+                                <AvatarImage src={u.image ?? consts.SHADCN_DEFAULT_AVATAR} />
+                                <AvatarFallback>{u.name}</AvatarFallback>
                             </Avatar>
                             <span className="truncate">{u.name}</span>
                         </button>
                     ))}
                 </div>
             </div>
-            {/* Chat area */}
             <div className="flex flex-1 flex-col">
                 <div className="flex items-center gap-2 border-b p-4 font-semibold">
-                    {selectedUser && (
+                    {selectedPeer && (
                         <>
                             <Avatar>
-                                <AvatarImage src={selectedUser.image ?? undefined} />
-                                <AvatarFallback>{selectedUser.name?.[0]}</AvatarFallback>
+                                <AvatarImage src={selectedPeer.image ?? consts.SHADCN_DEFAULT_AVATAR} />
+                                <AvatarFallback>{selectedPeer.name}</AvatarFallback>
                             </Avatar>
-                            <span>{selectedUser.name}</span>
+                            <span>{selectedPeer.name}</span>
                         </>
                     )}
                 </div>
                 <div className="bg-background flex-1 space-y-2 overflow-y-auto p-4">
                     {messages.map((msg, i) => (
-                        <div key={i} className={`flex ${user && msg?.senderId === user.id ? 'justify-end' : 'justify-start'}`}>
-                            <Card className={`max-w-xs px-4 py-2 ${user && msg?.senderId === user.id ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                        <div
+                            key={i}
+                            className={clsx('flex justify-end', {
+                                'justify-start': msg.senderId !== user?.id
+                            })}
+                        >
+                            <Card
+                                className={clsx(`bg-primary text-primary-foreground max-w-xs px-4 py-2`, {
+                                    'bg-muted text-card-foreground': msg.senderId !== user?.id
+                                })}
+                            >
                                 {msg.text}
                             </Card>
                         </div>
@@ -142,9 +128,9 @@ function RouteComponent() {
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Type a message..."
                         className="flex-1"
-                        disabled={status !== 'open' || !selectedUser}
+                        disabled={status !== 'open' || !selectedPeer}
                     />
-                    <Button type="submit" disabled={status !== 'open' || !input.trim() || !selectedUser}>
+                    <Button type="submit" disabled={status !== 'open' || !input.trim() || !selectedPeer}>
                         Send
                     </Button>
                 </form>

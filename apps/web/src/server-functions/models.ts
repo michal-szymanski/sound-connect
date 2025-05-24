@@ -1,4 +1,5 @@
 import { getBindings } from '@/web/lib/cloudflare-bindings';
+import { getSession } from '@/web/server-functions/auth';
 import { errorHandler, getSessionCookie } from '@/web/server-functions/helpers';
 import { userDTOSchema } from '@/web/types/auth';
 import { followerSchema, followingSchema, postReactionSchema, postSchema } from '@/web/types/models';
@@ -216,38 +217,21 @@ export const getMutualFollowers = createServerFn()
         }
     });
 
-// export const getMessages = createServerFn()
-//     .validator((data: { senderId: string; receiverId: string }) => data)
-//     .handler(async ({ data }) => {
-//         const { headers } = getWebRequest()!;
-//         const { API, API_URL } = await getBindings();
-
-//         const response = await API.fetch(`${API_URL}/messages/${data.senderId}/${data.receiverId}`, {
-//             headers
-//         });
-
-//         if (!response.ok) {
-//             return await errorHandler(response);
-//         }
-
-//         try {
-//             const json = await response.json();
-//             const schema = z.array(messageSchema);
-
-//             return { success: true, body: schema.parse(json) } as const;
-//         } catch (error) {
-//             console.error(error);
-//             return { success: false, body: null } as const;
-//         }
-//     });
-
 export const getChatHistory = createServerFn()
-    .validator((data: { senderId: string; receiverId: string }) => data)
+    .validator((data: { peerId: string }) => data)
     .handler(async ({ data }) => {
         const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
 
-        const response = await API.fetch(`${API_URL}/ws/history?userId=${data.senderId}&peerId=${data.receiverId}`, {
+        const result = await getSession();
+
+        if (!result.success) {
+            return { success: false, body: null } as const;
+        }
+
+        const user = result.body;
+
+        const response = await API.fetch(`${API_URL}/ws/history?userId=${user.id}&peerId=${data.peerId}`, {
             headers
         });
 
