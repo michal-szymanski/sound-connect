@@ -188,29 +188,12 @@ app.on(['GET', 'POST'], '/ws', async (c) => {
     }
 });
 
-// Fix the proxy route for /ws/:roomId/history
 app.get('/ws/:roomId/history', async (c) => {
     const { roomId } = c.req.param();
     const id = c.env.WS.idFromName(roomId);
     const stub = c.env.WS.get(id);
-    // Use a full URL for the Durable Object fetch
-    const origin = c.req.header('origin') || 'http://localhost:8787';
-    const url = `${origin}/ws/${roomId}/history`;
-    // Only forward Content-Type header if present
-    const headers = new Headers();
-    const contentType = c.req.header('content-type');
-    if (contentType) {
-        headers.set('content-type', contentType);
-    }
-    const req = new Request(url, { method: 'GET', headers });
-    const resp = await stub.fetch(req);
-    const body = await resp.text();
-    const responseHeaders = new Headers(resp.headers);
-    responseHeaders.set('Content-Type', 'application/json');
-    responseHeaders.set('Access-Control-Allow-Origin', '*');
-    responseHeaders.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    responseHeaders.set('Access-Control-Allow-Headers', 'Content-Type');
-    return new Response(body, { status: resp.status, headers: responseHeaders });
+
+    return stub.fetch(c.req.raw);
 });
 
 export { WebSocketServer } from '@/api/websocket';
