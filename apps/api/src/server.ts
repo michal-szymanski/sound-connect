@@ -1,6 +1,6 @@
 import { getFollowedUsers, getUserFollowers, getUserById, followUser, unfollowUser, getMutualFollowers } from '@/api//db/queries/users-queries';
 import { z } from 'zod';
-import { getFeed, getPostsByUserId, getReactions } from '@/api//db/queries/posts-queries';
+import { getFeed, getPostsByUserId, getReactions } from '@/api/db/queries/posts-queries';
 import { cors } from 'hono/cors';
 import { Hono } from 'hono';
 import { HonoContext } from 'types';

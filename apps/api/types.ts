@@ -12,8 +12,8 @@ export type HonoContext = {
 
 export const chatMessageSchema = z.object({
     type: z.literal('chat'),
-    senderId: z.string(),
-    receiverId: z.string(),
+    userId: z.string(),
+    peerId: z.string(),
     text: z.string().max(constants.CHAT_MESSAGE_MAX_LENGTH)
 });
 
