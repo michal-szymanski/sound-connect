@@ -81,7 +81,7 @@ importers:
         specifier: ^4.19.2
         version: 4.19.4
       typescript:
-        specifier: ^5.8.2
+        specifier: ^5.8.3
         version: 5.8.3
       wrangler:
         specifier: ^4.0.0
@@ -229,7 +229,7 @@ importers:
         specifier: ^4.4.1
         version: 4.4.1(vite@6.3.5)
       typescript:
-        specifier: ^5.8.2
+        specifier: ^5.8.3
         version: 5.8.3
       vite-tsconfig-paths:
         specifier: ^5.1.4

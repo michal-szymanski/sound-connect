@@ -10,8 +10,12 @@ import { Button } from '@/web/components/ui/button';
 import { ChatMessage } from '@sound-connect/api/types';
 import { getChatHistory } from '@/web/server-functions/models';
 import { UserDTO } from '@/web/types/auth';
-import consts from '@/web/lib/consts';
+import constants from '@sound-connect/api/constants';
 import clsx from 'clsx';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/web/components/ui/form';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
@@ -23,9 +27,28 @@ function RouteComponent() {
     const { data: users } = useMutualFollowers(user);
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
-    const [input, setInput] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const { data: envs } = useEnvs();
+
+    const formSchema = z.object({
+        text: z.string().max(constants.CHAT_MESSAGE_MAX_LENGTH)
+    });
+
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            text: ''
+        }
+    });
+
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        if (!selectedPeer || !user || !values.text) return;
+
+        const newMessage: ChatMessage = { ...values, type: 'chat', senderId: user.id, receiverId: selectedPeer.id };
+        send(newMessage);
+        setMessages((prev) => [...prev, newMessage]);
+        form.reset();
+    };
 
     useEffect(() => {
         if (selectedPeer) {
@@ -56,84 +79,100 @@ function RouteComponent() {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const handleSend = () => {
-        if (input.trim() && selectedPeer && user) {
-            const newMessage: ChatMessage = { type: 'chat', text: input, receiverId: selectedPeer.id, senderId: user.id };
-            send(newMessage);
-            setMessages((prev) => [...prev, newMessage]);
-            setInput('');
-        }
+    const renderPeers = () => {
+        if (!users) return null;
+
+        return users.map((u) => (
+            <button
+                key={u.id}
+                className={`hover:bg-accent flex w-full items-center gap-2 p-3 transition ${selectedPeer?.id === u.id ? 'bg-accent' : ''}`}
+                onClick={() => setSelectedPeer(u)}
+            >
+                <Avatar>
+                    <AvatarImage src={u.image ?? constants.SHADCN_DEFAULT_AVATAR} />
+                    <AvatarFallback>{u.name}</AvatarFallback>
+                </Avatar>
+                <span className="truncate">{u.name}</span>
+            </button>
+        ));
+    };
+
+    const renderHeader = () => {
+        if (!selectedPeer) return null;
+
+        return (
+            <>
+                <Avatar>
+                    <AvatarImage src={selectedPeer.image ?? constants.SHADCN_DEFAULT_AVATAR} />
+                    <AvatarFallback>{selectedPeer.name}</AvatarFallback>
+                </Avatar>
+                <span>{selectedPeer.name}</span>
+            </>
+        );
+    };
+
+    const renderMessages = () => {
+        return messages.map((msg, i) => (
+            <div
+                key={i}
+                className={clsx('flex justify-end', {
+                    'justify-start': msg.senderId !== user?.id
+                })}
+            >
+                <Card
+                    className={clsx(`bg-primary text-primary-foreground max-w-xs px-4 py-2`, {
+                        'bg-muted text-card-foreground': msg.senderId !== user?.id
+                    })}
+                >
+                    {msg.text}
+                </Card>
+            </div>
+        ));
+    };
+
+    const renderForm = () => {
+        return (
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="bg-background flex items-center gap-2 border-t p-4">
+                    <FormField
+                        control={form.control}
+                        name="text"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-1 items-center justify-center gap-2">
+                                <FormLabel>
+                                    <span className="sr-only">Message</span>
+                                </FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        placeholder="Type a message..."
+                                        disabled={status !== 'open' || !selectedPeer}
+                                        maxLength={constants.CHAT_MESSAGE_MAX_LENGTH}
+                                    />
+                                </FormControl>
+                                {/* <FormMessage /> */}
+                            </FormItem>
+                        )}
+                    />
+                    <Button type="submit" className="hidden" aria-hidden="true" tabIndex={-1}></Button>
+                </form>
+            </Form>
+        );
     };
 
     return (
         <div className="mx-auto flex h-[80vh] w-full max-w-4xl overflow-hidden rounded-lg border shadow">
             <div className="bg-muted flex w-1/4 flex-col border-r">
                 <div className="border-b p-4 font-semibold">Chats</div>
-                <div className="flex-1 overflow-y-auto">
-                    {users?.map((u) => (
-                        <button
-                            key={u.id}
-                            className={`hover:bg-accent flex w-full items-center gap-2 p-3 transition ${selectedPeer?.id === u.id ? 'bg-accent' : ''}`}
-                            onClick={() => setSelectedPeer(u)}
-                        >
-                            <Avatar>
-                                <AvatarImage src={u.image ?? consts.SHADCN_DEFAULT_AVATAR} />
-                                <AvatarFallback>{u.name}</AvatarFallback>
-                            </Avatar>
-                            <span className="truncate">{u.name}</span>
-                        </button>
-                    ))}
-                </div>
+                <div className="flex-1 overflow-y-auto">{renderPeers()}</div>
             </div>
             <div className="flex flex-1 flex-col">
-                <div className="flex items-center gap-2 border-b p-4 font-semibold">
-                    {selectedPeer && (
-                        <>
-                            <Avatar>
-                                <AvatarImage src={selectedPeer.image ?? consts.SHADCN_DEFAULT_AVATAR} />
-                                <AvatarFallback>{selectedPeer.name}</AvatarFallback>
-                            </Avatar>
-                            <span>{selectedPeer.name}</span>
-                        </>
-                    )}
-                </div>
+                <div className="flex items-center gap-2 border-b p-4 font-semibold">{renderHeader()}</div>
                 <div className="bg-background flex-1 space-y-2 overflow-y-auto p-4">
-                    {messages.map((msg, i) => (
-                        <div
-                            key={i}
-                            className={clsx('flex justify-end', {
-                                'justify-start': msg.senderId !== user?.id
-                            })}
-                        >
-                            <Card
-                                className={clsx(`bg-primary text-primary-foreground max-w-xs px-4 py-2`, {
-                                    'bg-muted text-card-foreground': msg.senderId !== user?.id
-                                })}
-                            >
-                                {msg.text}
-                            </Card>
-                        </div>
-                    ))}
+                    {renderMessages()}
                     <div ref={messagesEndRef} />
                 </div>
-                <form
-                    className="bg-background flex gap-2 border-t p-4"
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        handleSend();
-                    }}
-                >
-                    <Input
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Type a message..."
-                        className="flex-1"
-                        disabled={status !== 'open' || !selectedPeer}
-                    />
-                    <Button type="submit" disabled={status !== 'open' || !input.trim() || !selectedPeer}>
-                        Send
-                    </Button>
-                </form>
+                {renderForm()}
             </div>
         </div>
     );
