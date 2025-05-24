@@ -230,8 +230,8 @@ export const getChatHistory = createServerFn()
         }
 
         const user = result.body;
-
-        const response = await API.fetch(`${API_URL}/ws/history?userId=${user.id}&peerId=${data.peerId}`, {
+        const roomId = [user.id, data.peerId].sort().join(':');
+        const response = await API.fetch(`${API_URL}/ws/${roomId}/history`, {
             headers
         });
 
