@@ -232,7 +232,7 @@ export const getChatHistory = createServerFn()
 
         const user = result.body;
         const roomId = getRoomId(user.id, data.peerId);
-        const response = await API.fetch(`${API_URL}/ws/${roomId}/history`, {
+        const response = await API.fetch(`${API_URL}/ws/chat/${roomId}/history`, {
             headers
         });
 

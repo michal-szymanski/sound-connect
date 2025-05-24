@@ -142,7 +142,7 @@ app.get('/messages/:senderId/:receiverId', async (c) => {
     return c.json(messagesResults);
 });
 
-app.on(['GET', 'POST'], '/ws', async (c) => {
+app.on(['GET', 'POST'], '/ws/chat/:peerId', async (c) => {
     const upgradeHeader = c.req.header('Upgrade');
 
     if (!upgradeHeader || upgradeHeader.toLowerCase() !== 'websocket') {
@@ -151,7 +151,7 @@ app.on(['GET', 'POST'], '/ws', async (c) => {
 
     try {
         const user = c.get('user');
-        const peerId = c.req.query('peerId');
+        const peerId = c.req.param('peerId');
 
         if (!peerId) {
             return c.json({ message: 'Missing peerId in query parameters' }, { status: 400 });
@@ -161,14 +161,21 @@ app.on(['GET', 'POST'], '/ws', async (c) => {
         const id = c.env.WS.idFromName(roomId);
         const stub = c.env.WS.get(id);
 
-        return stub.fetch(c.req.raw);
+        const modifiedRequest = new Request(c.req.raw, {
+            headers: new Headers({
+                ...Object.fromEntries(c.req.raw.headers),
+                'X-User-Id': user.id
+            })
+        });
+
+        return stub.fetch(modifiedRequest);
     } catch (error) {
         console.error('Error handling WebSocket connection:', error);
         return c.json({ error }, { status: 500 });
     }
 });
 
-app.get('/ws/:roomId/history', async (c) => {
+app.get('/ws/chat/:roomId/history', async (c) => {
     const { roomId } = c.req.param();
     const user = c.get('user');
 
@@ -179,7 +186,14 @@ app.get('/ws/:roomId/history', async (c) => {
     const id = c.env.WS.idFromName(roomId);
     const stub = c.env.WS.get(id);
 
-    return stub.fetch(c.req.raw);
+    const modifiedRequest = new Request(c.req.raw, {
+        headers: new Headers({
+            ...Object.fromEntries(c.req.raw.headers),
+            'X-User-Id': user.id
+        })
+    });
+
+    return stub.fetch(modifiedRequest);
 });
 
 export { WebSocketServer } from '@/api/websocket';
