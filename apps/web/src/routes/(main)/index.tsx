@@ -5,22 +5,8 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/(main)/')({
     component: RouteComponent,
-    beforeLoad: async ({ context: { user } }) => {
-        if (!user) {
-            const path = '/sign-in';
-            console.info(`[App] Redirecting to: ${path}`);
-
-            throw redirect({
-                to: path
-            });
-        }
-
-        return { user };
-    },
     loader: async ({ context }) => {
-        const feed = await context.queryClient.ensureQueryData(feedQueryOptions());
-
-        return { feed };
+        await context.queryClient.ensureQueryData(feedQueryOptions());
     }
 });
 

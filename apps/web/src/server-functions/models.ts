@@ -1,7 +1,8 @@
 import { getBindings } from '@/web/lib/cloudflare-bindings';
 import { errorHandler, getSessionCookie } from '@/web/server-functions/helpers';
 import { userDTOSchema } from '@/web/types/auth';
-import { followerSchema, followingSchema, messageSchema, postReactionSchema, postSchema } from '@/web/types/models';
+import { followerSchema, followingSchema, postReactionSchema, postSchema } from '@/web/types/models';
+import { chatMessageSchema } from '@sound-connect/api/types';
 import { createServerFn } from '@tanstack/react-start';
 import { getWebRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
@@ -215,13 +216,38 @@ export const getMutualFollowers = createServerFn()
         }
     });
 
-export const getMessages = createServerFn()
+// export const getMessages = createServerFn()
+//     .validator((data: { senderId: string; receiverId: string }) => data)
+//     .handler(async ({ data }) => {
+//         const { headers } = getWebRequest()!;
+//         const { API, API_URL } = await getBindings();
+
+//         const response = await API.fetch(`${API_URL}/messages/${data.senderId}/${data.receiverId}`, {
+//             headers
+//         });
+
+//         if (!response.ok) {
+//             return await errorHandler(response);
+//         }
+
+//         try {
+//             const json = await response.json();
+//             const schema = z.array(messageSchema);
+
+//             return { success: true, body: schema.parse(json) } as const;
+//         } catch (error) {
+//             console.error(error);
+//             return { success: false, body: null } as const;
+//         }
+//     });
+
+export const getChatHistory = createServerFn()
     .validator((data: { senderId: string; receiverId: string }) => data)
     .handler(async ({ data }) => {
         const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
 
-        const response = await API.fetch(`${API_URL}/messages/${data.senderId}/${data.receiverId}`, {
+        const response = await API.fetch(`${API_URL}/ws/history?userId=${data.senderId}&peerId=${data.receiverId}`, {
             headers
         });
 
@@ -231,7 +257,7 @@ export const getMessages = createServerFn()
 
         try {
             const json = await response.json();
-            const schema = z.array(messageSchema);
+            const schema = z.array(chatMessageSchema);
 
             return { success: true, body: schema.parse(json) } as const;
         } catch (error) {
