@@ -194,13 +194,13 @@ app.get('/ws/history', async (c) => {
     const id = c.env.WS.idFromName(roomId);
     const stub = c.env.WS.get(id);
 
-    return await stub.fetch(c.req.raw);
+    return stub.fetch(c.req.raw);
 });
 
 app.get('/ws/debug', async (c) => {
     const id = c.env.WS.idFromName('debug');
     const stub = c.env.WS.get(id);
-    return await stub.fetch(c.req.raw);
+    return stub.fetch(c.req.raw);
 });
 
 export { WebSocketServer } from '@/api/websocket';
