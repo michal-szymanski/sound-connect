@@ -44,7 +44,7 @@ function RouteComponent() {
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!selectedPeer || !user || !values.text) return;
 
-        const newMessage: ChatMessage = { ...values, type: 'chat', userId: user.id, peerId: selectedPeer.id };
+        const newMessage: ChatMessage = { ...values, type: 'chat', peerId: selectedPeer.id };
         send(newMessage);
         setMessages((prev) => [...prev, newMessage]);
         form.reset();
@@ -112,16 +112,18 @@ function RouteComponent() {
     };
 
     const renderMessages = () => {
+        if (!user) return null;
+
         return messages.map((msg, i) => (
             <div
                 key={i}
                 className={clsx('flex justify-end', {
-                    'justify-start': msg.userId !== user?.id
+                    'justify-start': msg.peerId === user.id
                 })}
             >
                 <Card
                     className={clsx(`bg-primary text-primary-foreground max-w-xs px-4 py-2`, {
-                        'bg-muted text-card-foreground': msg.userId !== user?.id
+                        'bg-muted text-card-foreground': msg.peerId === user.id
                     })}
                 >
                     {msg.text}

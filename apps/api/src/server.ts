@@ -22,21 +22,21 @@ app.use(
     })
 );
 
-// app.use('*', async (c, next) => {
-//     const session = await auth.api.getSession({
-//         headers: c.req.raw.headers
-//     });
+app.use('*', async (c, next) => {
+    const session = await auth.api.getSession({
+        headers: c.req.raw.headers
+    });
 
-//     if (!session) {
-//         c.set('user', null);
-//         c.set('session', null);
-//         return next();
-//     }
+    if (!session) {
+        c.set('user', null);
+        c.set('session', null);
+        return next();
+    }
 
-//     c.set('user', session.user);
-//     c.set('session', session.session);
-//     return next();
-// });
+    c.set('user', session.user);
+    c.set('session', session.session);
+    return next();
+});
 
 app.onError(({ name, message, stack, cause }, c) => {
     return c.json({ name, message, stack, cause }, 400);
@@ -170,7 +170,13 @@ app.on(['GET', 'POST'], '/ws', async (c) => {
     }
 
     try {
-        const userId = c.req.query('userId');
+        const user = c.get('user');
+
+        if (!user) {
+            return c.json({ message: 'Unauthorized' }, { status: 401 });
+        }
+
+        const userId = user.id;
         const peerId = c.req.query('peerId');
 
         if (!userId || !peerId) {
