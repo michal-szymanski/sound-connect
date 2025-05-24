@@ -48,11 +48,7 @@ export class WebSocketServer extends DurableObject {
             throw new Error('[App] Invalid roomId');
         }
 
-        const history = await this.state.storage.get<Array<ChatMessage>>('messages');
-
-        if (!history) {
-            throw new Error('[App] No chat history found');
-        }
+        const history = (await this.state.storage.get<Array<ChatMessage>>('messages')) || [];
 
         const filteredHistory = history.filter(
             (message) => (message.senderId === userId && message.receiverId === peerId) || (message.senderId === peerId && message.receiverId === userId)
@@ -74,6 +70,7 @@ export class WebSocketServer extends DurableObject {
 
         // Add connection to memory
         this.connections.set(userId, server);
+
         this.userIds.add(userId);
 
         // Persist userId in storage
@@ -83,16 +80,11 @@ export class WebSocketServer extends DurableObject {
         server.addEventListener('message', async (event: MessageEvent<string>) => {
             try {
                 const message = event.data;
-                const history = await this.state.storage.get<Array<ChatMessage>>('messages');
-
-                if (!history) {
-                    throw new Error('[App] No chat history found');
-                }
+                const history = (await this.state.storage.get<Array<ChatMessage>>('messages')) || [];
 
                 const parsedMessage = chatMessageSchema.parse(JSON.parse(message));
                 history.push(parsedMessage);
                 await this.state.storage.put('messages', history);
-
                 this.broadcastMessage(message, userId);
             } catch (error) {
                 console.error(`[App] Error broadcasting message from user ${userId}:`, error);

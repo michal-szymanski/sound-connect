@@ -1,6 +1,6 @@
-import { DrizzleD1Database } from 'drizzle-orm/d1';
-import * as schema from '@/api/db/schema';
 import { auth } from 'auth';
+import z from 'zod';
+import constants from './constants';
 
 export type HonoContext = {
     Bindings: CloudflareBindings;
@@ -10,17 +10,11 @@ export type HonoContext = {
     };
 };
 
-export type Schema = typeof schema;
-
-export type DrizzleDB = DrizzleD1Database<Schema>;
-
-import z from 'zod';
-
 export const chatMessageSchema = z.object({
     type: z.literal('chat'),
     senderId: z.string(),
     receiverId: z.string(),
-    text: z.string()
+    text: z.string().max(constants.CHAT_MESSAGE_MAX_LENGTH)
 });
 
 export type ChatMessage = z.infer<typeof chatMessageSchema>;

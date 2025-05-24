@@ -1,6 +1,6 @@
 import { users, usersFollowersTable } from '@/api//db/schema';
 import { db } from '@/api/db';
-import { aliasedTable, eq, or } from 'drizzle-orm';
+import { aliasedTable, eq } from 'drizzle-orm';
 import { and } from 'drizzle-orm';
 
 export const getFollowedUsers = async (userId: string) => {
