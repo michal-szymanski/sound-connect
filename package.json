@@ -12,7 +12,8 @@
     "tail:web": "pnpm --filter @sound-connect/web tail",
     "tail:api": "pnpm --filter @sound-connect/api tail",
     "prettier:format": "prettier ./apps --write",
-    "prettier:check": "prettier ./apps --check"
+    "prettier:check": "prettier ./apps --check",
+    "wipe:do": "rm -rf apps/api/.wrangller/do"
   },
   "devDependencies": {
     "prettier": "^3.5.0",
