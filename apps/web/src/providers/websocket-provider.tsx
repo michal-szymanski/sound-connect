@@ -1,5 +1,4 @@
-import { useEnvs, userQueryOptions } from '@/web/lib/react-query';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useEnvs } from '@/web/lib/react-query';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { chatMessageSchema, ChatMessage } from '@sound-connect/api/types';
 

@@ -158,8 +158,8 @@ app.on(['GET', 'POST'], '/ws/chat/:peerId', async (c) => {
         }
 
         const roomId = getRoomId(user.id, peerId);
-        const id = c.env.WS.idFromName(roomId);
-        const stub = c.env.WS.get(id);
+        const id = c.env.ChatDO.idFromName(roomId);
+        const stub = c.env.ChatDO.get(id);
 
         const modifiedRequest = new Request(c.req.raw, {
             headers: new Headers({
@@ -183,8 +183,8 @@ app.get('/ws/chat/:roomId/history', async (c) => {
         return c.json({ message: 'Forbidden: You are not part of this room' }, 403);
     }
 
-    const id = c.env.WS.idFromName(roomId);
-    const stub = c.env.WS.get(id);
+    const id = c.env.ChatDO.idFromName(roomId);
+    const stub = c.env.ChatDO.get(id);
 
     const modifiedRequest = new Request(c.req.raw, {
         headers: new Headers({
@@ -196,6 +196,32 @@ app.get('/ws/chat/:roomId/history', async (c) => {
     return stub.fetch(modifiedRequest);
 });
 
-export { WebSocketServer } from '@/api/websocket';
+app.on(['GET', 'POST'], '/ws/user-statuses', async (c) => {
+    const upgradeHeader = c.req.header('Upgrade');
+
+    if (!upgradeHeader || upgradeHeader.toLowerCase() !== 'websocket') {
+        return c.json({ message: 'WebSocket Upgrade Required' }, 426);
+    }
+
+    try {
+        const user = c.get('user');
+
+        if (!user || !user.id) {
+            return c.json({ message: 'Unauthorized' }, 401);
+        }
+
+        // Use a shared Durable Object instance
+        const id = c.env.UserStatusesDO.idFromName('global-user-statuses');
+        const stub = c.env.UserStatusesDO.get(id);
+
+        return stub.fetch(c.req.raw);
+    } catch (error) {
+        console.error('Error handling WebSocket connection:', error);
+        return c.json({ error }, 500);
+    }
+});
+
+export { ChatDurableObject } from '@/api/durable-objects/chat-durable-object';
+export { UserStatusesDurableObject } from '@/api/durable-objects/user-statuses-durable-object';
 
 export default app;

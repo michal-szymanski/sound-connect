@@ -26,8 +26,12 @@
     "durable_objects": {
         "bindings": [
             {
-                "name": "WS",
-                "class_name": "WebSocketServer"
+                "name": "ChatDO",
+                "class_name": "ChatDurableObject"
+            },
+            {
+                "name": "UserStatusesDO",
+                "class_name": "UserStatusesDurableObject"
             }
         ]
     },
@@ -35,6 +39,10 @@
         {
             "tag": "v1",
             "new_sqlite_classes": ["WebSocketServer"]
+        },
+        {
+            "tag": "v2",
+            "new_sqlite_classes": ["ChatDurableObject", "UserStatusesDurableObject"]
         }
     ]
     /**
