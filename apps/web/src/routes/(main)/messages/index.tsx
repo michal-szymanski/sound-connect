@@ -24,7 +24,7 @@ export const Route = createFileRoute('/(main)/messages/')({
 
 function RouteComponent() {
     const { send, lastMessage, status, setPeerId } = useWebSocket();
-    const { statuses, subscribe, unsubscribe, changeStatus, status: wsStatus } = useUserStatuses();
+    const { statuses, subscribe, unsubscribe, status: wsStatus, changeStatus } = useUserStatuses();
     const { data: user } = useSuspenseQuery(userQueryOptions(null));
     const { data: users } = useMutualFollowers(user);
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
@@ -51,12 +51,6 @@ function RouteComponent() {
         setMessages((prev) => [...prev, newMessage]);
         form.reset();
     };
-
-    useEffect(() => {
-        if (!user || wsStatus !== 'open') return;
-
-        changeStatus(user.id, 'online');
-    }, [user, wsStatus]);
 
     useEffect(() => {
         if (selectedPeer) {
@@ -103,6 +97,11 @@ function RouteComponent() {
     useEffect(() => {
         console.log('User statuses updated:', statuses);
     }, [statuses]);
+
+    useEffect(() => {
+        if (wsStatus !== 'open') return;
+        changeStatus('online');
+    }, [wsStatus]);
 
     const renderPeers = () => {
         if (!users) return null;
