@@ -1,7 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { ChatMessage, chatMessageSchema } from 'types';
 
-export class WebSocketServer extends DurableObject {
+export class ChatDurableObject extends DurableObject {
     private connections: Map<string, WebSocket> = new Map();
     private userIds: Set<string> = new Set();
 

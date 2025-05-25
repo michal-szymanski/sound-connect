@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/web/components/ui/form';
+import { useUserStatuses } from '@/web/providers/user-statuses-provider';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
@@ -23,6 +24,7 @@ export const Route = createFileRoute('/(main)/messages/')({
 
 function RouteComponent() {
     const { send, lastMessage, status, setPeerId } = useWebSocket();
+    const { statuses, subscribe, unsubscribe, changeStatus, status: wsStatus } = useUserStatuses();
     const { data: user } = useSuspenseQuery(userQueryOptions(null));
     const { data: users } = useMutualFollowers(user);
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
@@ -49,6 +51,12 @@ function RouteComponent() {
         setMessages((prev) => [...prev, newMessage]);
         form.reset();
     };
+
+    useEffect(() => {
+        if (!user || wsStatus !== 'open') return;
+
+        changeStatus(user.id, 'online');
+    }, [user, wsStatus]);
 
     useEffect(() => {
         if (selectedPeer) {
@@ -78,6 +86,23 @@ function RouteComponent() {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    useEffect(() => {
+        if (!users || wsStatus !== 'open') return;
+
+        const userIds = users.map((u) => u.id);
+        console.log('[UI] Subscribing to user statuses:', userIds);
+        subscribe(userIds);
+
+        return () => {
+            console.log('[UI] Unsubscribing from user statuses:', userIds);
+            unsubscribe(userIds);
+        };
+    }, [users, wsStatus]);
+
+    useEffect(() => {
+        console.log('User statuses updated:', statuses);
+    }, [statuses]);
 
     const renderPeers = () => {
         if (!users) return null;
