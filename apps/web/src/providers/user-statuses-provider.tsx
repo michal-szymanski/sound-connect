@@ -10,6 +10,7 @@ interface UserStatusesContextType {
     unsubscribe: (userIds: string[]) => void; // Function to unsubscribe from user statuses
     changeStatus: (status: string) => void; // Function to change the current user's status
     status: WSStatus;
+    isSubscribed: boolean;
 }
 
 // Create the context
@@ -25,6 +26,7 @@ export const UserStatusesProvider: React.FC<UserStatusesProviderProps> = ({ chil
     const wsRef = useRef<WebSocket | null>(null);
     const [status, setStatus] = useState<WSStatus>('connecting');
     const { data: envs } = useEnvs();
+    const [isSubscribed, setIsSubscribed] = useState(false);
 
     // Function to subscribe to user statuses
     const subscribe = (userIds: string[]) => {
@@ -63,7 +65,7 @@ export const UserStatusesProvider: React.FC<UserStatusesProviderProps> = ({ chil
             const data = JSON.parse(event.data);
             console.log('[Provider] Received WebSocket message:', data);
 
-            if (data.type === 'statusUpdate') {
+            if (data.type === 'status-update') {
                 if (data.subscriptions) {
                     // Handle subscriptions update
                     const subscriptions = new Map(data.subscriptions); // Convert array of [userId, status] back to Map
@@ -82,6 +84,11 @@ export const UserStatusesProvider: React.FC<UserStatusesProviderProps> = ({ chil
                         return updatedStatuses; // Return the updated Map
                     });
                 }
+            }
+
+            if (data.type === 'subscribed') {
+                console.log(`SUBSCRIBED TO`, JSON.parse(event.data).subscribers);
+                setIsSubscribed(true);
             }
         };
 
@@ -111,7 +118,8 @@ export const UserStatusesProvider: React.FC<UserStatusesProviderProps> = ({ chil
         subscribe,
         unsubscribe,
         changeStatus, // Add the changeStatus function to the context
-        status
+        status,
+        isSubscribed
     };
 
     return <UserStatusesContext.Provider value={value}>{children}</UserStatusesContext.Provider>;
