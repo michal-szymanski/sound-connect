@@ -5,10 +5,10 @@ export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 
 // Define the shape of the context
 interface UserStatusesContextType {
-    statuses: Record<string, string>; // Map of userId -> status (e.g., "online", "offline", "idle")
+    statuses: Map<string, string>; // Map of userId -> status (e.g., "online", "offline", "idle")
     subscribe: (userIds: string[]) => void; // Function to subscribe to user statuses
     unsubscribe: (userIds: string[]) => void; // Function to unsubscribe from user statuses
-    changeStatus: (userId: string, status: string) => void; // Function to change a user's status,
+    changeStatus: (status: string) => void; // Function to change the current user's status
     status: WSStatus;
 }
 
@@ -21,7 +21,7 @@ interface UserStatusesProviderProps {
 }
 
 export const UserStatusesProvider: React.FC<UserStatusesProviderProps> = ({ children }) => {
-    const [statuses, setStatuses] = useState<Record<string, string>>({});
+    const [statuses, setStatuses] = useState<Map<string, string>>(new Map());
     const wsRef = useRef<WebSocket | null>(null);
     const [status, setStatus] = useState<WSStatus>('connecting');
     const { data: envs } = useEnvs();
@@ -29,6 +29,7 @@ export const UserStatusesProvider: React.FC<UserStatusesProviderProps> = ({ chil
     // Function to subscribe to user statuses
     const subscribe = (userIds: string[]) => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            console.log('subscribing on frontend', userIds);
             wsRef.current.send(JSON.stringify({ type: 'subscribe', userIds }));
         }
     };
@@ -40,10 +41,13 @@ export const UserStatusesProvider: React.FC<UserStatusesProviderProps> = ({ chil
         }
     };
 
-    // Function to change a user's status
-    const changeStatus = (userId: string, status: string) => {
+    // Function to change the current user's status
+    const changeStatus = (newStatus: string) => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-            wsRef.current.send(JSON.stringify({ type: 'changeStatus', userId, status }));
+            wsRef.current.send(JSON.stringify({ type: 'change-status', status: newStatus }));
+            console.log(`Sent status update: ${newStatus}`);
+        } else {
+            console.warn('WebSocket is not open. Cannot send status update.');
         }
     };
 
@@ -52,32 +56,48 @@ export const UserStatusesProvider: React.FC<UserStatusesProviderProps> = ({ chil
         if (!envs) return;
 
         const { API_URL } = envs;
-        const ws = new WebSocket(`${API_URL}/ws/user-statuses`);
+        const ws = new WebSocket(`${API_URL}/ws/user`);
         wsRef.current = ws;
-
-        ws.onopen = () => {
-            setStatus('open');
-            console.log('WebSocket user-statuses connection established');
-        };
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
+            console.log('[Provider] Received WebSocket message:', data);
+
             if (data.type === 'statusUpdate') {
-                setStatuses((prevStatuses) => ({
-                    ...prevStatuses,
-                    [data.userId]: data.status // Update the status of the specific user
-                }));
+                if (data.subscriptions) {
+                    // Handle subscriptions update
+                    const subscriptions = new Map(data.subscriptions); // Convert array of [userId, status] back to Map
+                    setStatuses((prevStatuses) => {
+                        const updatedStatuses = new Map(prevStatuses); // Clone the previous Map
+                        subscriptions.forEach((status, userId) => {
+                            updatedStatuses.set(userId as string, status as string); // Update the status for each user
+                        });
+                        return updatedStatuses; // Return the updated Map
+                    });
+                } else if (data.status && data.userId) {
+                    // Handle single status update
+                    setStatuses((prevStatuses) => {
+                        const updatedStatuses = new Map(prevStatuses); // Clone the previous Map
+                        updatedStatuses.set(data.userId as string, data.status as string); // Update the status for the specific user
+                        return updatedStatuses; // Return the updated Map
+                    });
+                }
             }
+        };
+
+        ws.onopen = () => {
+            setStatus('open');
+            console.log('[Provider] WebSocket connection established');
         };
 
         ws.onclose = () => {
             setStatus('closed');
-            console.log('WebSocket user-statuses connection closed');
+            console.log('[Provider] WebSocket connection closed');
         };
 
         ws.onerror = (error) => {
             setStatus('error');
-            console.error('WebSocket user-statuses error:', error);
+            console.error('[Provider] WebSocket error:', error);
         };
 
         return () => {
@@ -90,7 +110,7 @@ export const UserStatusesProvider: React.FC<UserStatusesProviderProps> = ({ chil
         statuses,
         subscribe,
         unsubscribe,
-        changeStatus,
+        changeStatus, // Add the changeStatus function to the context
         status
     };
 

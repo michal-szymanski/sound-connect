@@ -30,19 +30,15 @@
                 "class_name": "ChatDurableObject"
             },
             {
-                "name": "UserStatusesDO",
-                "class_name": "UserStatusesDurableObject"
+                "name": "UserDO",
+                "class_name": "UserDurableObject"
             }
         ]
     },
     "migrations": [
         {
             "tag": "v1",
-            "new_sqlite_classes": ["WebSocketServer"]
-        },
-        {
-            "tag": "v2",
-            "new_sqlite_classes": ["ChatDurableObject", "UserStatusesDurableObject"]
+            "new_sqlite_classes": ["ChatDurableObject", "UserDurableObject"]
         }
     ]
     /**

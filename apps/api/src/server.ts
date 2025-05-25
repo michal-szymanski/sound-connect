@@ -196,7 +196,7 @@ app.get('/ws/chat/:roomId/history', async (c) => {
     return stub.fetch(modifiedRequest);
 });
 
-app.on(['GET', 'POST'], '/ws/user-statuses', async (c) => {
+app.on(['GET', 'POST'], '/ws/user', async (c) => {
     const upgradeHeader = c.req.header('Upgrade');
 
     if (!upgradeHeader || upgradeHeader.toLowerCase() !== 'websocket') {
@@ -205,16 +205,17 @@ app.on(['GET', 'POST'], '/ws/user-statuses', async (c) => {
 
     try {
         const user = c.get('user');
+        const id = c.env.UserDO.idFromName(`user:${user.id}`);
+        const stub = c.env.UserDO.get(id);
 
-        if (!user || !user.id) {
-            return c.json({ message: 'Unauthorized' }, 401);
-        }
+        const modifiedRequest = new Request(c.req.raw, {
+            headers: new Headers({
+                ...Object.fromEntries(c.req.raw.headers),
+                'X-User-Id': user.id
+            })
+        });
 
-        // Use a shared Durable Object instance
-        const id = c.env.UserStatusesDO.idFromName('global-user-statuses');
-        const stub = c.env.UserStatusesDO.get(id);
-
-        return stub.fetch(c.req.raw);
+        return stub.fetch(modifiedRequest);
     } catch (error) {
         console.error('Error handling WebSocket connection:', error);
         return c.json({ error }, 500);
@@ -222,6 +223,6 @@ app.on(['GET', 'POST'], '/ws/user-statuses', async (c) => {
 });
 
 export { ChatDurableObject } from '@/api/durable-objects/chat-durable-object';
-export { UserStatusesDurableObject } from '@/api/durable-objects/user-statuses-durable-object';
+export { UserDurableObject } from '@/api/durable-objects/user-durable-object';
 
 export default app;
