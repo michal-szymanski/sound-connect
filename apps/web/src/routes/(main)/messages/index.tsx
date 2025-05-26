@@ -16,6 +16,8 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/web/components/ui/form';
+import OnlineStatusIcon from '@/web/components/online-status-icon';
+import { useUserStatuses } from '@/web/providers/user-statuses-provider';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
@@ -29,6 +31,7 @@ function RouteComponent() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const { data: envs } = useEnvs();
+    const { statuses } = useUserStatuses();
 
     const formSchema = z.object({
         text: z.string().max(constants.CHAT_MESSAGE_MAX_LENGTH)
@@ -88,10 +91,13 @@ function RouteComponent() {
                 className={`hover:bg-accent flex w-full items-center gap-2 p-3 transition ${selectedPeer?.id === u.id ? 'bg-accent' : ''}`}
                 onClick={() => setSelectedPeer(u)}
             >
-                <Avatar>
-                    <AvatarImage src={u.image ?? constants.SHADCN_DEFAULT_AVATAR} />
-                    <AvatarFallback>{u.name}</AvatarFallback>
-                </Avatar>
+                <div className="absolute">
+                    <Avatar className="relative top-0">
+                        <AvatarImage src={u.image ?? constants.SHADCN_DEFAULT_AVATAR} />
+                        <AvatarFallback>{u.name}</AvatarFallback>
+                    </Avatar>
+                    <OnlineStatusIcon status={statuses.get(u.id)} />
+                </div>
                 <span className="truncate">{u.name}</span>
             </button>
         ));

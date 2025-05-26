@@ -22,7 +22,7 @@ export const chatMessageSchema = z.object({
 
 export type ChatMessage = z.infer<typeof chatMessageSchema>;
 
-export const onlineStatusSchema = z.union([z.literal('online'), z.literal('offline')]);
+export const onlineStatusSchema = z.enum(['online', 'offline']);
 
 export type OnlineStatus = z.infer<typeof onlineStatusSchema>;
 
