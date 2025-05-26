@@ -1,55 +1,75 @@
 import { useEnvs } from '@/web/lib/react-query';
-import { onlineStatusMessageSchema, WebSocketMessage, webSocketMessageSchema } from '@sound-connect/api/types';
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import constants from '@sound-connect/api/constants';
+import { OnlineStatus, onlineStatusMessageSchema, WebSocketMessage, webSocketMessageSchema } from '@sound-connect/api/types';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
+type Context = {
+    statuses: Map<string, OnlineStatus>;
+};
 
-interface UserStatusesContextType {}
+const UserStatusesContext = createContext<Context | undefined>(undefined);
 
-const UserStatusesContext = createContext<UserStatusesContextType | undefined>(undefined);
-
-interface UserStatusesProviderProps {
+type Props = {
     children: React.ReactNode;
-}
+};
 
-export const UserStatusesProvider: React.FC<UserStatusesProviderProps> = ({ children }) => {
-    const wsRef = useRef<WebSocket | null>(null);
-    const [status, setStatus] = useState<WSStatus>('connecting');
+export const UserStatusesProvider = ({ children }: Props) => {
     const { data: envs } = useEnvs();
+    const [statuses, setStatuses] = useState<Map<string, OnlineStatus>>(new Map());
 
     useEffect(() => {
         if (!envs) return;
 
         const { API_URL } = envs;
         const ws = new WebSocket(`${API_URL}/ws/user`);
-        wsRef.current = ws;
+        const timeouts: NodeJS.Timeout[] = [];
+
+        const clearTimeouts = () => {
+            for (const timeout of timeouts) {
+                clearTimeout(timeout);
+            }
+        };
 
         ws.onmessage = (event) => {
             const json = JSON.parse(event.data);
             const { type } = webSocketMessageSchema.parse(json);
 
             if (type === 'online-status') {
+                clearTimeouts();
+
                 const data = onlineStatusMessageSchema.parse(json);
-                console.log(data);
+
+                setStatuses((prevStatuses) => {
+                    const newStatuses = new Map(prevStatuses);
+                    newStatuses.set(data.userId, data.status);
+                    return newStatuses;
+                });
+
+                const timeout = setTimeout(() => {
+                    setStatuses((prevStatuses) => {
+                        const newStatuses = new Map(prevStatuses);
+                        newStatuses.set(data.userId, 'offline');
+                        return newStatuses;
+                    });
+                }, constants.ONLINE_STATUS_INTERVAL + 5000);
+
+                timeouts.push(timeout);
             }
         };
 
         ws.onopen = () => {
-            setStatus('open');
             const message: WebSocketMessage = { type: 'connect' };
             ws.send(JSON.stringify(message));
             console.log('[Provider] WebSocket connection established');
         };
 
         ws.onclose = () => {
-            setStatus('closed');
             const message: WebSocketMessage = { type: 'disconnect' };
             ws.send(JSON.stringify(message));
             console.log('[Provider] WebSocket connection closed');
         };
 
         ws.onerror = (error) => {
-            setStatus('error');
             const message: WebSocketMessage = { type: 'disconnect' };
             ws.send(JSON.stringify(message));
             console.error('[Provider] WebSocket error:', error);
@@ -57,13 +77,13 @@ export const UserStatusesProvider: React.FC<UserStatusesProviderProps> = ({ chil
 
         return () => {
             ws.close();
+            clearTimeouts();
         };
     }, [envs]);
 
-    return <UserStatusesContext.Provider value={{}}>{children}</UserStatusesContext.Provider>;
+    return <UserStatusesContext.Provider value={{ statuses }}>{children}</UserStatusesContext.Provider>;
 };
 
-// Custom hook to use the context
 export const useUserStatuses = () => {
     const context = useContext(UserStatusesContext);
 
