@@ -1,5 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import constants from '../../constants';
+import { OnlineStatusMessage, webSocketMessageSchema } from 'types';
 
 export class UserDurableObject extends DurableObject {
     private websocket: WebSocket | null = null;
@@ -70,13 +71,13 @@ export class UserDurableObject extends DurableObject {
             return false;
         }
 
-        this.websocket.send(
-            JSON.stringify({
-                type: 'status-update',
-                userId,
-                status: 'online'
-            })
-        );
+        const message: OnlineStatusMessage = {
+            type: 'online-status',
+            userId,
+            status: 'online'
+        };
+
+        this.websocket.send(JSON.stringify(message));
 
         return true;
     }
@@ -85,13 +86,12 @@ export class UserDurableObject extends DurableObject {
         this.websocket = webSocket;
 
         webSocket.addEventListener('message', (event) => {
-            const data = JSON.parse(event.data);
+            const json = JSON.parse(event.data);
+            const { type } = webSocketMessageSchema.parse(json);
 
-            if (data.type === 'connect') {
+            if (type === 'connect') {
                 this.storage.setAlarm(Date.now() + constants.ONLINE_STATUS_INTERVAL);
-            }
-
-            if (data.type === 'disconnect') {
+            } else if (type === 'disconnect') {
                 this.storage.deleteAlarm();
             }
         });

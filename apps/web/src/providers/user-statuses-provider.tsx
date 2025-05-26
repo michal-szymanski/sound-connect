@@ -1,4 +1,5 @@
 import { useEnvs } from '@/web/lib/react-query';
+import { onlineStatusMessageSchema, WebSocketMessage, webSocketMessageSchema } from '@sound-connect/api/types';
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
@@ -24,29 +25,33 @@ export const UserStatusesProvider: React.FC<UserStatusesProviderProps> = ({ chil
         wsRef.current = ws;
 
         ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            console.log('[Provider] Received WebSocket message:', data);
+            const json = JSON.parse(event.data);
+            const { type } = webSocketMessageSchema.parse(json);
 
-            if (data.type === 'status-update') {
+            if (type === 'online-status') {
+                const data = onlineStatusMessageSchema.parse(json);
                 console.log(data);
             }
         };
 
         ws.onopen = () => {
             setStatus('open');
-            ws.send(JSON.stringify({ type: 'connect' }));
+            const message: WebSocketMessage = { type: 'connect' };
+            ws.send(JSON.stringify(message));
             console.log('[Provider] WebSocket connection established');
         };
 
         ws.onclose = () => {
             setStatus('closed');
-            ws.send(JSON.stringify({ type: 'disconnect' }));
+            const message: WebSocketMessage = { type: 'disconnect' };
+            ws.send(JSON.stringify(message));
             console.log('[Provider] WebSocket connection closed');
         };
 
         ws.onerror = (error) => {
             setStatus('error');
-            ws.send(JSON.stringify({ type: 'disconnect' }));
+            const message: WebSocketMessage = { type: 'disconnect' };
+            ws.send(JSON.stringify(message));
             console.error('[Provider] WebSocket error:', error);
         };
 
