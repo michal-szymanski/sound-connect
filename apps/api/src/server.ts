@@ -207,6 +207,15 @@ app.on(['GET', 'POST'], '/ws/user', async (c) => {
         const user = c.get('user');
         const id = c.env.UserDO.idFromName(`user:${user.id}`);
         const stub = c.env.UserDO.get(id);
+        const subscribers = await getMutualFollowers(user.id);
+        const userIds = subscribers.map((u) => u.id);
+
+        stub.subscribe(userIds);
+
+        for (const userId of userIds) {
+            const userStub = c.env.UserDO.get(c.env.UserDO.idFromName(`user:${userId}`));
+            await userStub.subscribe([user.id]);
+        }
 
         const modifiedRequest = new Request(c.req.raw, {
             headers: new Headers({

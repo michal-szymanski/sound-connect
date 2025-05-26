@@ -15,8 +15,7 @@ import clsx from 'clsx';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/web/components/ui/form';
-import { useUserStatuses } from '@/web/providers/user-statuses-provider';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/web/components/ui/form';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
@@ -24,7 +23,6 @@ export const Route = createFileRoute('/(main)/messages/')({
 
 function RouteComponent() {
     const { send, lastMessage, status, setPeerId } = useWebSocket();
-    const { statuses, subscribe, unsubscribe, status: wsStatus, changeStatus, isSubscribed } = useUserStatuses();
     const { data: user } = useSuspenseQuery(userQueryOptions(null));
     const { data: users } = useMutualFollowers(user);
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
@@ -80,28 +78,6 @@ function RouteComponent() {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
-
-    useEffect(() => {
-        if (!users || wsStatus !== 'open') return;
-
-        const userIds = users.map((u) => u.id);
-        console.log('[UI] Subscribing to user statuses:', userIds);
-        subscribe(userIds);
-
-        return () => {
-            console.log('[UI] Unsubscribing from user statuses:', userIds);
-            unsubscribe(userIds);
-        };
-    }, [users, wsStatus]);
-
-    useEffect(() => {
-        console.log('User statuses updated:', statuses);
-    }, [statuses]);
-
-    useEffect(() => {
-        if (wsStatus !== 'open' || !isSubscribed) return;
-        changeStatus('online');
-    }, [wsStatus, isSubscribed]);
 
     const renderPeers = () => {
         if (!users) return null;
@@ -176,7 +152,6 @@ function RouteComponent() {
                                         maxLength={constants.CHAT_MESSAGE_MAX_LENGTH}
                                     />
                                 </FormControl>
-                                {/* <FormMessage /> */}
                             </FormItem>
                         )}
                     />
