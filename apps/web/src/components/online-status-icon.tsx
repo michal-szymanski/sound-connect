@@ -8,9 +8,8 @@ const OnlineStatusIcon = ({ status }: Props) => {
     if (!status || status === 'offline') return null;
 
     return (
-        <span className="relative bottom-0 left-full flex size-5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
-            <span className="relative inline-flex size-3 rounded-full bg-sky-500"></span>
+        <span className="absolute -bottom-1 -right-1 flex size-3">
+            <span className="relative inline-flex size-3 rounded-full border-2 border-black bg-green-700" />
         </span>
     );
 };
