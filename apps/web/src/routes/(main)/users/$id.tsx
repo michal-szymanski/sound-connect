@@ -1,10 +1,10 @@
 import { Button } from '@/web/components/ui/button';
 import { Card } from '@/web/components/ui/card';
-import constants from '@sound-connect/api/constants';
 import { followUser, getFollowers, getFollowings, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
-import { User, UserDTO } from '@/web/types/auth';
+import { User, UserDTO, userDTOSchema } from '@/web/types/auth';
 import { Follower, Following, Post } from '@/web/types/models';
 import { createFileRoute, notFound, useRouter } from '@tanstack/react-router';
+import { SHADCN_DEFAULT_AVATAR } from '@sound-connect/api/constants';
 
 export const Route = createFileRoute('/(main)/users/$id')({
     component: RouteComponent,
@@ -12,13 +12,20 @@ export const Route = createFileRoute('/(main)/users/$id')({
         const currentUser = context.context.user;
 
         const userId = context.params.id;
-        const result = await getUser({ data: { userId } });
 
-        if (!result.success || !currentUser) {
-            throw notFound();
+        let user: UserDTO;
+
+        if (currentUser?.id === userId) {
+            user = userDTOSchema.parse(currentUser);
+        } else {
+            const result = await getUser({ data: { userId } });
+
+            if (!result.success) {
+                throw notFound();
+            }
+
+            user = result.body;
         }
-
-        const user = result.body;
 
         const followersResult = await getFollowers({ data: { userId } });
         const followers = followersResult.success ? followersResult.body : [];
@@ -65,6 +72,8 @@ function RouteComponent() {
     };
 
     const renderFollowButton = () => {
+        if (currentUser.id === user.id) return null;
+
         const isCurrentUserFollowing = followings.some((f) => f.userId === currentUser.id);
 
         if (isCurrentUserFollowing) {
@@ -85,7 +94,7 @@ function RouteComponent() {
                     />
                 </div>
                 <img
-                    src={user.image ?? constants.SHADCN_DEFAULT_AVATAR}
+                    src={user.image ?? SHADCN_DEFAULT_AVATAR}
                     alt="Shadcn"
                     className="relative -top-20 left-10 rounded-full object-cover"
                     width={160}
