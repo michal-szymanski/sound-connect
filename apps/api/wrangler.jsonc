@@ -38,6 +38,11 @@
     "migrations": [
         {
             "tag": "v1",
+            "new_sqlite_classes": ["WebSocketServer"]
+        },
+        {
+            "tag": "v2",
+            "deleted_classes": ["WebSocketServer"],
             "new_sqlite_classes": ["ChatDurableObject", "UserDurableObject"]
         }
     ]
