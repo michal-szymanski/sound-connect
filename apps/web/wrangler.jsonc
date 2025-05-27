@@ -2,7 +2,7 @@
     "$schema": "node_modules/wrangler/config-schema.json",
     "name": "sound-connect-web",
     "main": ".output/server/index.mjs",
-    "compatibility_date": "2025-04-10",
+    "compatibility_date": "2025-05-27",
     "compatibility_flags": ["nodejs_compat"],
     "assets": {
         "directory": ".output/public"
