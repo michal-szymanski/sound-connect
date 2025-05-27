@@ -3,7 +3,6 @@ import { useWebSocket } from '@/web/providers/websocket-provider';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/web/components/ui/avatar';
 import { Input } from '@/web/components/ui/input';
 import { Card } from '@/web/components/ui/card';
 import { Button } from '@/web/components/ui/button';
@@ -16,7 +15,6 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/web/components/ui/form';
-import { useUserStatuses } from '@/web/providers/user-statuses-provider';
 import StatusAvatar from '@/web/components/status-avatar';
 
 export const Route = createFileRoute('/(main)/messages/')({
@@ -31,7 +29,6 @@ function RouteComponent() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const { data: envs } = useEnvs();
-    const { statuses } = useUserStatuses();
 
     const formSchema = z.object({
         text: z.string().max(CHAT_MESSAGE_MAX_LENGTH)
@@ -87,7 +84,7 @@ function RouteComponent() {
 
         return users.map((u) => (
             <Button key={u.id} variant="ghost" onClick={() => setSelectedPeer(u)}>
-                <StatusAvatar user={u} status={statuses.get(u.id)} />
+                <StatusAvatar user={u} />
                 <span className="truncate">{u.name}</span>
             </Button>
         ));
