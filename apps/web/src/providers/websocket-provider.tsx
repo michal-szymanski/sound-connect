@@ -4,14 +4,14 @@ import { chatMessageSchema, ChatMessage } from '@sound-connect/api/types';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 
-export type WebSocketContextValue = {
+export type Context = {
     send: (data: ChatMessage) => void;
     lastMessage: ChatMessage | null;
     status: WSStatus;
     setPeerId: (id: string) => void;
 };
 
-const WebSocketContext = createContext<WebSocketContextValue | undefined>(undefined);
+const WebSocketContext = createContext<Context | undefined>(undefined);
 
 type Props = React.PropsWithChildren<{}>;
 
@@ -76,12 +76,10 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
         }
     };
 
-    const value: WebSocketContextValue = { send, lastMessage, status, setPeerId };
-
-    return <WebSocketContext.Provider value={value}>{children}</WebSocketContext.Provider>;
+    return <WebSocketContext.Provider value={{ send, lastMessage, status, setPeerId }}>{children}</WebSocketContext.Provider>;
 };
 
-export const useWebSocket = (): WebSocketContextValue => {
+export const useWebSocket = (): Context => {
     const context = useContext(WebSocketContext);
 
     if (!context) {
