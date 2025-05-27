@@ -16,8 +16,8 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/web/components/ui/form';
-import OnlineStatusIcon from '@/web/components/online-status-icon';
 import { useUserStatuses } from '@/web/providers/user-statuses-provider';
+import StatusAvatar from '@/web/components/status-avatar';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
@@ -86,20 +86,10 @@ function RouteComponent() {
         if (!users) return null;
 
         return users.map((u) => (
-            <button
-                key={u.id}
-                className={`hover:bg-accent flex w-full items-center gap-2 p-3 transition ${selectedPeer?.id === u.id ? 'bg-accent' : ''}`}
-                onClick={() => setSelectedPeer(u)}
-            >
-                <div className="absolute">
-                    <Avatar className="relative top-0">
-                        <AvatarImage src={u.image ?? constants.SHADCN_DEFAULT_AVATAR} />
-                        <AvatarFallback>{u.name}</AvatarFallback>
-                    </Avatar>
-                    <OnlineStatusIcon status={statuses.get(u.id)} />
-                </div>
+            <Button key={u.id} variant="ghost" onClick={() => setSelectedPeer(u)}>
+                <StatusAvatar user={u} status={statuses.get(u.id)} />
                 <span className="truncate">{u.name}</span>
-            </button>
+            </Button>
         ));
     };
 
