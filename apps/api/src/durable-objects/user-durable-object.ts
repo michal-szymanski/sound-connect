@@ -1,5 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
-import constants from '../../constants';
+import { ONLINE_STATUS_INTERVAL } from '../../constants';
+
 import { OnlineStatusMessage, webSocketMessageSchema } from 'types';
 
 export class UserDurableObject extends DurableObject {
@@ -54,7 +55,7 @@ export class UserDurableObject extends DurableObject {
             }
         }
 
-        await this.storage.setAlarm(Date.now() + constants.ONLINE_STATUS_INTERVAL);
+        await this.storage.setAlarm(Date.now() + ONLINE_STATUS_INTERVAL);
     }
 
     subscribe(userIds: string[]) {
@@ -90,7 +91,7 @@ export class UserDurableObject extends DurableObject {
             const { type } = webSocketMessageSchema.parse(json);
 
             if (type === 'connect') {
-                this.storage.setAlarm(Date.now() + constants.ONLINE_STATUS_INTERVAL);
+                this.storage.setAlarm(Date.now() + ONLINE_STATUS_INTERVAL);
             } else if (type === 'disconnect') {
                 this.storage.deleteAlarm();
             }

@@ -1,6 +1,6 @@
 import { auth } from 'auth';
+import { CHAT_MESSAGE_MAX_LENGTH } from './constants';
 import z from 'zod';
-import constants from './constants';
 
 export type HonoContext = {
     Bindings: CloudflareBindings;
@@ -17,7 +17,7 @@ export type WebSocketMessageType = z.infer<typeof webSocketMessageTypes>;
 export const chatMessageSchema = z.object({
     type: z.literal(webSocketMessageTypes.Enum.chat),
     peerId: z.string(),
-    text: z.string().max(constants.CHAT_MESSAGE_MAX_LENGTH)
+    text: z.string().max(CHAT_MESSAGE_MAX_LENGTH)
 });
 
 export type ChatMessage = z.infer<typeof chatMessageSchema>;

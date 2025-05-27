@@ -10,7 +10,7 @@ import { Button } from '@/web/components/ui/button';
 import { ChatMessage } from '@sound-connect/api/types';
 import { getChatHistory } from '@/web/server-functions/models';
 import { UserDTO } from '@/web/types/auth';
-import constants from '@sound-connect/api/constants';
+import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/api/constants';
 import clsx from 'clsx';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -34,7 +34,7 @@ function RouteComponent() {
     const { statuses } = useUserStatuses();
 
     const formSchema = z.object({
-        text: z.string().max(constants.CHAT_MESSAGE_MAX_LENGTH)
+        text: z.string().max(CHAT_MESSAGE_MAX_LENGTH)
     });
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -98,10 +98,7 @@ function RouteComponent() {
 
         return (
             <>
-                <Avatar>
-                    <AvatarImage src={selectedPeer.image ?? constants.SHADCN_DEFAULT_AVATAR} />
-                    <AvatarFallback>{selectedPeer.name}</AvatarFallback>
-                </Avatar>
+                <StatusAvatar user={selectedPeer} />
                 <span>{selectedPeer.name}</span>
             </>
         );
@@ -145,7 +142,7 @@ function RouteComponent() {
                                         {...field}
                                         placeholder="Type a message..."
                                         disabled={status !== 'open' || !selectedPeer}
-                                        maxLength={constants.CHAT_MESSAGE_MAX_LENGTH}
+                                        maxLength={CHAT_MESSAGE_MAX_LENGTH}
                                     />
                                 </FormControl>
                             </FormItem>
