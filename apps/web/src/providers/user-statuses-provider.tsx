@@ -1,5 +1,5 @@
 import { useEnvs } from '@/web/lib/react-query';
-import constants from '@sound-connect/api/constants';
+import { ONLINE_STATUS_INTERVAL } from '@sound-connect/api/constants';
 import { OnlineStatus, onlineStatusMessageSchema, WebSocketMessage, webSocketMessageSchema } from '@sound-connect/api/types';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
@@ -51,7 +51,7 @@ export const UserStatusesProvider = ({ children }: Props) => {
                         newStatuses.set(data.userId, 'offline');
                         return newStatuses;
                     });
-                }, constants.ONLINE_STATUS_INTERVAL + 5000);
+                }, ONLINE_STATUS_INTERVAL + 5000);
 
                 timeouts.push(timeout);
             }
