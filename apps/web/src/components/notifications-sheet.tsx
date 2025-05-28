@@ -8,7 +8,7 @@ type Props = {
 const NotificationsSheet = ({ open, setOpen }: Props) => {
     return (
         <Sheet open={open} onOpenChange={setOpen} modal={false}>
-            <SheetContent side="left" className="left-35">
+            <SheetContent side="left">
                 <SheetHeader>
                     <SheetTitle>Notifications</SheetTitle>
                     <SheetDescription>
