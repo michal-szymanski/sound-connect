@@ -7,6 +7,7 @@ import { HonoContext } from 'types';
 import { auth } from 'auth';
 import { getMessagesByUserIds } from '@/api/db/queries/messages-queries';
 import { getRoomId } from '@/api/helpers';
+import crypto from 'crypto';
 
 const app = new Hono<HonoContext>();
 
@@ -87,6 +88,7 @@ app.post('/users/follow', async (c) => {
     const stub = c.env.UserDO.get(id);
 
     await stub.sendNotification({
+        id: crypto.randomUUID(),
         type: 'notification',
         kind: 'follow-request',
         date: new Date().toISOString(),
