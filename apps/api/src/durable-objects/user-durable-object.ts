@@ -86,10 +86,25 @@ export class UserDurableObject extends DurableObject {
         return (await this.ctx.storage.get<NotificationMessage[]>('notifications')) || [];
     }
 
+    private async setNotifications(notifications: NotificationMessage[]) {
+        await this.ctx.storage.put('notifications', notifications);
+    }
+
     private async addNotification(newNotification: NotificationMessage) {
         const notifications = [...(await this.getNotifications()), newNotification];
-        await this.ctx.storage.put('notifications', notifications);
+        await this.setNotifications(notifications);
         return notifications;
+    }
+
+    public async updateNotification(newNotification: NotificationMessage) {
+        const notifications = (await this.getNotifications()).map((n) => {
+            if (n.id === newNotification.id) {
+                return newNotification;
+            }
+            return n;
+        });
+
+        await this.setNotifications(notifications);
     }
 
     private async broadcastNotifications(notifications: NotificationMessage[]) {
