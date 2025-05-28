@@ -10,7 +10,7 @@ export type HonoContext = {
     };
 };
 
-export const webSocketMessageTypes = z.enum(['chat', 'online-status', 'connect', 'disconnect']);
+export const webSocketMessageTypes = z.enum(['chat', 'online-status', 'connect', 'disconnect', 'notification']);
 
 export type WebSocketMessageType = z.infer<typeof webSocketMessageTypes>;
 
@@ -39,3 +39,26 @@ export const webSocketMessageSchema = z.object({
 });
 
 export type WebSocketMessage = z.infer<typeof webSocketMessageSchema>;
+
+export const notificationKind = z.enum(['follow-request', 'reaction']);
+
+export const notificationMessageSchema = z.union([
+    z.object({
+        type: z.literal(webSocketMessageTypes.Enum.notification),
+        kind: z.literal(notificationKind.Enum['follow-request']),
+        date: z.string().date(),
+        seen: z.boolean(),
+        accepted: z.boolean(),
+        userId: z.string()
+    }),
+    z.object({
+        type: z.literal(webSocketMessageTypes.Enum.notification),
+        kind: z.literal(notificationKind.Enum['reaction']),
+        date: z.string().date(),
+        seen: z.boolean(),
+        userId: z.string(),
+        postId: z.string()
+    })
+]);
+
+export type NotificationMessage = z.infer<typeof notificationMessageSchema>;
