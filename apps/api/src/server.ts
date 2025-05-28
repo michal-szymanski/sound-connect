@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getFeed, getPostsByUserId, getReactions } from '@/api/db/queries/posts-queries';
 import { cors } from 'hono/cors';
 import { Hono } from 'hono';
-import { HonoContext } from 'types';
+import { HonoContext, notificationMessageSchema } from 'types';
 import { auth } from 'auth';
 import { getMessagesByUserIds } from '@/api/db/queries/messages-queries';
 import { getRoomId } from '@/api/helpers';
@@ -72,7 +72,7 @@ app.get('/users/followings/:userId', async (c) => {
     return c.json(followingsResults);
 });
 
-app.post('/users/follow', async (c) => {
+app.post('/users/send-follow-request', async (c) => {
     const body = await c.req.json();
     const { userId } = z.object({ userId: z.string() }).parse(body);
 
@@ -83,9 +83,14 @@ app.post('/users/follow', async (c) => {
         return c.json('User is already followed', 400);
     }
 
-    await followUser(user.id, userId);
     const id = c.env.UserDO.idFromName(`user:${userId}`);
     const stub = c.env.UserDO.get(id);
+
+    const notifications = await stub.getNotifications();
+
+    if (notifications.some((n) => n.kind === 'follow-request' && n.userId === user.id)) {
+        return c.json('User is already notified about follow request', 400);
+    }
 
     await stub.sendNotification({
         id: crypto.randomUUID(),
@@ -96,6 +101,31 @@ app.post('/users/follow', async (c) => {
         accepted: false,
         userId: user.id
     });
+
+    return c.json('ok');
+});
+
+app.post('/users/accept-follow-request', async (c) => {
+    const body = await c.req.json();
+    const { notification } = z.object({ notification: notificationMessageSchema }).parse(body);
+
+    const user = c.get('user');
+    const followedUsers = await getFollowedUsers(user.id);
+
+    if (followedUsers.some(({ followedUserId }) => followedUserId === notification.userId)) {
+        return c.json('User is already followed', 400);
+    }
+
+    const id = c.env.UserDO.idFromName(`user:${notification.userId}`);
+    const stub = c.env.UserDO.get(id);
+
+    const notifications = await stub.getNotifications();
+
+    if (!notifications.some((n) => n.kind === 'follow-request' && n.userId === user.id)) {
+        return c.json('Follow request is required to be sent first', 400);
+    }
+
+    await followUser(user.id, notification.userId);
 
     return c.json('ok');
 });

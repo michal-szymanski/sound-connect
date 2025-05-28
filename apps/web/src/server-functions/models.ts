@@ -3,7 +3,7 @@ import { getSession } from '@/web/server-functions/auth';
 import { errorHandler, getSessionCookie } from '@/web/server-functions/helpers';
 import { userDTOSchema } from '@/web/types/auth';
 import { followerSchema, followingSchema, postReactionSchema, postSchema } from '@/web/types/models';
-import { chatMessageSchema } from '@sound-connect/api/types';
+import { chatMessageSchema, NotificationMessage } from '@sound-connect/api/types';
 import { createServerFn } from '@tanstack/react-start';
 import { getWebRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
@@ -153,13 +153,33 @@ export const getUser = createServerFn()
         }
     });
 
-export const followUser = createServerFn({ method: 'POST' })
+export const sendFollowRequest = createServerFn({ method: 'POST' })
     .validator((data: { userId: string }) => data)
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/follow`, {
+        const response = await API.fetch(`${API_URL}/users/send-follow-request`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
+            body: JSON.stringify(data),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
+    });
+
+export const acceptFollowRequest = createServerFn({ method: 'POST' })
+    .validator((data: { notification: NotificationMessage }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/users/accept-follow-request`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             body: JSON.stringify(data),

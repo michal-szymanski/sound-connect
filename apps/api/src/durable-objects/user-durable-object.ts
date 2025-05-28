@@ -82,7 +82,7 @@ export class UserDurableObject extends DurableObject {
         return true;
     }
 
-    private async getNotifications() {
+    async getNotifications() {
         return (await this.ctx.storage.get<NotificationMessage[]>('notifications')) || [];
     }
 
