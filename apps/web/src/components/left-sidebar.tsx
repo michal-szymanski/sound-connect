@@ -14,47 +14,71 @@ import AccountButton from '@/web/components/account-button';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { userQueryOptions } from '@/web/lib/react-query';
 import { User } from '@/web/types/auth';
+import { useState } from 'react';
+import NotificationsSheet from '@/web/components/notifications-sheet';
 
 type Item = {
     title: string;
-    url: string;
+    url?: string;
     icon: LucideIcon;
-};
-
-const getLinks = (user?: User | null): Item[] => {
-    if (!user) return [];
-
-    return [
-        {
-            title: 'Home',
-            url: '/',
-            icon: House
-        },
-        {
-            title: 'Notifications',
-            url: '/notifications',
-            icon: Bell
-        },
-        {
-            title: 'Messages',
-            url: '/messages',
-            icon: Mail
-        },
-        {
-            title: 'Profile',
-            url: `/users/${user.id}`,
-            icon: UserRound
-        },
-        {
-            title: 'Settings',
-            url: '/settings',
-            icon: Cog
-        }
-    ];
+    onClick?: () => void;
 };
 
 const LeftSidebar = () => {
     const { data: user } = useSuspenseQuery(userQueryOptions(null));
+    const [open, setOpen] = useState(false);
+
+    const getItems = (user?: User | null): Item[] => {
+        if (!user) return [];
+
+        return [
+            {
+                title: 'Home',
+                url: '/',
+                icon: House
+            },
+            {
+                title: 'Notifications',
+                onClick: () => setOpen((prev) => !prev),
+                icon: Bell
+            },
+            {
+                title: 'Messages',
+                url: '/messages',
+                icon: Mail
+            },
+            {
+                title: 'Profile',
+                url: `/users/${user.id}`,
+                icon: UserRound
+            },
+            {
+                title: 'Settings',
+                url: '/settings',
+                icon: Cog
+            }
+        ];
+    };
+
+    const renderMenuButton = (item: Item) => {
+        if (item.onClick) {
+            return (
+                <SidebarMenuButton onClick={item.onClick} className="flex justify-center xl:justify-start [&>svg]:size-6">
+                    <item.icon />
+                    <span className="hidden xl:inline">{item.title}</span>
+                </SidebarMenuButton>
+            );
+        }
+
+        return (
+            <SidebarMenuButton asChild>
+                <Link to={item.url} preload={false} className="flex justify-center xl:justify-start [&>svg]:size-6">
+                    <item.icon />
+                    <span className="hidden xl:inline">{item.title}</span>
+                </Link>
+            </SidebarMenuButton>
+        );
+    };
 
     return (
         <Sidebar
@@ -65,15 +89,8 @@ const LeftSidebar = () => {
                 <SidebarGroup className="w-min lg:w-full">
                     <SidebarGroupContent className="w-min lg:w-full">
                         <SidebarMenu className="w-min flex-row lg:w-full lg:flex-col">
-                            {getLinks(user).map((link) => (
-                                <SidebarMenuItem key={link.title}>
-                                    <SidebarMenuButton asChild>
-                                        <Link to={link.url} preload={false} className="flex justify-center xl:justify-start [&>svg]:size-6">
-                                            <link.icon />
-                                            <span className="hidden xl:inline">{link.title}</span>
-                                        </Link>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
+                            {getItems(user).map((item) => (
+                                <SidebarMenuItem key={item.title}>{renderMenuButton(item)}</SidebarMenuItem>
                             ))}
                         </SidebarMenu>
                     </SidebarGroupContent>
@@ -86,6 +103,7 @@ const LeftSidebar = () => {
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>
+            <NotificationsSheet open={open} setOpen={setOpen} />
         </Sidebar>
     );
 };
