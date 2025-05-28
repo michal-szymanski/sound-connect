@@ -4,7 +4,7 @@ import { followUser, getFollowers, getFollowings, getPosts, getUser, unfollowUse
 import { User, UserDTO, userDTOSchema } from '@/web/types/auth';
 import { Follower, Following, Post } from '@/web/types/models';
 import { createFileRoute, notFound, useRouter } from '@tanstack/react-router';
-import { SHADCN_DEFAULT_AVATAR } from '@sound-connect/api/constants';
+import { DEFAULT_AVATAR_URL } from '@sound-connect/api/constants';
 
 export const Route = createFileRoute('/(main)/users/$id')({
     component: RouteComponent,
@@ -94,7 +94,7 @@ function RouteComponent() {
                     />
                 </div>
                 <img
-                    src={user.image ?? SHADCN_DEFAULT_AVATAR}
+                    src={user.image ?? DEFAULT_AVATAR_URL}
                     alt="Shadcn"
                     className="relative -top-20 left-10 rounded-full object-cover"
                     width={160}

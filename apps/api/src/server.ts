@@ -76,7 +76,24 @@ app.post('/users/follow', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(body);
 
     const user = c.get('user');
+    const followedUsers = await getFollowedUsers(user.id);
+
+    if (followedUsers.some(({ followedUserId }) => followedUserId === userId)) {
+        return c.json('User is already followed', 400);
+    }
+
     await followUser(user.id, userId);
+    const id = c.env.UserDO.idFromName(`user:${userId}`);
+    const stub = c.env.UserDO.get(id);
+
+    await stub.sendNotification({
+        type: 'notification',
+        kind: 'follow-request',
+        date: new Date().toISOString(),
+        seen: false,
+        accepted: false,
+        userId: user.id
+    });
 
     return c.json('ok');
 });

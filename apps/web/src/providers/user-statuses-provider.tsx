@@ -1,6 +1,6 @@
 import { useEnvs } from '@/web/lib/react-query';
 import { ONLINE_STATUS_INTERVAL } from '@sound-connect/api/constants';
-import { OnlineStatus, onlineStatusMessageSchema, WebSocketMessage, webSocketMessageSchema } from '@sound-connect/api/types';
+import { notificationMessageSchema, OnlineStatus, onlineStatusMessageSchema, WebSocketMessage, webSocketMessageSchema } from '@sound-connect/api/types';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Context = {
@@ -54,6 +54,18 @@ export const UserStatusesProvider = ({ children }: Props) => {
                 }, ONLINE_STATUS_INTERVAL + 5000);
 
                 timeouts.push(timeout);
+            }
+
+            if (type === 'notification') {
+                const data = notificationMessageSchema.parse(json);
+
+                if (data.kind === 'follow-request') {
+                    console.log({ data });
+                }
+
+                if (data.kind === 'reaction') {
+                    console.log({ data });
+                }
             }
         };
 

@@ -1,7 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import { ONLINE_STATUS_INTERVAL } from '../../constants';
-
-import { OnlineStatusMessage, webSocketMessageSchema } from 'types';
+import { NotificationMessage, OnlineStatusMessage, webSocketMessageSchema } from 'types';
 
 export class UserDurableObject extends DurableObject {
     private websocket: WebSocket | null = null;
@@ -81,6 +80,27 @@ export class UserDurableObject extends DurableObject {
         this.websocket.send(JSON.stringify(message));
 
         return true;
+    }
+
+    private async getNotifications() {
+        return (await this.ctx.storage.get<NotificationMessage[]>('notifications')) || [];
+    }
+
+    private async addNotification(newNotification: NotificationMessage) {
+        const notifications = [...(await this.getNotifications()), newNotification];
+        await this.ctx.storage.put('notifications', notifications);
+        return notifications;
+    }
+
+    private async broadcastNotifications(notifications: NotificationMessage[]) {
+        if (!this.websocket) return;
+
+        this.websocket.send(JSON.stringify(notifications));
+    }
+
+    async sendNotification(newNotification: NotificationMessage) {
+        const notifications = await this.addNotification(newNotification);
+        await this.broadcastNotifications(notifications);
     }
 
     async handleConnection(webSocket: WebSocket) {
