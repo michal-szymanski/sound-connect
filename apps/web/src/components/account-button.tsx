@@ -28,7 +28,7 @@ const AccountButton = () => {
                     <span className="hidden xl:inline">{user.name}</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="z-51" align="start">
+            <DropdownMenuContent className="z-52" align="start">
                 <SignOutButton />
             </DropdownMenuContent>
         </DropdownMenu>
