@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import { ChatMessage, chatMessageSchema } from 'types';
+import { ChatMessage, chatMessageSchema } from '@sound-connect/common/types';
 
 export class ChatDurableObject extends DurableObject {
     private connections: Map<string, WebSocket> = new Map();

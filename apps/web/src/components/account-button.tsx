@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/web//c
 import { Skeleton } from '@/web//components/ui/skeleton';
 import { userQueryOptions } from '@/web//lib/react-query';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { DEFAULT_AVATAR_URL } from '@sound-connect/api/constants';
+import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';
 
 const AccountButton = () => {
     const { data: user } = useSuspenseQuery(userQueryOptions(null));

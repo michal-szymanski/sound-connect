@@ -4,7 +4,7 @@ import { sendFollowRequest, getFollowers, getFollowings, getPosts, getUser, unfo
 import { User, UserDTO, userDTOSchema } from '@/web/types/auth';
 import { Follower, Following, Post } from '@/web/types/models';
 import { createFileRoute, notFound, useRouter } from '@tanstack/react-router';
-import { DEFAULT_AVATAR_URL } from '@sound-connect/api/constants';
+import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';
 
 export const Route = createFileRoute('/(main)/users/$id')({
     component: RouteComponent,
