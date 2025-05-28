@@ -81,30 +81,33 @@ const LeftSidebar = () => {
     };
 
     return (
-        <Sidebar
-            collapsible="none"
-            className="z-51 fixed bottom-0 h-min w-full flex-row items-center justify-center lg:flex lg:h-full lg:w-min lg:flex-col xl:items-start"
-        >
-            <SidebarContent className="flex-none lg:flex-1">
-                <SidebarGroup className="w-min lg:w-full">
-                    <SidebarGroupContent className="w-min lg:w-full">
-                        <SidebarMenu className="w-min flex-row lg:w-full lg:flex-col">
-                            {getItems(user).map((item) => (
-                                <SidebarMenuItem key={item.title}>{renderMenuButton(item)}</SidebarMenuItem>
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-            </SidebarContent>
-            <SidebarFooter>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <AccountButton />
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarFooter>
+        <div className="relative flex">
+            <Sidebar
+                collapsible="none"
+                data-state={open ? 'closed' : 'open'}
+                className={`z-52 absolute inset-y-0 left-0 w-52 text-white transition-transform duration-500 data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0`}
+            >
+                <SidebarContent className="flex-none lg:flex-1">
+                    <SidebarGroup className="w-min lg:w-full">
+                        <SidebarGroupContent className="w-min lg:w-full">
+                            <SidebarMenu className="w-min flex-row lg:w-full lg:flex-col">
+                                {getItems(user).map((item) => (
+                                    <SidebarMenuItem key={item.title}>{renderMenuButton(item)}</SidebarMenuItem>
+                                ))}
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </SidebarGroup>
+                </SidebarContent>
+                <SidebarFooter>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <AccountButton />
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarFooter>
+            </Sidebar>
             <NotificationsSheet open={open} setOpen={setOpen} />
-        </Sidebar>
+        </div>
     );
 };
 
