@@ -44,6 +44,7 @@ export const notificationKind = z.enum(['follow-request', 'reaction']);
 
 export const notificationMessageSchema = z.union([
     z.object({
+        id: z.string().uuid(),
         type: z.literal(webSocketMessageTypes.Enum.notification),
         kind: z.literal(notificationKind.Enum['follow-request']),
         date: z.string().date(),
@@ -52,6 +53,7 @@ export const notificationMessageSchema = z.union([
         userId: z.string()
     }),
     z.object({
+        id: z.string().uuid(),
         type: z.literal(webSocketMessageTypes.Enum.notification),
         kind: z.literal(notificationKind.Enum['reaction']),
         date: z.string().date(),
