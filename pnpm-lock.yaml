@@ -20,9 +20,9 @@ importers:
       '@cloudflare/workers-types':
         specifier: ^4.20250312.0
         version: 4.20250517.0
-      '@sound-connect/types':
+      '@sound-connect/common':
         specifier: workspace:*
-        version: link:../../packages/types
+        version: link:../../packages/common
       '@types/better-sqlite3':
         specifier: ^7.6.12
         version: 7.6.13
@@ -87,8 +87,8 @@ importers:
         specifier: ^4.0.0
         version: 4.15.2(@cloudflare/workers-types@4.20250517.0)
       zod:
-        specifier: ^3.24.1
-        version: 3.24.4
+        specifier: ^3.25.32
+        version: 3.25.32
 
   apps/web:
     dependencies:
@@ -128,9 +128,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.1.8
         version: 1.2.6(@types/react-dom@19.1.5)(@types/react@19.1.4)(react-dom@19.1.0)(react@19.1.0)
-      '@sound-connect/api':
+      '@sound-connect/common':
         specifier: workspace:*
-        version: link:../api
+        version: link:../../packages/common
       '@tailwindcss/postcss':
         specifier: ^4.1.3
         version: 4.1.7
@@ -216,8 +216,8 @@ importers:
         specifier: ^4.12.0
         version: 4.15.2(@cloudflare/workers-types@4.20250517.0)
       zod:
-        specifier: ^3.24.4
-        version: 3.24.4
+        specifier: ^3.25.32
+        version: 3.25.32
     devDependencies:
       '@types/react':
         specifier: ^19.0.12
@@ -235,11 +235,11 @@ importers:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.8.3)(vite@6.3.5)
 
-  packages/types:
+  packages/common:
     dependencies:
       zod:
-        specifier: ^3.25.27
-        version: 3.25.27
+        specifier: ^3.25.32
+        version: 3.25.32
 
 packages:
 
@@ -2189,7 +2189,7 @@ packages:
       unixify: 1.0.0
       urlpattern-polyfill: 8.0.2
       yargs: 17.7.2
-      zod: 3.25.27
+      zod: 3.25.32
     transitivePeerDependencies:
       - encoding
       - rollup
@@ -4119,7 +4119,7 @@ packages:
       react-dom: 19.1.0(react@19.1.0)
       vinxi: 0.5.3(@types/node@22.15.18)
       vite: 6.3.5(@types/node@22.15.18)
-      zod: 3.24.4
+      zod: 3.25.32
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -4391,7 +4391,7 @@ packages:
       '@tanstack/virtual-file-routes': 1.115.0
       prettier: 3.5.3
       tsx: 4.19.4
-      zod: 3.24.4
+      zod: 3.25.32
     dev: false
 
   /@tanstack/router-plugin@1.120.11(@tanstack/react-router@1.120.11)(vite@6.3.5):
@@ -4433,7 +4433,7 @@ packages:
       chokidar: 3.6.0
       unplugin: 2.3.5
       vite: 6.3.5(@types/node@22.15.18)
-      zod: 3.24.4
+      zod: 3.25.32
     transitivePeerDependencies:
       - supports-color
     dev: false
@@ -5253,7 +5253,7 @@ packages:
       jose: 5.10.0
       kysely: 0.28.2
       nanostores: 0.11.4
-      zod: 3.24.4
+      zod: 3.25.32
     dev: false
 
   /better-call@1.0.9:
@@ -10261,7 +10261,7 @@ packages:
       unenv: 1.10.0
       unstorage: 1.16.0(db0@0.3.2)(ioredis@5.6.1)
       vite: 6.3.5(@types/node@22.15.18)
-      zod: 3.24.4
+      zod: 3.25.32
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -10342,7 +10342,7 @@ packages:
       unenv: 1.10.0
       unstorage: 1.16.0(db0@0.3.2)(ioredis@5.6.1)
       vite: 6.3.5(@types/node@22.15.18)
-      zod: 3.24.4
+      zod: 3.25.32
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -10790,10 +10790,6 @@ packages:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
     dev: false
 
-  /zod@3.24.4:
-    resolution: {integrity: sha512-OdqJE9UDRPwWsrHjLN2F8bPxvwJBK22EHLWtanu0LSYr5YqzsaaW3RMgmjwr8Rypg5k+meEJdSPXJZXE/yqOMg==}
-    dev: false
-
-  /zod@3.25.27:
-    resolution: {integrity: sha512-xkYsE+ztNLzBeoAG8Ipd2ICr86gyMpovQlB+Vid1LT7V16/Dj0z+Up1u1qxNX58cmJ/AtG2mvGw/7+jK48xEYw==}
+  /zod@3.25.32:
+    resolution: {integrity: sha512-OSm2xTIRfW8CV5/QKgngwmQW/8aPfGdaQFlrGoErlgg/Epm7cjb6K6VEyExfe65a3VybUOnu381edLb0dfJl0g==}
     dev: false

@@ -3,11 +3,12 @@ import { z } from 'zod';
 import { getFeed, getPostsByUserId, getReactions } from '@/api/db/queries/posts-queries';
 import { cors } from 'hono/cors';
 import { Hono } from 'hono';
-import { HonoContext, NotificationMessage } from 'types';
+import { HonoContext } from 'types';
 import { auth } from 'auth';
 import { getMessagesByUserIds } from '@/api/db/queries/messages-queries';
-import { getRoomId } from '@/api/helpers';
+import { getRoomId } from '@sound-connect/common/helpers';
 import crypto from 'crypto';
+import { NotificationMessage } from '@sound-connect/common/types';
 
 const app = new Hono<HonoContext>();
 

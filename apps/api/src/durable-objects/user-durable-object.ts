@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
-import { ONLINE_STATUS_INTERVAL } from '../../constants';
-import { NotificationMessage, OnlineStatusMessage, webSocketMessageSchema } from 'types';
+import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
+import { NotificationMessage, OnlineStatusMessage, webSocketMessageSchema } from '@sound-connect/common/types';
 
 export class UserDurableObject extends DurableObject {
     private websocket: WebSocket | null = null;

@@ -2,8 +2,8 @@ import OnlineStatusIcon from '@/web/components/online-status-icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/web/components/ui/avatar';
 import { useUserStatuses } from '@/web/providers/user-statuses-provider';
 import { UserDTO } from '@/web/types/auth';
-import { DEFAULT_AVATAR_URL } from '@sound-connect/api/constants';
-import { OnlineStatus } from '@sound-connect/api/types';
+import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';
+import { OnlineStatus } from '@sound-connect/common/types';
 
 type Props = {
     user: UserDTO;
