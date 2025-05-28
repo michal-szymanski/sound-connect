@@ -1,6 +1,6 @@
 import { Button } from '@/web/components/ui/button';
 import { Card } from '@/web/components/ui/card';
-import { followUser, getFollowers, getFollowings, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
+import { sendFollowRequest, getFollowers, getFollowings, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
 import { User, UserDTO, userDTOSchema } from '@/web/types/auth';
 import { Follower, Following, Post } from '@/web/types/models';
 import { createFileRoute, notFound, useRouter } from '@tanstack/react-router';
@@ -51,7 +51,7 @@ function RouteComponent() {
     const router = useRouter();
 
     const handleFollow = async () => {
-        const result = await followUser({ data: { userId: user.id } });
+        const result = await sendFollowRequest({ data: { userId: user.id } });
 
         if (!result.success) {
             console.error('[App] Could not follow the user');
