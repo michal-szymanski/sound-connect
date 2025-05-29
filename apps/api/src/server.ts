@@ -93,6 +93,16 @@ app.post('/users/send-follow-request', async (c) => {
         return c.json('User is already notified about follow request', 400);
     }
 
+    const currentUserId = c.env.UserDO.idFromName(`user:${user.id}`);
+    const currentUserStub = c.env.UserDO.get(currentUserId);
+
+    const currentUserNotifications = await currentUserStub.getNotifications();
+    const notificationToRemove = currentUserNotifications.find((n) => n.kind === 'follow-request' && n.userId === userId && n.accepted);
+
+    if (notificationToRemove) {
+        await currentUserStub.removeNotification(notificationToRemove);
+    }
+
     await stub.sendNotification({
         id: crypto.randomUUID(),
         type: 'notification',

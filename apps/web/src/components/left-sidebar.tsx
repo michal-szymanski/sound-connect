@@ -71,7 +71,7 @@ const LeftSidebar = () => {
                     <span className="hidden xl:inline">{item.title}</span>
                     {item.title === 'Notifications' && (
                         <Badge variant="destructive" className="ml-auto">
-                            {notifications.filter((n) => !n.seen).length}
+                            {Array.from(notifications.values()).filter((n) => !n.seen).length}
                         </Badge>
                     )}
                 </SidebarMenuButton>

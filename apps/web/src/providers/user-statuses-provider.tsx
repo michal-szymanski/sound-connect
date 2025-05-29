@@ -12,7 +12,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Context = {
     statuses: Map<string, OnlineStatus>;
-    notifications: NotificationMessage[];
+    notifications: Map<string, NotificationMessage>;
 };
 
 const UserStatusesContext = createContext<Context | undefined>(undefined);
@@ -24,7 +24,7 @@ type Props = {
 export const UserStatusesProvider = ({ children }: Props) => {
     const { data: envs } = useEnvs();
     const [statuses, setStatuses] = useState<Map<string, OnlineStatus>>(new Map());
-    const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
+    const [notifications, setNotifications] = useState<Map<string, NotificationMessage>>(new Map());
 
     useEffect(() => {
         if (!envs) return;
@@ -46,18 +46,18 @@ export const UserStatusesProvider = ({ children }: Props) => {
             if (type === 'online-status') {
                 clearTimeouts();
 
-                const data = onlineStatusMessageSchema.parse(json);
+                const onlineStatus = onlineStatusMessageSchema.parse(json);
 
                 setStatuses((prevStatuses) => {
                     const newStatuses = new Map(prevStatuses);
-                    newStatuses.set(data.userId, data.status);
+                    newStatuses.set(onlineStatus.userId, onlineStatus.status);
                     return newStatuses;
                 });
 
                 const timeout = setTimeout(() => {
-                    setStatuses((prevStatuses) => {
-                        const newStatuses = new Map(prevStatuses);
-                        newStatuses.set(data.userId, 'offline');
+                    setStatuses((prev) => {
+                        const newStatuses = new Map(prev);
+                        newStatuses.set(onlineStatus.userId, 'offline');
                         return newStatuses;
                     });
                 }, ONLINE_STATUS_INTERVAL + 5000);
@@ -66,16 +66,13 @@ export const UserStatusesProvider = ({ children }: Props) => {
             }
 
             if (type === 'notification') {
-                const data = notificationMessageSchema.parse(json);
-                setNotifications((prev) => [...prev, data]);
+                const notification = notificationMessageSchema.parse(json);
 
-                if (data.kind === 'follow-request') {
-                    console.log({ data });
-                }
-
-                if (data.kind === 'reaction') {
-                    console.log({ data });
-                }
+                setNotifications((prev) => {
+                    const newNotifications = new Map(prev);
+                    newNotifications.set(notification.id, notification);
+                    return newNotifications;
+                });
             }
         };
 
