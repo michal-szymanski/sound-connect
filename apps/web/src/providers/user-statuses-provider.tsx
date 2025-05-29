@@ -1,18 +1,20 @@
 import { useEnvs } from '@/web/lib/react-query';
 import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
 import {
-    NotificationMessage,
-    notificationMessageSchema,
+    followRequestNotification,
+    FollowRequestNotificationItem,
+    notificationKind,
     OnlineStatus,
     onlineStatusMessageSchema,
     WebSocketMessage,
     webSocketMessageSchema
 } from '@sound-connect/common/types';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import z from 'zod';
 
 type Context = {
     statuses: Map<string, OnlineStatus>;
-    notifications: Map<string, NotificationMessage>;
+    followRequestNotifications: Map<string, FollowRequestNotificationItem>;
 };
 
 const UserStatusesContext = createContext<Context | undefined>(undefined);
@@ -24,7 +26,7 @@ type Props = {
 export const UserStatusesProvider = ({ children }: Props) => {
     const { data: envs } = useEnvs();
     const [statuses, setStatuses] = useState<Map<string, OnlineStatus>>(new Map());
-    const [notifications, setNotifications] = useState<Map<string, NotificationMessage>>(new Map());
+    const [followRequestNotifications, setFollowRequestNotifications] = useState<Map<string, FollowRequestNotificationItem>>(new Map());
 
     useEffect(() => {
         if (!envs) return;
@@ -66,13 +68,19 @@ export const UserStatusesProvider = ({ children }: Props) => {
             }
 
             if (type === 'notification') {
-                const notification = notificationMessageSchema.parse(json);
+                const { kind } = z.object({ kind: notificationKind }).parse(json);
 
-                setNotifications((prev) => {
-                    const newNotifications = new Map(prev);
-                    newNotifications.set(notification.id, notification);
-                    return newNotifications;
-                });
+                if (kind === 'follow-request') {
+                    const notification = followRequestNotification.parse(json);
+
+                    setFollowRequestNotifications((prev) => {
+                        const newNotifications = new Map(prev);
+                        notification.items.forEach((item) => {
+                            newNotifications.set(item.id, item);
+                        });
+                        return newNotifications;
+                    });
+                }
             }
         };
 
@@ -100,7 +108,7 @@ export const UserStatusesProvider = ({ children }: Props) => {
         };
     }, [envs]);
 
-    return <UserStatusesContext.Provider value={{ statuses, notifications }}>{children}</UserStatusesContext.Provider>;
+    return <UserStatusesContext.Provider value={{ statuses, followRequestNotifications }}>{children}</UserStatusesContext.Provider>;
 };
 
 export const useUserStatuses = () => {

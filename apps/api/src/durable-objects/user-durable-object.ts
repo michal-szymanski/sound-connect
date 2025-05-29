@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
-import { NotificationMessage, OnlineStatusMessage, webSocketMessageSchema } from '@sound-connect/common/types';
+import { FollowRequestNotification, FollowRequestNotificationItem, OnlineStatusMessage, webSocketMessageSchema } from '@sound-connect/common/types';
 
 export class UserDurableObject extends DurableObject {
     private websocket: WebSocket | null = null;
@@ -82,48 +82,52 @@ export class UserDurableObject extends DurableObject {
         return true;
     }
 
-    async getNotifications() {
-        return (await this.ctx.storage.get<NotificationMessage[]>('notifications')) || [];
+    async getFollowRequestNotifications() {
+        return (await this.ctx.storage.get<FollowRequestNotificationItem[]>('notifications:follow-request')) || [];
     }
 
-    private async setNotifications(notifications: NotificationMessage[]) {
-        await this.ctx.storage.put('notifications', notifications);
+    private async setFollowRequestNotifications(notifications: FollowRequestNotificationItem[]) {
+        await this.ctx.storage.put('notifications:follow-request', notifications);
     }
 
-    private async addNotification(newNotification: NotificationMessage) {
-        const notifications = [...(await this.getNotifications()), newNotification];
-        await this.setNotifications(notifications);
+    private async addFollowRequestNotification(newNotification: FollowRequestNotificationItem) {
+        const notifications = [...(await this.getFollowRequestNotifications()), newNotification];
+        await this.setFollowRequestNotifications(notifications);
         return notifications;
     }
 
-    public async updateNotification(newNotification: NotificationMessage) {
-        const notifications = (await this.getNotifications()).map((n) => {
+    public async updateFollowRequestNotification(newNotification: FollowRequestNotificationItem) {
+        const notifications = (await this.getFollowRequestNotifications()).map((n) => {
             if (n.id === newNotification.id) {
                 return newNotification;
             }
             return n;
         });
 
-        await this.setNotifications(notifications);
+        await this.setFollowRequestNotifications(notifications);
         await this.broadcastNotifications(notifications);
     }
 
-    public async removeNotification(notification: NotificationMessage) {
-        const notifications = (await this.getNotifications()).filter((n) => n.id !== notification.id);
-        await this.setNotifications(notifications);
+    public async removeNotification(notification: FollowRequestNotificationItem) {
+        const notifications = (await this.getFollowRequestNotifications()).filter((n) => n.id !== notification.id);
+        await this.setFollowRequestNotifications(notifications);
         await this.broadcastNotifications(notifications);
     }
 
-    private async broadcastNotifications(notifications: NotificationMessage[]) {
+    private async broadcastNotifications(notifications: FollowRequestNotificationItem[]) {
         if (!this.websocket) return;
 
-        for (const notification of notifications) {
-            this.websocket.send(JSON.stringify(notification));
-        }
+        const message: FollowRequestNotification = {
+            type: 'notification',
+            kind: 'follow-request',
+            items: notifications
+        };
+
+        this.websocket.send(JSON.stringify(message));
     }
 
-    async sendNotification(newNotification: NotificationMessage) {
-        const notifications = await this.addNotification(newNotification);
+    async sendFollowRequestNotification(newNotification: FollowRequestNotificationItem) {
+        const notifications = await this.addFollowRequestNotification(newNotification);
         await this.broadcastNotifications(notifications);
     }
 
@@ -136,7 +140,7 @@ export class UserDurableObject extends DurableObject {
 
             if (type === 'connect') {
                 this.storage.setAlarm(Date.now() + ONLINE_STATUS_INTERVAL);
-                const notifications = await this.getNotifications();
+                const notifications = await this.getFollowRequestNotifications();
                 await this.broadcastNotifications(notifications);
             } else if (type === 'disconnect') {
                 this.storage.deleteAlarm();

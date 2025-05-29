@@ -8,7 +8,7 @@ import { auth } from 'auth';
 import { getMessagesByUserIds } from '@/api/db/queries/messages-queries';
 import { getRoomId } from '@sound-connect/common/helpers';
 import crypto from 'crypto';
-import { NotificationMessage } from '@sound-connect/common/types';
+import { followRequestNotificationItem } from '@sound-connect/common/types';
 
 const app = new Hono<HonoContext>();
 
@@ -87,26 +87,24 @@ app.post('/users/send-follow-request', async (c) => {
     const id = c.env.UserDO.idFromName(`user:${userId}`);
     const stub = c.env.UserDO.get(id);
 
-    const notifications = await stub.getNotifications();
+    const notifications = await stub.getFollowRequestNotifications();
 
-    if (notifications.some((n) => n.kind === 'follow-request' && n.userId === user.id)) {
+    if (notifications.some((n) => n.userId === user.id)) {
         return c.json('User is already notified about follow request', 400);
     }
 
     const currentUserId = c.env.UserDO.idFromName(`user:${user.id}`);
     const currentUserStub = c.env.UserDO.get(currentUserId);
 
-    const currentUserNotifications = await currentUserStub.getNotifications();
-    const notificationToRemove = currentUserNotifications.find((n) => n.kind === 'follow-request' && n.userId === userId && n.accepted);
+    const currentUserNotifications = await currentUserStub.getFollowRequestNotifications();
+    const notificationToRemove = currentUserNotifications.find((n) => n.userId === userId && n.accepted);
 
     if (notificationToRemove) {
         await currentUserStub.removeNotification(notificationToRemove);
     }
 
-    await stub.sendNotification({
+    await stub.sendFollowRequestNotification({
         id: crypto.randomUUID(),
-        type: 'notification',
-        kind: 'follow-request',
         date: new Date().toISOString(),
         seen: false,
         accepted: false,
@@ -118,7 +116,9 @@ app.post('/users/send-follow-request', async (c) => {
 
 app.post('/users/accept-follow-request', async (c) => {
     const body = await c.req.json();
-    const { userId } = z.object({ userId: z.string() }).parse(body);
+    const {
+        notification: { userId }
+    } = z.object({ notification: followRequestNotificationItem }).parse(body);
 
     const user = c.get('user');
     const followedUsers = await getFollowedUsers(user.id);
@@ -130,18 +130,16 @@ app.post('/users/accept-follow-request', async (c) => {
     const id = c.env.UserDO.idFromName(`user:${userId}`);
     const stub = c.env.UserDO.get(id);
 
-    const notifications = await stub.getNotifications();
+    const notifications = await stub.getFollowRequestNotifications();
 
-    const notification = notifications.find(
-        (n): n is Extract<NotificationMessage, { kind: 'follow-request' }> => n.kind === 'follow-request' && n.userId === userId
-    );
+    const notification = notifications.find((n) => n.userId === userId);
 
     if (!notification) {
         return c.json('Follow request is required to be sent first', 400);
     }
 
     await followUser(user.id, notification.userId);
-    await stub.updateNotification({ ...notification, accepted: true });
+    await stub.updateFollowRequestNotification({ ...notification, accepted: true });
 
     return c.json('ok');
 });

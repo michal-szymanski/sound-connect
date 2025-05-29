@@ -29,7 +29,7 @@ type Item = {
 const LeftSidebar = () => {
     const { data: user } = useSuspenseQuery(userQueryOptions(null));
     const [open, setOpen] = useState(false);
-    const { notifications } = useUserStatuses();
+    const { followRequestNotifications } = useUserStatuses();
 
     const getItems = (user?: User | null): Item[] => {
         if (!user) return [];
@@ -71,7 +71,7 @@ const LeftSidebar = () => {
                     <span className="hidden xl:inline">{item.title}</span>
                     {item.title === 'Notifications' && (
                         <Badge variant="destructive" className="ml-auto">
-                            {Array.from(notifications.values()).filter((n) => !n.seen).length}
+                            {Array.from(followRequestNotifications.values()).filter((n) => !n.seen).length}
                         </Badge>
                     )}
                 </SidebarMenuButton>

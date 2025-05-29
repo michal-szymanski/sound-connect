@@ -35,25 +35,32 @@ export const notificationKind = z.enum(['follow-request', 'reaction']);
 
 export type NotificationKind = z.infer<typeof notificationKind>;
 
-export const notificationMessageSchema = z.union([
-    z.object({
-        id: z.string().uuid(),
-        type: z.literal(webSocketMessageTypes.Enum.notification),
-        kind: z.literal(notificationKind.Enum['follow-request']),
-        date: z.string(),
-        seen: z.boolean(),
-        accepted: z.boolean(),
-        userId: z.string()
-    }),
-    z.object({
-        id: z.string().uuid(),
-        type: z.literal(webSocketMessageTypes.Enum.notification),
-        kind: z.literal(notificationKind.Enum['reaction']),
-        date: z.string(),
-        seen: z.boolean(),
-        userId: z.string(),
-        postId: z.string()
-    })
-]);
+export const followRequestNotificationItem = z.object({
+    id: z.string().uuid(),
+    date: z.string(),
+    seen: z.boolean(),
+    accepted: z.boolean(),
+    userId: z.string()
+});
 
-export type NotificationMessage = z.infer<typeof notificationMessageSchema>;
+export type FollowRequestNotificationItem = z.infer<typeof followRequestNotificationItem>;
+
+export const followRequestNotification = z.object({
+    type: z.literal(webSocketMessageTypes.Enum.notification),
+    kind: z.literal(notificationKind.Enum['follow-request']),
+    items: z.array(followRequestNotificationItem)
+});
+
+export type FollowRequestNotification = z.infer<typeof followRequestNotification>;
+
+export const reactionNotificationItem = z.object({ id: z.string().uuid(), date: z.string(), seen: z.boolean(), userId: z.string(), postId: z.string() });
+
+export type ReactionNotificationItem = z.infer<typeof reactionNotificationItem>;
+
+export const reactionNotification = z.object({
+    type: z.literal(webSocketMessageTypes.Enum.notification),
+    kind: z.literal(notificationKind.Enum['reaction']),
+    items: z.array(reactionNotificationItem)
+});
+
+export type ReactionNotification = z.infer<typeof reactionNotification>;
