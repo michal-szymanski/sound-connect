@@ -124,7 +124,8 @@
         @apply bg-background text-foreground h-full;
     }
 
-    button {
+    button,
+    [role='button'] {
         @apply cursor-pointer;
     }
 }

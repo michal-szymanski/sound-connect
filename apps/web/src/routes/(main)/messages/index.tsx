@@ -1,7 +1,7 @@
 import { useMutualFollowers, userQueryOptions, useEnvs } from '@/web/lib/react-query';
 import { useWebSocket } from '@/web/providers/websocket-provider';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/web/components/ui/input';
 import { Card } from '@/web/components/ui/card';
@@ -94,10 +94,12 @@ function RouteComponent() {
         if (!selectedPeer) return null;
 
         return (
-            <>
-                <StatusAvatar user={selectedPeer} />
-                <span>{selectedPeer.name}</span>
-            </>
+            <Button variant="link" asChild>
+                <Link to={`/users/${selectedPeer.id}`}>
+                    <StatusAvatar user={selectedPeer} />
+                    <span>{selectedPeer.name}</span>
+                </Link>
+            </Button>
         );
     };
 

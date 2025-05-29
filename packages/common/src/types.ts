@@ -33,12 +33,14 @@ export type WebSocketMessage = z.infer<typeof webSocketMessageSchema>;
 
 export const notificationKind = z.enum(['follow-request', 'reaction']);
 
+export type NotificationKind = z.infer<typeof notificationKind>;
+
 export const notificationMessageSchema = z.union([
     z.object({
         id: z.string().uuid(),
         type: z.literal(webSocketMessageTypes.Enum.notification),
         kind: z.literal(notificationKind.Enum['follow-request']),
-        date: z.string().date(),
+        date: z.string(),
         seen: z.boolean(),
         accepted: z.boolean(),
         userId: z.string()
@@ -47,7 +49,7 @@ export const notificationMessageSchema = z.union([
         id: z.string().uuid(),
         type: z.literal(webSocketMessageTypes.Enum.notification),
         kind: z.literal(notificationKind.Enum['reaction']),
-        date: z.string().date(),
+        date: z.string(),
         seen: z.boolean(),
         userId: z.string(),
         postId: z.string()
