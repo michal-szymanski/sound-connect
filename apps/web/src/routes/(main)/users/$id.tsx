@@ -1,10 +1,19 @@
 import { Button } from '@/web/components/ui/button';
 import { Card } from '@/web/components/ui/card';
 import { sendFollowRequest, getFollowers, getFollowings, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
-import { User, UserDTO, userDTOSchema } from '@/web/types/auth';
-import { Follower, Following, Post } from '@/web/types/models';
+import { UserDTO, userDTOSchema } from '@/web/types/auth';
+import { followerSchema, followingSchema, postSchema } from '@/web/types/models';
 import { createFileRoute, notFound, useRouter } from '@tanstack/react-router';
 import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';
+import z from 'zod';
+
+const loaderSchema = z.object({
+    currentUser: userDTOSchema,
+    user: userDTOSchema,
+    followers: z.array(followerSchema),
+    followings: z.array(followingSchema),
+    posts: z.array(postSchema)
+});
 
 export const Route = createFileRoute('/(main)/users/$id')({
     component: RouteComponent,
@@ -36,18 +45,12 @@ export const Route = createFileRoute('/(main)/users/$id')({
         const postsResult = await getPosts({ data: { userId } });
         const posts = postsResult.success ? postsResult.body : [];
 
-        return { currentUser, user, followers, followings, posts };
+        return loaderSchema.parse({ currentUser, user, followers, followings, posts });
     }
 });
 
 function RouteComponent() {
-    const {
-        currentUser,
-        user,
-        followers,
-        followings,
-        posts
-    }: { currentUser: User; user: UserDTO; followers: Follower[]; followings: Following[]; posts: Post[] } = Route.useLoaderData();
+    const { currentUser, user, followers, followings, posts } = loaderSchema.parse(Route.useLoaderData());
     const router = useRouter();
 
     const handleFollow = async () => {
