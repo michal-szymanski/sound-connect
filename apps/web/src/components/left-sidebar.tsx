@@ -16,6 +16,8 @@ import { userQueryOptions } from '@/web/lib/react-query';
 import { User } from '@/web/types/auth';
 import { useState } from 'react';
 import NotificationsSheet from '@/web/components/notifications-sheet';
+import { Badge } from '@/web/components/ui/badge';
+import { useUserStatuses } from '@/web/providers/user-statuses-provider';
 
 type Item = {
     title: string;
@@ -27,6 +29,7 @@ type Item = {
 const LeftSidebar = () => {
     const { data: user } = useSuspenseQuery(userQueryOptions(null));
     const [open, setOpen] = useState(false);
+    const { notifications } = useUserStatuses();
 
     const getItems = (user?: User | null): Item[] => {
         if (!user) return [];
@@ -66,6 +69,11 @@ const LeftSidebar = () => {
                 <SidebarMenuButton onClick={item.onClick} className="flex justify-center xl:justify-start [&>svg]:size-6">
                     <item.icon />
                     <span className="hidden xl:inline">{item.title}</span>
+                    {item.title === 'Notifications' && (
+                        <Badge variant="destructive" className="ml-auto">
+                            {notifications.filter((n) => !n.seen).length}
+                        </Badge>
+                    )}
                 </SidebarMenuButton>
             );
         }

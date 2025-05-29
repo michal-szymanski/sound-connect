@@ -5,7 +5,7 @@ import { userDTOSchema } from '@/web/types/auth';
 import { followerSchema, followingSchema, postReactionSchema, postSchema } from '@/web/types/models';
 import { chatMessageSchema, NotificationMessage } from '@sound-connect/common/types';
 import { createServerFn } from '@tanstack/react-start';
-import { getWebRequest } from '@tanstack/react-start/server';
+import { getHeader, getHeaders, getWebRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
 import { getRoomId } from '@sound-connect/common/helpers';
 
@@ -136,8 +136,11 @@ export const getUser = createServerFn()
     .validator((data: { userId: string }) => data)
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
+        const { headers } = getWebRequest()!;
 
-        const response = await API.fetch(`${API_URL}/users/${data.userId}`);
+        const response = await API.fetch(`${API_URL}/users/${data.userId}`, {
+            headers
+        });
 
         if (!response.ok) {
             return await errorHandler(response);

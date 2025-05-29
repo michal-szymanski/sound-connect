@@ -1,10 +1,18 @@
 import { useEnvs } from '@/web/lib/react-query';
 import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
-import { notificationMessageSchema, OnlineStatus, onlineStatusMessageSchema, WebSocketMessage, webSocketMessageSchema } from '@sound-connect/common/types';
+import {
+    NotificationMessage,
+    notificationMessageSchema,
+    OnlineStatus,
+    onlineStatusMessageSchema,
+    WebSocketMessage,
+    webSocketMessageSchema
+} from '@sound-connect/common/types';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Context = {
     statuses: Map<string, OnlineStatus>;
+    notifications: NotificationMessage[];
 };
 
 const UserStatusesContext = createContext<Context | undefined>(undefined);
@@ -16,6 +24,7 @@ type Props = {
 export const UserStatusesProvider = ({ children }: Props) => {
     const { data: envs } = useEnvs();
     const [statuses, setStatuses] = useState<Map<string, OnlineStatus>>(new Map());
+    const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
 
     useEffect(() => {
         if (!envs) return;
@@ -58,6 +67,7 @@ export const UserStatusesProvider = ({ children }: Props) => {
 
             if (type === 'notification') {
                 const data = notificationMessageSchema.parse(json);
+                setNotifications((prev) => [...prev, data]);
 
                 if (data.kind === 'follow-request') {
                     console.log({ data });
@@ -93,7 +103,7 @@ export const UserStatusesProvider = ({ children }: Props) => {
         };
     }, [envs]);
 
-    return <UserStatusesContext.Provider value={{ statuses }}>{children}</UserStatusesContext.Provider>;
+    return <UserStatusesContext.Provider value={{ statuses, notifications }}>{children}</UserStatusesContext.Provider>;
 };
 
 export const useUserStatuses = () => {

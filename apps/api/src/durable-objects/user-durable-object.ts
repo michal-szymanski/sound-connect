@@ -110,7 +110,9 @@ export class UserDurableObject extends DurableObject {
     private async broadcastNotifications(notifications: NotificationMessage[]) {
         if (!this.websocket) return;
 
-        this.websocket.send(JSON.stringify(notifications));
+        for (const notification of notifications) {
+            this.websocket.send(JSON.stringify(notification));
+        }
     }
 
     async sendNotification(newNotification: NotificationMessage) {
@@ -121,12 +123,14 @@ export class UserDurableObject extends DurableObject {
     async handleConnection(webSocket: WebSocket) {
         this.websocket = webSocket;
 
-        webSocket.addEventListener('message', (event) => {
+        webSocket.addEventListener('message', async (event) => {
             const json = JSON.parse(event.data);
             const { type } = webSocketMessageSchema.parse(json);
 
             if (type === 'connect') {
                 this.storage.setAlarm(Date.now() + ONLINE_STATUS_INTERVAL);
+                const notifications = await this.getNotifications();
+                await this.broadcastNotifications(notifications);
             } else if (type === 'disconnect') {
                 this.storage.deleteAlarm();
             }
