@@ -3,9 +3,9 @@ import { getSession } from '@/web/server-functions/auth';
 import { errorHandler, getSessionCookie } from '@/web/server-functions/helpers';
 import { userDTOSchema } from '@/web/types/auth';
 import { followerSchema, followingSchema, postReactionSchema, postSchema } from '@/web/types/models';
-import { chatMessageSchema, NotificationMessage } from '@sound-connect/common/types';
+import { chatMessageSchema, FollowRequestNotificationItem } from '@sound-connect/common/types';
 import { createServerFn } from '@tanstack/react-start';
-import { getHeader, getHeaders, getWebRequest } from '@tanstack/react-start/server';
+import { getWebRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
 import { getRoomId } from '@sound-connect/common/helpers';
 
@@ -177,7 +177,7 @@ export const sendFollowRequest = createServerFn({ method: 'POST' })
     });
 
 export const acceptFollowRequest = createServerFn({ method: 'POST' })
-    .validator((data: { notification: NotificationMessage }) => data)
+    .validator((data: { notification: FollowRequestNotificationItem }) => data)
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
