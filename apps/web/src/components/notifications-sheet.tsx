@@ -7,6 +7,7 @@ import { NotificationMessage } from '@sound-connect/common/types';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { formatDistanceToNowStrict, parseISO } from 'date-fns';
+import StatusAvatar from '@/web/components/status-avatar';
 
 type Props = {
     open: boolean;
@@ -46,13 +47,16 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                         router.navigate({ to: `/users/${user.id}` });
                     }}
                 >
-                    <div className="pr-3">
-                        <span className="font-bold">{user.name}</span> requested to follow you.{' '}
-                        <span className="text-muted-foreground">
-                            {formatDistanceToNowStrict(parseISO(notification.date), {
-                                addSuffix: true
-                            })}
-                        </span>
+                    <div className="inline-flex items-center gap-3 pr-3">
+                        <StatusAvatar user={user} />
+                        <div>
+                            <span className="font-bold">{user.name}</span> requested to follow you.{' '}
+                            <span className="text-muted-foreground">
+                                {formatDistanceToNowStrict(parseISO(notification.date), {
+                                    addSuffix: true
+                                })}
+                            </span>
+                        </div>
                     </div>
                     <div className="inline-flex gap-2">
                         <Button
