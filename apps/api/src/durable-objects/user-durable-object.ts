@@ -105,6 +105,13 @@ export class UserDurableObject extends DurableObject {
         });
 
         await this.setNotifications(notifications);
+        await this.broadcastNotifications(notifications);
+    }
+
+    public async removeNotification(notification: NotificationMessage) {
+        const notifications = (await this.getNotifications()).filter((n) => n.id !== notification.id);
+        await this.setNotifications(notifications);
+        await this.broadcastNotifications(notifications);
     }
 
     private async broadcastNotifications(notifications: NotificationMessage[]) {

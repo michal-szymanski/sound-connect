@@ -1,7 +1,7 @@
 import { Button } from '@/web/components/ui/button';
 import { SheetContent, SheetHeader, SheetTitle, Sheet } from '@/web/components/ui/sheet';
 import { useUserStatuses } from '@/web/providers/user-statuses-provider';
-import { getUser } from '@/web/server-functions/models';
+import { acceptFollowRequest, getUser, sendFollowRequest } from '@/web/server-functions/models';
 import { UserDTO } from '@/web/types/auth';
 import { NotificationMessage } from '@sound-connect/common/types';
 import { useRouter } from '@tanstack/react-router';
@@ -19,7 +19,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
     const [users, setUsers] = useState<UserDTO[]>([]);
 
     useEffect(() => {
-        for (const notification of notifications) {
+        for (const notification of Array.from(notifications.values())) {
             if (notification.kind === 'follow-request' || notification.kind === 'reaction') {
                 getUser({ data: { userId: notification.userId } }).then((res) => {
                     if (res.success) {
@@ -59,15 +59,27 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                         </div>
                     </div>
                     <div className="inline-flex gap-2">
-                        <Button
-                            size="sm"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                console.log('b1');
-                            }}
-                        >
-                            Accept
-                        </Button>
+                        {notification.accepted ? (
+                            <Button
+                                size="sm"
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    await sendFollowRequest({ data: { userId: notification.userId } });
+                                }}
+                            >
+                                Follow
+                            </Button>
+                        ) : (
+                            <Button
+                                size="sm"
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    await acceptFollowRequest({ data: { notification } });
+                                }}
+                            >
+                                Accept
+                            </Button>
+                        )}
                         <Button
                             size="sm"
                             variant="secondary"
@@ -96,7 +108,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                 <SheetHeader>
                     <SheetTitle className="text-2xl">Notifications</SheetTitle>
                 </SheetHeader>
-                {notifications.map((n) => (
+                {Array.from(notifications.values()).map((n) => (
                     <div key={n.id} className="hover:bg-muted/50 px-7 py-5 text-sm">
                         {renderContent(n)}
                     </div>
