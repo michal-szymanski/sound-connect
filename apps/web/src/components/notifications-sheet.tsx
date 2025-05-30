@@ -1,7 +1,7 @@
 import { Button } from '@/web/components/ui/button';
 import { SheetContent, SheetHeader, SheetTitle, Sheet, SheetDescription } from '@/web/components/ui/sheet';
 import { useUserStatuses } from '@/web/providers/user-statuses-provider';
-import { acceptFollowRequest, deleteNotification, getUser, sendFollowRequest } from '@/web/server-functions/models';
+import { acceptFollowRequest, deleteNotification, getUser, sendFollowRequest, updateNotifications } from '@/web/server-functions/models';
 import { UserDTO } from '@/web/types/auth';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
@@ -27,6 +27,17 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
             });
         }
     }, [followRequestNotifications]);
+
+    useEffect(() => {
+        if (!open) return;
+
+        const unseenNotifications = Array.from(followRequestNotifications.values()).filter((n) => !n.seen);
+        updateNotifications({
+            data: {
+                notifications: unseenNotifications.map((n) => ({ ...n, seen: true }))
+            }
+        });
+    }, [open]);
 
     const router = useRouter();
 

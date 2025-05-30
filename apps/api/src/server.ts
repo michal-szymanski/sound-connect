@@ -144,7 +144,7 @@ app.post('/users/accept-follow-request', async (c) => {
     if (followedUsersByCurrentUser.some(({ followedUserId }) => followedUserId === userId)) {
         await stub.removeNotification(notification);
     } else {
-        await stub.updateFollowRequestNotification({ ...notification, accepted: true });
+        await stub.updateFollowRequestNotifications([{ ...notification, accepted: true }]);
     }
 
     return c.json('ok');
@@ -158,6 +158,18 @@ app.post('/users/delete-notification', async (c) => {
     const id = c.env.UserDO.idFromName(`user:${user.id}`);
     const stub = c.env.UserDO.get(id);
     await stub.removeNotification(notification);
+
+    return c.json('ok');
+});
+
+app.post('/users/update-notifications', async (c) => {
+    const body = await c.req.json();
+    const { notifications } = z.object({ notifications: z.array(followRequestNotificationItem) }).parse(body);
+
+    const user = c.get('user');
+    const id = c.env.UserDO.idFromName(`user:${user.id}`);
+    const stub = c.env.UserDO.get(id);
+    await stub.updateFollowRequestNotifications(notifications);
 
     return c.json('ok');
 });
