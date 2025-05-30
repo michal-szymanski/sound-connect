@@ -9,6 +9,7 @@ import {
     WebSocketMessage,
     webSocketMessageSchema
 } from '@sound-connect/common/types';
+import { useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import z from 'zod';
 
@@ -27,6 +28,7 @@ export const UserStatusesProvider = ({ children }: Props) => {
     const { data: envs } = useEnvs();
     const [statuses, setStatuses] = useState<Map<string, OnlineStatus>>(new Map());
     const [followRequestNotifications, setFollowRequestNotifications] = useState<Map<string, FollowRequestNotificationItem>>(new Map());
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         if (!envs) return;
@@ -80,6 +82,8 @@ export const UserStatusesProvider = ({ children }: Props) => {
                         });
                         return newNotifications;
                     });
+
+                    queryClient.invalidateQueries({ queryKey: ['followings'] });
                 }
             }
         };

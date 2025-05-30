@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { formatDistanceToNowStrict, parseISO } from 'date-fns';
 import StatusAvatar from '@/web/components/status-avatar';
 import { FollowRequestNotificationItem } from '@sound-connect/common/types';
+import { useQueryClient } from '@tanstack/react-query';
 
 type Props = {
     open: boolean;
@@ -40,6 +41,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
     }, [open]);
 
     const router = useRouter();
+    const queryClient = useQueryClient();
 
     const renderContent = (notification: FollowRequestNotificationItem) => {
         const user = users.find((u) => u.id === notification.userId);
