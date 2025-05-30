@@ -3,24 +3,34 @@ import { Card } from '@/web/components/ui/card';
 import { sendFollowRequest, getFollowers, getFollowings, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
 import { UserDTO, userDTOSchema } from '@/web/types/auth';
 import { followerSchema, followingSchema, postSchema } from '@/web/types/models';
-import { createFileRoute, notFound, useRouter } from '@tanstack/react-router';
+import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
 import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';
 import z from 'zod';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { followingsQuery } from '@/web/lib/react-query';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
     user: userDTOSchema,
     followers: z.array(followerSchema),
-    followings: z.array(followingSchema),
     posts: z.array(postSchema)
 });
 
 export const Route = createFileRoute('/(main)/users/$id')({
     component: RouteComponent,
-    loader: async (context) => {
-        const currentUser = context.context.user;
+    loader: async ({ context, params }) => {
+        const currentUser = context.user;
 
-        const userId = context.params.id;
+        if (!currentUser) {
+            const path = '/sign-in';
+            console.info(`[App] Redirecting to: ${path}`);
+
+            throw redirect({
+                to: path
+            });
+        }
+
+        const userId = params.id;
 
         let user: UserDTO;
 
@@ -45,13 +55,16 @@ export const Route = createFileRoute('/(main)/users/$id')({
         const postsResult = await getPosts({ data: { userId } });
         const posts = postsResult.success ? postsResult.body : [];
 
+        await context.queryClient.ensureQueryData(followingsQuery(currentUser.id));
+
         return loaderSchema.parse({ currentUser, user, followers, followings, posts });
     }
 });
 
 function RouteComponent() {
-    const { currentUser, user, followers, followings, posts } = loaderSchema.parse(Route.useLoaderData());
+    const { currentUser, user, followers, posts } = loaderSchema.parse(Route.useLoaderData());
     const router = useRouter();
+    const { data: followings } = useSuspenseQuery(followingsQuery(currentUser.id));
 
     const handleFollow = async () => {
         const result = await sendFollowRequest({ data: { userId: user.id } });
@@ -75,7 +88,7 @@ function RouteComponent() {
     };
 
     const renderFollowButton = () => {
-        if (currentUser.id === user.id) return null;
+        if (currentUser.id === user.id || !followings) return null;
 
         const isCurrentUserFollowing = followings.some((f) => f.userId === currentUser.id);
 
@@ -109,7 +122,7 @@ function RouteComponent() {
                         <div className="text-muted-foreground inline-flex gap-3">
                             <div>{posts.length} posts</div>
                             <div>{followers.length} followers</div>
-                            <div>{followings.length} following</div>
+                            {followings && <div>{followings.length} following</div>}
                         </div>
                         <div>{renderFollowButton()}</div>
                     </div>

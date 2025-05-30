@@ -1,6 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { User } from '@/web/types/auth';
-import { getFeed, getMutualFollowers, getReactions } from '@/web/server-functions/models';
+import { getFeed, getFollowings, getMutualFollowers, getReactions } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
 import { getEnvs } from '@/web/server-functions/utils';
 
@@ -73,6 +73,20 @@ export const useMutualFollowers = (user: User | null) =>
             }
 
             const result = await getMutualFollowers({ data: { userId: user.id } });
+
+            if (result.success) {
+                return result.body;
+            }
+
+            return [];
+        }
+    });
+
+export const followingsQuery = (userId: string) =>
+    queryOptions({
+        queryKey: ['followings'],
+        queryFn: async () => {
+            const result = await getFollowings({ data: { userId } });
 
             if (result.success) {
                 return result.body;
