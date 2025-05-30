@@ -97,6 +97,7 @@ app.post('/users/send-follow-request', async (c) => {
     const currentUserStub = c.env.UserDO.get(currentUserId);
 
     const currentUserNotifications = await currentUserStub.getFollowRequestNotifications();
+
     const notificationToRemove = currentUserNotifications.find((n) => n.userId === userId && n.accepted);
 
     if (notificationToRemove) {
@@ -121,25 +122,30 @@ app.post('/users/accept-follow-request', async (c) => {
     } = z.object({ notification: followRequestNotificationItem }).parse(body);
 
     const user = c.get('user');
-    const followedUsers = await getFollowedUsers(user.id);
+    const followedUsers = await getFollowedUsers(userId);
 
     if (followedUsers.some(({ followedUserId }) => followedUserId === userId)) {
         return c.json('User is already followed', 400);
     }
 
-    const id = c.env.UserDO.idFromName(`user:${userId}`);
+    const id = c.env.UserDO.idFromName(`user:${user.id}`);
     const stub = c.env.UserDO.get(id);
 
     const notifications = await stub.getFollowRequestNotifications();
-
-    const notification = notifications.find((n) => n.userId === userId);
+    const notification = notifications.find((n) => n.userId === userId && !n.accepted);
 
     if (!notification) {
         return c.json('Follow request is required to be sent first', 400);
     }
 
-    await followUser(user.id, notification.userId);
-    await stub.updateFollowRequestNotification({ ...notification, accepted: true });
+    await followUser(notification.userId, user.id);
+    const followedUsersByCurrentUser = await getFollowedUsers(user.id);
+
+    if (followedUsersByCurrentUser.some(({ followedUserId }) => followedUserId === userId)) {
+        await stub.removeNotification(notification);
+    } else {
+        await stub.updateFollowRequestNotification({ ...notification, accepted: true });
+    }
 
     return c.json('ok');
 });

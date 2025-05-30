@@ -73,8 +73,8 @@ export const UserStatusesProvider = ({ children }: Props) => {
                 if (kind === 'follow-request') {
                     const notification = followRequestNotification.parse(json);
 
-                    setFollowRequestNotifications((prev) => {
-                        const newNotifications = new Map(prev);
+                    setFollowRequestNotifications(() => {
+                        const newNotifications = new Map();
                         notification.items.forEach((item) => {
                             newNotifications.set(item.id, item);
                         });

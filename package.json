@@ -13,7 +13,8 @@
     "tail:api": "pnpm --filter @sound-connect/api tail",
     "prettier:format": "prettier ./apps --write",
     "prettier:check": "prettier ./apps --check",
-    "wipe:do": "zsh -c 'rm -rf apps/api/.wrangler/**/do'"
+    "wipe:do": "zsh -c 'rm -rf apps/api/.wrangler/**/do'",
+    "studio": "pnpm --filter @sound-connect/api db:studio:local"
   },
   "devDependencies": {
     "prettier": "^3.5.0",
