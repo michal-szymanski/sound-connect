@@ -150,6 +150,18 @@ app.post('/users/accept-follow-request', async (c) => {
     return c.json('ok');
 });
 
+app.post('/users/delete-notification', async (c) => {
+    const body = await c.req.json();
+    const { notification } = z.object({ notification: followRequestNotificationItem }).parse(body);
+
+    const user = c.get('user');
+    const id = c.env.UserDO.idFromName(`user:${user.id}`);
+    const stub = c.env.UserDO.get(id);
+    await stub.removeNotification(notification);
+
+    return c.json('ok');
+});
+
 app.post('/users/unfollow', async (c) => {
     const body = await c.req.json();
     const { userId } = z.object({ userId: z.string() }).parse(body);

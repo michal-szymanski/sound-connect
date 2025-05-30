@@ -1,7 +1,7 @@
 import { Button } from '@/web/components/ui/button';
 import { SheetContent, SheetHeader, SheetTitle, Sheet, SheetDescription } from '@/web/components/ui/sheet';
 import { useUserStatuses } from '@/web/providers/user-statuses-provider';
-import { acceptFollowRequest, getUser, sendFollowRequest } from '@/web/server-functions/models';
+import { acceptFollowRequest, deleteNotification, getUser, sendFollowRequest } from '@/web/server-functions/models';
 import { UserDTO } from '@/web/types/auth';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
@@ -80,9 +80,9 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                     <Button
                         size="sm"
                         variant="secondary"
-                        onClick={(e) => {
+                        onClick={async (e) => {
                             e.stopPropagation();
-                            console.log('b2');
+                            await deleteNotification({ data: { notification } });
                         }}
                     >
                         Delete
