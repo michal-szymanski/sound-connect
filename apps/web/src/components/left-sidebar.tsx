@@ -63,15 +63,17 @@ const LeftSidebar = () => {
         ];
     };
 
+    const unseenNotifications = Array.from(followRequestNotifications.values()).filter((n) => !n.seen);
+
     const renderMenuButton = (item: Item) => {
         if (item.onClick) {
             return (
                 <SidebarMenuButton onClick={item.onClick} className="flex justify-center xl:justify-start [&>svg]:size-6">
                     <item.icon />
                     <span className="hidden xl:inline">{item.title}</span>
-                    {item.title === 'Notifications' && (
+                    {unseenNotifications.length > 0 && item.title === 'Notifications' && (
                         <Badge variant="destructive" className="ml-auto">
-                            {Array.from(followRequestNotifications.values()).filter((n) => !n.seen).length}
+                            {unseenNotifications.length}
                         </Badge>
                     )}
                 </SidebarMenuButton>

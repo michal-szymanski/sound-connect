@@ -96,14 +96,8 @@ export class UserDurableObject extends DurableObject {
         return notifications;
     }
 
-    public async updateFollowRequestNotification(newNotification: FollowRequestNotificationItem) {
-        const notifications = (await this.getFollowRequestNotifications()).map((n) => {
-            if (n.id === newNotification.id) {
-                return newNotification;
-            }
-            return n;
-        });
-
+    public async updateFollowRequestNotifications(updatedNotifications: FollowRequestNotificationItem[]) {
+        const notifications = (await this.getFollowRequestNotifications()).map((n) => updatedNotifications.find((u) => u.id === n.id) ?? n);
         await this.setFollowRequestNotifications(notifications);
         await this.broadcastNotifications(notifications);
     }

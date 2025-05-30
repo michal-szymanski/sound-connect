@@ -216,6 +216,26 @@ export const deleteNotification = createServerFn({ method: 'POST' })
         return { success: true, body: null } as const;
     });
 
+export const updateNotifications = createServerFn({ method: 'POST' })
+    .validator((data: { notifications: FollowRequestNotificationItem[] }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/users/update-notifications`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
+            body: JSON.stringify(data),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
+    });
+
 export const unfollowUser = createServerFn({ method: 'POST' })
     .validator((data: { userId: string }) => data)
     .handler(async ({ data }) => {
