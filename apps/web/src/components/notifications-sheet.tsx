@@ -1,5 +1,5 @@
 import { Button } from '@/web/components/ui/button';
-import { SheetContent, SheetHeader, SheetTitle, Sheet } from '@/web/components/ui/sheet';
+import { SheetContent, SheetHeader, SheetTitle, Sheet, SheetDescription } from '@/web/components/ui/sheet';
 import { useUserStatuses } from '@/web/providers/user-statuses-provider';
 import { acceptFollowRequest, getUser, sendFollowRequest } from '@/web/server-functions/models';
 import { UserDTO } from '@/web/types/auth';
@@ -98,6 +98,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                 <SheetHeader>
                     <SheetTitle className="text-2xl">Notifications</SheetTitle>
                 </SheetHeader>
+                {followRequestNotifications.size === 0 && <SheetDescription className="px-7 py-5 text-sm">You don't have any notifications.</SheetDescription>}
                 {Array.from(followRequestNotifications.values()).map((n) => (
                     <div key={n.id} className="hover:bg-muted/50 px-7 py-5 text-sm">
                         {renderContent(n)}
