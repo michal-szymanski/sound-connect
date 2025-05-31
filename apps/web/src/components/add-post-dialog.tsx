@@ -95,12 +95,9 @@ const AddPostDialog = () => {
                                             {...field}
                                             ref={textareaRef}
                                             maxLength={POST_TEXT_MAX_LENGTH}
-                                            className={clsx(
-                                                'w-full resize-none overflow-y-auto break-words md:text-xl', // Ensure content wraps and respects parent width
-                                                {
-                                                    'md:text-sm': form.getValues('content').length > 50 // Dynamically adjust text size
-                                                }
-                                            )}
+                                            className={clsx('wrap-anywhere min-h-50 w-full max-w-full resize-none overflow-y-auto md:text-xl', {
+                                                'md:text-sm': form.getValues('content').length > 100
+                                            })}
                                         />
                                     </ScrollArea>
                                 </FormItem>
