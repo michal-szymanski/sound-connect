@@ -67,7 +67,7 @@ const FeedCard = ({ post }: Props) => {
                     </>
                 )}
             </CardHeader>
-            <CardContent>{post.content}</CardContent>
+            <CardContent className="whitespace-pre-wrap break-words">{post.content}</CardContent>
             <CardFooter className="flex-col items-start gap-1">
                 <div className="inline-flex gap-1">
                     <Button variant="ghost" size="sm" className="group p-0 hover:bg-transparent hover:text-red-500 [&_svg]:size-6">
