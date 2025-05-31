@@ -2,14 +2,16 @@ import React from 'react';
 import Spinner from '@/web/components/spinner';
 import { Button } from '@/web/components/ui/button';
 import clsx from 'clsx';
+import { cn } from '@/web/lib/utils';
 
 type Props = React.PropsWithChildren<{
     isSpinner: boolean;
+    className?: string;
 }>;
 
-const SubmitButton = ({ isSpinner, children }: Props) => {
+const SubmitButton = ({ isSpinner, children, className }: Props) => {
     return (
-        <Button type="submit" aria-busy={isSpinner} disabled={isSpinner} className="relative">
+        <Button type="submit" aria-busy={isSpinner} disabled={isSpinner} className={cn('relative', className)}>
             <div
                 role="status"
                 aria-live="polite"
