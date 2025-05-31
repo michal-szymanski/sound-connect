@@ -16,9 +16,17 @@ type Props = {
     post: Post;
 };
 
+const formatContent = (content: string) => {
+    const urlRegex = /https?:\/\/[^\s]+|www\.[^\s]+/g;
+    return content.replace(urlRegex, (url) => {
+        const formattedUrl = url.startsWith('www.') ? `https://${url}` : url;
+
+        return `<a href="${formattedUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline-offset-4 hover:underline">${formattedUrl.replace(/^(https?:\/\/)/, '')}</a>`;
+    });
+};
+
 const FeedCard = ({ post }: Props) => {
     const [user, setUser] = useState<UserDTO>();
-
     const { data: reactions } = useReactions({ postId: post.id });
     const { data: followings } = useSuspenseQuery(followingsQuery(post.userId));
     const { data: currentUser } = useSuspenseQuery(userQueryOptions(null));
@@ -42,15 +50,6 @@ const FeedCard = ({ post }: Props) => {
     };
 
     if (!user) return null;
-
-    const formatContent = (content: string) => {
-        const urlRegex = /https?:\/\/[^\s]+|www\.[^\s]+/g;
-        return content.replace(urlRegex, (url) => {
-            const formattedUrl = url.startsWith('www.') ? `https://${url}` : url;
-
-            return `<a href="${formattedUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline-offset-4 hover:underline">${formattedUrl.replace(/^(https?:\/\/)/, '')}</a>`;
-        });
-    };
 
     return (
         <Card className="w-full">
