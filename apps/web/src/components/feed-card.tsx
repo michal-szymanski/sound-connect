@@ -2,20 +2,38 @@ import { Button } from 'src/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from 'src/components/ui/card';
 import { Heart } from 'lucide-react';
 import { Post } from '@/web/types/models';
-import { useReactions } from 'src/lib/react-query';
+import { followingsQuery, useReactions, userQueryOptions } from 'src/lib/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from 'src/components/ui/avatar';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { Link } from '@tanstack/react-router';
+import { UserDTO } from '@/web/types/auth';
+import { useEffect, useState } from 'react';
+import { getUser } from '@/web/server-functions/models';
+import StatusAvatar from '@/web/components/status-avatar';
+import { useSuspenseQuery } from '@tanstack/react-query';
 
 type Props = {
     post: Post;
-    isFollowing?: boolean;
 };
 
-const FeedCard = ({ post, isFollowing }: Props) => {
-    // const { data: user } = useUser({ userId: post.userId });
+const FeedCard = ({ post }: Props) => {
+    const [user, setUser] = useState<UserDTO>();
 
     const { data: reactions } = useReactions({ postId: post.id });
+    const { data: followings } = useSuspenseQuery(followingsQuery(post.userId));
+    const { data: currentUser } = useSuspenseQuery(userQueryOptions(null));
+
+    const canFollow = currentUser?.id !== post.userId && followings.some((f) => f.userId !== post.userId);
+
+    useEffect(() => {
+        getUser({ data: { userId: post.userId } }).then((res) => {
+            if (res.success) {
+                setUser(res.body);
+            } else {
+                console.error('Failed to fetch user:', res);
+            }
+        });
+    }, [post.userId]);
 
     const renderLikes = () => {
         if (!reactions) return null;
@@ -23,18 +41,15 @@ const FeedCard = ({ post, isFollowing }: Props) => {
         return `${reactions.length} ${suffix}`;
     };
 
+    if (!user) return null;
+
     return (
-        <Card className="w-[600px]">
-            <CardHeader className="flex-row items-center space-x-2 space-y-0 text-sm">
-                <Button variant="link" className="px-0" size="lg" asChild>
-                    <Link to={`/user/$id`} params={{ id: post.userId }}>
-                        {/* <Avatar>
-                            <AvatarImage src={user?.imageUrl} alt="avatar" />
-                            <AvatarFallback>CN</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            {user?.firstName} {user?.lastName}
-                        </div> */}
+        <Card className="w-full">
+            <CardHeader className="inline-flex items-center space-x-2 space-y-0 text-sm">
+                <Button variant="link" className="w-min px-0" size="lg" asChild>
+                    <Link to="/users/$id" params={{ id: post.userId }}>
+                        <StatusAvatar user={user} />
+                        <div>{user.name}</div>
                     </Link>
                 </Button>
                 <div className="text-muted-foreground">•</div>
@@ -43,7 +58,7 @@ const FeedCard = ({ post, isFollowing }: Props) => {
                         addSuffix: true
                     })}
                 </div>
-                {!isFollowing && (
+                {canFollow && (
                     <>
                         <div className="text-muted-foreground">•</div>
                         <Button variant="ghost" className="hover:text-card-foreground p-0 font-semibold text-blue-500 hover:bg-transparent">
