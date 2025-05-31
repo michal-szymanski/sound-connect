@@ -3,9 +3,9 @@ import FeedCard from '@/web/components/feed-card';
 import StatusAvatar from '@/web/components/status-avatar';
 import { Card, CardContent } from '@/web/components/ui/card';
 import { feedQueryOptions, userQueryOptions } from '@/web/lib/react-query';
-import { userDTOSchema } from '@/web/types/auth';
+import { userDTOSchema } from '@sound-connect/common/types/models';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/(main)/')({
     component: RouteComponent,

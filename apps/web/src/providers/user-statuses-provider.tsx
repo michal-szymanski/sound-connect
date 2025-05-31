@@ -8,7 +8,7 @@ import {
     onlineStatusMessageSchema,
     WebSocketMessage,
     webSocketMessageSchema
-} from '@sound-connect/common/types';
+} from '@sound-connect/common/types/models';
 import { useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import z from 'zod';

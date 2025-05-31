@@ -1,8 +1,7 @@
 import { Button } from '@/web/components/ui/button';
 import { Card } from '@/web/components/ui/card';
 import { sendFollowRequest, getFollowers, getFollowings, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
-import { UserDTO, userDTOSchema } from '@/web/types/auth';
-import { followerSchema, followingSchema, postSchema } from '@/web/types/models';
+import { UserDTO, userDTOSchema, followerSchema, postSchema } from '@sound-connect/common/types/models';
 import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
 import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';
 import z from 'zod';

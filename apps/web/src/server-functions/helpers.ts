@@ -1,4 +1,5 @@
-import { authErrorSchema, sessionSchema, userSchema } from '@/web/types/auth';
+import { authErrorSchema, sessionSchema } from '@sound-connect/common/types/auth';
+import { userSchema } from '@sound-connect/common/types/models';
 import { getCookie, setHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 

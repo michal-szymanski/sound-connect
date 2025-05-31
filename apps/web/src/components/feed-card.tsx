@@ -1,12 +1,10 @@
 import { Button } from 'src/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from 'src/components/ui/card';
 import { Heart } from 'lucide-react';
-import { Post } from '@/web/types/models';
 import { followingsQuery, useReactions, userQueryOptions } from 'src/lib/react-query';
-import { Avatar, AvatarFallback, AvatarImage } from 'src/components/ui/avatar';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { Link } from '@tanstack/react-router';
-import { UserDTO } from '@/web/types/auth';
+import { UserDTO, Post } from '@sound-connect/common/types/models';
 import { useEffect, useState } from 'react';
 import { getUser } from '@/web/server-functions/models';
 import StatusAvatar from '@/web/components/status-avatar';

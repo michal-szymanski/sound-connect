@@ -97,22 +97,6 @@ export const authErrorSchema = z.discriminatedUnion('code', [
 
 export type AuthError = z.infer<typeof authErrorSchema>;
 
-export const userSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    email: z.string().email(),
-    emailVerified: z.boolean(),
-    image: z.string().url().nullable(),
-    createdAt: z.string(),
-    updatedAt: z.string()
-});
-
-export type User = z.infer<typeof userSchema>;
-
-export const userDTOSchema = userSchema.omit({ email: true, emailVerified: true, createdAt: true, updatedAt: true });
-
-export type UserDTO = z.infer<typeof userDTOSchema>;
-
 export const sessionSchema = z.object({
     id: z.string(),
     expiresAt: z.string(),

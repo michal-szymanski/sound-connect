@@ -1,4 +1,4 @@
-import { OnlineStatus } from '@sound-connect/common/types';
+import { OnlineStatus } from '@sound-connect/common/types/models';
 
 type Props = {
     status?: OnlineStatus;

@@ -1,5 +1,5 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
-import { User } from '@/web/types/auth';
+import { User } from '@sound-connect/common/types/models';
 import { getFeed, getFollowings, getMutualFollowers, getReactions } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
 import { getEnvs } from '@/web/server-functions/utils';
