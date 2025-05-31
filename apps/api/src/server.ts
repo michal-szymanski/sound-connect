@@ -8,7 +8,7 @@ import { auth } from 'auth';
 import { getMessagesByUserIds } from '@/api/db/queries/messages-queries';
 import { getRoomId } from '@sound-connect/common/helpers';
 import crypto from 'crypto';
-import { followRequestNotificationItem } from '@sound-connect/common/types/models';
+import { feedItemSchema, followRequestNotificationItem } from '@sound-connect/common/types/models';
 
 const app = new Hono<HonoContext>();
 
@@ -220,8 +220,9 @@ app.post('/posts', async (c) => {
 
 app.get('/feed', async (c) => {
     const feedResults = await getFeed();
+    const schema = z.array(feedItemSchema);
 
-    return c.json(feedResults);
+    return c.json(schema.parse(feedResults), 200);
 });
 
 app.get('/posts/:postId/reactions', async (c) => {

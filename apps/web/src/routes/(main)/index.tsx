@@ -29,8 +29,8 @@ function RouteComponent() {
                     </div>
                 </CardContent>
             </Card>
-            {feed.map((post, i) => (
-                <FeedCard key={post.id} post={post} />
+            {feed.map((item) => (
+                <FeedCard key={item.post.id} item={item} />
             ))}
         </div>
     );
