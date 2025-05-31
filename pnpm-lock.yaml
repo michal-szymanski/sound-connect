@@ -125,6 +125,9 @@ importers:
       '@radix-ui/react-navigation-menu':
         specifier: ^1.2.5
         version: 1.2.12(@types/react-dom@19.1.5)(@types/react@19.1.4)(react-dom@19.1.0)(react@19.1.0)
+      '@radix-ui/react-scroll-area':
+        specifier: ^1.2.9
+        version: 1.2.9(@types/react-dom@19.1.5)(@types/react@19.1.4)(react-dom@19.1.0)(react@19.1.0)
       '@radix-ui/react-separator':
         specifier: ^1.1.2
         version: 1.1.6(@types/react-dom@19.1.5)(@types/react@19.1.4)(react-dom@19.1.0)(react@19.1.0)
@@ -241,7 +244,7 @@ importers:
         version: 4.3.0(typescript@5.8.3)(vite@6.3.5)
       wrangler:
         specifier: ^4.12.0
-        version: 4.15.2
+        version: 4.15.2(@cloudflare/workers-types@4.20250517.0)
       zod:
         specifier: ^3.25.32
         version: 3.25.32
@@ -597,7 +600,7 @@ packages:
       tinyglobby: 0.2.13
       unenv: 2.0.0-rc.15
       vite: 6.3.5(@types/node@22.15.18)
-      wrangler: 4.15.2
+      wrangler: 4.15.2(@cloudflare/workers-types@4.20250517.0)
       ws: 8.18.0
     transitivePeerDependencies:
       - bufferutil
@@ -11913,32 +11916,6 @@ packages:
       '@cloudflare/workerd-linux-64': 1.20250508.0
       '@cloudflare/workerd-linux-arm64': 1.20250508.0
       '@cloudflare/workerd-windows-64': 1.20250508.0
-    dev: false
-
-  /wrangler@4.15.2:
-    resolution: {integrity: sha512-Rv7zP61DOVzIS3af+/1UzJkRVpqu6VDRi6uIVMiwD1LkXG5Ov08tv94jgnE9bSjVf0paQg3dl0E89h+wQ0x/Bw==}
-    engines: {node: '>=18.0.0'}
-    hasBin: true
-    peerDependencies:
-      '@cloudflare/workers-types': ^4.20250508.0
-    peerDependenciesMeta:
-      '@cloudflare/workers-types':
-        optional: true
-    dependencies:
-      '@cloudflare/kv-asset-handler': 0.4.0
-      '@cloudflare/unenv-preset': 2.3.1(unenv@2.0.0-rc.15)(workerd@1.20250508.0)
-      blake3-wasm: 2.1.5
-      esbuild: 0.25.4
-      miniflare: 4.20250508.2
-      path-to-regexp: 6.3.0
-      unenv: 2.0.0-rc.15
-      workerd: 1.20250508.0
-    optionalDependencies:
-      fsevents: 2.3.3
-      sharp: 0.33.5
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
     dev: false
 
   /wrangler@4.15.2(@cloudflare/workers-types@4.20250517.0):

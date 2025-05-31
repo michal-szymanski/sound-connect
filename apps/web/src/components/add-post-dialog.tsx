@@ -15,12 +15,15 @@ import { VisuallyHidden } from 'radix-ui';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import { addPost } from '@/web/server-functions/models';
 import { useQueryClient } from '@tanstack/react-query';
+import { ScrollArea } from '@/web/components/ui/scroll-area';
+import clsx from 'clsx';
 
 const AddPostDialog = () => {
     const text = `What's on your mind?`;
     const [open, setOpen] = useState(false);
     const dispatch = useDispatch();
-    const ref = useRef<HTMLDivElement | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const queryClient = useQueryClient();
 
     const formSchema = z.object({
@@ -59,14 +62,21 @@ const AddPostDialog = () => {
         dispatch(showSidebar(!open));
     }, [open]);
 
+    const handleAddEmoji = (emoji: { native: string }) => {
+        if (form.getValues('content').length >= POST_TEXT_MAX_LENGTH) return;
+
+        form.setValue('content', form.getValues('content') + emoji.native);
+        form.trigger('content');
+    };
+
     const isSpinner = form.formState.isSubmitting || form.formState.isSubmitSuccessful;
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger className="border-input dark:bg-input/30 text-muted-foreground shadow-xs hover:bg-muted/50 h-9 flex-1 rounded-md border bg-transparent px-3 py-1 text-sm font-normal">
+            <DialogTrigger className="border-input dark:bg-input/30 text-muted-foreground shadow-xs dark:hover:bg-accent h-12 flex-1 rounded-md border bg-transparent px-3 py-1 text-left text-sm font-normal">
                 {text}
             </DialogTrigger>
-            <DialogContent ref={ref} data-dialog="add-post-dialog">
+            <DialogContent ref={containerRef} className="flex max-h-[90vh] w-full max-w-2xl flex-col p-6">
                 <DialogHeader className="mb-4">
                     <DialogTitle>Create post</DialogTitle>
                     <VisuallyHidden.Root>
@@ -74,18 +84,31 @@ const AddPostDialog = () => {
                     </VisuallyHidden.Root>
                 </DialogHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 space-y-4">
                         <FormField
                             control={form.control}
                             name="content"
                             render={({ field }) => (
-                                <FormItem>
-                                    <Textarea {...field} maxLength={POST_TEXT_MAX_LENGTH} className="min-h-50 md:text-xl" />
+                                <FormItem className="h-full">
+                                    <ScrollArea className="max-h-60 w-full">
+                                        <Textarea
+                                            {...field}
+                                            ref={textareaRef}
+                                            maxLength={POST_TEXT_MAX_LENGTH}
+                                            className={clsx(
+                                                'w-full resize-none overflow-y-auto break-words md:text-xl', // Ensure content wraps and respects parent width
+                                                {
+                                                    'md:text-sm': form.getValues('content').length > 50 // Dynamically adjust text size
+                                                }
+                                            )}
+                                        />
+                                    </ScrollArea>
                                 </FormItem>
                             )}
                         />
+
                         <div className="inline-flex items-end justify-end gap-3">
-                            <EmojiPicker containerRef={ref} onEmojiSelect={(emoji) => form.setValue('content', form.getValues('content') + emoji.native)} />
+                            <EmojiPicker containerRef={containerRef} onEmojiSelect={handleAddEmoji} />
                         </div>
                         <SubmitButton isSpinner={isSpinner} className="w-full">
                             Publish
