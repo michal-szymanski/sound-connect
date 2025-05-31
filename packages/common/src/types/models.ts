@@ -76,8 +76,12 @@ export type Post = z.infer<typeof postSchema>;
 
 export const postReactionSchema = z.object({
     id: z.number(),
-    userId: z.string()
+    userId: z.string(),
+    postId: z.number(),
+    createdAt: z.string()
 });
+
+export type PostReaction = z.infer<typeof postReactionSchema>;
 
 export const followerSchema = z.object({ followedUserId: z.string() });
 

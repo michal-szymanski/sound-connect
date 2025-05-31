@@ -8,7 +8,8 @@ import {
     followerSchema,
     followingSchema,
     postReactionSchema,
-    postSchema
+    postSchema,
+    feedItemSchema
 } from '@sound-connect/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { getWebRequest } from '@tanstack/react-start/server';
@@ -29,7 +30,7 @@ export const getFeed = createServerFn().handler(async () => {
 
     try {
         const json = await response.json();
-        const schema = z.array(postSchema);
+        const schema = z.array(feedItemSchema);
 
         return { success: true, body: schema.parse(json) } as const;
     } catch (error) {

@@ -1,17 +1,15 @@
 import { Button } from 'src/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from 'src/components/ui/card';
 import { Heart } from 'lucide-react';
-import { followingsQuery, useReactions, userQueryOptions } from 'src/lib/react-query';
+import { followingsQuery, userQueryOptions } from 'src/lib/react-query';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { Link } from '@tanstack/react-router';
-import { UserDTO, Post } from '@sound-connect/common/types/models';
-import { useEffect, useState } from 'react';
-import { getUser } from '@/web/server-functions/models';
+import { FeedItem, PostReaction } from '@sound-connect/common/types/models';
 import StatusAvatar from '@/web/components/status-avatar';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
 type Props = {
-    post: Post;
+    item: FeedItem;
 };
 
 const formatContent = (content: string) => {
@@ -23,29 +21,17 @@ const formatContent = (content: string) => {
     });
 };
 
-const FeedCard = ({ post }: Props) => {
-    const [user, setUser] = useState<UserDTO>();
-    const { data: reactions } = useReactions({ postId: post.id });
+const renderLikes = (reactions: PostReaction[]) => {
+    if (!reactions) return null;
+    const suffix = reactions.length === 1 ? 'like' : 'likes';
+    return `${reactions.length} ${suffix}`;
+};
+
+const FeedCard = ({ item: { post, user, reactions } }: Props) => {
     const { data: followings } = useSuspenseQuery(followingsQuery(post.userId));
     const { data: currentUser } = useSuspenseQuery(userQueryOptions(null));
 
     const canFollow = currentUser?.id !== post.userId && followings.some((f) => f.userId !== post.userId);
-
-    useEffect(() => {
-        getUser({ data: { userId: post.userId } }).then((res) => {
-            if (res.success) {
-                setUser(res.body);
-            } else {
-                console.error('Failed to fetch user:', res);
-            }
-        });
-    }, [post.userId]);
-
-    const renderLikes = () => {
-        if (!reactions) return null;
-        const suffix = reactions.length === 1 ? 'like' : 'likes';
-        return `${reactions.length} ${suffix}`;
-    };
 
     if (!user) return null;
 
@@ -80,7 +66,7 @@ const FeedCard = ({ post }: Props) => {
                         <Heart className="group-hover:fill-red-500" />
                     </Button>
                 </div>
-                <div className="text-sm font-semibold">{renderLikes()}</div>
+                <div className="text-sm font-semibold">{renderLikes(reactions)}</div>
             </CardFooter>
         </Card>
     );
