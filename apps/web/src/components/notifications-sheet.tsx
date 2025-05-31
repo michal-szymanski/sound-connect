@@ -9,6 +9,8 @@ import { formatDistanceToNowStrict, parseISO } from 'date-fns';
 import StatusAvatar from '@/web/components/status-avatar';
 import { FollowRequestNotificationItem } from '@sound-connect/common/types';
 import { useQueryClient } from '@tanstack/react-query';
+import { useDispatch } from 'react-redux';
+import { showSidebar } from '@/web/redux/slices/ui-slice';
 
 type Props = {
     open: boolean;
@@ -18,6 +20,7 @@ type Props = {
 const NotificationsSheet = ({ open, setOpen }: Props) => {
     const { followRequestNotifications } = useUserStatuses();
     const [users, setUsers] = useState<UserDTO[]>([]);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         for (const notification of Array.from(followRequestNotifications.values())) {
@@ -30,6 +33,8 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
     }, [followRequestNotifications]);
 
     useEffect(() => {
+        dispatch(showSidebar(!open));
+
         if (!open) return;
 
         const unseenNotifications = Array.from(followRequestNotifications.values()).filter((n) => !n.seen);

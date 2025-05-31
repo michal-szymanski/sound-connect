@@ -1,22 +1,24 @@
 import SubmitButton from '@/web/components/submit-button';
-import { Button } from '@/web/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/web/components/ui/dialog';
 import { Form, FormField, FormItem } from '@/web/components/ui/form';
 import { Textarea } from '@/web/components/ui/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { POST_TEXT_MAX_LENGTH } from '@sound-connect/common/constants';
-import { Smile } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import z from 'zod';
-import data from '@emoji-mart/data';
-import Picker from '@emoji-mart/react';
+import EmojiPicker from '@/web/components/emoji-picker';
+import { useDispatch } from 'react-redux';
+import { showSidebar } from '@/web/redux/slices/ui-slice';
+import { VisuallyHidden } from 'radix-ui';
+import { DialogDescription } from '@radix-ui/react-dialog';
 
 const AddPostDialog = () => {
     const text = `What's on your mind?`;
     const [open, setOpen] = useState(false);
-    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const dispatch = useDispatch();
+    const ref = useRef<HTMLDivElement | null>(null);
 
     const formSchema = z.object({
         content: z.string().min(1).max(POST_TEXT_MAX_LENGTH)
@@ -46,6 +48,10 @@ const AddPostDialog = () => {
         form.reset();
     }, [form.formState.isSubmitSuccessful]);
 
+    useEffect(() => {
+        dispatch(showSidebar(!open));
+    }, [open]);
+
     const isSpinner = form.formState.isSubmitting || form.formState.isSubmitSuccessful;
 
     return (
@@ -53,9 +59,12 @@ const AddPostDialog = () => {
             <DialogTrigger className="border-input dark:bg-input/30 text-muted-foreground shadow-xs hover:bg-muted/50 h-9 flex-1 rounded-md border bg-transparent px-3 py-1 text-sm font-normal">
                 {text}
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent ref={ref} data-dialog="add-post-dialog">
                 <DialogHeader className="mb-4">
                     <DialogTitle>Create post</DialogTitle>
+                    <VisuallyHidden.Root>
+                        <DialogDescription>Write something to share with your followers.</DialogDescription>
+                    </VisuallyHidden.Root>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -69,31 +78,8 @@ const AddPostDialog = () => {
                             )}
                         />
                         <div className="inline-flex items-end justify-end gap-3">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => setShowEmojiPicker((prev) => !prev)}
-                                className="text-muted-foreground bg-auto p-0 has-[>svg]:px-0 dark:hover:bg-inherit [&_svg:not([class*='size-'])]:size-5"
-                            >
-                                <Smile />
-                            </Button>
-                            {showEmojiPicker && (
-                                <div className="absolute bottom-16 right-4 z-50">
-                                    <Picker
-                                        data={data}
-                                        onEmojiSelect={(emoji) => {
-                                            form.setValue('content', form.getValues('content') + emoji.native);
-                                        }}
-                                        // onClickOutside={() => {
-                                        //     setShowEmojiPicker(false);
-                                        //     console.log('Emoji picker closed');
-                                        // }}
-                                        theme="dark"
-                                    />
-                                </div>
-                            )}
+                            <EmojiPicker containerRef={ref} onEmojiSelect={(emoji) => form.setValue('content', form.getValues('content') + emoji.native)} />
                         </div>
-
                         <SubmitButton isSpinner={isSpinner} className="w-full">
                             Publish
                         </SubmitButton>

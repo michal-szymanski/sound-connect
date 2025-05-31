@@ -18,6 +18,8 @@ import { useState } from 'react';
 import NotificationsSheet from '@/web/components/notifications-sheet';
 import { Badge } from '@/web/components/ui/badge';
 import { useUserStatuses } from '@/web/providers/user-statuses-provider';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/web/redux/store';
 
 type Item = {
     title: string;
@@ -28,8 +30,9 @@ type Item = {
 
 const LeftSidebar = () => {
     const { data: user } = useSuspenseQuery(userQueryOptions(null));
-    const [open, setOpen] = useState(false);
+    const [showNotifications, setShowNotification] = useState(false);
     const { followRequestNotifications } = useUserStatuses();
+    const { isSidebarVisible } = useSelector((state: RootState) => state.ui);
 
     const getItems = (user?: User | null): Item[] => {
         if (!user) return [];
@@ -42,7 +45,7 @@ const LeftSidebar = () => {
             },
             {
                 title: 'Notifications',
-                onClick: () => setOpen((prev) => !prev),
+                onClick: () => setShowNotification((prev) => !prev),
                 icon: Bell
             },
             {
@@ -94,8 +97,8 @@ const LeftSidebar = () => {
         <div className="relative flex">
             <Sidebar
                 collapsible="none"
-                data-state={open ? 'closed' : 'open'}
-                className={`z-52 absolute inset-y-0 left-0 w-52 text-white transition-transform duration-500 data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0`}
+                data-state={!isSidebarVisible ? 'closed' : 'open'}
+                className={`z-52 fixed inset-y-0 left-0 w-52 text-white transition-transform duration-500 data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0`}
             >
                 <SidebarContent className="flex-none lg:flex-1">
                     <SidebarGroup className="w-min lg:w-full">
@@ -116,7 +119,7 @@ const LeftSidebar = () => {
                     </SidebarMenu>
                 </SidebarFooter>
             </Sidebar>
-            <NotificationsSheet open={open} setOpen={setOpen} />
+            <NotificationsSheet open={showNotifications} setOpen={setShowNotification} />
         </div>
     );
 };
