@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/web/components/ui/form';
 import { Input } from '@/web/components/ui/input';
 import { signIn } from '@/web/server-functions/auth';
-import { AuthError } from '@/web/types/auth';
+import { AuthError } from '@sound-connect/common/types/auth';
 import { toast } from 'sonner';
 import SubmitButton from '@/web/components/submit-button';
 

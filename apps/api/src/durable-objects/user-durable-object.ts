@@ -1,6 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
-import { FollowRequestNotification, FollowRequestNotificationItem, OnlineStatusMessage, webSocketMessageSchema } from '@sound-connect/common/types';
+import { FollowRequestNotification, FollowRequestNotificationItem, OnlineStatusMessage, webSocketMessageSchema } from '@sound-connect/common/types/models';
+import z from 'zod';
 
 export class UserDurableObject extends DurableObject {
     private websocket: WebSocket | null = null;
@@ -129,7 +130,7 @@ export class UserDurableObject extends DurableObject {
         this.websocket = webSocket;
 
         webSocket.addEventListener('message', async (event) => {
-            const json = JSON.parse(event.data);
+            const json = JSON.parse(z.string().parse(event.data));
             const { type } = webSocketMessageSchema.parse(json);
 
             if (type === 'connect') {

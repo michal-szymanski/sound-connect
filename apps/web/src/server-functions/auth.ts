@@ -1,6 +1,7 @@
 import { getBindings } from '@/web/lib/cloudflare-bindings';
 import { deleteSessionCookies, errorHandler, getSessionFromCookie, setSessionCookies } from '@/web/server-functions/helpers';
-import { sessionSchema, userSchema } from '@/web/types/auth';
+import { userSchema } from '@sound-connect/common/types/models';
+import { sessionSchema } from '@sound-connect/common/types/auth';
 import { createServerFn } from '@tanstack/react-start';
 import { getWebRequest, getHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';

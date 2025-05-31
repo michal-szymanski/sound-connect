@@ -1,9 +1,15 @@
 import { getBindings } from '@/web/lib/cloudflare-bindings';
 import { getSession } from '@/web/server-functions/auth';
 import { errorHandler, getSessionCookie } from '@/web/server-functions/helpers';
-import { userDTOSchema } from '@/web/types/auth';
-import { followerSchema, followingSchema, postReactionSchema, postSchema } from '@/web/types/models';
-import { chatMessageSchema, FollowRequestNotificationItem } from '@sound-connect/common/types';
+import {
+    chatMessageSchema,
+    FollowRequestNotificationItem,
+    userDTOSchema,
+    followerSchema,
+    followingSchema,
+    postReactionSchema,
+    postSchema
+} from '@sound-connect/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { getWebRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';

@@ -13,7 +13,7 @@ import { Link } from '@tanstack/react-router';
 import AccountButton from '@/web/components/account-button';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { userQueryOptions } from '@/web/lib/react-query';
-import { User } from '@/web/types/auth';
+import { User } from '@sound-connect/common/types/models';
 import { useState } from 'react';
 import NotificationsSheet from '@/web/components/notifications-sheet';
 import { Badge } from '@/web/components/ui/badge';

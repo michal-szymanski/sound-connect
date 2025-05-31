@@ -1,14 +1,13 @@
 {
+    "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "jsx": "react-jsx",
-        "moduleResolution": "Bundler",
-        "module": "ESNext",
-        "target": "ES2022",
-        "skipLibCheck": true,
-        "strictNullChecks": true,
         "baseUrl": ".",
         "paths": {
             "@/web/*": ["src/*"]
-        }
-    }
+        },
+        "lib": ["DOM"],
+        "jsx": "react-jsx"
+    },
+    "include": ["src/**/*", "worker-configuration.d.ts"],
+    "exclude": ["node_modules", "**/*.spec.ts"]
 }

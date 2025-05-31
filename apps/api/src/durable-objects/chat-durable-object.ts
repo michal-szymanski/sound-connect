@@ -1,5 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
-import { ChatMessage, chatMessageSchema } from '@sound-connect/common/types';
+import { ChatMessage, chatMessageSchema } from '@sound-connect/common/types/models';
+import z from 'zod';
 
 export class ChatDurableObject extends DurableObject {
     private connections: Map<string, WebSocket> = new Map();
@@ -28,9 +29,9 @@ export class ChatDurableObject extends DurableObject {
         await this.state.storage.put(userId, true);
 
         // WebSocket event listeners
-        webSocket.addEventListener('message', async (event: MessageEvent<string>) => {
+        webSocket.addEventListener('message', async (event: MessageEvent) => {
             try {
-                const message = event.data;
+                const message = z.string().parse(event.data);
                 const history = (await this.state.storage.get<Array<ChatMessage>>('messages')) || [];
                 const parsedMessage = chatMessageSchema.parse(JSON.parse(message));
                 history.push(parsedMessage);

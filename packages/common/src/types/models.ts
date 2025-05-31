@@ -1,4 +1,4 @@
-import { CHAT_MESSAGE_MAX_LENGTH } from './constants';
+import { CHAT_MESSAGE_MAX_LENGTH } from '../constants';
 import z from 'zod';
 
 export const webSocketMessageTypes = z.enum(['chat', 'online-status', 'connect', 'disconnect', 'notification']);
@@ -64,3 +64,49 @@ export const reactionNotification = z.object({
 });
 
 export type ReactionNotification = z.infer<typeof reactionNotification>;
+
+export const postSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    content: z.string(),
+    createdAt: z.string()
+});
+
+export type Post = z.infer<typeof postSchema>;
+
+export const postReactionSchema = z.object({
+    id: z.number(),
+    userId: z.string()
+});
+
+export const followerSchema = z.object({ followedUserId: z.string() });
+
+export type Follower = z.infer<typeof followerSchema>;
+
+export const followingSchema = z.object({ userId: z.string() });
+
+export type Following = z.infer<typeof followingSchema>;
+
+export const userSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+    emailVerified: z.boolean(),
+    image: z.string().url().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string()
+});
+
+export type User = z.infer<typeof userSchema>;
+
+export const userDTOSchema = userSchema.omit({ email: true, emailVerified: true, createdAt: true, updatedAt: true });
+
+export type UserDTO = z.infer<typeof userDTOSchema>;
+
+export const feedItemSchema = z.object({
+    post: postSchema,
+    user: userDTOSchema,
+    reactions: z.array(postReactionSchema)
+});
+
+export type FeedItem = z.infer<typeof feedItemSchema>;
