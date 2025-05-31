@@ -30,7 +30,7 @@ function RouteComponent() {
                 </CardContent>
             </Card>
             {feed.map((post, i) => (
-                <FeedCard key={post.id} post={post} isFollowing={i % 2 === 0} />
+                <FeedCard key={post.id} post={post} />
             ))}
         </div>
     );

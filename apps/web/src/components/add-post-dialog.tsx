@@ -13,12 +13,15 @@ import { useDispatch } from 'react-redux';
 import { showSidebar } from '@/web/redux/slices/ui-slice';
 import { VisuallyHidden } from 'radix-ui';
 import { DialogDescription } from '@radix-ui/react-dialog';
+import { addPost } from '@/web/server-functions/models';
+import { useQueryClient } from '@tanstack/react-query';
 
 const AddPostDialog = () => {
     const text = `What's on your mind?`;
     const [open, setOpen] = useState(false);
     const dispatch = useDispatch();
     const ref = useRef<HTMLDivElement | null>(null);
+    const queryClient = useQueryClient();
 
     const formSchema = z.object({
         content: z.string().min(1).max(POST_TEXT_MAX_LENGTH)
@@ -33,7 +36,11 @@ const AddPostDialog = () => {
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            console.log({ values });
+            const result = await addPost({ data: { content: values.content } });
+
+            if (result.success) {
+                queryClient.invalidateQueries({ queryKey: ['feed'] });
+            }
         } catch (error) {
             toast.error('Could not publish the post', {
                 description: 'Unknown error occurred'

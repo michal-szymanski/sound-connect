@@ -1,6 +1,6 @@
 import { getFollowedUsers, getUserFollowers, getUserById, followUser, unfollowUser, getMutualFollowers } from '@/api//db/queries/users-queries';
 import { z } from 'zod';
-import { getFeed, getPostsByUserId, getReactions } from '@/api/db/queries/posts-queries';
+import { addPost, getFeed, getPostsByUserId, getReactions } from '@/api/db/queries/posts-queries';
 import { cors } from 'hono/cors';
 import { Hono } from 'hono';
 import { HonoContext } from 'types';
@@ -207,6 +207,15 @@ app.get('/posts/:userId', async (c) => {
     const postsResults = await getPostsByUserId(userId);
 
     return c.json(postsResults);
+});
+
+app.post('/posts', async (c) => {
+    const body = await c.req.json();
+    const { content } = z.object({ content: z.string() }).parse(body);
+    const user = c.get('user');
+    await addPost(user.id, content);
+
+    return c.json('ok');
 });
 
 app.get('/feed', async (c) => {

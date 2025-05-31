@@ -1,13 +1,16 @@
 import { db } from '@/api/db';
 import { postsReactionsTable, postsTable } from '@/api/db/schema';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 export const getPostsByUserId = async (userId: string) => {
     return db.select({ id: postsTable.id, userId: postsTable.userId, content: postsTable.content }).from(postsTable).where(eq(postsTable.userId, userId));
 };
 
 export const getFeed = async () => {
-    return db.select({ id: postsTable.id, userId: postsTable.userId, content: postsTable.content, createdAt: postsTable.createdAt }).from(postsTable);
+    return db
+        .select({ id: postsTable.id, userId: postsTable.userId, content: postsTable.content, createdAt: postsTable.createdAt })
+        .from(postsTable)
+        .orderBy(desc(postsTable.createdAt));
 };
 
 export const getReactions = async (postId: number) => {
@@ -15,4 +18,8 @@ export const getReactions = async (postId: number) => {
         .select({ id: postsReactionsTable.id, userId: postsReactionsTable.userId })
         .from(postsReactionsTable)
         .where(eq(postsReactionsTable.postId, postId));
+};
+
+export const addPost = async (userId: string, content: string) => {
+    return db.insert(postsTable).values({ userId, content, createdAt: new Date().toISOString() });
 };
