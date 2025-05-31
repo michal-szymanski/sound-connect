@@ -43,6 +43,14 @@ const FeedCard = ({ post }: Props) => {
 
     if (!user) return null;
 
+    const formatContent = (content: string) => {
+        const urlRegex = /https?:\/\/[^\s]+|www\.[^\s]+/g;
+        return content.replace(urlRegex, (url) => {
+            const formattedUrl = url.startsWith('www.') ? `https://${url}` : url;
+            return `<a href="${formattedUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-500 underline-offset-4 hover:underline">${formattedUrl}</a>`;
+        });
+    };
+
     return (
         <Card className="w-full">
             <CardHeader className="inline-flex items-center space-x-2 space-y-0 text-sm">
@@ -67,7 +75,7 @@ const FeedCard = ({ post }: Props) => {
                     </>
                 )}
             </CardHeader>
-            <CardContent className="whitespace-pre-wrap break-words">{post.content}</CardContent>
+            <CardContent className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: formatContent(post.content) }} />
             <CardFooter className="flex-col items-start gap-1">
                 <div className="inline-flex gap-1">
                     <Button variant="ghost" size="sm" className="group p-0 hover:bg-transparent hover:text-red-500 [&_svg]:size-6">
