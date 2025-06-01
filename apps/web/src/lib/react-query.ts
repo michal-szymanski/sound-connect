@@ -1,6 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { User } from '@sound-connect/common/types/models';
-import { getFeed, getFollowings, getMutualFollowers, getReactions } from '@/web/server-functions/models';
+import { getFeed, getFollowings, getMutualFollowers, getReactions, search } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
 import { getEnvs } from '@/web/server-functions/utils';
 
@@ -87,6 +87,24 @@ export const followingsQuery = (userId: string) =>
         queryKey: ['followings'],
         queryFn: async () => {
             const result = await getFollowings({ data: { userId } });
+
+            if (result.success) {
+                return result.body;
+            }
+
+            return [];
+        }
+    });
+
+export const useSearch = (query: string) =>
+    useQuery({
+        queryKey: ['search', query],
+        queryFn: async () => {
+            if (!query) {
+                return [];
+            }
+
+            const result = await search({ data: { query } });
 
             if (result.success) {
                 return result.body;

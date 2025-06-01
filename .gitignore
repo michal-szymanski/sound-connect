@@ -11,4 +11,4 @@ apps/web/dist
 node_modules
 .wrangler
 *.env
-./**/.DS_Store
+.DS_Store
