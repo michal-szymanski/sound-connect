@@ -11,12 +11,12 @@ import Loader from '@/web/components/loader';
 
 const SearchBar = () => {
     const [open, setOpen] = useState(false);
-    const [value, setValue] = useState('');
-    const [debouncedValue] = useDebouncedValue(value, { wait: 1000 });
-    const { data: users = [], isFetching } = useSearch(debouncedValue);
+    const [query, setQuery] = useState('');
+    const [debouncedQuery] = useDebouncedValue(query, { wait: 1000 });
+    const { data: users = [], isFetching } = useSearch(debouncedQuery);
     const router = useRouter();
 
-    const showLoader = value !== debouncedValue || isFetching;
+    const showLoader = query !== debouncedQuery || isFetching;
     const showNoResults = !showLoader && !users.length;
     const showResults = users.length > 0;
 
@@ -31,7 +31,7 @@ const SearchBar = () => {
             <PopoverContent className="w-[350px] p-0">
                 <Command shouldFilter={false}>
                     <div className="relative">
-                        <CommandInput placeholder="Search..." autoFocus onValueChange={setValue} inputMode="search" className="pr-5" />
+                        <CommandInput placeholder="Search..." autoFocus onValueChange={setQuery} inputMode="search" className="pr-5" />
                         {showLoader && (
                             <figure className="absolute right-3 top-1/2 -translate-y-1/2">
                                 <Loader />
@@ -48,7 +48,7 @@ const SearchBar = () => {
                                         value={user.id}
                                         className="h-10 cursor-pointer"
                                         onSelect={(currentValue) => {
-                                            setValue('');
+                                            setQuery('');
                                             router.navigate({ to: `/users/${user.id}` });
                                             setOpen(false);
                                         }}
