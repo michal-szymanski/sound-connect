@@ -1,4 +1,4 @@
-import { getFollowedUsers, getUserFollowers, getUserById, followUser, unfollowUser, getMutualFollowers } from '@/api//db/queries/users-queries';
+import { getFollowedUsers, getUserFollowers, getUserById, followUser, unfollowUser, getMutualFollowers, searchUsers } from '@/api//db/queries/users-queries';
 import { z } from 'zod';
 import { addPost, getFeed, getPostsByUserId, getReactions } from '@/api/db/queries/posts-queries';
 import { cors } from 'hono/cors';
@@ -223,6 +223,18 @@ app.get('/feed', async (c) => {
     const schema = z.array(feedItemSchema);
 
     return c.json(schema.parse(feedResults), 200);
+});
+
+app.get('/search', async (c) => {
+    const { query } = c.req.query();
+
+    if (!query) {
+        return c.json({ message: 'Query parameter is required' }, 400);
+    }
+
+    const searchResults = await searchUsers(query);
+
+    return c.json(searchResults, 200);
 });
 
 app.get('/posts/:postId/reactions', async (c) => {

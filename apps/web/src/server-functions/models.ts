@@ -340,3 +340,29 @@ export const addPost = createServerFn({ method: 'POST' })
 
         return { success: true, body: null } as const;
     });
+
+export const search = createServerFn()
+    .validator((data: { query: string }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/search?query=${data.query}`, {
+            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = z.array(userDTOSchema);
+
+            return { success: true, body: schema.parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: null } as const;
+        }
+    });
