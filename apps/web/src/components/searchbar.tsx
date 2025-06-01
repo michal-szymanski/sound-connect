@@ -12,7 +12,7 @@ import Loader from '@/web/components/loader';
 const SearchBar = () => {
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState('');
-    const [debouncedQuery] = useDebouncedValue(query, { wait: 1000 });
+    const [debouncedQuery] = useDebouncedValue(query, { wait: 500 });
     const { data: users = [], isFetching } = useSearch(debouncedQuery);
     const router = useRouter();
 
