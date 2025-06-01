@@ -23,7 +23,7 @@ function RouteComponent() {
     const { send, lastMessage, status, setPeerId } = useWebSocket();
     const { data: envs } = useEnvs();
     const { data: user } = useUser();
-    const { data: users } = useMutualFollowers(user);
+    const { data: users } = useMutualFollowers();
 
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -81,12 +81,12 @@ function RouteComponent() {
     const renderPeers = () => {
         if (!users) return null;
 
-        return users.map((u) => (
-            <Button key={u.id} variant="ghost" onClick={() => setSelectedPeer(u)}>
-                <StatusAvatar user={u} />
-                <span className="truncate">{u.name}</span>
-            </Button>
-        ));
+        // return users.map((u) => (
+        //     <Button key={u.id} variant="ghost" onClick={() => setSelectedPeer(u)}>
+        //         <StatusAvatar user={u} />
+        //         <span className="truncate">{u.name}</span>
+        //     </Button>
+        // ));
     };
 
     const renderHeader = () => {

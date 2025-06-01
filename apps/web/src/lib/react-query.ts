@@ -1,6 +1,6 @@
-import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
-import { User, UserDTO } from '@sound-connect/common/types/models';
-import { getFeed, getFollowers, getFollowings, getMutualFollowers, getReactions, search } from '@/web/server-functions/models';
+import { QueryClient, queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { Follower, Following, User, UserDTO } from '@sound-connect/common/types/models';
+import { getFeed, getFollowers, getFollowings, getMutualFollowers, getReactions, getUser, search } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
 import { getEnvs } from '@/web/server-functions/utils';
 
@@ -70,27 +70,22 @@ export const envsQuery = () =>
 
 export const useEnvs = () => useSuspenseQuery(envsQuery());
 
-export const useMutualFollowers = (user?: User | UserDTO | null) =>
-    useQuery({
+export const useMutualFollowers = () => {
+    const queryClient = new QueryClient();
+    return useQuery({
         queryKey: ['mutual-followers'],
         queryFn: async () => {
-            if (!user) {
-                return [];
-            }
-
-            const result = await getMutualFollowers({ data: { userId: user.id } });
-
-            if (result.success) {
-                return result.body;
-            }
-
-            return [];
+            const followers = queryClient.getQueryData<Follower[]>(['followers']) ?? [];
+            const followings = queryClient.getQueryData<Following[]>(['followings']) ?? [];
+            const commonIds = followings.filter(({ userId }) => followers.some(({ followedUserId }) => userId === followedUserId)).map(({ userId }) => userId);
+            return commonIds;
         }
     });
+};
 
 export const followingsQuery = (user?: User | UserDTO | null) =>
     queryOptions({
-        queryKey: ['followings'],
+        queryKey: ['followings', user?.id],
         queryFn: async () => {
             if (!user) {
                 return [];
@@ -110,7 +105,7 @@ export const useFollowings = (user?: User | UserDTO | null) => useSuspenseQuery(
 
 export const followersQuery = (user?: User | UserDTO | null) =>
     queryOptions({
-        queryKey: ['followers'],
+        queryKey: ['followers', user?.id],
         queryFn: async () => {
             if (!user) {
                 return [];

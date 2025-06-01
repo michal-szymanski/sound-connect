@@ -89,6 +89,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                             onClick={async (e) => {
                                 e.stopPropagation();
                                 await acceptFollowRequest({ data: { notification } });
+                                await queryClient.invalidateQueries({ queryKey: ['followers', 'mutual-followers'] });
                             }}
                         >
                             Accept

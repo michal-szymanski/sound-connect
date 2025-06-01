@@ -1,5 +1,6 @@
 import Header from '@/web/components/layout/header';
 import LeftSidebar from '@/web/components/layout/left-sidebar';
+import RightSidebar from '@/web/components/layout/right-sidebar';
 import { SidebarProvider } from '@/web/components/ui/sidebar';
 import { UserStatusesProvider } from '@/web/providers/user-statuses-provider';
 import { WebSocketProvider } from '@/web/providers/websocket-provider';
@@ -34,6 +35,7 @@ function RouteComponent() {
                                 <Outlet />
                             </div>
                         </main>
+                        <RightSidebar />
                     </SidebarProvider>
                 </WebSocketProvider>
             </UserStatusesProvider>
