@@ -141,4 +141,4 @@ export const searchQuery = (query: string) =>
         }
     });
 
-export const useSearch = (query: string) => useSuspenseQuery(searchQuery(query));
+export const useSearch = (query: string) => useQuery(searchQuery(query));
