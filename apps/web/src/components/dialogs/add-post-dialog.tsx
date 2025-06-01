@@ -1,4 +1,4 @@
-import SubmitButton from '@/web/components/submit-button';
+import SubmitButton from '@/web/components/small/submit-button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/web/components/ui/dialog';
 import { Form, FormField, FormItem } from '@/web/components/ui/form';
 import { Textarea } from '@/web/components/ui/textarea';
@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import z from 'zod';
-import EmojiPicker from '@/web/components/emoji-picker';
+import EmojiPicker from '@/web/components/small/emoji-picker';
 import { useDispatch } from 'react-redux';
 import { showSidebar } from '@/web/redux/slices/ui-slice';
 import { VisuallyHidden } from 'radix-ui';

@@ -10,10 +10,10 @@ import {
 } from 'src/components/ui/sidebar';
 import { Bell, Cog, House, LucideIcon, Mail, UserRound } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
-import AccountButton from '@/web/components/account-button';
+import AccountButton from '@/web/components/small/account-button';
 import { useUser } from '@/web/lib/react-query';
 import { useState } from 'react';
-import NotificationsSheet from '@/web/components/notifications-sheet';
+import NotificationsSheet from '@/web/components/layout/notifications-sheet';
 import { Badge } from '@/web/components/ui/badge';
 import { useUserStatuses } from '@/web/providers/user-statuses-provider';
 import { useSelector } from 'react-redux';

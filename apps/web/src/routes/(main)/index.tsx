@@ -1,6 +1,6 @@
-import AddPostDialog from '@/web/components/add-post-dialog';
-import FeedCard from '@/web/components/feed-card';
-import StatusAvatar from '@/web/components/status-avatar';
+import AddPostDialog from '@/web/components/dialogs/add-post-dialog';
+import FeedCard from '@/web/components/blocks/feed-card';
+import StatusAvatar from '@/web/components/small/status-avatar';
 import { Card, CardContent } from '@/web/components/ui/card';
 import { envsQuery, feedQuery, followersQuery, followingsQuery, useFeed, userQuery, useUser } from '@/web/lib/react-query';
 import { userDTOSchema } from '@sound-connect/common/types/models';

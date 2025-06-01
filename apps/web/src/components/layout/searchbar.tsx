@@ -4,10 +4,10 @@ import { Button } from '@/web/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/web/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/web/components/ui/popover';
 import { useState } from 'react';
-import StatusAvatar from '@/web/components/status-avatar';
+import StatusAvatar from '@/web/components/small/status-avatar';
 import { useRouter } from '@tanstack/react-router';
 import { useSearch } from '@/web/lib/react-query';
-import Loader from '@/web/components/loader';
+import Loader from '@/web/components/small/loader';
 
 const SearchBar = () => {
     const [open, setOpen] = useState(false);

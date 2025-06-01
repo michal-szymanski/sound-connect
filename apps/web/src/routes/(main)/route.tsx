@@ -1,5 +1,5 @@
-import Header from '@/web/components/header';
-import LeftSidebar from '@/web/components/left-sidebar';
+import Header from '@/web/components/layout/header';
+import LeftSidebar from '@/web/components/layout/left-sidebar';
 import { SidebarProvider } from '@/web/components/ui/sidebar';
 import { UserStatusesProvider } from '@/web/providers/user-statuses-provider';
 import { WebSocketProvider } from '@/web/providers/websocket-provider';

@@ -13,7 +13,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/web/components/ui/form';
-import StatusAvatar from '@/web/components/status-avatar';
+import StatusAvatar from '@/web/components/small/status-avatar';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
