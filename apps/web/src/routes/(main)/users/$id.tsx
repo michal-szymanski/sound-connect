@@ -1,17 +1,15 @@
 import { Button } from '@/web/components/ui/button';
 import { Card } from '@/web/components/ui/card';
-import { sendFollowRequest, getFollowers, getFollowings, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
-import { UserDTO, userDTOSchema, followerSchema, postSchema } from '@sound-connect/common/types/models';
+import { sendFollowRequest, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
+import { UserDTO, userDTOSchema, postSchema } from '@sound-connect/common/types/models';
 import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
 import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';
 import z from 'zod';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { followingsQuery } from '@/web/lib/react-query';
+import { useFollowers, useFollowings } from '@/web/lib/react-query';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
     user: userDTOSchema,
-    followers: z.array(followerSchema),
     posts: z.array(postSchema)
 });
 
@@ -45,25 +43,18 @@ export const Route = createFileRoute('/(main)/users/$id')({
             user = result.body;
         }
 
-        const followersResult = await getFollowers({ data: { userId } });
-        const followers = followersResult.success ? followersResult.body : [];
-
-        const followingsResult = await getFollowings({ data: { userId } });
-        const followings = followingsResult.success ? followingsResult.body : [];
-
         const postsResult = await getPosts({ data: { userId } });
         const posts = postsResult.success ? postsResult.body : [];
 
-        await context.queryClient.ensureQueryData(followingsQuery(currentUser.id));
-
-        return loaderSchema.parse({ currentUser, user, followers, followings, posts });
+        return loaderSchema.parse({ currentUser, user, posts });
     }
 });
 
 function RouteComponent() {
-    const { currentUser, user, followers, posts } = loaderSchema.parse(Route.useLoaderData());
+    const { currentUser, user, posts } = loaderSchema.parse(Route.useLoaderData());
+    const { data: followings } = useFollowings(user);
+    const { data: followers } = useFollowers(user);
     const router = useRouter();
-    const { data: followings } = useSuspenseQuery(followingsQuery(currentUser.id));
 
     const handleFollow = async () => {
         const result = await sendFollowRequest({ data: { userId: user.id } });
@@ -75,6 +66,7 @@ function RouteComponent() {
 
         router.invalidate();
     };
+
     const handleUnfollow = async () => {
         const result = await unfollowUser({ data: { userId: user.id } });
 

@@ -15,7 +15,6 @@ import { Route as mainRouteImport } from './routes/(main)/route'
 import { Route as authRouteImport } from './routes/(auth)/route'
 import { Route as mainIndexImport } from './routes/(main)/index'
 import { Route as mainSettingsIndexImport } from './routes/(main)/settings/index'
-import { Route as mainNotificationsIndexImport } from './routes/(main)/notifications/index'
 import { Route as mainMessagesIndexImport } from './routes/(main)/messages/index'
 import { Route as authSignUpIndexImport } from './routes/(auth)/sign-up/index'
 import { Route as authSignInIndexImport } from './routes/(auth)/sign-in/index'
@@ -42,12 +41,6 @@ const mainIndexRoute = mainIndexImport.update({
 const mainSettingsIndexRoute = mainSettingsIndexImport.update({
   id: '/settings/',
   path: '/settings/',
-  getParentRoute: () => mainRouteRoute,
-} as any)
-
-const mainNotificationsIndexRoute = mainNotificationsIndexImport.update({
-  id: '/notifications/',
-  path: '/notifications/',
   getParentRoute: () => mainRouteRoute,
 } as any)
 
@@ -128,13 +121,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof mainMessagesIndexImport
       parentRoute: typeof mainRouteImport
     }
-    '/(main)/notifications/': {
-      id: '/(main)/notifications/'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof mainNotificationsIndexImport
-      parentRoute: typeof mainRouteImport
-    }
     '/(main)/settings/': {
       id: '/(main)/settings/'
       path: '/settings'
@@ -165,7 +151,6 @@ interface mainRouteRouteChildren {
   mainIndexRoute: typeof mainIndexRoute
   mainUsersIdRoute: typeof mainUsersIdRoute
   mainMessagesIndexRoute: typeof mainMessagesIndexRoute
-  mainNotificationsIndexRoute: typeof mainNotificationsIndexRoute
   mainSettingsIndexRoute: typeof mainSettingsIndexRoute
 }
 
@@ -173,7 +158,6 @@ const mainRouteRouteChildren: mainRouteRouteChildren = {
   mainIndexRoute: mainIndexRoute,
   mainUsersIdRoute: mainUsersIdRoute,
   mainMessagesIndexRoute: mainMessagesIndexRoute,
-  mainNotificationsIndexRoute: mainNotificationsIndexRoute,
   mainSettingsIndexRoute: mainSettingsIndexRoute,
 }
 
@@ -187,7 +171,6 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof authSignInIndexRoute
   '/sign-up': typeof authSignUpIndexRoute
   '/messages': typeof mainMessagesIndexRoute
-  '/notifications': typeof mainNotificationsIndexRoute
   '/settings': typeof mainSettingsIndexRoute
 }
 
@@ -197,7 +180,6 @@ export interface FileRoutesByTo {
   '/sign-in': typeof authSignInIndexRoute
   '/sign-up': typeof authSignUpIndexRoute
   '/messages': typeof mainMessagesIndexRoute
-  '/notifications': typeof mainNotificationsIndexRoute
   '/settings': typeof mainSettingsIndexRoute
 }
 
@@ -210,7 +192,6 @@ export interface FileRoutesById {
   '/(auth)/sign-in/': typeof authSignInIndexRoute
   '/(auth)/sign-up/': typeof authSignUpIndexRoute
   '/(main)/messages/': typeof mainMessagesIndexRoute
-  '/(main)/notifications/': typeof mainNotificationsIndexRoute
   '/(main)/settings/': typeof mainSettingsIndexRoute
 }
 
@@ -222,17 +203,9 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/messages'
-    | '/notifications'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/users/$id'
-    | '/sign-in'
-    | '/sign-up'
-    | '/messages'
-    | '/notifications'
-    | '/settings'
+  to: '/' | '/users/$id' | '/sign-in' | '/sign-up' | '/messages' | '/settings'
   id:
     | '__root__'
     | '/(auth)'
@@ -242,7 +215,6 @@ export interface FileRouteTypes {
     | '/(auth)/sign-in/'
     | '/(auth)/sign-up/'
     | '/(main)/messages/'
-    | '/(main)/notifications/'
     | '/(main)/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -284,7 +256,6 @@ export const routeTree = rootRoute
         "/(main)/",
         "/(main)/users/$id",
         "/(main)/messages/",
-        "/(main)/notifications/",
         "/(main)/settings/"
       ]
     },
@@ -306,10 +277,6 @@ export const routeTree = rootRoute
     },
     "/(main)/messages/": {
       "filePath": "(main)/messages/index.tsx",
-      "parent": "/(main)"
-    },
-    "/(main)/notifications/": {
-      "filePath": "(main)/notifications/index.tsx",
       "parent": "/(main)"
     },
     "/(main)/settings/": {

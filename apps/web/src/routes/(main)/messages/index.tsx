@@ -1,6 +1,5 @@
-import { useMutualFollowers, userQueryOptions, useEnvs } from '@/web/lib/react-query';
+import { useMutualFollowers, useEnvs, useUser } from '@/web/lib/react-query';
 import { useWebSocket } from '@/web/providers/websocket-provider';
-import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/web/components/ui/input';
@@ -22,12 +21,13 @@ export const Route = createFileRoute('/(main)/messages/')({
 
 function RouteComponent() {
     const { send, lastMessage, status, setPeerId } = useWebSocket();
-    const { data: user } = useSuspenseQuery(userQueryOptions(null));
+    const { data: envs } = useEnvs();
+    const { data: user } = useUser();
     const { data: users } = useMutualFollowers(user);
+
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const { data: envs } = useEnvs();
 
     const formSchema = z.object({
         text: z.string().max(CHAT_MESSAGE_MAX_LENGTH)

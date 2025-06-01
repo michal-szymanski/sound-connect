@@ -3,12 +3,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/web//components/ui/avatar
 import { Button } from '@/web//components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/web//components/ui/dropdown-menu';
 import { Skeleton } from '@/web//components/ui/skeleton';
-import { userQueryOptions } from '@/web//lib/react-query';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useUser } from '@/web//lib/react-query';
 import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';
 
 const AccountButton = () => {
-    const { data: user } = useSuspenseQuery(userQueryOptions(null));
+    const { data: user } = useUser();
 
     if (!user) return null;
 
