@@ -200,6 +200,9 @@ importers:
       emoji-mart:
         specifier: ^5.6.0
         version: 5.6.0
+      ldrs:
+        specifier: ^1.1.7
+        version: 1.1.7
       lucide-react:
         specifier: ^0.487.0
         version: 0.487.0(react@19.1.0)
@@ -8757,6 +8760,10 @@ packages:
     engines: {node: '>= 0.6.3'}
     dependencies:
       readable-stream: 2.3.8
+    dev: false
+
+  /ldrs@1.1.7:
+    resolution: {integrity: sha512-rZnfveeY1SeS3F3ifUVd9AVGTFHmQ0qzp5fuszAirnrVkjqJBLrm99vtr/Mxbby4XgadUYv+DsFqyk2p4FV40Q==}
     dev: false
 
   /lightningcss-darwin-arm64@1.30.1:
