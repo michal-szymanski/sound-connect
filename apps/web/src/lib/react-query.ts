@@ -1,6 +1,6 @@
-import { QueryClient, queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
-import { Follower, Following, User, UserDTO } from '@sound-connect/common/types/models';
-import { getFeed, getFollowers, getFollowings, getMutualFollowers, getReactions, getUser, search } from '@/web/server-functions/models';
+import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { User, UserDTO } from '@sound-connect/common/types/models';
+import { getFeed, getFollowers, getFollowings, getReactions, search } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
 import { getEnvs } from '@/web/server-functions/utils';
 
@@ -69,19 +69,6 @@ export const envsQuery = () =>
     });
 
 export const useEnvs = () => useSuspenseQuery(envsQuery());
-
-export const useMutualFollowers = () => {
-    const queryClient = new QueryClient();
-    return useQuery({
-        queryKey: ['mutual-followers'],
-        queryFn: async () => {
-            const followers = queryClient.getQueryData<Follower[]>(['followers']) ?? [];
-            const followings = queryClient.getQueryData<Following[]>(['followings']) ?? [];
-            const commonIds = followings.filter(({ userId }) => followers.some(({ followedUserId }) => userId === followedUserId)).map(({ userId }) => userId);
-            return commonIds;
-        }
-    });
-};
 
 export const followingsQuery = (user?: User | UserDTO | null) =>
     queryOptions({
