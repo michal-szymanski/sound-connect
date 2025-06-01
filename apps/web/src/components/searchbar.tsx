@@ -16,8 +16,8 @@ const SearchBar = () => {
     const { data: users = [], isFetching } = useSearch(debouncedValue);
     const router = useRouter();
 
-    const showLoader = value !== debouncedValue;
-    const showNoResults = !showLoader && !isFetching && !users.length;
+    const showLoader = value !== debouncedValue || isFetching;
+    const showNoResults = !showLoader && !users.length;
     const showResults = users.length > 0;
 
     return (
