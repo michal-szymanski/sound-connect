@@ -14,7 +14,6 @@ export const Route = createFileRoute('/(main)/')({
         await context.queryClient.ensureQueryData(userQuery(context.user));
         await context.queryClient.ensureQueryData(followersQuery(context.user));
         await context.queryClient.ensureQueryData(followingsQuery(context.user));
-        await context.queryClient.ensureQueryData(userQuery(context.user));
     }
 });
 
