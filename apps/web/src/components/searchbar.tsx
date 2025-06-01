@@ -7,6 +7,7 @@ import { useState } from 'react';
 import StatusAvatar from '@/web/components/status-avatar';
 import { useRouter } from '@tanstack/react-router';
 import { useSearch } from '@/web/lib/react-query';
+import Loader from '@/web/components/loader';
 
 const SearchBar = () => {
     const [open, setOpen] = useState(false);
@@ -14,6 +15,10 @@ const SearchBar = () => {
     const [debouncedValue] = useDebouncedValue(value, { wait: 1000 });
     const { data: users = [], isFetching } = useSearch(debouncedValue);
     const router = useRouter();
+
+    const showLoader = value !== debouncedValue;
+    const showNoResults = !showLoader && !isFetching && !users.length;
+    const showResults = users.length > 0;
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
@@ -25,10 +30,17 @@ const SearchBar = () => {
             </PopoverTrigger>
             <PopoverContent className="w-[350px] p-0">
                 <Command shouldFilter={false}>
-                    <CommandInput placeholder="Search..." autoFocus onValueChange={setValue} inputMode="search" />
+                    <div className="relative">
+                        <CommandInput placeholder="Search..." autoFocus onValueChange={setValue} inputMode="search" className="pr-5" />
+                        {showLoader && (
+                            <figure className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <Loader />
+                            </figure>
+                        )}
+                    </div>
                     <CommandList>
-                        {debouncedValue && !isFetching && !users.length && <CommandEmpty>Nothing found.</CommandEmpty>}
-                        {users.length > 0 && (
+                        {showNoResults && <CommandEmpty>Nothing found.</CommandEmpty>}
+                        {showResults && (
                             <CommandGroup heading="Users">
                                 {users.map((user) => (
                                     <CommandItem
