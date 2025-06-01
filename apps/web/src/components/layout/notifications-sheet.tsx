@@ -5,7 +5,7 @@ import { acceptFollowRequest, deleteNotification, getUser, sendFollowRequest, up
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { formatDistanceToNowStrict, parseISO } from 'date-fns';
-import StatusAvatar from '@/web/components/status-avatar';
+import StatusAvatar from '@/web/components/small/status-avatar';
 import { FollowRequestNotificationItem, UserDTO } from '@sound-connect/common/types/models';
 import { useQueryClient } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';

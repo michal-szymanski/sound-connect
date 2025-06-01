@@ -5,7 +5,7 @@ import { useFollowings, useUser } from 'src/lib/react-query';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { Link } from '@tanstack/react-router';
 import { FeedItem, PostReaction } from '@sound-connect/common/types/models';
-import StatusAvatar from '@/web/components/status-avatar';
+import StatusAvatar from '@/web/components/small/status-avatar';
 
 type Props = {
     item: FeedItem;

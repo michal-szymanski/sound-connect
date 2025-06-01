@@ -1,4 +1,4 @@
-import SearchBar from '@/web/components/searchbar';
+import SearchBar from '@/web/components/layout/searchbar';
 
 const Header = () => {
     return (

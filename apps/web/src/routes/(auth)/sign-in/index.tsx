@@ -7,7 +7,7 @@ import { Input } from '@/web/components/ui/input';
 import { signIn } from '@/web/server-functions/auth';
 import { AuthError } from '@sound-connect/common/types/auth';
 import { toast } from 'sonner';
-import SubmitButton from '@/web/components/submit-button';
+import SubmitButton from '@/web/components/small/submit-button';
 
 export const Route = createFileRoute('/(auth)/sign-in/')({
     component: RouteComponent

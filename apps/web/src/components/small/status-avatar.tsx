@@ -1,4 +1,4 @@
-import OnlineStatusIcon from '@/web/components/online-status-icon';
+import OnlineStatusIcon from '@/web/components/small/online-status-icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/web/components/ui/avatar';
 import { useUserStatuses } from '@/web/providers/user-statuses-provider';
 import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';

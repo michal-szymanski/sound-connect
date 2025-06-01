@@ -1,4 +1,4 @@
-import SignOutButton from '@/web/components/sign-out-button';
+import SignOutButton from '@/web/components/small/sign-out-button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/web//components/ui/avatar';
 import { Button } from '@/web//components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/web//components/ui/dropdown-menu';

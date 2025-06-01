@@ -1,5 +1,5 @@
 import React from 'react';
-import Spinner from '@/web/components/spinner';
+import Spinner from '@/web/components/small/spinner';
 import { Button } from '@/web/components/ui/button';
 import clsx from 'clsx';
 import { cn } from '@/web/lib/utils';
