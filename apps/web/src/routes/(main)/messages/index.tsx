@@ -1,4 +1,4 @@
-import { useMutualFollowers, useEnvs, useUser } from '@/web/lib/react-query';
+import { useEnvs, useUser } from '@/web/lib/react-query';
 import { useWebSocket } from '@/web/providers/websocket-provider';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
@@ -14,6 +14,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/web/components/ui/form';
 import StatusAvatar from '@/web/components/small/status-avatar';
+import useContacts from '@/web/hooks/use-contacts';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
@@ -23,7 +24,7 @@ function RouteComponent() {
     const { send, lastMessage, status, setPeerId } = useWebSocket();
     const { data: envs } = useEnvs();
     const { data: user } = useUser();
-    const { data: users } = useMutualFollowers();
+    const { users } = useContacts();
 
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -81,12 +82,12 @@ function RouteComponent() {
     const renderPeers = () => {
         if (!users) return null;
 
-        // return users.map((u) => (
-        //     <Button key={u.id} variant="ghost" onClick={() => setSelectedPeer(u)}>
-        //         <StatusAvatar user={u} />
-        //         <span className="truncate">{u.name}</span>
-        //     </Button>
-        // ));
+        return users.map((u) => (
+            <Button key={u.id} variant="ghost" onClick={() => setSelectedPeer(u)}>
+                <StatusAvatar user={u} />
+                <span className="truncate">{u.name}</span>
+            </Button>
+        ));
     };
 
     const renderHeader = () => {

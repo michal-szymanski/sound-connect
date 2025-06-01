@@ -31,7 +31,11 @@ export const Route = createFileRoute('/(main)/users/$id')({
 
         let user: UserDTO;
 
-        if (currentUser?.id === userId) {
+        const queryDataUser = context.queryClient.getQueryData<UserDTO>(['user', userId]);
+
+        if (queryDataUser) {
+            user = userDTOSchema.parse(queryDataUser);
+        } else if (currentUser?.id === userId) {
             user = userDTOSchema.parse(currentUser);
         } else {
             const result = await getUser({ data: { userId } });
@@ -41,6 +45,7 @@ export const Route = createFileRoute('/(main)/users/$id')({
             }
 
             user = result.body;
+            context.queryClient.setQueryData(['user', user.id], user);
         }
 
         const postsResult = await getPosts({ data: { userId } });
