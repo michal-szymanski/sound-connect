@@ -1,7 +1,6 @@
 import Header from '@/web/components/header';
 import LeftSidebar from '@/web/components/left-sidebar';
 import { SidebarProvider } from '@/web/components/ui/sidebar';
-import { userQueryOptions } from '@/web/lib/react-query';
 import { UserStatusesProvider } from '@/web/providers/user-statuses-provider';
 import { WebSocketProvider } from '@/web/providers/websocket-provider';
 import { store } from '@/web/redux/store';
@@ -19,9 +18,6 @@ export const Route = createFileRoute('/(main)')({
                 to: path
             });
         }
-    },
-    loader: async ({ context }) => {
-        await context.queryClient.ensureQueryData(userQueryOptions(context.user));
     }
 });
 

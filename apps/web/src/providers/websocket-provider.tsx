@@ -17,9 +17,10 @@ type Props = React.PropsWithChildren<{}>;
 
 export const WebSocketProvider: React.FC<Props> = ({ children }) => {
     const ws = useRef<WebSocket | null>(null);
+    const { data: envs } = useEnvs();
+
     const [status, setStatus] = useState<WSStatus>('connecting');
     const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
-    const { data: envs } = useEnvs();
     const [peerId, setPeerId] = useState<string | null>(null);
 
     useEffect(() => {

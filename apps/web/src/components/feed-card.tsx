@@ -1,12 +1,11 @@
 import { Button } from 'src/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from 'src/components/ui/card';
 import { Heart } from 'lucide-react';
-import { followingsQuery, userQueryOptions } from 'src/lib/react-query';
+import { useFollowings, useUser } from 'src/lib/react-query';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { Link } from '@tanstack/react-router';
 import { FeedItem, PostReaction } from '@sound-connect/common/types/models';
 import StatusAvatar from '@/web/components/status-avatar';
-import { useSuspenseQuery } from '@tanstack/react-query';
 
 type Props = {
     item: FeedItem;
@@ -28,8 +27,8 @@ const renderLikes = (reactions: PostReaction[]) => {
 };
 
 const FeedCard = ({ item: { post, user, reactions } }: Props) => {
-    const { data: followings } = useSuspenseQuery(followingsQuery(post.userId));
-    const { data: currentUser } = useSuspenseQuery(userQueryOptions(null));
+    const { data: followings } = useFollowings(user);
+    const { data: currentUser } = useUser();
 
     const canFollow = currentUser?.id !== post.userId && followings.some((f) => f.userId !== post.userId);
 

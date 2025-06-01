@@ -1,6 +1,6 @@
-import { queryOptions, useQuery } from '@tanstack/react-query';
-import { User } from '@sound-connect/common/types/models';
-import { getFeed, getFollowings, getMutualFollowers, getReactions, search } from '@/web/server-functions/models';
+import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { User, UserDTO } from '@sound-connect/common/types/models';
+import { getFeed, getFollowers, getFollowings, getMutualFollowers, getReactions, search } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
 import { getEnvs } from '@/web/server-functions/utils';
 
@@ -18,7 +18,7 @@ export const useReactions = ({ postId }: { postId: number }) =>
         }
     });
 
-export const feedQueryOptions = () =>
+export const feedQuery = () =>
     queryOptions({
         queryKey: ['feed'],
         queryFn: async () => {
@@ -32,7 +32,9 @@ export const feedQueryOptions = () =>
         }
     });
 
-export const userQueryOptions = (user: User | null) =>
+export const useFeed = () => useSuspenseQuery(feedQuery());
+
+export const userQuery = (user?: User | UserDTO | null) =>
     queryOptions({
         queryKey: ['user'],
         queryFn: async () => {
@@ -50,8 +52,10 @@ export const userQueryOptions = (user: User | null) =>
         }
     });
 
-export const useEnvs = () =>
-    useQuery({
+export const useUser = () => useSuspenseQuery(userQuery());
+
+export const envsQuery = () =>
+    queryOptions({
         queryKey: ['envs'],
         queryFn: async () => {
             const result = await getEnvs();
@@ -64,7 +68,9 @@ export const useEnvs = () =>
         }
     });
 
-export const useMutualFollowers = (user: User | null) =>
+export const useEnvs = () => useSuspenseQuery(envsQuery());
+
+export const useMutualFollowers = (user?: User | UserDTO | null) =>
     useQuery({
         queryKey: ['mutual-followers'],
         queryFn: async () => {
@@ -82,11 +88,15 @@ export const useMutualFollowers = (user: User | null) =>
         }
     });
 
-export const followingsQuery = (userId: string) =>
+export const followingsQuery = (user?: User | UserDTO | null) =>
     queryOptions({
         queryKey: ['followings'],
         queryFn: async () => {
-            const result = await getFollowings({ data: { userId } });
+            if (!user) {
+                return [];
+            }
+
+            const result = await getFollowings({ data: { userId: user.id } });
 
             if (result.success) {
                 return result.body;
@@ -96,8 +106,30 @@ export const followingsQuery = (userId: string) =>
         }
     });
 
-export const useSearch = (query: string) =>
-    useQuery({
+export const useFollowings = (user?: User | UserDTO | null) => useSuspenseQuery(followingsQuery(user));
+
+export const followersQuery = (user?: User | UserDTO | null) =>
+    queryOptions({
+        queryKey: ['followers'],
+        queryFn: async () => {
+            if (!user) {
+                return [];
+            }
+
+            const result = await getFollowers({ data: { userId: user.id } });
+
+            if (result.success) {
+                return result.body;
+            }
+
+            return [];
+        }
+    });
+
+export const useFollowers = (user?: User | UserDTO | null) => useSuspenseQuery(followersQuery(user));
+
+export const searchQuery = (query: string) =>
+    queryOptions({
         queryKey: ['search', query],
         queryFn: async () => {
             if (!query) {
@@ -113,3 +145,5 @@ export const useSearch = (query: string) =>
             return [];
         }
     });
+
+export const useSearch = (query: string) => useSuspenseQuery(searchQuery(query));

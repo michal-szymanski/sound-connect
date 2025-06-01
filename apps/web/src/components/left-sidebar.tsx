@@ -11,9 +11,7 @@ import {
 import { Bell, Cog, House, LucideIcon, Mail, UserRound } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import AccountButton from '@/web/components/account-button';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { userQueryOptions } from '@/web/lib/react-query';
-import { User } from '@sound-connect/common/types/models';
+import { useUser } from '@/web/lib/react-query';
 import { useState } from 'react';
 import NotificationsSheet from '@/web/components/notifications-sheet';
 import { Badge } from '@/web/components/ui/badge';
@@ -29,12 +27,12 @@ type Item = {
 };
 
 const LeftSidebar = () => {
-    const { data: user } = useSuspenseQuery(userQueryOptions(null));
+    const { data: user } = useUser();
     const [showNotifications, setShowNotification] = useState(false);
     const { followRequestNotifications } = useUserStatuses();
     const { isSidebarVisible } = useSelector((state: RootState) => state.ui);
 
-    const getItems = (user?: User | null): Item[] => {
+    const getItems = (): Item[] => {
         if (!user) return [];
 
         return [
@@ -104,7 +102,7 @@ const LeftSidebar = () => {
                     <SidebarGroup className="w-min lg:w-full">
                         <SidebarGroupContent className="w-min lg:w-full">
                             <SidebarMenu className="w-min flex-row lg:w-full lg:flex-col">
-                                {getItems(user).map((item) => (
+                                {getItems().map((item) => (
                                     <SidebarMenuItem key={item.title}>{renderMenuButton(item)}</SidebarMenuItem>
                                 ))}
                             </SidebarMenu>
