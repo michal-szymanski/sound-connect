@@ -6,15 +6,38 @@ import { and } from 'drizzle-orm';
 import z from 'zod';
 
 export const getFollowedUsers = async (userId: string) => {
-    return db.select({ followedUserId: usersFollowersTable.followedUserId }).from(usersFollowersTable).where(eq(usersFollowersTable.userId, userId));
+    const results = await db
+        .select({
+            id: users.id,
+            name: users.name,
+            image: users.image
+        })
+        .from(usersFollowersTable)
+        .innerJoin(users, eq(users.id, usersFollowersTable.followedUserId))
+        .where(eq(usersFollowersTable.userId, userId));
+
+    const schema = z.array(userDTOSchema);
+    return schema.parse(results);
 };
 
 export const getUserFollowers = async (userId: string) => {
-    return db.select({ userId: usersFollowersTable.userId }).from(usersFollowersTable).where(eq(usersFollowersTable.followedUserId, userId));
+    const results = await db
+        .select({
+            id: users.id,
+            name: users.name,
+            image: users.image
+        })
+        .from(usersFollowersTable)
+        .innerJoin(users, eq(users.id, usersFollowersTable.userId))
+        .where(eq(usersFollowersTable.followedUserId, userId));
+
+    const schema = z.array(userDTOSchema);
+    return schema.parse(results);
 };
 
 export const getUserById = async (userId: string) => {
-    return db.select({ id: users.id, name: users.name, image: users.image }).from(users).where(eq(users.id, userId));
+    const [user] = await db.select({ id: users.id, name: users.name, image: users.image }).from(users).where(eq(users.id, userId));
+    return userDTOSchema.parse(user);
 };
 
 export const followUser = async (userId: string, followedUserId: string) => {
@@ -25,10 +48,10 @@ export const unfollowUser = async (userId: string, followedUserId: string) => {
     return db.delete(usersFollowersTable).where(and(eq(usersFollowersTable.userId, userId), eq(usersFollowersTable.followedUserId, followedUserId)));
 };
 
-export const getMutualFollowers = (userId: string) => {
+export const getMutualFollowers = async (userId: string) => {
     const uf2 = aliasedTable(usersFollowersTable, 'uf2');
 
-    return db
+    const results = await db
         .select({
             id: users.id,
             name: users.name,
@@ -38,6 +61,9 @@ export const getMutualFollowers = (userId: string) => {
         .innerJoin(uf2, and(eq(usersFollowersTable.followedUserId, uf2.userId), eq(usersFollowersTable.userId, uf2.followedUserId)))
         .innerJoin(users, eq(users.id, usersFollowersTable.followedUserId))
         .where(eq(usersFollowersTable.userId, userId));
+
+    const schema = z.array(userDTOSchema);
+    return schema.parse(results);
 };
 
 export const searchUsers = async (query: string) => {

@@ -5,10 +5,9 @@ import { cors } from 'hono/cors';
 import { Hono } from 'hono';
 import { HonoContext } from 'types';
 import { auth } from 'auth';
-import { getMessagesByUserIds } from '@/api/db/queries/messages-queries';
 import { getRoomId } from '@sound-connect/common/helpers';
 import crypto from 'crypto';
-import { feedItemSchema, followRequestNotificationItem } from '@sound-connect/common/types/models';
+import { followRequestNotificationItem } from '@sound-connect/common/types/models';
 
 const app = new Hono<HonoContext>();
 
@@ -80,7 +79,7 @@ app.post('/users/send-follow-request', async (c) => {
     const user = c.get('user');
     const followedUsers = await getFollowedUsers(user.id);
 
-    if (followedUsers.some(({ followedUserId }) => followedUserId === userId)) {
+    if (followedUsers.some((followed) => followed.id === userId)) {
         return c.json('User is already followed', 400);
     }
 
@@ -124,7 +123,7 @@ app.post('/users/accept-follow-request', async (c) => {
     const user = c.get('user');
     const followedUsers = await getFollowedUsers(userId);
 
-    if (followedUsers.some(({ followedUserId }) => followedUserId === userId)) {
+    if (followedUsers.some((followed) => followed.id === userId)) {
         return c.json('User is already followed', 400);
     }
 
@@ -141,7 +140,7 @@ app.post('/users/accept-follow-request', async (c) => {
     await followUser(notification.userId, user.id);
     const followedUsersByCurrentUser = await getFollowedUsers(user.id);
 
-    if (followedUsersByCurrentUser.some(({ followedUserId }) => followedUserId === userId)) {
+    if (followedUsersByCurrentUser.some((followed) => followed.id === userId)) {
         await stub.removeNotification(notification);
     } else {
         await stub.updateFollowRequestNotifications([{ ...notification, accepted: true }]);
@@ -193,13 +192,14 @@ app.get('/users/mutual-followers/:userId', async (c) => {
 
 app.get('/users/:userId', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
-    const [user] = await getUserById(userId);
 
-    if (!user) {
+    try {
+        const user = await getUserById(userId);
+        return c.json(user);
+    } catch (error) {
+        console.error(`Error fetching user with ID ${userId}:`, error);
         return c.json(`User with ID ${userId} not found`, 404);
     }
-
-    return c.json(user);
 });
 
 app.get('/posts/:userId', async (c) => {
@@ -220,9 +220,8 @@ app.post('/posts', async (c) => {
 
 app.get('/feed', async (c) => {
     const feedResults = await getFeed();
-    const schema = z.array(feedItemSchema);
 
-    return c.json(schema.parse(feedResults), 200);
+    return c.json(feedResults, 200);
 });
 
 app.get('/search', async (c) => {
@@ -242,19 +241,6 @@ app.get('/posts/:postId/reactions', async (c) => {
     const reactionsResults = await getReactions(postId);
 
     return c.json(reactionsResults);
-});
-
-app.get('/messages/:senderId/:receiverId', async (c) => {
-    const { senderId, receiverId } = z
-        .object({
-            senderId: z.string(),
-            receiverId: z.string()
-        })
-        .parse(c.req.param());
-
-    const messagesResults = await getMessagesByUserIds(senderId, receiverId);
-
-    return c.json(messagesResults);
 });
 
 app.on(['GET', 'POST'], '/ws/chat/:peerId', async (c) => {
