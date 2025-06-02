@@ -1,4 +1,4 @@
-import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { QueryClient, queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { User, UserDTO } from '@sound-connect/common/types/models';
 import { getFeed, getFollowers, getFollowings, getReactions, search } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
@@ -110,8 +110,10 @@ export const followersQuery = (user?: User | UserDTO | null) =>
 
 export const useFollowers = (user?: User | UserDTO | null) => useSuspenseQuery(followersQuery(user));
 
-export const searchQuery = (query: string) =>
-    queryOptions({
+export const searchQuery = (query: string) => {
+    const queryClient = new QueryClient();
+
+    return queryOptions({
         queryKey: ['search', query],
         queryFn: async () => {
             if (!query) {
@@ -121,11 +123,16 @@ export const searchQuery = (query: string) =>
             const result = await search({ data: { query } });
 
             if (result.success) {
+                for (const user of result.body) {
+                    queryClient.setQueryData(['user', user.id], user);
+                }
+
                 return result.body;
             }
 
             return [];
         }
     });
+};
 
 export const useSearch = (query: string) => useQuery(searchQuery(query));
