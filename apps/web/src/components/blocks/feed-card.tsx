@@ -30,7 +30,7 @@ const FeedCard = ({ item: { post, user, reactions } }: Props) => {
     const { data: followings } = useFollowings(user);
     const { data: currentUser } = useUser();
 
-    const canFollow = currentUser?.id !== post.userId && followings.some((f) => f.userId !== post.userId);
+    const canFollow = currentUser?.id !== post.userId && followings.some((following) => following.id !== post.userId);
 
     if (!user) return null;
 

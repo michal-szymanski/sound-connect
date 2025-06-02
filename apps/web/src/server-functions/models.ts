@@ -5,8 +5,6 @@ import {
     chatMessageSchema,
     FollowRequestNotificationItem,
     userDTOSchema,
-    followerSchema,
-    followingSchema,
     postReactionSchema,
     postSchema,
     feedItemSchema
@@ -105,7 +103,7 @@ export const getFollowers = createServerFn()
 
         try {
             const json = await response.json();
-            const schema = z.array(followerSchema);
+            const schema = z.array(userDTOSchema);
 
             return { success: true, body: schema.parse(json) } as const;
         } catch (error) {
@@ -130,7 +128,7 @@ export const getFollowings = createServerFn()
 
         try {
             const json = await response.json();
-            const schema = z.array(followingSchema);
+            const schema = z.array(userDTOSchema);
 
             return { success: true, body: schema.parse(json) } as const;
         } catch (error) {

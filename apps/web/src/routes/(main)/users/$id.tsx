@@ -86,7 +86,7 @@ function RouteComponent() {
     const renderFollowButton = () => {
         if (currentUser.id === user.id || !followings) return null;
 
-        const isCurrentUserFollowing = followings.some((f) => f.userId === currentUser.id);
+        const isCurrentUserFollowing = followings.some((following) => following.id === currentUser.id);
 
         if (isCurrentUserFollowing) {
             return <Button onClick={handleUnfollow}>Following</Button>;

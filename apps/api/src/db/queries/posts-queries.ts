@@ -1,9 +1,17 @@
 import { db } from '@/api/db';
 import { postsReactionsTable, postsTable, users } from '@/api/db/schema';
+import { feedItemSchema, postReactionSchema, postSchema } from '@sound-connect/common/types/models';
 import { desc, eq, inArray } from 'drizzle-orm';
+import z from 'zod';
 
 export const getPostsByUserId = async (userId: string) => {
-    return db.select({ id: postsTable.id, userId: postsTable.userId, content: postsTable.content }).from(postsTable).where(eq(postsTable.userId, userId));
+    const results = await db
+        .select({ id: postsTable.id, userId: postsTable.userId, content: postsTable.content, createdAt: postsTable.createdAt, updatedAt: postsTable.updatedAt })
+        .from(postsTable)
+        .where(eq(postsTable.userId, userId));
+
+    const schema = z.array(postSchema);
+    return schema.parse(results);
 };
 
 export const getFeed = async () => {
@@ -43,14 +51,19 @@ export const getFeed = async () => {
         reactions: reactions.filter((reaction) => reaction.postId === post.post.id)
     }));
 
-    return postsWithReactions;
+    const schema = z.array(feedItemSchema);
+
+    return schema.parse(postsWithReactions);
 };
 
 export const getReactions = async (postId: number) => {
-    return db
+    const results = await db
         .select({ id: postsReactionsTable.id, userId: postsReactionsTable.userId })
         .from(postsReactionsTable)
         .where(eq(postsReactionsTable.postId, postId));
+
+    const schema = z.array(postReactionSchema);
+    return schema.parse(results);
 };
 
 export const addPost = async (userId: string, content: string) => {
