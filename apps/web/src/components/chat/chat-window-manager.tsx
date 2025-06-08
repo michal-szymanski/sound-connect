@@ -2,32 +2,32 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { ChatWindow } from './chat-window';
 import { UserDTO } from '@sound-connect/common/types/models';
 
-interface ChatWindowState {
+type ChatWindowState = {
     user: UserDTO;
     isMinimized: boolean;
-}
+};
 
-interface ChatWindowContextType {
+type ChatWindowContext = {
     openChatWindow: (user: UserDTO) => void;
     closeChatWindow: (userId: string) => void;
     toggleMinimize: (userId: string) => void;
-}
+};
 
-const ChatWindowContext = createContext<ChatWindowContextType | undefined>(undefined);
+const Context = createContext<ChatWindowContext | undefined>(undefined);
 
 export const useChatWindows = () => {
-    const context = useContext(ChatWindowContext);
+    const context = useContext(Context);
+
     if (!context) {
         throw new Error('useChatWindows must be used within a ChatWindowProvider');
     }
+
     return context;
 };
 
-interface ChatWindowProviderProps {
-    children: React.ReactNode;
-}
+type Props = React.PropsWithChildren;
 
-export const ChatWindowProvider: React.FC<ChatWindowProviderProps> = ({ children }) => {
+export const ChatWindowProvider = ({ children }: Props) => {
     const [openWindows, setOpenWindows] = useState<Map<string, ChatWindowState>>(new Map());
 
     const openChatWindow = useCallback((user: UserDTO) => {
@@ -65,7 +65,7 @@ export const ChatWindowProvider: React.FC<ChatWindowProviderProps> = ({ children
         });
     }, []);
 
-    const contextValue: ChatWindowContextType = {
+    const contextValue: ChatWindowContext = {
         openChatWindow,
         closeChatWindow,
         toggleMinimize
@@ -74,7 +74,7 @@ export const ChatWindowProvider: React.FC<ChatWindowProviderProps> = ({ children
     const windowsArray = Array.from(openWindows.entries());
 
     return (
-        <ChatWindowContext.Provider value={contextValue}>
+        <Context.Provider value={contextValue}>
             {children}
             {windowsArray.map(([userId, windowState], index) => (
                 <ChatWindow
@@ -86,6 +86,6 @@ export const ChatWindowProvider: React.FC<ChatWindowProviderProps> = ({ children
                     onToggleMinimize={() => toggleMinimize(userId)}
                 />
             ))}
-        </ChatWindowContext.Provider>
+        </Context.Provider>
     );
 };

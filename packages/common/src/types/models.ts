@@ -1,17 +1,7 @@
+import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
 import z from 'zod';
 
-export const webSocketMessageTypes = z.enum([
-    'chat',
-    'online-status',
-    'connect',
-    'disconnect',
-    'notification',
-    'subscribe',
-    'unsubscribe',
-    'message',
-    'user-joined',
-    'user-left'
-]);
+export const webSocketMessageTypes = z.enum(['chat', 'online-status', 'notification', 'subscribe', 'unsubscribe', 'user-joined', 'user-left']);
 
 export type WebSocketMessageType = z.infer<typeof webSocketMessageTypes>;
 
@@ -27,11 +17,42 @@ export const onlineStatusMessageSchema = z.object({
 
 export type OnlineStatusMessage = z.infer<typeof onlineStatusMessageSchema>;
 
-export const webSocketMessageSchema = z.object({
-    type: webSocketMessageTypes
+export const chatMessageSchema = z.object({
+    id: z.string().uuid(),
+    type: z.literal(webSocketMessageTypes.Enum.chat),
+    content: z.string().max(CHAT_MESSAGE_MAX_LENGTH),
+    roomId: z.string(),
+    senderId: z.string(),
+    timestamp: z.number()
 });
 
-export type WebSocketMessage = z.infer<typeof webSocketMessageSchema>;
+export type ChatMessage = z.infer<typeof chatMessageSchema>;
+
+export const newChatMessageSchema = chatMessageSchema.omit({ id: true, senderId: true, timestamp: true });
+
+export type NewChatMessage = z.infer<typeof newChatMessageSchema>;
+
+export const roomNotificationSchema = z.object({
+    type: z.enum(['user-joined', 'user-left']),
+    roomId: z.string(),
+    userId: z.string()
+});
+
+export type RoomNotification = z.infer<typeof roomNotificationSchema>;
+
+export const subscribeMessageSchema = z.object({
+    type: z.literal(webSocketMessageTypes.Enum['subscribe']),
+    roomId: z.string()
+});
+
+export type SubscribeMessage = z.infer<typeof subscribeMessageSchema>;
+
+export const unsubscribeMessageSchema = z.object({
+    type: z.literal(webSocketMessageTypes.Enum['unsubscribe']),
+    roomId: z.string()
+});
+
+export type UnsubscribeMessage = z.infer<typeof unsubscribeMessageSchema>;
 
 export const notificationKind = z.enum(['follow-request', 'reaction']);
 
@@ -66,6 +87,22 @@ export const reactionNotification = z.object({
 });
 
 export type ReactionNotification = z.infer<typeof reactionNotification>;
+
+export const notificationSchema = z.discriminatedUnion('kind', [followRequestNotification, reactionNotification]);
+
+export type Notification = z.infer<typeof notificationSchema>;
+
+export const webSocketMessageSchema = z.union([
+    subscribeMessageSchema,
+    unsubscribeMessageSchema,
+    chatMessageSchema,
+    newChatMessageSchema,
+    roomNotificationSchema,
+    onlineStatusMessageSchema,
+    notificationSchema
+]);
+
+export type WebSocketMessage = z.infer<typeof webSocketMessageSchema>;
 
 export const postSchema = z.object({
     id: z.number(),

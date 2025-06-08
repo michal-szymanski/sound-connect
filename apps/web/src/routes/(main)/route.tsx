@@ -2,11 +2,11 @@ import Header from '@/web/components/layout/header';
 import LeftSidebar from '@/web/components/layout/left-sidebar';
 import RightSidebar from '@/web/components/layout/right-sidebar';
 import { SidebarProvider } from '@/web/components/ui/sidebar';
-import { UnifiedWebSocketProvider } from '@/web/providers/unified-websocket-provider';
+import { WebSocketProvider } from '@/web/providers/websocket-provider';
 import { ChatWindowProvider } from '@/web/components/chat/chat-window-manager';
 import { store } from '@/web/redux/store';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { Provider } from 'react-redux';
+import { Provider as ReduxProvider } from 'react-redux';
 
 export const Route = createFileRoute('/(main)')({
     component: RouteComponent,
@@ -23,8 +23,8 @@ export const Route = createFileRoute('/(main)')({
 
 function RouteComponent() {
     return (
-        <Provider store={store}>
-            <UnifiedWebSocketProvider>
+        <ReduxProvider store={store}>
+            <WebSocketProvider>
                 <ChatWindowProvider>
                     <SidebarProvider>
                         <LeftSidebar />
@@ -37,7 +37,7 @@ function RouteComponent() {
                         <RightSidebar />
                     </SidebarProvider>
                 </ChatWindowProvider>
-            </UnifiedWebSocketProvider>
-        </Provider>
+            </WebSocketProvider>
+        </ReduxProvider>
     );
 }

@@ -15,7 +15,7 @@ import { useUser } from '@/web/lib/react-query';
 import { useState } from 'react';
 import NotificationsSheet from '@/web/components/layout/notifications-sheet';
 import { Badge } from '@/web/components/ui/badge';
-import { useUnifiedWebSocket } from '@/web/providers/unified-websocket-provider';
+import { useWebSocket } from '@/web/providers/websocket-provider';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/web/redux/store';
 
@@ -29,7 +29,7 @@ type Item = {
 const LeftSidebar = () => {
     const { data: user } = useUser();
     const [showNotifications, setShowNotification] = useState(false);
-    const { followRequestNotifications } = useUnifiedWebSocket();
+    const { followRequestNotifications } = useWebSocket();
     const { isSidebarVisible } = useSelector((state: RootState) => state.ui);
 
     const getItems = (): Item[] => {

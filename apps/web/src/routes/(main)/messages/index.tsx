@@ -1,5 +1,5 @@
 import { useUser } from '@/web/lib/react-query';
-import { useUnifiedWebSocket } from '@/web/providers/unified-websocket-provider';
+import { useWebSocket } from '@/web/providers/websocket-provider';
 import { useChatWindows } from '@/web/components/chat/chat-window-manager';
 import { getRoomId } from '@sound-connect/common/helpers';
 import { createFileRoute, Link } from '@tanstack/react-router';
@@ -8,8 +8,7 @@ import { Input } from '@/web/components/ui/input';
 import { Card } from '@/web/components/ui/card';
 import { Button } from '@/web/components/ui/button';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
-import { UserDTO } from '@sound-connect/common/types/models';
-import type { ChatMessage } from '../../../../../api/src/types/chat';
+import { ChatMessage, UserDTO } from '@sound-connect/common/types/models';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
 import clsx from 'clsx';
 import { z } from 'zod';
@@ -24,7 +23,7 @@ export const Route = createFileRoute('/(main)/messages/')({
 });
 
 function RouteComponent() {
-    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, status, roomMessages } = useUnifiedWebSocket();
+    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, status, roomMessages } = useWebSocket();
     const { openChatWindow } = useChatWindows();
     const { data: user } = useUser();
     const { users } = useContacts();
