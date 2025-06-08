@@ -9,7 +9,7 @@ import { Card } from '@/web/components/ui/card';
 import { Button } from '@/web/components/ui/button';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import { UserDTO } from '@sound-connect/common/types/models';
-import type { StoredChatMessage } from '../../../../../api/src/types/chat';
+import type { ChatMessage } from '../../../../../api/src/types/chat';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
 import clsx from 'clsx';
 import { z } from 'zod';
@@ -32,7 +32,7 @@ function RouteComponent() {
 
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
     const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
-    const [messages, setMessages] = useState<StoredChatMessage[]>([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const formSchema = z.object({
@@ -132,7 +132,7 @@ function RouteComponent() {
                         'bg-muted text-card-foreground': msg.senderId !== user.id
                     })}
                 >
-                    {msg.text}
+                    {msg.content}
                 </Card>
             </div>
         ));

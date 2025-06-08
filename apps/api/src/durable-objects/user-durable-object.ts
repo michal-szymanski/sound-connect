@@ -7,7 +7,7 @@ import z from 'zod';
 const unifiedWebSocketMessageSchema = z.discriminatedUnion('type', [
     z.object({ type: z.literal('subscribe'), roomId: z.string() }),
     z.object({ type: z.literal('unsubscribe'), roomId: z.string() }),
-    z.object({ type: z.literal('message'), roomId: z.string(), content: z.string() }),
+    z.object({ type: z.literal('chat'), roomId: z.string(), content: z.string() }),
     z.object({ type: z.literal('connect') }),
     z.object({ type: z.literal('disconnect') })
 ]);
@@ -77,7 +77,7 @@ export class UserDurableObject extends DurableObject {
                     case 'unsubscribe':
                         await this.unsubscribeFromRoom(parsedMessage.roomId);
                         break;
-                    case 'message':
+                    case 'chat':
                         await this.handleChatMessage(parsedMessage.roomId, parsedMessage.content);
                         break;
                     case 'connect':
@@ -125,22 +125,16 @@ export class UserDurableObject extends DurableObject {
     }
 
     private async handleChatMessage(roomId: string, content: string) {
-        if (!this.subscribedRooms.has(roomId)) {
+        if (!this.subscribedRooms.has(roomId) || !this.userId) {
             return;
         }
 
         try {
-            // Validate the new message using the schema
-            const newMessage = newChatMessageSchema.parse({
-                type: 'chat',
-                text: content,
-                roomId: roomId,
-                senderId: this.userId!
-            });
+            const senderId = this.userId;
 
             const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
             const chatStub = this.env.ChatDO.get(chatId);
-            await chatStub.sendMessage(newMessage.senderId, newMessage.roomId, newMessage.text);
+            await chatStub.sendMessage(senderId, roomId, content);
         } catch (error) {
             console.error(`[UserDO] Error sending message to room ${roomId}:`, error);
         }

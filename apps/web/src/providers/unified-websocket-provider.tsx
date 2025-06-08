@@ -9,8 +9,7 @@ import {
     WebSocketMessage,
     webSocketMessageSchema
 } from '@sound-connect/common/types/models';
-import type { StoredChatMessage } from '../../../api/src/types/chat';
-import { storedChatMessageSchema } from '../../../api/src/types/chat';
+import { chatMessageSchema, newChatMessageSchema, type ChatMessage } from '../../../api/src/types/chat';
 import { getChatHistory } from '@/web/server-functions/models';
 import { useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
@@ -24,8 +23,8 @@ export type UnifiedWSContext = {
     sendMessage: (roomId: string, content: string) => void;
     loadRoomHistory: (roomId: string) => Promise<void>;
 
-    lastMessage: StoredChatMessage | null;
-    roomMessages: Map<string, StoredChatMessage[]>;
+    lastMessage: ChatMessage | null;
+    roomMessages: Map<string, ChatMessage[]>;
 
     status: WSStatus;
 
@@ -43,8 +42,8 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
     const { data: user } = useUser();
 
     const [status, setStatus] = useState<WSStatus>('connecting');
-    const [lastMessage, setLastMessage] = useState<StoredChatMessage | null>(null);
-    const [roomMessages, setRoomMessages] = useState<Map<string, StoredChatMessage[]>>(new Map());
+    const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
+    const [roomMessages, setRoomMessages] = useState<Map<string, ChatMessage[]>>(new Map());
 
     const [statuses, setStatuses] = useState<Map<string, OnlineStatus>>(new Map());
     const [followRequestNotifications, setFollowRequestNotifications] = useState<Map<string, FollowRequestNotificationItem>>(new Map());
@@ -73,7 +72,8 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
 
     const sendMessage = useCallback((roomId: string, content: string) => {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-            ws.current.send(JSON.stringify({ type: 'message', roomId, content }));
+            const message = newChatMessageSchema.parse({ type: 'chat', content, roomId });
+            ws.current.send(JSON.stringify(message));
         }
     }, []);
 
@@ -96,7 +96,7 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
 
                 if (result.success) {
                     const history = result.body;
-                    const validMessages = history.map((msg) => storedChatMessageSchema.parse(msg));
+                    const validMessages = z.array(chatMessageSchema).parse(history);
 
                     setRoomMessages((prev) => {
                         const newMessages = new Map(prev);
@@ -144,12 +144,11 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
                 const { type } = webSocketMessageSchema.parse(json);
 
                 switch (type) {
-                    case 'chat':
-                    case 'message': {
-                        let message: StoredChatMessage;
+                    case 'chat': {
+                        let message: ChatMessage;
 
                         try {
-                            message = storedChatMessageSchema.parse(json);
+                            message = chatMessageSchema.parse(json);
                         } catch (error) {
                             console.error('[UnifiedWS] Invalid message format:', json, error);
                             break;
