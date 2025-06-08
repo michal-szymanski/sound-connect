@@ -65,7 +65,6 @@ function RouteComponent() {
             toast.error('Could not sign in', {
                 description: 'Unknown error occurred'
             });
-            console.error('[App] Sign in error:', error);
         }
     };
 

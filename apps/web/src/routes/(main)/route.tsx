@@ -13,7 +13,6 @@ export const Route = createFileRoute('/(main)')({
     beforeLoad: async ({ context: { user } }) => {
         if (!user) {
             const path = '/sign-in';
-            console.info(`[App] Redirecting to: ${path}`);
 
             throw redirect({
                 to: path

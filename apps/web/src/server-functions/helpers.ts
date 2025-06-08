@@ -10,14 +10,8 @@ const SESSION_DATA_COOKIE_NAME = 'sound-connect.session_data';
 const SECURE_SESSION_DATA_COOKIE_NAME = `${SECURE_PREFIX}${SESSION_DATA_COOKIE_NAME}`;
 
 export const errorHandler = async (response: Response) => {
-    console.error(`[App] Failed to fetch ${response.url} (${response.status} ${response.statusText})`);
-
     try {
         const errorBody = await response.text();
-
-        if (errorBody.length) {
-            console.error('[App] Response body:', errorBody);
-        }
 
         const json = JSON.parse(errorBody);
 
@@ -26,7 +20,6 @@ export const errorHandler = async (response: Response) => {
             body: authErrorSchema.parse(json)
         } as const;
     } catch (e) {
-        console.error('[App] Could not read response body:', e);
         return { success: false, body: null } as const;
     }
 };
@@ -35,11 +28,6 @@ export const setSessionCookies = (response: Response) => {
     const sessionTokenCookie = response.headers
         .getSetCookie()
         .find((cookie) => cookie.startsWith(SESSION_TOKEN_COOKIE_NAME) || cookie.startsWith(SECURE_SESSION_TOKEN_COOKIE_NAME));
-
-    // if (!sessionTokenCookie) {
-    //     console.error(`[App] Could not create session cookie. Cookies from /api/auth: \n${response.headers.getSetCookie()}`);
-    //     return false;
-    // }
 
     const sessionDataCookie = response.headers
         .getSetCookie()

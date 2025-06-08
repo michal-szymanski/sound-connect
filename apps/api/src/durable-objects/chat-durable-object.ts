@@ -47,8 +47,6 @@ export class ChatDurableObject extends DurableObject {
     // Public methods for direct stub calls
 
     async subscribeUser(userId: string, roomId: string): Promise<void> {
-        console.log(`[ChatDO] User ${userId} subscribing to room ${roomId}`);
-
         this.roomId = roomId;
         await this.loadParticipants();
 
@@ -64,13 +62,9 @@ export class ChatDurableObject extends DurableObject {
             },
             userId
         );
-
-        console.log(`[ChatDO] Room ${this.roomId} participants:`, Array.from(this.participants));
     }
 
     async unsubscribeUser(userId: string, roomId: string): Promise<void> {
-        console.log(`[ChatDO] User ${userId} unsubscribing from room ${roomId}`);
-
         this.roomId = roomId;
         await this.loadParticipants();
 
@@ -93,11 +87,8 @@ export class ChatDurableObject extends DurableObject {
         await this.loadParticipants();
 
         if (!this.participants.has(senderId)) {
-            console.warn(`[ChatDO] User ${senderId} not subscribed to room ${roomId}`);
             return;
         }
-
-        console.log(`[ChatDO] User ${senderId} sending message to room ${roomId}: "${content}"`);
 
         const message: StoredChatMessage = {
             type: 'chat',
@@ -118,18 +109,8 @@ export class ChatDurableObject extends DurableObject {
     async getRoomHistory(roomId: string): Promise<StoredChatMessage[]> {
         this.roomId = roomId;
         const historyKey = 'messages';
-        console.log(`[ChatDO] Getting room history for ${this.roomId}, looking for key: ${historyKey}`);
 
         const history = (await this.storage.get<StoredChatMessage[]>(historyKey)) || [];
-        console.log(`[ChatDO] Retrieved ${history.length} messages from room ${this.roomId}`);
-
-        if (history.length > 0) {
-            console.log(`[ChatDO] Sample message from room ${this.roomId}:`, {
-                timestamp: history[0].timestamp,
-                senderId: history[0].senderId,
-                text: history[0].text.substring(0, 50) + '...'
-            });
-        }
 
         return history;
     }
@@ -156,13 +137,11 @@ export class ChatDurableObject extends DurableObject {
         }
 
         await this.storage.put(historyKey, history);
-        console.log(`[ChatDO] Stored message in room ${this.roomId}, total messages: ${history.length}`);
     }
 
     private async getRoomHistoryResponse(): Promise<Response> {
         const historyKey = 'messages';
         const history = (await this.storage.get<StoredChatMessage[]>(historyKey)) || [];
-        console.log(`[ChatDO] Retrieved ${history.length} messages from room ${this.roomId}`);
 
         return new Response(JSON.stringify(history), {
             status: 200,
@@ -172,7 +151,6 @@ export class ChatDurableObject extends DurableObject {
 
     private async notifyParticipants(message: InternalMessage, excludeUserId?: string) {
         const participantList = Array.from(this.participants);
-        console.log(`[ChatDO] Notifying room ${this.roomId} participants:`, participantList, 'Message:', message.type || message);
 
         for (const participantId of participantList) {
             if (excludeUserId && participantId === excludeUserId) {
@@ -180,7 +158,6 @@ export class ChatDurableObject extends DurableObject {
             }
 
             try {
-                console.log(`[ChatDO] Sending message to participant ${participantId}`);
                 const id = this.env.UserDO.idFromName(`user:${participantId}`);
                 const stub = this.env.UserDO.get(id);
                 await stub.sendMessage(message);

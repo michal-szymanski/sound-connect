@@ -109,7 +109,6 @@ export class UserDurableObject extends DurableObject {
     }
 
     private async subscribeToRoom(roomId: string) {
-        console.log(`[UserDO] User ${this.userId} subscribing to room ${roomId}`);
         this.subscribedRooms.add(roomId);
 
         // Persist user's subscribed rooms
@@ -143,11 +142,8 @@ export class UserDurableObject extends DurableObject {
 
     private async handleChatMessage(roomId: string, content: string) {
         if (!this.subscribedRooms.has(roomId)) {
-            console.warn(`[UserDO] User ${this.userId} tried to send message to unsubscribed room ${roomId}`);
             return;
         }
-
-        console.log(`[UserDO] ${this.userId} sending message to room ${roomId}: "${content}"`);
 
         // Delegate to ChatDurableObject for message handling
         try {
@@ -160,8 +156,6 @@ export class UserDurableObject extends DurableObject {
     }
 
     async getRoomHistory(roomId: string): Promise<Response> {
-        console.log(`[UserDO] Getting room history for ${roomId} for user ${this.userId}`);
-
         // Delegate to ChatDurableObject for room history
         try {
             const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
@@ -179,12 +173,8 @@ export class UserDurableObject extends DurableObject {
     }
 
     async sendMessage(message: InternalMessage) {
-        console.log(`[UserDO] Attempting to send message to user ${this.userId}:`, message);
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-            console.log(`[UserDO] WebSocket is open, sending message to user ${this.userId}`);
             this.websocket.send(JSON.stringify(message));
-        } else {
-            console.log(`[UserDO] WebSocket not available for user ${this.userId}, state:`, this.websocket?.readyState);
         }
     }
 
@@ -192,7 +182,6 @@ export class UserDurableObject extends DurableObject {
         // roomId format is like "user1:user2" (sorted alphabetically)
         // This matches the getRoomId function: [senderId, peerId].sort().join(':')
         const parts = roomId.split(':');
-        console.log(`[UserDO] Extracted participants from roomId ${roomId}:`, parts);
         return parts;
     }
 

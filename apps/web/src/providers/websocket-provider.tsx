@@ -32,7 +32,6 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
 
         const handleOpen = () => {
             setStatus('open');
-            console.log('ws connected');
         };
 
         const handleError = () => {
@@ -41,7 +40,6 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
 
         const handleClose = () => {
             setStatus('closed');
-            console.log('ws disconnected');
         };
 
         const handleMessage = (e: MessageEvent<any>) => {
@@ -50,7 +48,7 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
                 const message = chatMessageSchema.parse(json);
                 setLastMessage(message);
             } catch (error) {
-                console.error('[App] Error parsing WebSocket message:', error);
+                // Error parsing WebSocket message - ignore malformed messages
             }
         };
 
