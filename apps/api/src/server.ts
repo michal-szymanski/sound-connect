@@ -248,10 +248,7 @@ app.get('/ws/room/:roomId/history', async (c) => {
     const { roomId } = c.req.param();
     const user = c.get('user');
 
-    console.log(`[Server] Room history request: roomId=${roomId}, userId=${user.id}`);
-
     if (!roomId.includes(user.id)) {
-        console.warn(`[Server] Forbidden access to room ${roomId} by user ${user.id}`);
         return c.json({ message: 'Forbidden: You are not part of this room' }, 403);
     }
 
@@ -259,10 +256,8 @@ app.get('/ws/room/:roomId/history', async (c) => {
         const id = c.env.ChatDO.idFromName(`room:${roomId}`);
         const stub = c.env.ChatDO.get(id);
 
-        console.log(`[Server] Calling ChatDO for room history: ${roomId}`);
         const history = await stub.getRoomHistory(roomId);
 
-        console.log(`[Server] Retrieved ${history.length} messages for room ${roomId}`);
         return c.json(history);
     } catch (error) {
         console.error(`[Server] Error getting room history for ${roomId}:`, error);

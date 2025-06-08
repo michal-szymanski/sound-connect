@@ -5,7 +5,6 @@ export const Route = createFileRoute('/(auth)')({
     beforeLoad: ({ context: { user } }) => {
         if (user) {
             const path = '/';
-            console.info(`[App] Redirecting to: ${path}`);
 
             throw redirect({
                 to: path

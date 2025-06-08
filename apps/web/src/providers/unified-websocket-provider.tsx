@@ -65,10 +65,7 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
 
     const subscribeToRoom = useCallback((roomId: string) => {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-            console.log(`[UnifiedWS] Subscribing to room ${roomId}`);
             ws.current.send(JSON.stringify({ type: 'subscribe', roomId }));
-        } else {
-            console.warn(`[UnifiedWS] Cannot subscribe to room ${roomId}: WebSocket not ready (state: ${ws.current?.readyState})`);
         }
     }, []);
 
@@ -87,11 +84,8 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
     const loadRoomHistory = useCallback(
         async (roomId: string) => {
             if (!user) {
-                console.warn(`[UnifiedWS] Cannot load room history for ${roomId}: user not available`);
                 return;
             }
-
-            console.log(`[UnifiedWS] Loading room history for ${roomId}`);
 
             try {
                 // Extract the peer ID from the room ID (format: "userId:peerId" sorted)
@@ -103,18 +97,15 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
                     return;
                 }
 
-                console.log(`[UnifiedWS] Loading history for peer ${peerId}`);
                 const result = await getChatHistory({ data: { peerId } });
 
                 if (result.success) {
                     const history = result.body;
-                    console.log(`[UnifiedWS] Loaded ${history.length} messages for room ${roomId}`);
 
                     setRoomMessages((prev) => {
                         const newMessages = new Map(prev);
                         // Set the complete history, replacing any existing messages
                         newMessages.set(roomId, history as (ChatMessage & { roomId?: string; senderId?: string; timestamp?: number })[]);
-                        console.log(`[UnifiedWS] Updated room messages for ${roomId}, total rooms:`, newMessages.size);
                         return newMessages;
                     });
                 } else {
@@ -135,7 +126,6 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
 
         const handleOpen = () => {
             setStatus('open');
-            console.log('[UnifiedWS] Connected');
 
             // Send connect message
             if (ws.current) {
@@ -151,7 +141,6 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
 
         const handleClose = () => {
             setStatus('closed');
-            console.log('[UnifiedWS] Disconnected');
             clearTimeouts();
         };
 
@@ -234,12 +223,12 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
                     case 'user-joined':
                     case 'user-left': {
                         // Handle room events if needed
-                        console.log(`[UnifiedWS] ${type}:`, json);
                         break;
                     }
 
                     default:
-                        console.log('[UnifiedWS] Unknown message type:', type);
+                        // Unknown message type
+                        break;
                 }
             } catch (error) {
                 console.error('[UnifiedWS] Error parsing message:', error);
@@ -258,12 +247,6 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
             ws.current.removeEventListener('error', handleError);
             ws.current.removeEventListener('close', handleClose);
             ws.current.removeEventListener('message', handleMessage);
-
-            // Send disconnect message
-            if (ws.current.readyState === WebSocket.OPEN) {
-                const message: WebSocketMessage = { type: 'disconnect' };
-                ws.current.send(JSON.stringify(message));
-            }
 
             ws.current.close();
             clearTimeouts();

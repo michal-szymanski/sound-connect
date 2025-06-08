@@ -20,7 +20,6 @@ export const Route = createFileRoute('/(main)/users/$id')({
 
         if (!currentUser) {
             const path = '/sign-in';
-            console.info(`[App] Redirecting to: ${path}`);
 
             throw redirect({
                 to: path
@@ -65,7 +64,6 @@ function RouteComponent() {
         const result = await sendFollowRequest({ data: { userId: user.id } });
 
         if (!result.success) {
-            console.error('[App] Could not follow the user');
             return;
         }
 
@@ -76,7 +74,6 @@ function RouteComponent() {
         const result = await unfollowUser({ data: { userId: user.id } });
 
         if (!result.success) {
-            console.error('[App] Could not unfollow the user');
             return;
         }
 

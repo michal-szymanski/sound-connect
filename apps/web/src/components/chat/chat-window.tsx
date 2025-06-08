@@ -39,14 +39,11 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
 
             // Subscribe to the room and load history
             const initializeRoom = async () => {
-                console.log(`[ChatWindow] Initializing room ${newRoomId} for ${user.name}`);
-
                 // Always load history first (it doesn't require WebSocket)
                 try {
                     await loadRoomHistory(newRoomId);
-                    console.log(`[ChatWindow] History loaded for room ${newRoomId}`);
                 } catch (error) {
-                    console.error(`[ChatWindow] Failed to load history for room ${newRoomId}:`, error);
+                    // Error handled by the websocket provider
                 }
 
                 // Subscribe to room for real-time updates
@@ -57,7 +54,6 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
 
             return () => {
                 // Unsubscribe when component unmounts
-                console.log(`[ChatWindow] Cleaning up room ${newRoomId}`);
                 unsubscribeFromRoom(newRoomId);
             };
         }

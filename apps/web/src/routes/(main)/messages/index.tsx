@@ -62,14 +62,11 @@ function RouteComponent() {
 
             // Subscribe to the room and load history
             const initializeRoom = async () => {
-                console.log(`[MessagesPage] Initializing room ${roomId} for ${selectedPeer.name}`);
-
                 // Always load history first (it doesn't require WebSocket)
                 try {
                     await loadRoomHistory(roomId);
-                    console.log(`[MessagesPage] History loaded for room ${roomId}`);
                 } catch (error) {
-                    console.error(`[MessagesPage] Failed to load history for room ${roomId}:`, error);
+                    // Error handled by the websocket provider
                 }
 
                 // Subscribe to room for real-time updates
@@ -80,7 +77,6 @@ function RouteComponent() {
 
             return () => {
                 // Unsubscribe when changing rooms
-                console.log(`[MessagesPage] Cleaning up room ${roomId}`);
                 unsubscribeFromRoom(roomId);
             };
         }

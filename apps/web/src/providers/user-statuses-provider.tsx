@@ -91,19 +91,16 @@ export const UserStatusesProvider = ({ children }: Props) => {
         ws.onopen = () => {
             const message: WebSocketMessage = { type: 'connect' };
             ws.send(JSON.stringify(message));
-            console.log('[Provider] WebSocket connection established');
         };
 
         ws.onclose = () => {
             const message: WebSocketMessage = { type: 'disconnect' };
             ws.send(JSON.stringify(message));
-            console.log('[Provider] WebSocket connection closed');
         };
 
         ws.onerror = (error) => {
             const message: WebSocketMessage = { type: 'disconnect' };
             ws.send(JSON.stringify(message));
-            console.error('[Provider] WebSocket error:', error);
         };
 
         return () => {
