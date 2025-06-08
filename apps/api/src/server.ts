@@ -243,40 +243,8 @@ app.get('/posts/:postId/reactions', async (c) => {
     return c.json(reactionsResults);
 });
 
-app.on(['GET', 'POST'], '/ws/chat/:peerId', async (c) => {
-    const upgradeHeader = c.req.header('Upgrade');
-
-    if (!upgradeHeader || upgradeHeader.toLowerCase() !== 'websocket') {
-        return c.json({ message: 'Durable Object expected Upgrade: websocket' }, { status: 426 });
-    }
-
-    try {
-        const user = c.get('user');
-        const peerId = c.req.param('peerId');
-
-        if (!peerId) {
-            return c.json({ message: 'Missing peerId in query parameters' }, { status: 400 });
-        }
-
-        const roomId = getRoomId(user.id, peerId);
-        const id = c.env.ChatDO.idFromName(roomId);
-        const stub = c.env.ChatDO.get(id);
-
-        const modifiedRequest = new Request(c.req.raw, {
-            headers: new Headers({
-                ...Object.fromEntries(c.req.raw.headers),
-                'X-User-Id': user.id
-            })
-        });
-
-        return stub.fetch(modifiedRequest);
-    } catch (error) {
-        console.error('Error handling WebSocket connection:', error);
-        return c.json({ error }, { status: 500 });
-    }
-});
-
-app.get('/ws/chat/:roomId/history', async (c) => {
+// Room history endpoint - now handled by UserDO
+app.get('/ws/room/:roomId/history', async (c) => {
     const { roomId } = c.req.param();
     const user = c.get('user');
 
@@ -284,10 +252,10 @@ app.get('/ws/chat/:roomId/history', async (c) => {
         return c.json({ message: 'Forbidden: You are not part of this room' }, 403);
     }
 
-    const id = c.env.ChatDO.idFromName(roomId);
-    const stub = c.env.ChatDO.get(id);
+    const id = c.env.UserDO.idFromName(`user:${user.id}`);
+    const stub = c.env.UserDO.get(id);
 
-    const modifiedRequest = new Request(c.req.raw, {
+    const modifiedRequest = new Request(`https://example.com/room/${roomId}/history`, {
         headers: new Headers({
             ...Object.fromEntries(c.req.raw.headers),
             'X-User-Id': user.id
@@ -308,15 +276,6 @@ app.on(['GET', 'POST'], '/ws/user', async (c) => {
         const user = c.get('user');
         const id = c.env.UserDO.idFromName(`user:${user.id}`);
         const stub = c.env.UserDO.get(id);
-        const subscribers = await getMutualFollowers(user.id);
-        const userIds = subscribers.map((u) => u.id);
-
-        stub.subscribe(userIds);
-
-        for (const userId of userIds) {
-            const userStub = c.env.UserDO.get(c.env.UserDO.idFromName(`user:${userId}`));
-            await userStub.subscribe([user.id]);
-        }
 
         const modifiedRequest = new Request(c.req.raw, {
             headers: new Headers({

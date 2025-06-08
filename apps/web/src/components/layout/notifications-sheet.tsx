@@ -1,6 +1,6 @@
 import { Button } from '@/web/components/ui/button';
 import { SheetContent, SheetHeader, SheetTitle, Sheet, SheetDescription } from '@/web/components/ui/sheet';
-import { useUserStatuses } from '@/web/providers/user-statuses-provider';
+import { useUnifiedWebSocket } from '@/web/providers/unified-websocket-provider';
 import { acceptFollowRequest, deleteNotification, getUser, sendFollowRequest, updateNotifications } from '@/web/server-functions/models';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
@@ -17,7 +17,7 @@ type Props = {
 };
 
 const NotificationsSheet = ({ open, setOpen }: Props) => {
-    const { followRequestNotifications } = useUserStatuses();
+    const { followRequestNotifications } = useUnifiedWebSocket();
     const [users, setUsers] = useState<UserDTO[]>([]);
     const dispatch = useDispatch();
 

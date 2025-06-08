@@ -1,9 +1,11 @@
 import StatusAvatar from '@/web/components/small/status-avatar';
-import { Link } from '@tanstack/react-router';
+import { Button } from '@/web/components/ui/button';
+import { useChatWindows } from '@/web/components/chat/chat-window-manager';
 import useContacts from '@/web/hooks/use-contacts';
 
 const RightSidebar = () => {
     const { users } = useContacts();
+    const { openChatWindow } = useChatWindows();
 
     return (
         <div className="bg-background fixed right-0 top-0 z-50 hidden h-full w-64 overflow-y-auto border-l p-4 lg:block">
@@ -14,15 +16,15 @@ const RightSidebar = () => {
             ) : (
                 <div className="space-y-2">
                     {users.map((user) => (
-                        <Link
+                        <Button
                             key={user.id}
-                            to="/chat/$userId"
-                            params={{ userId: user.id }}
-                            className="flex items-center gap-2 rounded-md p-2 hover:bg-gray-200 dark:hover:bg-gray-700"
+                            variant="ghost"
+                            onClick={() => openChatWindow(user)}
+                            className="h-auto w-full justify-start gap-2 rounded-md p-2 hover:bg-gray-200 dark:hover:bg-gray-700"
                         >
                             <StatusAvatar user={user} />
                             <span className="text-sm font-medium">{user.name}</span>
-                        </Link>
+                        </Button>
                     ))}
                 </div>
             )}

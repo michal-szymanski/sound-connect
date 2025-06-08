@@ -1,14 +1,28 @@
 import { CHAT_MESSAGE_MAX_LENGTH } from '../constants';
 import z from 'zod';
 
-export const webSocketMessageTypes = z.enum(['chat', 'online-status', 'connect', 'disconnect', 'notification']);
+export const webSocketMessageTypes = z.enum([
+    'chat',
+    'online-status',
+    'connect',
+    'disconnect',
+    'notification',
+    'subscribe',
+    'unsubscribe',
+    'message',
+    'user-joined',
+    'user-left'
+]);
 
 export type WebSocketMessageType = z.infer<typeof webSocketMessageTypes>;
 
 export const chatMessageSchema = z.object({
     type: z.literal(webSocketMessageTypes.Enum.chat),
     peerId: z.string(),
-    text: z.string().max(CHAT_MESSAGE_MAX_LENGTH)
+    text: z.string().max(CHAT_MESSAGE_MAX_LENGTH),
+    roomId: z.string().optional(),
+    senderId: z.string().optional(),
+    timestamp: z.number().optional()
 });
 
 export type ChatMessage = z.infer<typeof chatMessageSchema>;
