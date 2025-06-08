@@ -1,6 +1,6 @@
 import { useEnvs } from '@/web/lib/react-query';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { chatMessageSchema, ChatMessage } from '@sound-connect/common/types/models';
+import { ChatMessage, chatMessageSchema } from '../../../api/src/types/chat';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 

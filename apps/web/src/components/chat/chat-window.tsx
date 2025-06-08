@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from '@/web/components/ui/card';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import StatusAvatar from '@/web/components/small/status-avatar';
 import { UserDTO } from '@sound-connect/common/types/models';
-import type { StoredChatMessage } from '../../../../api/src/types/chat';
+import type { ChatMessage } from '../../../../api/src/types/chat';
 import { useUnifiedWebSocket } from '@/web/providers/unified-websocket-provider';
 import { useUser } from '@/web/lib/react-query';
 import { getRoomId } from '@sound-connect/common/helpers';
@@ -25,7 +25,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useUnifiedWebSocket();
 
     const [message, setMessage] = useState('');
-    const [messages, setMessages] = useState<StoredChatMessage[]>([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [roomId, setRoomId] = useState<string | null>(null);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -141,7 +141,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                                                     msg.senderId === currentUser?.id ? 'bg-primary text-primary-foreground' : 'bg-muted'
                                                 )}
                                             >
-                                                {msg.text}
+                                                {msg.content}
                                             </div>
                                         </div>
                                     ))

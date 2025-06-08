@@ -1,18 +1,12 @@
 import { getBindings } from '@/web/lib/cloudflare-bindings';
 import { getSession } from '@/web/server-functions/auth';
 import { errorHandler, getSessionCookie } from '@/web/server-functions/helpers';
-import {
-    chatMessageSchema,
-    FollowRequestNotificationItem,
-    userDTOSchema,
-    postReactionSchema,
-    postSchema,
-    feedItemSchema
-} from '@sound-connect/common/types/models';
+import { FollowRequestNotificationItem, userDTOSchema, postReactionSchema, postSchema, feedItemSchema } from '@sound-connect/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { getWebRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
 import { getRoomId } from '@sound-connect/common/helpers';
+import { chatMessageSchema } from '../../../api/src/types/chat';
 
 export const getFeed = createServerFn().handler(async () => {
     const { headers } = getWebRequest()!;

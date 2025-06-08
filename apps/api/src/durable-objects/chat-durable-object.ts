@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import { StoredChatMessage, InternalMessage } from '../types/chat';
+import { ChatMessage, InternalMessage } from '../types/chat';
 
 export class ChatDurableObject extends DurableObject {
     private storage: DurableObjectStorage;
@@ -82,11 +82,10 @@ export class ChatDurableObject extends DurableObject {
             return;
         }
 
-        const message: StoredChatMessage = {
+        const message: ChatMessage = {
             id: crypto.randomUUID(),
             type: 'chat',
-            peerId: '',
-            text: content,
+            content,
             roomId: this.roomId,
             senderId,
             timestamp: Date.now()
@@ -97,11 +96,11 @@ export class ChatDurableObject extends DurableObject {
         await this.notifyParticipants(message);
     }
 
-    async getRoomHistory(roomId: string): Promise<StoredChatMessage[]> {
+    async getRoomHistory(roomId: string): Promise<ChatMessage[]> {
         this.roomId = roomId;
         const historyKey = 'messages';
 
-        const history = (await this.storage.get<StoredChatMessage[]>(historyKey)) || [];
+        const history = (await this.storage.get<ChatMessage[]>(historyKey)) || [];
 
         return history;
     }
@@ -115,9 +114,9 @@ export class ChatDurableObject extends DurableObject {
         await this.storage.put('participants', Array.from(this.participants));
     }
 
-    private async storeMessage(message: StoredChatMessage) {
+    private async storeMessage(message: ChatMessage) {
         const historyKey = 'messages';
-        const history = (await this.storage.get<StoredChatMessage[]>(historyKey)) || [];
+        const history = (await this.storage.get<ChatMessage[]>(historyKey)) || [];
         history.push(message);
 
         if (history.length > 1000) {
@@ -129,7 +128,7 @@ export class ChatDurableObject extends DurableObject {
 
     private async getRoomHistoryResponse(): Promise<Response> {
         const historyKey = 'messages';
-        const history = (await this.storage.get<StoredChatMessage[]>(historyKey)) || [];
+        const history = (await this.storage.get<ChatMessage[]>(historyKey)) || [];
 
         return new Response(JSON.stringify(history), {
             status: 200,
