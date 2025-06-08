@@ -18,20 +18,16 @@ import z from 'zod';
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 
 export type UnifiedWSContext = {
-    // Chat functionality
     subscribeToRoom: (roomId: string) => void;
     unsubscribeFromRoom: (roomId: string) => void;
     sendMessage: (roomId: string, content: string) => void;
     loadRoomHistory: (roomId: string) => Promise<void>;
 
-    // Message handling
     lastMessage: (ChatMessage & { roomId?: string; senderId?: string; timestamp?: number }) | null;
     roomMessages: Map<string, (ChatMessage & { roomId?: string; senderId?: string; timestamp?: number })[]>;
 
-    // Status and connection
     status: WSStatus;
 
-    // User status functionality
     statuses: Map<string, OnlineStatus>;
     followRequestNotifications: Map<string, FollowRequestNotificationItem>;
 };
@@ -49,7 +45,6 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
     const [lastMessage, setLastMessage] = useState<(ChatMessage & { roomId?: string; senderId?: string; timestamp?: number }) | null>(null);
     const [roomMessages, setRoomMessages] = useState<Map<string, (ChatMessage & { roomId?: string; senderId?: string; timestamp?: number })[]>>(new Map());
 
-    // User status state
     const [statuses, setStatuses] = useState<Map<string, OnlineStatus>>(new Map());
     const [followRequestNotifications, setFollowRequestNotifications] = useState<Map<string, FollowRequestNotificationItem>>(new Map());
 
@@ -88,7 +83,6 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
             }
 
             try {
-                // Extract the peer ID from the room ID (format: "userId:peerId" sorted)
                 const roomParticipants = roomId.split(':');
                 const peerId = roomParticipants.find((id) => id !== user.id);
 
@@ -104,7 +98,6 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
 
                     setRoomMessages((prev) => {
                         const newMessages = new Map(prev);
-                        // Set the complete history, replacing any existing messages
                         newMessages.set(roomId, history as (ChatMessage & { roomId?: string; senderId?: string; timestamp?: number })[]);
                         return newMessages;
                     });
@@ -127,7 +120,6 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
         const handleOpen = () => {
             setStatus('open');
 
-            // Send connect message
             if (ws.current) {
                 const message: WebSocketMessage = { type: 'connect' };
                 ws.current.send(JSON.stringify(message));
@@ -152,7 +144,6 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
                 switch (type) {
                     case 'chat':
                     case 'message': {
-                        // Handle chat messages
                         const message = json as ChatMessage & { roomId?: string; senderId?: string; timestamp?: number };
 
                         setLastMessage(message);
@@ -162,7 +153,6 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
                                 const newMessages = new Map(prev);
                                 const roomMsgs = newMessages.get(message.roomId!) || [];
 
-                                // Check for duplicates based on timestamp and senderId
                                 const isDuplicate = roomMsgs.some(
                                     (existing) =>
                                         existing.timestamp === message.timestamp && existing.senderId === message.senderId && existing.text === message.text
@@ -222,12 +212,10 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
 
                     case 'user-joined':
                     case 'user-left': {
-                        // Handle room events if needed
                         break;
                     }
 
                     default:
-                        // Unknown message type
                         break;
                 }
             } catch (error) {

@@ -1,8 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 
-// better-auth
-
 export const users = sqliteTable('users', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
@@ -52,8 +50,6 @@ export const verifications = sqliteTable('verifications', {
     createdAt: integer('created_at', { mode: 'timestamp' }),
     updatedAt: integer('updated_at', { mode: 'timestamp' })
 });
-
-// models
 
 export const postsTable = sqliteTable('posts', {
     id: integer().primaryKey(),
@@ -151,8 +147,6 @@ export const messagesTable = sqliteTable('messages', {
     createdAt: text().notNull(),
     updatedAt: text()
 });
-
-// relations
 
 export const postsRelations = relations(postsTable, ({ many }) => ({
     comments: many(commentsTable),

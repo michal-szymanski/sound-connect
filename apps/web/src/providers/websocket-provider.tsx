@@ -47,9 +47,7 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
                 const json = JSON.parse(e.data);
                 const message = chatMessageSchema.parse(json);
                 setLastMessage(message);
-            } catch (error) {
-                // Error parsing WebSocket message - ignore malformed messages
-            }
+            } catch (error) {}
         };
 
         ws.current.addEventListener('open', handleOpen);

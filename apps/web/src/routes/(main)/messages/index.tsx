@@ -50,8 +50,6 @@ function RouteComponent() {
 
         sendMessage(currentRoomId, values.text);
 
-        // Don't add optimistic update here - let the WebSocket handle it
-        // This prevents duplicates since the message will come back through WebSocket
         form.reset();
     };
 
@@ -60,29 +58,22 @@ function RouteComponent() {
             const roomId = getRoomId(user.id, selectedPeer.id);
             setCurrentRoomId(roomId);
 
-            // Subscribe to the room and load history
             const initializeRoom = async () => {
-                // Always load history first (it doesn't require WebSocket)
                 try {
                     await loadRoomHistory(roomId);
-                } catch (error) {
-                    // Error handled by the websocket provider
-                }
+                } catch (error) {}
 
-                // Subscribe to room for real-time updates
                 subscribeToRoom(roomId);
             };
 
             initializeRoom();
 
             return () => {
-                // Unsubscribe when changing rooms
                 unsubscribeFromRoom(roomId);
             };
         }
     }, [selectedPeer, user, subscribeToRoom, unsubscribeFromRoom, loadRoomHistory]);
 
-    // Sync messages from the unified provider to local state
     useEffect(() => {
         if (currentRoomId) {
             const roomMsgs = roomMessages.get(currentRoomId) || [];

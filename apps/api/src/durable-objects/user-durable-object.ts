@@ -11,7 +11,6 @@ import {
 import { InternalMessage } from '../types/chat';
 import z from 'zod';
 
-// Enhanced message types for unified connection
 const unifiedWebSocketMessageSchema = z.discriminatedUnion('type', [
     z.object({ type: z.literal('subscribe'), roomId: z.string() }),
     z.object({ type: z.literal('unsubscribe'), roomId: z.string() }),
@@ -55,7 +54,6 @@ export class UserDurableObject extends DurableObject {
             return new Response(null, { status: 101, webSocket: client });
         }
 
-        // Handle room history requests
         const url = new URL(request.url);
         if (request.method === 'GET' && url.pathname.includes('/history')) {
             const pathParts = url.pathname.split('/');
@@ -69,7 +67,6 @@ export class UserDurableObject extends DurableObject {
     async handleConnection(webSocket: WebSocket) {
         this.websocket = webSocket;
 
-        // Load subscribed rooms from storage
         const storedRooms = await this.storage.get<string[]>('subscribedRooms');
         if (storedRooms) {
             this.subscribedRooms = new Set(storedRooms);
@@ -91,10 +88,8 @@ export class UserDurableObject extends DurableObject {
                         await this.handleChatMessage(parsedMessage.roomId, parsedMessage.content);
                         break;
                     case 'connect':
-                        // Handle connection acknowledgment
                         break;
                     case 'disconnect':
-                        // Handle disconnect
                         break;
                 }
             } catch (error) {
@@ -111,10 +106,8 @@ export class UserDurableObject extends DurableObject {
     private async subscribeToRoom(roomId: string) {
         this.subscribedRooms.add(roomId);
 
-        // Persist user's subscribed rooms
         await this.storage.put('subscribedRooms', Array.from(this.subscribedRooms));
 
-        // Delegate to ChatDurableObject for room subscription
         try {
             const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
             const chatStub = this.env.ChatDO.get(chatId);
@@ -127,10 +120,8 @@ export class UserDurableObject extends DurableObject {
     private async unsubscribeFromRoom(roomId: string) {
         this.subscribedRooms.delete(roomId);
 
-        // Persist user's subscribed rooms
         await this.storage.put('subscribedRooms', Array.from(this.subscribedRooms));
 
-        // Delegate to ChatDurableObject for room unsubscription
         try {
             const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
             const chatStub = this.env.ChatDO.get(chatId);
@@ -145,7 +136,6 @@ export class UserDurableObject extends DurableObject {
             return;
         }
 
-        // Delegate to ChatDurableObject for message handling
         try {
             const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
             const chatStub = this.env.ChatDO.get(chatId);
@@ -156,7 +146,6 @@ export class UserDurableObject extends DurableObject {
     }
 
     async getRoomHistory(roomId: string): Promise<Response> {
-        // Delegate to ChatDurableObject for room history
         try {
             const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
             const chatStub = this.env.ChatDO.get(chatId);
@@ -179,21 +168,16 @@ export class UserDurableObject extends DurableObject {
     }
 
     private extractParticipantsFromRoomId(roomId: string): string[] {
-        // roomId format is like "user1:user2" (sorted alphabetically)
-        // This matches the getRoomId function: [senderId, peerId].sort().join(':')
         const parts = roomId.split(':');
         return parts;
     }
 
     private async cleanup() {
-        // Clean up room participants when user disconnects
         for (const roomId of this.subscribedRooms) {
-            // Unsubscribe from rooms through ChatDO
             await this.unsubscribeFromRoom(roomId);
         }
     }
 
-    // Online Status Notifications
     async alarm() {
         const subscribers = Array.from(this.subscribers);
 
@@ -235,7 +219,6 @@ export class UserDurableObject extends DurableObject {
         return true;
     }
 
-    // Follow Request Notifications
     async sendFollowRequestNotification(newNotification: FollowRequestNotificationItem) {
         const notifications = await this.addFollowRequestNotification(newNotification);
         await this.broadcastNotifications(notifications);
