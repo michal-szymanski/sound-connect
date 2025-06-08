@@ -14,6 +14,8 @@
     "prettier:format": "prettier ./apps --write",
     "prettier:check": "prettier ./apps --check",
     "wipe:do": "zsh -c 'rm -rf apps/api/.wrangler/**/do'",
+    "wipe:db": "zsh -c 'rm -rf apps/api/.wrangler/**/d1'",
+    "wipe": "zsh -c 'rm -rf apps/api/.wrangler'",
     "studio": "pnpm --filter @sound-connect/api db:studio:local"
   },
   "devDependencies": {
