@@ -5,7 +5,7 @@ import { Input } from '@/web/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/web/components/ui/card';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import StatusAvatar from '@/web/components/small/status-avatar';
-import { UserDTO, ChatMessage } from '@sound-connect/common/types/models';
+import { UserDTO } from '@sound-connect/common/types/models';
 import type { StoredChatMessage } from '../../../../api/src/types/chat';
 import { useUnifiedWebSocket } from '@/web/providers/unified-websocket-provider';
 import { useUser } from '@/web/lib/react-query';
@@ -69,16 +69,6 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
         e.preventDefault();
         if (!message.trim() || !roomId || !currentUser) return;
 
-        const newMessage: StoredChatMessage = {
-            type: 'chat' as const,
-            peerId: user.id,
-            text: message.trim(),
-            senderId: currentUser.id,
-            roomId: roomId,
-            timestamp: Date.now()
-        };
-        setMessages((prev) => [...prev, newMessage]);
-
         sendMessage(roomId, message.trim());
 
         setMessage('');
@@ -141,7 +131,10 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                                     <div className="text-muted-foreground py-8 text-center text-sm">Start a conversation with {user.name}</div>
                                 ) : (
                                     messages.map((msg, index) => (
-                                        <div key={index} className={clsx('flex', msg.senderId === currentUser?.id ? 'justify-end' : 'justify-start')}>
+                                        <div
+                                            key={msg.id || `${msg.timestamp}-${index}`}
+                                            className={clsx('flex', msg.senderId === currentUser?.id ? 'justify-end' : 'justify-start')}
+                                        >
                                             <div
                                                 className={clsx(
                                                     'max-w-[70%] rounded-lg px-3 py-2 text-sm',

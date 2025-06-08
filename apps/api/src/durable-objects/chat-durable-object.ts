@@ -1,7 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import { ChatMessage, WebSocketMessage, webSocketMessageSchema } from '@sound-connect/common/types/models';
-import { StoredChatMessage, UserNotificationMessage, InternalMessage } from '../types/chat';
-import z from 'zod';
+import { StoredChatMessage, InternalMessage } from '../types/chat';
 
 export class ChatDurableObject extends DurableObject {
     private storage: DurableObjectStorage;
@@ -85,6 +83,7 @@ export class ChatDurableObject extends DurableObject {
         }
 
         const message: StoredChatMessage = {
+            id: crypto.randomUUID(),
             type: 'chat',
             peerId: '',
             text: content,

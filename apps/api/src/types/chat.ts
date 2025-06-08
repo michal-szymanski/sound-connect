@@ -2,6 +2,7 @@ import { chatMessageSchema } from '@sound-connect/common/types/models';
 import { z } from 'zod';
 
 export const storedChatMessageSchema = chatMessageSchema.extend({
+    id: z.string().uuid().optional(),
     roomId: z.string(),
     senderId: z.string(),
     timestamp: z.number()
