@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/web/components/ui/input';
 import { Card } from '@/web/components/ui/card';
 import { Button } from '@/web/components/ui/button';
+import { ScrollArea } from '@/web/components/ui/scroll-area';
 import { ChatMessage, UserDTO } from '@sound-connect/common/types/models';
 import { getChatHistory } from '@/web/server-functions/models';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
@@ -82,7 +83,9 @@ function RouteComponent() {
     }, [roomMessages, currentRoomId]);
 
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 50);
     }, [messages]);
 
     const renderPeers = () => {
@@ -168,13 +171,19 @@ function RouteComponent() {
         <div className="mx-auto flex h-[80vh] w-full max-w-4xl overflow-hidden rounded-lg border shadow">
             <div className="bg-muted flex w-1/4 flex-col border-r">
                 <div className="border-b p-4 font-semibold">Chats</div>
-                <div className="flex-1 overflow-y-auto">{renderPeers()}</div>
+                <div className="min-h-0 flex-1">
+                    <ScrollArea className="h-full">{renderPeers()}</ScrollArea>
+                </div>
             </div>
             <div className="flex flex-1 flex-col">
                 <div className="flex items-center gap-2 border-b p-4 font-semibold">{renderHeader()}</div>
-                <div className="bg-background flex-1 space-y-2 overflow-y-auto p-4">
-                    {renderMessages()}
-                    <div ref={messagesEndRef} />
+                <div className="bg-background min-h-0 flex-1">
+                    <ScrollArea className="h-full p-4">
+                        <div className="space-y-2">
+                            {renderMessages()}
+                            <div ref={messagesEndRef} />
+                        </div>
+                    </ScrollArea>
                 </div>
                 {renderForm()}
             </div>

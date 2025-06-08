@@ -1,10 +1,13 @@
-import { ChatMessage } from '@sound-connect/common/types/models';
+import { ChatMessage, chatMessageSchema } from '@sound-connect/common/types/models';
+import { z } from 'zod';
 
-export type StoredChatMessage = ChatMessage & {
-    roomId: string;
-    senderId: string;
-    timestamp: number;
-};
+export const storedChatMessageSchema = chatMessageSchema.extend({
+    roomId: z.string(),
+    senderId: z.string(),
+    timestamp: z.number()
+});
+
+export type StoredChatMessage = z.infer<typeof storedChatMessageSchema>;
 
 export type UserNotificationMessage = {
     type: 'user-joined' | 'user-left';

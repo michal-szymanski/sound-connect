@@ -10,6 +10,8 @@ import {
     WebSocketMessage,
     webSocketMessageSchema
 } from '@sound-connect/common/types/models';
+import type { StoredChatMessage } from '../../../api/src/types/chat';
+import { storedChatMessageSchema } from '../../../api/src/types/chat';
 import { getChatHistory } from '@/web/server-functions/models';
 import { useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
@@ -23,8 +25,8 @@ export type UnifiedWSContext = {
     sendMessage: (roomId: string, content: string) => void;
     loadRoomHistory: (roomId: string) => Promise<void>;
 
-    lastMessage: (ChatMessage & { roomId?: string; senderId?: string; timestamp?: number }) | null;
-    roomMessages: Map<string, (ChatMessage & { roomId?: string; senderId?: string; timestamp?: number })[]>;
+    lastMessage: StoredChatMessage | null;
+    roomMessages: Map<string, StoredChatMessage[]>;
 
     status: WSStatus;
 
@@ -42,8 +44,8 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
     const { data: user } = useUser();
 
     const [status, setStatus] = useState<WSStatus>('connecting');
-    const [lastMessage, setLastMessage] = useState<(ChatMessage & { roomId?: string; senderId?: string; timestamp?: number }) | null>(null);
-    const [roomMessages, setRoomMessages] = useState<Map<string, (ChatMessage & { roomId?: string; senderId?: string; timestamp?: number })[]>>(new Map());
+    const [lastMessage, setLastMessage] = useState<StoredChatMessage | null>(null);
+    const [roomMessages, setRoomMessages] = useState<Map<string, StoredChatMessage[]>>(new Map());
 
     const [statuses, setStatuses] = useState<Map<string, OnlineStatus>>(new Map());
     const [followRequestNotifications, setFollowRequestNotifications] = useState<Map<string, FollowRequestNotificationItem>>(new Map());
@@ -95,10 +97,11 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
 
                 if (result.success) {
                     const history = result.body;
+                    const validMessages = history.map((msg) => storedChatMessageSchema.parse(msg));
 
                     setRoomMessages((prev) => {
                         const newMessages = new Map(prev);
-                        newMessages.set(roomId, history as (ChatMessage & { roomId?: string; senderId?: string; timestamp?: number })[]);
+                        newMessages.set(roomId, validMessages);
                         return newMessages;
                     });
                 } else {
@@ -144,14 +147,21 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
                 switch (type) {
                     case 'chat':
                     case 'message': {
-                        const message = json as ChatMessage & { roomId?: string; senderId?: string; timestamp?: number };
+                        let message: StoredChatMessage;
+
+                        try {
+                            message = storedChatMessageSchema.parse(json);
+                        } catch (error) {
+                            console.error('[UnifiedWS] Invalid message format:', json, error);
+                            break;
+                        }
 
                         setLastMessage(message);
 
                         if (message.roomId) {
                             setRoomMessages((prev) => {
                                 const newMessages = new Map(prev);
-                                const roomMsgs = newMessages.get(message.roomId!) || [];
+                                const roomMsgs = newMessages.get(message.roomId) || [];
 
                                 const isDuplicate = roomMsgs.some(
                                     (existing) =>
@@ -160,7 +170,7 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
 
                                 if (!isDuplicate) {
                                     roomMsgs.push(message);
-                                    newMessages.set(message.roomId!, roomMsgs);
+                                    newMessages.set(message.roomId, roomMsgs);
                                 }
 
                                 return newMessages;

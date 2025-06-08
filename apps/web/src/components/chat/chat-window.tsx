@@ -3,8 +3,10 @@ import { X, Minus, Send } from 'lucide-react';
 import { Button } from '@/web/components/ui/button';
 import { Input } from '@/web/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/web/components/ui/card';
+import { ScrollArea } from '@/web/components/ui/scroll-area';
 import StatusAvatar from '@/web/components/small/status-avatar';
 import { UserDTO, ChatMessage } from '@sound-connect/common/types/models';
+import type { StoredChatMessage } from '../../../../api/src/types/chat';
 import { useUnifiedWebSocket } from '@/web/providers/unified-websocket-provider';
 import { useUser } from '@/web/lib/react-query';
 import { getRoomId } from '@sound-connect/common/helpers';
@@ -23,7 +25,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useUnifiedWebSocket();
 
     const [message, setMessage] = useState('');
-    const [messages, setMessages] = useState<(ChatMessage & { roomId?: string; senderId?: string; timestamp?: number })[]>([]);
+    const [messages, setMessages] = useState<StoredChatMessage[]>([]);
     const [roomId, setRoomId] = useState<string | null>(null);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -60,12 +62,24 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     }, [roomMessages, roomId]);
 
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 50);
     }, [messages]);
 
     const handleSendMessage = (e: React.FormEvent) => {
         e.preventDefault();
         if (!message.trim() || !roomId || !currentUser) return;
+
+        const newMessage: StoredChatMessage = {
+            type: 'chat' as const,
+            peerId: user.id,
+            text: message.trim(),
+            senderId: currentUser.id,
+            roomId: roomId,
+            timestamp: Date.now()
+        };
+        setMessages((prev) => [...prev, newMessage]);
 
         sendMessage(roomId, message.trim());
 
@@ -122,26 +136,28 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
 
             {!isMinimized && (
                 <CardContent className="flex min-h-0 flex-1 flex-col p-0">
-                    <div className="flex-1 overflow-y-auto p-3">
-                        <div className="space-y-2">
-                            {messages.length === 0 ? (
-                                <div className="text-muted-foreground py-8 text-center text-sm">Start a conversation with {user.name}</div>
-                            ) : (
-                                messages.map((msg, index) => (
-                                    <div key={index} className={clsx('flex', msg.senderId === currentUser?.id ? 'justify-end' : 'justify-start')}>
-                                        <div
-                                            className={clsx(
-                                                'max-w-[70%] rounded-lg px-3 py-2 text-sm',
-                                                msg.senderId === currentUser?.id ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                                            )}
-                                        >
-                                            {msg.text}
+                    <div className="min-h-0 flex-1">
+                        <ScrollArea className="h-full p-3">
+                            <div className="space-y-2">
+                                {messages.length === 0 ? (
+                                    <div className="text-muted-foreground py-8 text-center text-sm">Start a conversation with {user.name}</div>
+                                ) : (
+                                    messages.map((msg, index) => (
+                                        <div key={index} className={clsx('flex', msg.senderId === currentUser?.id ? 'justify-end' : 'justify-start')}>
+                                            <div
+                                                className={clsx(
+                                                    'max-w-[70%] rounded-lg px-3 py-2 text-sm',
+                                                    msg.senderId === currentUser?.id ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                                                )}
+                                            >
+                                                {msg.text}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))
-                            )}
-                            <div ref={messagesEndRef} />
-                        </div>
+                                    ))
+                                )}
+                                <div ref={messagesEndRef} />
+                            </div>
+                        </ScrollArea>
                     </div>
 
                     <form onSubmit={handleSendMessage} className="flex-shrink-0 border-t p-3">
