@@ -243,7 +243,7 @@ app.get('/posts/:postId/reactions', async (c) => {
     return c.json(reactionsResults);
 });
 
-// Room history endpoint - now handled by UserDO
+// Room history endpoint - now handled by ChatDO
 app.get('/ws/room/:roomId/history', async (c) => {
     const { roomId } = c.req.param();
     const user = c.get('user');
@@ -252,17 +252,18 @@ app.get('/ws/room/:roomId/history', async (c) => {
         return c.json({ message: 'Forbidden: You are not part of this room' }, 403);
     }
 
-    const id = c.env.UserDO.idFromName(`user:${user.id}`);
-    const stub = c.env.UserDO.get(id);
+    try {
+        const id = c.env.ChatDO.idFromName(`room:${roomId}`);
+        const stub = c.env.ChatDO.get(id);
 
-    const modifiedRequest = new Request(`https://example.com/room/${roomId}/history`, {
-        headers: new Headers({
-            ...Object.fromEntries(c.req.raw.headers),
-            'X-User-Id': user.id
-        })
-    });
+        // Use semantic method name instead of fetch
+        const history = await stub.getRoomHistory(roomId);
 
-    return stub.fetch(modifiedRequest);
+        return c.json(history);
+    } catch (error) {
+        console.error(`Error getting room history for ${roomId}:`, error);
+        return c.json({ message: 'Internal Server Error' }, 500);
+    }
 });
 
 app.on(['GET', 'POST'], '/ws/user', async (c) => {
