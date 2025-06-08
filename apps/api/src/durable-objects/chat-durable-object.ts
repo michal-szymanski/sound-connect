@@ -118,8 +118,19 @@ export class ChatDurableObject extends DurableObject {
     async getRoomHistory(roomId: string): Promise<StoredChatMessage[]> {
         this.roomId = roomId;
         const historyKey = 'messages';
+        console.log(`[ChatDO] Getting room history for ${this.roomId}, looking for key: ${historyKey}`);
+
         const history = (await this.storage.get<StoredChatMessage[]>(historyKey)) || [];
         console.log(`[ChatDO] Retrieved ${history.length} messages from room ${this.roomId}`);
+
+        if (history.length > 0) {
+            console.log(`[ChatDO] Sample message from room ${this.roomId}:`, {
+                timestamp: history[0].timestamp,
+                senderId: history[0].senderId,
+                text: history[0].text.substring(0, 50) + '...'
+            });
+        }
+
         return history;
     }
 
