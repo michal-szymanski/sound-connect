@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { HonoContext } from 'types';
-import { auth } from 'auth';
+import { authMiddleware } from './middlewares';
 import { authRoutes } from './routes/auth';
 import { usersRoutes } from './routes/users';
 import { postsRoutes } from './routes/posts';
@@ -10,24 +10,7 @@ import { websocketRoutes } from './routes/websocket';
 
 const app = new Hono<HonoContext>();
 
-app.use('*', async (c, next) => {
-    if (c.req.path.startsWith('/api/auth/') || c.req.path === '/health') {
-        return next();
-    }
-
-    const session = await auth.api.getSession({
-        headers: c.req.raw.headers
-    });
-
-    if (!session) {
-        return c.json({ message: 'Unauthorized' }, 401);
-    }
-
-    c.set('user', session.user);
-    c.set('session', session.session);
-
-    return next();
-});
+app.use('*', authMiddleware);
 
 app.onError(({ name, message, stack, cause }, c) => {
     return c.json({ name, message, stack, cause }, 400);
