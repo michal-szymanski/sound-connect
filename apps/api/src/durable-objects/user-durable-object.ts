@@ -1,14 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
-import {
-    FollowRequestNotification,
-    FollowRequestNotificationItem,
-    OnlineStatusMessage,
-    webSocketMessageSchema,
-    ChatMessage,
-    chatMessageSchema
-} from '@sound-connect/common/types/models';
-import { InternalMessage } from '../types/chat';
+import { FollowRequestNotification, FollowRequestNotificationItem, OnlineStatusMessage } from '@sound-connect/common/types/models';
+import { InternalMessage, newChatMessageSchema } from '../types/chat';
 import z from 'zod';
 
 const unifiedWebSocketMessageSchema = z.discriminatedUnion('type', [
@@ -137,9 +130,17 @@ export class UserDurableObject extends DurableObject {
         }
 
         try {
+            // Validate the new message using the schema
+            const newMessage = newChatMessageSchema.parse({
+                type: 'chat',
+                text: content,
+                roomId: roomId,
+                senderId: this.userId!
+            });
+
             const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
             const chatStub = this.env.ChatDO.get(chatId);
-            await chatStub.sendMessage(this.userId!, roomId, content);
+            await chatStub.sendMessage(newMessage.senderId, newMessage.roomId, newMessage.text);
         } catch (error) {
             console.error(`[UserDO] Error sending message to room ${roomId}:`, error);
         }
