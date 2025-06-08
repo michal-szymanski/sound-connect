@@ -45,6 +45,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     });
 
     const rightOffset = 20 + position * 320;
+    const bottomOffset = 20 + position * 60;
 
     useEffect(() => {
         if (currentUser && user) {
@@ -88,12 +89,37 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
 
     if (!currentUser) return null;
 
+    if (isMinimized) {
+        return (
+            <div className="group fixed z-50 flex h-12 w-12 items-center justify-center" style={{ right: '20px', bottom: `${bottomOffset}px` }}>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onToggleMinimize}
+                    className="relative h-12 w-12 rounded-full border-2 border-white p-0 shadow-lg hover:shadow-xl"
+                    title={`Chat with ${user.name}`}
+                >
+                    <StatusAvatar user={user} />
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClose();
+                        }}
+                        className="absolute -right-1 -top-1 h-5 w-5 rounded-full bg-gray-800 p-0 text-white opacity-0 transition-opacity duration-200 hover:bg-black group-hover:opacity-100"
+                        title="Close chat"
+                    >
+                        <X className="h-3 w-3" />
+                    </Button>
+                </Button>
+            </div>
+        );
+    }
+
     return (
         <Card
-            className={clsx(
-                'fixed bottom-0 z-[60] flex w-80 flex-col border-b-0 border-l border-r border-t shadow-lg transition-all duration-200 ease-in-out',
-                isMinimized ? 'h-12' : 'h-96'
-            )}
+            className="fixed bottom-0 z-[55] flex h-96 w-80 flex-col border-b-0 border-l border-r border-t shadow-lg transition-all duration-200 ease-in-out"
             style={{ right: `${rightOffset}px` }}
         >
             <CardHeader className="flex-shrink-0 cursor-pointer border-b p-3" onClick={onToggleMinimize}>
@@ -129,60 +155,58 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                 </div>
             </CardHeader>
 
-            {!isMinimized && (
-                <CardContent className="flex min-h-0 flex-1 flex-col p-0">
-                    <div className="min-h-0 flex-1">
-                        <ScrollArea className="h-full p-3">
-                            <div className="space-y-2">
-                                {messages.length === 0 ? (
-                                    <div className="text-muted-foreground py-8 text-center text-sm">Start a conversation with {user.name}</div>
-                                ) : (
-                                    messages.map((msg) => (
-                                        <div key={msg.id} className={clsx('flex', msg.senderId === currentUser.id ? 'justify-end' : 'justify-start')}>
-                                            <div
-                                                className={clsx(
-                                                    'max-w-[70%] rounded-lg px-3 py-2 text-sm',
-                                                    msg.senderId === currentUser.id ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                                                )}
-                                            >
-                                                {msg.content}
-                                            </div>
+            <CardContent className="flex min-h-0 flex-1 flex-col p-0">
+                <div className="min-h-0 flex-1">
+                    <ScrollArea className="h-full p-3">
+                        <div className="space-y-2">
+                            {messages.length === 0 ? (
+                                <div className="text-muted-foreground py-8 text-center text-sm">Start a conversation with {user.name}</div>
+                            ) : (
+                                messages.map((msg) => (
+                                    <div key={msg.id} className={clsx('flex', msg.senderId === currentUser.id ? 'justify-end' : 'justify-start')}>
+                                        <div
+                                            className={clsx(
+                                                'max-w-[70%] rounded-lg px-3 py-2 text-sm',
+                                                msg.senderId === currentUser.id ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                                            )}
+                                        >
+                                            {msg.content}
                                         </div>
-                                    ))
-                                )}
-                                <div ref={messagesEndRef} />
-                            </div>
-                        </ScrollArea>
-                    </div>
+                                    </div>
+                                ))
+                            )}
+                            <div ref={messagesEndRef} />
+                        </div>
+                    </ScrollArea>
+                </div>
 
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex-shrink-0 border-t p-3">
-                            <div className="flex gap-2">
-                                <FormField
-                                    control={form.control}
-                                    name="text"
-                                    render={({ field }) => (
-                                        <FormItem className="flex-1">
-                                            <FormControl>
-                                                <Input
-                                                    {...field}
-                                                    placeholder={`Message ${user.name}...`}
-                                                    className="text-sm"
-                                                    maxLength={CHAT_MESSAGE_MAX_LENGTH}
-                                                    autoComplete="off"
-                                                />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
-                                <Button type="submit" size="sm" disabled={!form.watch('text')?.trim()} className="px-3">
-                                    <Send className="h-3 w-3" />
-                                </Button>
-                            </div>
-                        </form>
-                    </Form>
-                </CardContent>
-            )}
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex-shrink-0 border-t p-3">
+                        <div className="flex gap-2">
+                            <FormField
+                                control={form.control}
+                                name="text"
+                                render={({ field }) => (
+                                    <FormItem className="flex-1">
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                placeholder={`Message ${user.name}...`}
+                                                className="text-sm"
+                                                maxLength={CHAT_MESSAGE_MAX_LENGTH}
+                                                autoComplete="off"
+                                            />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                            <Button type="submit" size="sm" disabled={!form.watch('text')?.trim()} className="px-3">
+                                <Send className="h-3 w-3" />
+                            </Button>
+                        </div>
+                    </form>
+                </Form>
+            </CardContent>
         </Card>
     );
 };
