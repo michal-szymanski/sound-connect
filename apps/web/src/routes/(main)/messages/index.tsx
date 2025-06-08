@@ -1,4 +1,4 @@
-import { useEnvs, useUser } from '@/web/lib/react-query';
+import { useUser } from '@/web/lib/react-query';
 import { useUnifiedWebSocket } from '@/web/providers/unified-websocket-provider';
 import { useChatWindows } from '@/web/components/chat/chat-window-manager';
 import { getRoomId } from '@sound-connect/common/helpers';
@@ -24,9 +24,8 @@ export const Route = createFileRoute('/(main)/messages/')({
 });
 
 function RouteComponent() {
-    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, lastMessage, status, roomMessages } = useUnifiedWebSocket();
+    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, status, roomMessages } = useUnifiedWebSocket();
     const { openChatWindow } = useChatWindows();
-    const { data: envs } = useEnvs();
     const { data: user } = useUser();
     const { users } = useContacts();
 
