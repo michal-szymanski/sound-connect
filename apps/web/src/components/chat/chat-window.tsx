@@ -15,7 +15,7 @@ interface ChatWindowProps {
     onClose: () => void;
     isMinimized: boolean;
     onToggleMinimize: () => void;
-    position: number; // 0-based index for positioning multiple windows
+    position: number;
 }
 
 export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, position }: ChatWindowProps) => {
@@ -29,37 +29,29 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Calculate position from right
-    const rightOffset = 20 + position * 320; // 300px width + 20px gap
+    const rightOffset = 20 + position * 320;
 
     useEffect(() => {
         if (currentUser && user) {
             const newRoomId = getRoomId(currentUser.id, user.id);
             setRoomId(newRoomId);
 
-            // Subscribe to the room and load history
             const initializeRoom = async () => {
-                // Always load history first (it doesn't require WebSocket)
                 try {
                     await loadRoomHistory(newRoomId);
-                } catch (error) {
-                    // Error handled by the websocket provider
-                }
+                } catch (error) {}
 
-                // Subscribe to room for real-time updates
                 subscribeToRoom(newRoomId);
             };
 
             initializeRoom();
 
             return () => {
-                // Unsubscribe when component unmounts
                 unsubscribeFromRoom(newRoomId);
             };
         }
     }, [currentUser, user, subscribeToRoom, unsubscribeFromRoom, loadRoomHistory]);
 
-    // Sync messages from the unified provider to local state
     useEffect(() => {
         if (roomId) {
             const roomMsgs = roomMessages.get(roomId) || [];
@@ -68,7 +60,6 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     }, [roomMessages, roomId]);
 
     useEffect(() => {
-        // Scroll to bottom when messages change
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
@@ -76,11 +67,8 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
         e.preventDefault();
         if (!message.trim() || !roomId || !currentUser) return;
 
-        // Send message through WebSocket
         sendMessage(roomId, message.trim());
 
-        // Don't add optimistic update here - let the WebSocket handle it
-        // This prevents duplicates since the message will come back through WebSocket
         setMessage('');
     };
 
@@ -94,12 +82,12 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     return (
         <Card
             className={clsx(
-                'fixed bottom-0 z-[60] w-80 border-b-0 border-l border-r border-t shadow-lg transition-all duration-200 ease-in-out',
+                'fixed bottom-0 z-[60] flex w-80 flex-col border-b-0 border-l border-r border-t shadow-lg transition-all duration-200 ease-in-out',
                 isMinimized ? 'h-12' : 'h-96'
             )}
             style={{ right: `${rightOffset}px` }}
         >
-            <CardHeader className="cursor-pointer border-b p-3" onClick={onToggleMinimize}>
+            <CardHeader className="flex-shrink-0 cursor-pointer border-b p-3" onClick={onToggleMinimize}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <StatusAvatar user={user} />
@@ -133,30 +121,30 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
             </CardHeader>
 
             {!isMinimized && (
-                <CardContent className="flex h-80 flex-col p-0">
-                    {/* Messages Area */}
-                    <div className="flex-1 space-y-2 overflow-y-auto p-3">
-                        {messages.length === 0 ? (
-                            <div className="text-muted-foreground py-8 text-center text-sm">Start a conversation with {user.name}</div>
-                        ) : (
-                            messages.map((msg, index) => (
-                                <div key={index} className={clsx('flex', msg.senderId === currentUser?.id ? 'justify-end' : 'justify-start')}>
-                                    <div
-                                        className={clsx(
-                                            'max-w-[70%] rounded-lg px-3 py-2 text-sm',
-                                            msg.senderId === currentUser?.id ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                                        )}
-                                    >
-                                        {msg.text}
+                <CardContent className="flex min-h-0 flex-1 flex-col p-0">
+                    <div className="flex-1 overflow-y-auto p-3">
+                        <div className="space-y-2">
+                            {messages.length === 0 ? (
+                                <div className="text-muted-foreground py-8 text-center text-sm">Start a conversation with {user.name}</div>
+                            ) : (
+                                messages.map((msg, index) => (
+                                    <div key={index} className={clsx('flex', msg.senderId === currentUser?.id ? 'justify-end' : 'justify-start')}>
+                                        <div
+                                            className={clsx(
+                                                'max-w-[70%] rounded-lg px-3 py-2 text-sm',
+                                                msg.senderId === currentUser?.id ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                                            )}
+                                        >
+                                            {msg.text}
+                                        </div>
                                     </div>
-                                </div>
-                            ))
-                        )}
-                        <div ref={messagesEndRef} />
+                                ))
+                            )}
+                            <div ref={messagesEndRef} />
+                        </div>
                     </div>
 
-                    {/* Input Area */}
-                    <form onSubmit={handleSendMessage} className="border-t p-3">
+                    <form onSubmit={handleSendMessage} className="flex-shrink-0 border-t p-3">
                         <div className="flex gap-2">
                             <Input
                                 ref={inputRef}

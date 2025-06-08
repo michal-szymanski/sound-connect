@@ -6,7 +6,7 @@ import z from 'zod';
 export class ChatDurableObject extends DurableObject {
     private storage: DurableObjectStorage;
     private roomId: string | null = null;
-    private participants: Set<string> = new Set(); // User IDs of participants in this room
+    private participants: Set<string> = new Set();
 
     constructor(
         ctx: DurableObjectState,
@@ -20,7 +20,6 @@ export class ChatDurableObject extends DurableObject {
         const url = new URL(request.url);
         const userId = request.headers.get('X-User-Id');
 
-        // Extract roomId from URL path (format: /room/{roomId}/...)
         const pathMatch = url.pathname.match(/\/room\/([^\/]+)/);
         if (pathMatch) {
             this.roomId = pathMatch[1];
@@ -34,7 +33,6 @@ export class ChatDurableObject extends DurableObject {
             return new Response('Unauthorized: Missing user ID', { status: 401 });
         }
 
-        // Load participants from storage
         await this.loadParticipants();
 
         if (request.method === 'GET' && url.pathname.endsWith('/history')) {
@@ -44,8 +42,6 @@ export class ChatDurableObject extends DurableObject {
         return new Response('Not Found', { status: 404 });
     }
 
-    // Public methods for direct stub calls
-
     async subscribeUser(userId: string, roomId: string): Promise<void> {
         this.roomId = roomId;
         await this.loadParticipants();
@@ -53,7 +49,6 @@ export class ChatDurableObject extends DurableObject {
         this.participants.add(userId);
         await this.saveParticipants();
 
-        // Notify other participants that user joined
         await this.notifyParticipants(
             {
                 type: 'user-joined',
@@ -71,7 +66,6 @@ export class ChatDurableObject extends DurableObject {
         this.participants.delete(userId);
         await this.saveParticipants();
 
-        // Notify other participants that user left
         await this.notifyParticipants(
             {
                 type: 'user-left',
@@ -92,17 +86,15 @@ export class ChatDurableObject extends DurableObject {
 
         const message: StoredChatMessage = {
             type: 'chat',
-            peerId: '', // Will be set based on room participants for compatibility
+            peerId: '',
             text: content,
             roomId: this.roomId,
             senderId,
             timestamp: Date.now()
         };
 
-        // Store message in room history
         await this.storeMessage(message);
 
-        // Broadcast to all participants (including sender for echo-back)
         await this.notifyParticipants(message);
     }
 
@@ -114,8 +106,6 @@ export class ChatDurableObject extends DurableObject {
 
         return history;
     }
-
-    // Private helper methods
 
     private async loadParticipants() {
         const storedParticipants = (await this.storage.get<string[]>('participants')) || [];
@@ -131,7 +121,6 @@ export class ChatDurableObject extends DurableObject {
         const history = (await this.storage.get<StoredChatMessage[]>(historyKey)) || [];
         history.push(message);
 
-        // Keep only last 1000 messages per room
         if (history.length > 1000) {
             history.splice(0, history.length - 1000);
         }
@@ -154,7 +143,7 @@ export class ChatDurableObject extends DurableObject {
 
         for (const participantId of participantList) {
             if (excludeUserId && participantId === excludeUserId) {
-                continue; // Skip excluded user for join/leave notifications
+                continue;
             }
 
             try {
@@ -163,7 +152,6 @@ export class ChatDurableObject extends DurableObject {
                 await stub.sendMessage(message);
             } catch (error) {
                 console.error(`[ChatDO] Error notifying participant ${participantId}:`, error);
-                // Remove participant if they're unreachable
                 this.participants.delete(participantId);
                 await this.saveParticipants();
             }

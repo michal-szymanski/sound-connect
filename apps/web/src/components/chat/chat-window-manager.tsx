@@ -34,13 +34,11 @@ export const ChatWindowProvider: React.FC<ChatWindowProviderProps> = ({ children
         setOpenWindows((prev) => {
             const newWindows = new Map(prev);
 
-            // If window is already open, just bring it to front and unminimize
             if (newWindows.has(user.id)) {
                 const existingWindow = newWindows.get(user.id)!;
                 newWindows.delete(user.id);
                 newWindows.set(user.id, { ...existingWindow, isMinimized: false });
             } else {
-                // Add new window
                 newWindows.set(user.id, { user, isMinimized: false });
             }
 
@@ -73,13 +71,11 @@ export const ChatWindowProvider: React.FC<ChatWindowProviderProps> = ({ children
         toggleMinimize
     };
 
-    // Convert Map to Array for rendering, maintaining insertion order
     const windowsArray = Array.from(openWindows.entries());
 
     return (
         <ChatWindowContext.Provider value={contextValue}>
             {children}
-            {/* Render chat windows */}
             {windowsArray.map(([userId, windowState], index) => (
                 <ChatWindow
                     key={userId}

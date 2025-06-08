@@ -243,7 +243,6 @@ app.get('/posts/:postId/reactions', async (c) => {
     return c.json(reactionsResults);
 });
 
-// Room history endpoint - now handled by ChatDO
 app.get('/ws/room/:roomId/history', async (c) => {
     const { roomId } = c.req.param();
     const user = c.get('user');
