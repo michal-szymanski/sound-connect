@@ -1,134 +1,183 @@
 import { DurableObject } from 'cloudflare:workers';
-import { ChatMessage, chatMessageSchema } from '@sound-connect/common/types/models';
+import { ChatMessage, WebSocketMessage, webSocketMessageSchema } from '@sound-connect/common/types/models';
+import { StoredChatMessage, UserNotificationMessage, InternalMessage } from '../types/chat';
 import z from 'zod';
 
 export class ChatDurableObject extends DurableObject {
-    private connections: Map<string, WebSocket> = new Map(); // Active WebSocket connections
-    private participants: Set<string> = new Set(); // User IDs of participants
+    private storage: DurableObjectStorage;
+    private roomId: string | null = null;
+    private participants: Set<string> = new Set(); // User IDs of participants in this room
 
     constructor(
-        private state: DurableObjectState,
+        ctx: DurableObjectState,
         public env: Cloudflare.Env
     ) {
-        super(state, env);
+        super(ctx, env);
+        this.storage = ctx.storage;
     }
 
     async fetch(request: Request): Promise<Response> {
         const url = new URL(request.url);
-        const upgradeHeader = request.headers.get('Upgrade');
         const userId = request.headers.get('X-User-Id');
+
+        // Extract roomId from URL path (format: /room/{roomId}/...)
+        const pathMatch = url.pathname.match(/\/room\/([^\/]+)/);
+        if (pathMatch) {
+            this.roomId = pathMatch[1];
+        }
+
+        if (!this.roomId) {
+            return new Response('Bad Request: Missing room ID', { status: 400 });
+        }
 
         if (!userId) {
             return new Response('Unauthorized: Missing user ID', { status: 401 });
         }
 
-        if (upgradeHeader && upgradeHeader.toLowerCase() === 'websocket') {
-            // Handle WebSocket connection
-            const wsPair = new WebSocketPair();
-            const [client, server] = Object.values(wsPair);
-            await this.handleConnection(server, userId);
-            server.accept();
-
-            return new Response(null, { status: 101, webSocket: client });
-        }
+        // Load participants from storage
+        await this.loadParticipants();
 
         if (request.method === 'GET' && url.pathname.endsWith('/history')) {
-            // Fetch message history
-            const history = (await this.state.storage.get<Array<ChatMessage>>('messages')) || [];
-            return new Response(JSON.stringify(history), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-
-        if (request.method === 'POST') {
-            // Handle incoming messages
-            const json = await request.json();
-            const { senderId, content } = z.object({ senderId: z.string(), content: z.string() }).parse(json);
-            await this.storeAndBroadcastMessage(senderId, content);
-            return new Response('Message sent', { status: 200 });
+            return await this.getRoomHistoryResponse();
         }
 
         return new Response('Not Found', { status: 404 });
     }
 
-    async handleConnection(webSocket: WebSocket, userId: string) {
-        // Add the user to the active connections
-        this.connections.set(userId, webSocket);
+    // Public methods for direct stub calls
+
+    async subscribeUser(userId: string, roomId: string): Promise<void> {
+        console.log(`[ChatDO] User ${userId} subscribing to room ${roomId}`);
+
+        this.roomId = roomId;
+        await this.loadParticipants();
+
         this.participants.add(userId);
+        await this.saveParticipants();
 
-        // Persist the participant in storage
-        await this.state.storage.put(userId, true);
+        // Notify other participants that user joined
+        await this.notifyParticipants(
+            {
+                type: 'user-joined',
+                roomId: this.roomId,
+                userId
+            },
+            userId
+        );
 
-        // WebSocket event listeners
-        webSocket.addEventListener('message', async (event: MessageEvent) => {
-            try {
-                const message = JSON.parse(z.string().parse(event.data));
-                if (message.type === 'message') {
-                    const { content } = message;
-                    await this.storeAndBroadcastMessage(userId, content);
-                }
-            } catch (error) {
-                console.error(`[ChatDO] Error processing message from user ${userId}:`, error);
-            }
-        });
-
-        webSocket.addEventListener('close', async () => {
-            await this.cleanup(userId);
-        });
-
-        webSocket.addEventListener('error', (event: Event) => {
-            console.error(`[ChatDO] WebSocket error for user ${userId}:`, event);
-            this.cleanup(userId);
-        });
+        console.log(`[ChatDO] Room ${this.roomId} participants:`, Array.from(this.participants));
     }
 
-    private async storeAndBroadcastMessage(senderId: string, content: string) {
-        // Create a message object
-        const message: ChatMessage = {
+    async unsubscribeUser(userId: string, roomId: string): Promise<void> {
+        console.log(`[ChatDO] User ${userId} unsubscribing from room ${roomId}`);
+
+        this.roomId = roomId;
+        await this.loadParticipants();
+
+        this.participants.delete(userId);
+        await this.saveParticipants();
+
+        // Notify other participants that user left
+        await this.notifyParticipants(
+            {
+                type: 'user-left',
+                roomId: this.roomId,
+                userId
+            },
+            userId
+        );
+    }
+
+    async sendMessage(senderId: string, roomId: string, content: string): Promise<void> {
+        this.roomId = roomId;
+        await this.loadParticipants();
+
+        if (!this.participants.has(senderId)) {
+            console.warn(`[ChatDO] User ${senderId} not subscribed to room ${roomId}`);
+            return;
+        }
+
+        console.log(`[ChatDO] User ${senderId} sending message to room ${roomId}: "${content}"`);
+
+        const message: StoredChatMessage = {
             type: 'chat',
-            peerId: senderId,
+            peerId: '', // Will be set based on room participants for compatibility
             text: content,
+            roomId: this.roomId,
             senderId,
             timestamp: Date.now()
         };
 
-        // Store the message in Durable Object storage
-        const history = (await this.state.storage.get<Array<ChatMessage>>('messages')) || [];
+        // Store message in room history
+        await this.storeMessage(message);
+
+        // Broadcast to all participants (including sender for echo-back)
+        await this.notifyParticipants(message);
+    }
+
+    async getRoomHistory(roomId: string): Promise<StoredChatMessage[]> {
+        this.roomId = roomId;
+        const historyKey = 'messages';
+        const history = (await this.storage.get<StoredChatMessage[]>(historyKey)) || [];
+        console.log(`[ChatDO] Retrieved ${history.length} messages from room ${this.roomId}`);
+        return history;
+    }
+
+    // Private helper methods
+
+    private async loadParticipants() {
+        const storedParticipants = (await this.storage.get<string[]>('participants')) || [];
+        this.participants = new Set(storedParticipants);
+    }
+
+    private async saveParticipants() {
+        await this.storage.put('participants', Array.from(this.participants));
+    }
+
+    private async storeMessage(message: StoredChatMessage) {
+        const historyKey = 'messages';
+        const history = (await this.storage.get<StoredChatMessage[]>(historyKey)) || [];
         history.push(message);
-        await this.state.storage.put('messages', history);
 
-        // Broadcast the message to all participants
-        this.broadcastMessage(message, senderId);
-    }
-
-    private broadcastMessage(message: ChatMessage, senderId: string) {
-        for (const [userId, connection] of this.connections) {
-            if (userId !== senderId) {
-                try {
-                    connection.send(JSON.stringify(message));
-                } catch (error) {
-                    console.error(`[ChatDO] Error sending message to user ${userId}:`, error);
-                    this.cleanup(userId);
-                }
-            }
+        // Keep only last 1000 messages per room
+        if (history.length > 1000) {
+            history.splice(0, history.length - 1000);
         }
+
+        await this.storage.put(historyKey, history);
+        console.log(`[ChatDO] Stored message in room ${this.roomId}, total messages: ${history.length}`);
     }
 
-    private async cleanup(userId: string) {
-        this.connections.delete(userId);
-        this.participants.delete(userId);
+    private async getRoomHistoryResponse(): Promise<Response> {
+        const historyKey = 'messages';
+        const history = (await this.storage.get<StoredChatMessage[]>(historyKey)) || [];
+        console.log(`[ChatDO] Retrieved ${history.length} messages from room ${this.roomId}`);
 
-        // Remove the user from storage
-        await this.state.storage.delete(userId);
+        return new Response(JSON.stringify(history), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
 
-        if (this.participants.size === 0) {
-            // Clean up storage if no participants remain
-            const keys = await this.state.storage.list();
-            for (const key of keys.keys()) {
-                if (key !== 'messages') {
-                    await this.state.storage.delete(key);
-                }
+    private async notifyParticipants(message: InternalMessage, excludeUserId?: string) {
+        const participantList = Array.from(this.participants);
+        console.log(`[ChatDO] Notifying room ${this.roomId} participants:`, participantList, 'Message:', message.type || message);
+
+        for (const participantId of participantList) {
+            if (excludeUserId && participantId === excludeUserId) {
+                continue; // Skip excluded user for join/leave notifications
+            }
+
+            try {
+                console.log(`[ChatDO] Sending message to participant ${participantId}`);
+                const id = this.env.UserDO.idFromName(`user:${participantId}`);
+                const stub = this.env.UserDO.get(id);
+                await stub.sendMessage(message);
+            } catch (error) {
+                console.error(`[ChatDO] Error notifying participant ${participantId}:`, error);
+                // Remove participant if they're unreachable
+                this.participants.delete(participantId);
+                await this.saveParticipants();
             }
         }
     }

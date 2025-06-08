@@ -8,6 +8,7 @@ import {
     ChatMessage,
     chatMessageSchema
 } from '@sound-connect/common/types/models';
+import { InternalMessage } from '../types/chat';
 import z from 'zod';
 
 // Enhanced message types for unified connection
@@ -25,7 +26,6 @@ export class UserDurableObject extends DurableObject {
     private subscribedRooms: Set<string> = new Set();
     private subscribers: Set<string> = new Set(); // For online status notifications
     private userId: string | null = null;
-    private roomParticipants: Map<string, Set<string>> = new Map(); // roomId -> Set of userIds
 
     constructor(
         ctx: DurableObjectState,
@@ -75,12 +75,6 @@ export class UserDurableObject extends DurableObject {
             this.subscribedRooms = new Set(storedRooms);
         }
 
-        // Load room participants from storage
-        const storedParticipants = await this.storage.get<Record<string, string[]>>('roomParticipants');
-        if (storedParticipants) {
-            this.roomParticipants = new Map(Object.entries(storedParticipants).map(([roomId, participants]) => [roomId, new Set(participants)]));
-        }
-
         webSocket.addEventListener('message', async (event) => {
             try {
                 const message = JSON.parse(z.string().parse(event.data));
@@ -118,75 +112,32 @@ export class UserDurableObject extends DurableObject {
         console.log(`[UserDO] User ${this.userId} subscribing to room ${roomId}`);
         this.subscribedRooms.add(roomId);
 
-        // Get the other participant from the roomId (assuming roomId format like "user1-user2")
-        const participants = this.extractParticipantsFromRoomId(roomId);
-        const otherParticipant = participants.find((id) => id !== this.userId);
-
-        // Update local room participants
-        if (!this.roomParticipants.has(roomId)) {
-            this.roomParticipants.set(roomId, new Set());
-        }
-
-        // Add all participants to local cache
-        participants.forEach((id) => {
-            this.roomParticipants.get(roomId)!.add(id);
-        });
-
         // Persist user's subscribed rooms
         await this.storage.put('subscribedRooms', Array.from(this.subscribedRooms));
 
-        // If there's another participant, notify them and ask them to add us to their room
-        if (otherParticipant) {
-            try {
-                console.log(`[UserDO] Notifying ${otherParticipant} that ${this.userId} joined room ${roomId}`);
-                const otherId = this.env.UserDO.idFromName(`user:${otherParticipant}`);
-                const otherStub = this.env.UserDO.get(otherId);
-                await otherStub.addParticipantToRoom(roomId, this.userId!);
-
-                // Also send user-joined message
-                await otherStub.sendMessage({
-                    type: 'user-joined',
-                    roomId,
-                    userId: this.userId!
-                });
-            } catch (error) {
-                console.error(`[UserDO] Error notifying participant ${otherParticipant}:`, error);
-            }
+        // Delegate to ChatDurableObject for room subscription
+        try {
+            const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
+            const chatStub = this.env.ChatDO.get(chatId);
+            await chatStub.subscribeUser(this.userId!, roomId);
+        } catch (error) {
+            console.error(`[UserDO] Error subscribing to room ${roomId}:`, error);
         }
     }
 
     private async unsubscribeFromRoom(roomId: string) {
         this.subscribedRooms.delete(roomId);
 
-        // Get participants before removing from local cache
-        const participants = this.roomParticipants.get(roomId);
-
-        // Update local cache
-        if (this.roomParticipants.has(roomId)) {
-            this.roomParticipants.delete(roomId);
-        }
-
         // Persist user's subscribed rooms
         await this.storage.put('subscribedRooms', Array.from(this.subscribedRooms));
 
-        // Notify other participants in the room
-        if (participants) {
-            for (const participantId of participants) {
-                if (participantId === this.userId) continue; // Don't send to self
-
-                try {
-                    console.log(`[UserDO] Notifying ${participantId} that ${this.userId} left room ${roomId}`);
-                    const otherId = this.env.UserDO.idFromName(`user:${participantId}`);
-                    const otherStub = this.env.UserDO.get(otherId);
-                    await otherStub.sendMessage({
-                        type: 'user-left',
-                        roomId,
-                        userId: this.userId!
-                    });
-                } catch (error) {
-                    console.error(`[UserDO] Error notifying participant ${participantId}:`, error);
-                }
-            }
+        // Delegate to ChatDurableObject for room unsubscription
+        try {
+            const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
+            const chatStub = this.env.ChatDO.get(chatId);
+            await chatStub.unsubscribeUser(this.userId!, roomId);
+        } catch (error) {
+            console.error(`[UserDO] Error unsubscribing from room ${roomId}:`, error);
         }
     }
 
@@ -198,98 +149,36 @@ export class UserDurableObject extends DurableObject {
 
         console.log(`[UserDO] ${this.userId} sending message to room ${roomId}: "${content}"`);
 
-        const message: ChatMessage & { roomId: string; senderId: string; timestamp: number } = {
-            type: 'chat',
-            peerId: '', // Will be set based on room participants
-            text: content,
-            roomId,
-            senderId: this.userId!,
-            timestamp: Date.now()
-        };
-
-        // Store message in room history
-        await this.storeRoomMessage(roomId, message);
-
-        // Broadcast to all participants in the room
-        await this.notifyRoomParticipants(roomId, message);
-    }
-
-    async storeRoomMessage(roomId: string, message: any) {
-        // Store message in the deterministic "room owner" UserDO
-        const participants = this.extractParticipantsFromRoomId(roomId);
-        const roomOwner = participants.sort()[0]; // First participant alphabetically
-
-        if (roomOwner === this.userId) {
-            // This UserDO is the room owner, store message locally
-            const historyKey = `room:${roomId}:messages`;
-            const history = (await this.storage.get<any[]>(historyKey)) || [];
-            history.push(message);
-
-            // Keep only last 1000 messages per room
-            if (history.length > 1000) {
-                history.splice(0, history.length - 1000);
-            }
-
-            await this.storage.put(historyKey, history);
-            console.log(`[UserDO] Stored message in room ${roomId}, total messages: ${history.length}`);
-        } else {
-            // Forward the storage request to the room owner UserDO
-            const ownerId = this.env.UserDO.idFromName(`user:${roomOwner}`);
-            const ownerStub = this.env.UserDO.get(ownerId);
-            await ownerStub.storeRoomMessage(roomId, message);
+        // Delegate to ChatDurableObject for message handling
+        try {
+            const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
+            const chatStub = this.env.ChatDO.get(chatId);
+            await chatStub.sendMessage(this.userId!, roomId, content);
+        } catch (error) {
+            console.error(`[UserDO] Error sending message to room ${roomId}:`, error);
         }
     }
 
     async getRoomHistory(roomId: string): Promise<Response> {
-        // Get room history from the deterministic "room owner" UserDO
-        // Use the first participant (alphabetically) as the room owner for storage consistency
-        const participants = this.extractParticipantsFromRoomId(roomId);
-        const roomOwner = participants.sort()[0]; // First participant alphabetically
+        console.log(`[UserDO] Getting room history for ${roomId} for user ${this.userId}`);
 
-        console.log(`[UserDO] Getting room history for ${roomId}, room owner: ${roomOwner}, current user: ${this.userId}`);
-
-        if (roomOwner === this.userId) {
-            // This UserDO is the room owner, get history from local storage
-            const historyKey = `room:${roomId}:messages`;
-            const history = (await this.storage.get<any[]>(historyKey)) || [];
-            console.log(`[UserDO] Found ${history.length} messages in room ${roomId}`);
+        // Delegate to ChatDurableObject for room history
+        try {
+            const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
+            const chatStub = this.env.ChatDO.get(chatId);
+            const history = await chatStub.getRoomHistory(roomId);
 
             return new Response(JSON.stringify(history), {
                 status: 200,
                 headers: { 'Content-Type': 'application/json' }
             });
-        } else {
-            // Forward the request to the room owner UserDO
-            const ownerId = this.env.UserDO.idFromName(`user:${roomOwner}`);
-            const ownerStub = this.env.UserDO.get(ownerId);
-            return await ownerStub.getRoomHistory(roomId);
+        } catch (error) {
+            console.error(`[UserDO] Error getting room history for ${roomId}:`, error);
+            return new Response('Internal Server Error', { status: 500 });
         }
     }
 
-    private async notifyRoomParticipants(roomId: string, message: any) {
-        // Get participants from local cache
-        const participants = this.roomParticipants.get(roomId);
-        if (!participants) {
-            console.warn(`[UserDO] No participants found for room ${roomId}`);
-            return;
-        }
-
-        const participantList = Array.from(participants);
-        console.log(`[UserDO] Notifying room ${roomId} participants:`, participantList, 'Message:', message.type || message);
-
-        for (const participantId of participantList) {
-            try {
-                console.log(`[UserDO] Sending message to participant ${participantId}`);
-                const id = this.env.UserDO.idFromName(`user:${participantId}`);
-                const stub = this.env.UserDO.get(id);
-                await stub.sendMessage(message);
-            } catch (error) {
-                console.error(`[UserDO] Error notifying participant ${participantId}:`, error);
-            }
-        }
-    }
-
-    async sendMessage(message: any) {
+    async sendMessage(message: InternalMessage) {
         console.log(`[UserDO] Attempting to send message to user ${this.userId}:`, message);
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
             console.log(`[UserDO] WebSocket is open, sending message to user ${this.userId}`);
@@ -297,17 +186,6 @@ export class UserDurableObject extends DurableObject {
         } else {
             console.log(`[UserDO] WebSocket not available for user ${this.userId}, state:`, this.websocket?.readyState);
         }
-    }
-
-    async addParticipantToRoom(roomId: string, participantId: string) {
-        console.log(`[UserDO] Adding participant ${participantId} to room ${roomId} for user ${this.userId}`);
-
-        if (!this.roomParticipants.has(roomId)) {
-            this.roomParticipants.set(roomId, new Set());
-        }
-
-        this.roomParticipants.get(roomId)!.add(participantId);
-        console.log(`[UserDO] Room ${roomId} participants for user ${this.userId}:`, Array.from(this.roomParticipants.get(roomId)!));
     }
 
     private extractParticipantsFromRoomId(roomId: string): string[] {
@@ -321,12 +199,8 @@ export class UserDurableObject extends DurableObject {
     private async cleanup() {
         // Clean up room participants when user disconnects
         for (const roomId of this.subscribedRooms) {
-            // Notify other participants
-            await this.notifyRoomParticipants(roomId, {
-                type: 'user-left',
-                roomId,
-                userId: this.userId!
-            });
+            // Unsubscribe from rooms through ChatDO
+            await this.unsubscribeFromRoom(roomId);
         }
     }
 
