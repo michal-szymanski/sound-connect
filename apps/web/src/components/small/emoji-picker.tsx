@@ -9,10 +9,10 @@ import { createPortal } from 'react-dom';
 
 type Props = {
     onEmojiSelect: (emoji: { native: string }) => void;
-    containerRef?: React.RefObject<Element | null>;
+    dialogRef?: React.RefObject<HTMLDivElement | null>;
 };
 
-const EmojiPicker = ({ onEmojiSelect }: Props) => {
+const EmojiPicker = ({ onEmojiSelect, dialogRef }: Props) => {
     const [open, setOpen] = useState(false);
     const [position, setPosition] = useState({ top: 0, left: 0 });
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -24,9 +24,8 @@ const EmojiPicker = ({ onEmojiSelect }: Props) => {
 
     const handleToggle = () => {
         if (!open && buttonRef.current) {
-            const dialogElement = document.querySelector('[data-slot="dialog-content"]') as HTMLElement;
-            if (dialogElement) {
-                const dialogRect = dialogElement.getBoundingClientRect();
+            if (dialogRef?.current) {
+                const dialogRect = dialogRef.current.getBoundingClientRect();
                 setPosition({
                     top: dialogRect.top + window.scrollY,
                     left: dialogRect.left - 352 - 16 + window.scrollX

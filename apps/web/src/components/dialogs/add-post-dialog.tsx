@@ -22,7 +22,7 @@ const AddPostDialog = () => {
     const text = `What's on your mind?`;
     const [open, setOpen] = useState(false);
     const dispatch = useDispatch();
-    const containerRef = useRef<HTMLDivElement | null>(null);
+    const dialogContentRef = useRef<HTMLDivElement | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const queryClient = useQueryClient();
 
@@ -76,7 +76,7 @@ const AddPostDialog = () => {
             <DialogTrigger className="border-input dark:bg-input/30 text-muted-foreground shadow-xs dark:hover:bg-accent h-12 flex-1 rounded-md border bg-transparent px-3 py-1 text-left text-sm font-normal">
                 {text}
             </DialogTrigger>
-            <DialogContent ref={containerRef} className="flex max-h-[90vh] w-full max-w-2xl flex-col p-6">
+            <DialogContent ref={dialogContentRef} className="flex max-h-[90vh] w-full max-w-2xl flex-col p-6">
                 <DialogHeader className="mb-4">
                     <DialogTitle>Create post</DialogTitle>
                     <VisuallyHidden.Root>
@@ -105,7 +105,7 @@ const AddPostDialog = () => {
                         />
 
                         <div className="inline-flex items-end justify-end gap-3">
-                            <EmojiPicker onEmojiSelect={handleAddEmoji} />
+                            <EmojiPicker onEmojiSelect={handleAddEmoji} dialogRef={dialogContentRef} />
                         </div>
                         <SubmitButton isSpinner={isSpinner} className="w-full">
                             Publish
