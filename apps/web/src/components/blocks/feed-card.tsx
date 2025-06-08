@@ -33,7 +33,7 @@ const FeedCard = ({ item: { post, user, reactions } }: Props) => {
     const { openChatWindow } = useChatWindows();
 
     const canFollow = currentUser?.id !== post.userId && !followings.some((following) => following.id === post.userId);
-    const canMessage = currentUser?.id !== post.userId; // Can message if not own post
+    const canMessage = currentUser?.id !== post.userId;
 
     if (!user) return null;
 

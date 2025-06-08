@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
-export interface UIState {
+export type UIState = {
     isSidebarVisible: boolean;
-}
+};
 
 const initialState: UIState = {
     isSidebarVisible: true
