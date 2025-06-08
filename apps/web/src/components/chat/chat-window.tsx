@@ -12,15 +12,15 @@ import { useUser } from '@/web/lib/react-query';
 import { getRoomId } from '@sound-connect/common/helpers';
 import clsx from 'clsx';
 
-interface ChatWindowProps {
+type Props = {
     user: UserDTO;
     onClose: () => void;
     isMinimized: boolean;
     onToggleMinimize: () => void;
     position: number;
-}
+};
 
-export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, position }: ChatWindowProps) => {
+export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, position }: Props) => {
     const { data: currentUser } = useUser();
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useUnifiedWebSocket();
 
@@ -81,6 +81,8 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
         }
     };
 
+    if (!currentUser) return null;
+
     return (
         <Card
             className={clsx(
@@ -130,15 +132,12 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                                 {messages.length === 0 ? (
                                     <div className="text-muted-foreground py-8 text-center text-sm">Start a conversation with {user.name}</div>
                                 ) : (
-                                    messages.map((msg, index) => (
-                                        <div
-                                            key={msg.id || `${msg.timestamp}-${index}`}
-                                            className={clsx('flex', msg.senderId === currentUser?.id ? 'justify-end' : 'justify-start')}
-                                        >
+                                    messages.map((msg) => (
+                                        <div key={msg.id} className={clsx('flex', msg.senderId === currentUser.id ? 'justify-end' : 'justify-start')}>
                                             <div
                                                 className={clsx(
                                                     'max-w-[70%] rounded-lg px-3 py-2 text-sm',
-                                                    msg.senderId === currentUser?.id ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                                                    msg.senderId === currentUser.id ? 'bg-primary text-primary-foreground' : 'bg-muted'
                                                 )}
                                             >
                                                 {msg.content}
@@ -157,7 +156,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                                 ref={inputRef}
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
-                                onKeyPress={handleKeyPress}
+                                onKeyDown={handleKeyPress}
                                 placeholder={`Message ${user.name}...`}
                                 className="flex-1 text-sm"
                             />
