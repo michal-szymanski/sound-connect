@@ -1,7 +1,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
 import { FollowRequestNotification, FollowRequestNotificationItem, OnlineStatusMessage } from '@sound-connect/common/types/models';
-import { InternalMessage, newChatMessageSchema } from '../types/chat';
+import { InternalMessage } from '../types/chat';
 import z from 'zod';
 
 const unifiedWebSocketMessageSchema = z.discriminatedUnion('type', [
@@ -16,7 +16,7 @@ export class UserDurableObject extends DurableObject {
     private websocket: WebSocket | null = null;
     private storage: DurableObjectStorage;
     private subscribedRooms: Set<string> = new Set();
-    private subscribers: Set<string> = new Set(); // For online status notifications
+    private subscribers: Set<string> = new Set();
     private userId: string | null = null;
 
     constructor(
@@ -160,11 +160,6 @@ export class UserDurableObject extends DurableObject {
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
             this.websocket.send(JSON.stringify(message));
         }
-    }
-
-    private extractParticipantsFromRoomId(roomId: string): string[] {
-        const parts = roomId.split(':');
-        return parts;
     }
 
     private async cleanup() {
