@@ -1,5 +1,5 @@
+import { ChatMessage, WebSocketMessage } from '@sound-connect/common/types/models';
 import { DurableObject } from 'cloudflare:workers';
-import { ChatMessage, InternalMessage } from '../types/chat';
 
 export class ChatDurableObject extends DurableObject {
     private storage: DurableObjectStorage;
@@ -47,7 +47,7 @@ export class ChatDurableObject extends DurableObject {
         this.participants.add(userId);
         await this.saveParticipants();
 
-        await this.notifyParticipants(
+        await this.broadcastMessage(
             {
                 type: 'user-joined',
                 roomId: this.roomId,
@@ -64,7 +64,7 @@ export class ChatDurableObject extends DurableObject {
         this.participants.delete(userId);
         await this.saveParticipants();
 
-        await this.notifyParticipants(
+        await this.broadcastMessage(
             {
                 type: 'user-left',
                 roomId: this.roomId,
@@ -93,7 +93,7 @@ export class ChatDurableObject extends DurableObject {
 
         await this.storeMessage(message);
 
-        await this.notifyParticipants(message);
+        await this.broadcastMessage(message);
     }
 
     async getRoomHistory(roomId: string): Promise<ChatMessage[]> {
@@ -136,7 +136,7 @@ export class ChatDurableObject extends DurableObject {
         });
     }
 
-    private async notifyParticipants(message: InternalMessage, excludeUserId?: string) {
+    private async broadcastMessage(message: WebSocketMessage, excludeUserId?: string) {
         const participantList = Array.from(this.participants);
 
         for (const participantId of participantList) {

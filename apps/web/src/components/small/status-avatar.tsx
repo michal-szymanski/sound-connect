@@ -1,6 +1,6 @@
 import OnlineStatusIcon from '@/web/components/small/online-status-icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/web/components/ui/avatar';
-import { useUnifiedWebSocket } from '@/web/providers/unified-websocket-provider';
+import { useWebSocket } from '@/web/providers/websocket-provider';
 import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';
 import { UserDTO } from '@sound-connect/common/types/models';
 
@@ -9,7 +9,7 @@ type Props = {
 };
 
 const StatusAvatar = ({ user }: Props) => {
-    const { statuses } = useUnifiedWebSocket();
+    const { statuses } = useWebSocket();
 
     return (
         <div className="relative">

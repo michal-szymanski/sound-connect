@@ -1,16 +1,17 @@
 import { DurableObject } from 'cloudflare:workers';
 import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
-import { FollowRequestNotification, FollowRequestNotificationItem, OnlineStatusMessage } from '@sound-connect/common/types/models';
-import { InternalMessage } from '../types/chat';
-import z from 'zod';
+import {
+    FollowRequestNotification,
+    FollowRequestNotificationItem,
+    NewChatMessage,
+    OnlineStatusMessage,
+    SubscribeMessage,
+    UnsubscribeMessage,
+    WebSocketMessage,
+    webSocketMessageSchema
+} from '@sound-connect/common/types/models';
 
-const unifiedWebSocketMessageSchema = z.discriminatedUnion('type', [
-    z.object({ type: z.literal('subscribe'), roomId: z.string() }),
-    z.object({ type: z.literal('unsubscribe'), roomId: z.string() }),
-    z.object({ type: z.literal('chat'), roomId: z.string(), content: z.string() }),
-    z.object({ type: z.literal('connect') }),
-    z.object({ type: z.literal('disconnect') })
-]);
+import z from 'zod';
 
 export class UserDurableObject extends DurableObject {
     private websocket: WebSocket | null = null;
@@ -60,29 +61,30 @@ export class UserDurableObject extends DurableObject {
     async handleConnection(webSocket: WebSocket) {
         this.websocket = webSocket;
 
-        const storedRooms = await this.storage.get<string[]>('subscribedRooms');
+        const storedRooms = await this.storage.get<string[]>('subscribed-rooms');
         if (storedRooms) {
             this.subscribedRooms = new Set(storedRooms);
         }
 
         webSocket.addEventListener('message', async (event) => {
             try {
-                const message = JSON.parse(z.string().parse(event.data));
-                const parsedMessage = unifiedWebSocketMessageSchema.parse(message);
+                const rawData = z.string().parse(event.data);
+                const message = JSON.parse(rawData);
+
+                const parsedMessage = webSocketMessageSchema.parse(message);
 
                 switch (parsedMessage.type) {
                     case 'subscribe':
-                        await this.subscribeToRoom(parsedMessage.roomId);
+                        await this.subscribeToRoom(parsedMessage);
                         break;
                     case 'unsubscribe':
-                        await this.unsubscribeFromRoom(parsedMessage.roomId);
+                        await this.unsubscribeFromRoom(parsedMessage);
                         break;
                     case 'chat':
-                        await this.handleChatMessage(parsedMessage.roomId, parsedMessage.content);
+                        await this.handleChatMessage(parsedMessage);
                         break;
-                    case 'connect':
-                        break;
-                    case 'disconnect':
+                    default:
+                        console.log(`[UserDO] Unhandled message type: ${parsedMessage.type}`);
                         break;
                 }
             } catch (error) {
@@ -96,10 +98,10 @@ export class UserDurableObject extends DurableObject {
         });
     }
 
-    private async subscribeToRoom(roomId: string) {
+    private async subscribeToRoom({ roomId }: SubscribeMessage) {
         this.subscribedRooms.add(roomId);
 
-        await this.storage.put('subscribedRooms', Array.from(this.subscribedRooms));
+        await this.storage.put('subscribed-rooms', Array.from(this.subscribedRooms));
 
         try {
             const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
@@ -110,10 +112,10 @@ export class UserDurableObject extends DurableObject {
         }
     }
 
-    private async unsubscribeFromRoom(roomId: string) {
+    private async unsubscribeFromRoom({ roomId }: UnsubscribeMessage) {
         this.subscribedRooms.delete(roomId);
 
-        await this.storage.put('subscribedRooms', Array.from(this.subscribedRooms));
+        await this.storage.put('subscribed-rooms', Array.from(this.subscribedRooms));
 
         try {
             const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
@@ -124,7 +126,7 @@ export class UserDurableObject extends DurableObject {
         }
     }
 
-    private async handleChatMessage(roomId: string, content: string) {
+    private async handleChatMessage({ roomId, content }: NewChatMessage) {
         if (!this.subscribedRooms.has(roomId) || !this.userId) {
             return;
         }
@@ -156,7 +158,7 @@ export class UserDurableObject extends DurableObject {
         }
     }
 
-    async sendMessage(message: InternalMessage) {
+    async sendMessage(message: WebSocketMessage) {
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
             this.websocket.send(JSON.stringify(message));
         }
@@ -164,7 +166,7 @@ export class UserDurableObject extends DurableObject {
 
     private async cleanup() {
         for (const roomId of this.subscribedRooms) {
-            await this.unsubscribeFromRoom(roomId);
+            await this.unsubscribeFromRoom({ type: 'unsubscribe', roomId });
         }
     }
 

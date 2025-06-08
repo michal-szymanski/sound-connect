@@ -6,10 +6,9 @@ import { Card, CardContent, CardHeader } from '@/web/components/ui/card';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import { Form, FormControl, FormField, FormItem } from '@/web/components/ui/form';
 import StatusAvatar from '@/web/components/small/status-avatar';
-import { UserDTO } from '@sound-connect/common/types/models';
-import type { ChatMessage } from '../../../../api/src/types/chat';
+import { ChatMessage, UserDTO } from '@sound-connect/common/types/models';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
-import { useUnifiedWebSocket } from '@/web/providers/unified-websocket-provider';
+import { useWebSocket } from '@/web/providers/websocket-provider';
 import { useUser } from '@/web/lib/react-query';
 import { getRoomId } from '@sound-connect/common/helpers';
 import { useForm } from 'react-hook-form';
@@ -27,7 +26,7 @@ type Props = {
 
 export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, position }: Props) => {
     const { data: currentUser } = useUser();
-    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useUnifiedWebSocket();
+    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useWebSocket();
 
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [roomId, setRoomId] = useState<string | null>(null);
