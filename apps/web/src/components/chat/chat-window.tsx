@@ -62,9 +62,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     }, [roomMessages, roomId]);
 
     useEffect(() => {
-        setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 50);
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
     const handleSendMessage = (e: React.FormEvent) => {

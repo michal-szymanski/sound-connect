@@ -1,7 +1,6 @@
 import { useEnvs, useUser } from '@/web/lib/react-query';
 import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
 import {
-    ChatMessage,
     FollowRequestNotificationItem,
     OnlineStatus,
     onlineStatusMessageSchema,
