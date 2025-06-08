@@ -4,12 +4,17 @@ import { Button } from '@/web/components/ui/button';
 import { Input } from '@/web/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/web/components/ui/card';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
+import { Form, FormControl, FormField, FormItem } from '@/web/components/ui/form';
 import StatusAvatar from '@/web/components/small/status-avatar';
 import { UserDTO } from '@sound-connect/common/types/models';
 import type { ChatMessage } from '../../../../api/src/types/chat';
+import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
 import { useUnifiedWebSocket } from '@/web/providers/unified-websocket-provider';
 import { useUser } from '@/web/lib/react-query';
 import { getRoomId } from '@sound-connect/common/helpers';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import clsx from 'clsx';
 
 type Props = {
@@ -24,12 +29,21 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const { data: currentUser } = useUser();
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useUnifiedWebSocket();
 
-    const [message, setMessage] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [roomId, setRoomId] = useState<string | null>(null);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
+
+    const formSchema = z.object({
+        text: z.string().max(CHAT_MESSAGE_MAX_LENGTH)
+    });
+
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            text: ''
+        }
+    });
 
     const rightOffset = 20 + position * 320;
 
@@ -65,20 +79,12 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const handleSendMessage = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!message.trim() || !roomId || !currentUser) return;
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+        if (!values.text.trim() || !roomId || !currentUser) return;
 
-        sendMessage(roomId, message.trim());
+        sendMessage(roomId, values.text.trim());
 
-        setMessage('');
-    };
-
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage(e);
-        }
+        form.reset();
     };
 
     if (!currentUser) return null;
@@ -150,21 +156,32 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                         </ScrollArea>
                     </div>
 
-                    <form onSubmit={handleSendMessage} className="flex-shrink-0 border-t p-3">
-                        <div className="flex gap-2">
-                            <Input
-                                ref={inputRef}
-                                value={message}
-                                onChange={(e) => setMessage(e.target.value)}
-                                onKeyDown={handleKeyPress}
-                                placeholder={`Message ${user.name}...`}
-                                className="flex-1 text-sm"
-                            />
-                            <Button type="submit" size="sm" disabled={!message.trim()} className="px-3">
-                                <Send className="h-3 w-3" />
-                            </Button>
-                        </div>
-                    </form>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="flex-shrink-0 border-t p-3">
+                            <div className="flex gap-2">
+                                <FormField
+                                    control={form.control}
+                                    name="text"
+                                    render={({ field }) => (
+                                        <FormItem className="flex-1">
+                                            <FormControl>
+                                                <Input
+                                                    {...field}
+                                                    placeholder={`Message ${user.name}...`}
+                                                    className="text-sm"
+                                                    maxLength={CHAT_MESSAGE_MAX_LENGTH}
+                                                    autoComplete="off"
+                                                />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                                <Button type="submit" size="sm" disabled={!form.watch('text')?.trim()} className="px-3">
+                                    <Send className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
                 </CardContent>
             )}
         </Card>
