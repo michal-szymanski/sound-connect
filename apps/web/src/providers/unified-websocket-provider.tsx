@@ -162,14 +162,11 @@ export const UnifiedWebSocketProvider: React.FC<Props> = ({ children }) => {
                                 const newMessages = new Map(prev);
                                 const roomMsgs = newMessages.get(message.roomId) || [];
 
-                                const isDuplicate = roomMsgs.some(
-                                    (existing) =>
-                                        existing.timestamp === message.timestamp && existing.senderId === message.senderId && existing.text === message.text
-                                );
+                                const isDuplicate = roomMsgs.some((existing) => existing.id === message.id);
 
                                 if (!isDuplicate) {
-                                    roomMsgs.push(message);
-                                    newMessages.set(message.roomId, roomMsgs);
+                                    const updatedMsgs = [...roomMsgs, message];
+                                    newMessages.set(message.roomId, updatedMsgs);
                                 }
 
                                 return newMessages;

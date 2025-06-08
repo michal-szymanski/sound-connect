@@ -8,8 +8,8 @@ import { Input } from '@/web/components/ui/input';
 import { Card } from '@/web/components/ui/card';
 import { Button } from '@/web/components/ui/button';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
-import { ChatMessage, UserDTO } from '@sound-connect/common/types/models';
-import { getChatHistory } from '@/web/server-functions/models';
+import { UserDTO } from '@sound-connect/common/types/models';
+import type { StoredChatMessage } from '../../../../../api/src/types/chat';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
 import clsx from 'clsx';
 import { z } from 'zod';
@@ -32,7 +32,7 @@ function RouteComponent() {
 
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
     const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
-    const [messages, setMessages] = useState<(ChatMessage & { roomId?: string; senderId?: string; timestamp?: number })[]>([]);
+    const [messages, setMessages] = useState<StoredChatMessage[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const formSchema = z.object({
@@ -120,9 +120,9 @@ function RouteComponent() {
     const renderMessages = () => {
         if (!user) return null;
 
-        return messages.map((msg, i) => (
+        return messages.map((msg, index) => (
             <div
-                key={i}
+                key={msg.id || `${msg.timestamp}-${index}`}
                 className={clsx('flex justify-end', {
                     'justify-start': msg.senderId !== user.id
                 })}
