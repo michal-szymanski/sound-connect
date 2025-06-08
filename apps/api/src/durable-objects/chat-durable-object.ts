@@ -1,4 +1,4 @@
-import { ChatMessage, WebSocketMessage } from '@sound-connect/common/types/models';
+import { ChatMessage, chatMessageSchema, WebSocketMessage } from '@sound-connect/common/types/models';
 import { DurableObject } from 'cloudflare:workers';
 
 export class ChatDurableObject extends DurableObject {
@@ -82,14 +82,14 @@ export class ChatDurableObject extends DurableObject {
             return;
         }
 
-        const message: ChatMessage = {
+        const message = chatMessageSchema.parse({
             id: crypto.randomUUID(),
             type: 'chat',
             content,
             roomId: this.roomId,
             senderId,
             timestamp: Date.now()
-        };
+        });
 
         await this.storeMessage(message);
 
