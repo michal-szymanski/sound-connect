@@ -105,7 +105,7 @@ const AddPostDialog = () => {
                         />
 
                         <div className="inline-flex items-end justify-end gap-3">
-                            <EmojiPicker containerRef={containerRef} onEmojiSelect={handleAddEmoji} />
+                            <EmojiPicker onEmojiSelect={handleAddEmoji} />
                         </div>
                         <SubmitButton isSpinner={isSpinner} className="w-full">
                             Publish
