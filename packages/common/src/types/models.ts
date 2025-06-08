@@ -88,9 +88,9 @@ export const reactionNotification = z.object({
 
 export type ReactionNotification = z.infer<typeof reactionNotification>;
 
-export const notificationSchema = z.discriminatedUnion('kind', [followRequestNotification, reactionNotification]);
+export const notificationMessageSchema = z.discriminatedUnion('kind', [followRequestNotification, reactionNotification]);
 
-export type Notification = z.infer<typeof notificationSchema>;
+export type NotificationMessage = z.infer<typeof notificationMessageSchema>;
 
 export const webSocketMessageSchema = z.union([
     subscribeMessageSchema,
@@ -99,7 +99,7 @@ export const webSocketMessageSchema = z.union([
     newChatMessageSchema,
     roomNotificationSchema,
     onlineStatusMessageSchema,
-    notificationSchema
+    notificationMessageSchema
 ]);
 
 export type WebSocketMessage = z.infer<typeof webSocketMessageSchema>;
