@@ -1,5 +1,7 @@
 import { useEnvs, useUser } from '@/web/lib/react-query';
-import { useWebSocket } from '@/web/providers/websocket-provider';
+import { useUnifiedWebSocket } from '@/web/providers/unified-websocket-provider';
+import { useChatWindows } from '@/web/components/chat/chat-window-manager';
+import { getRoomId } from '@sound-connect/common/helpers';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/web/components/ui/input';
@@ -21,13 +23,15 @@ export const Route = createFileRoute('/(main)/messages/')({
 });
 
 function RouteComponent() {
-    const { send, lastMessage, status, setPeerId } = useWebSocket();
+    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, lastMessage, status, roomMessages } = useUnifiedWebSocket();
+    const { openChatWindow } = useChatWindows();
     const { data: envs } = useEnvs();
     const { data: user } = useUser();
     const { users } = useContacts();
 
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
+    const [messages, setMessages] = useState<(ChatMessage & { roomId?: string; senderId?: string; timestamp?: number })[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const formSchema = z.object({
@@ -42,38 +46,42 @@ function RouteComponent() {
     });
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!selectedPeer || !user || !values.text) return;
+        if (!selectedPeer || !user || !values.text || !currentRoomId) return;
 
-        const newMessage: ChatMessage = { ...values, type: 'chat', peerId: selectedPeer.id };
-        send(newMessage);
-        setMessages((prev) => [...prev, newMessage]);
+        sendMessage(currentRoomId, values.text);
+
+        // Don't add optimistic update here - let the WebSocket handle it
+        // This prevents duplicates since the message will come back through WebSocket
         form.reset();
     };
 
     useEffect(() => {
-        if (selectedPeer) {
-            setPeerId(selectedPeer.id);
+        if (selectedPeer && user) {
+            const roomId = getRoomId(user.id, selectedPeer.id);
+            setCurrentRoomId(roomId);
+
+            // Subscribe to the room and load history
+            const initializeRoom = async () => {
+                subscribeToRoom(roomId);
+                await loadRoomHistory(roomId);
+            };
+
+            initializeRoom();
+
+            return () => {
+                // Unsubscribe when changing rooms
+                unsubscribeFromRoom(roomId);
+            };
         }
-    }, [selectedPeer, setPeerId]);
+    }, [selectedPeer, user, subscribeToRoom, unsubscribeFromRoom, loadRoomHistory]);
 
+    // Sync messages from the unified provider to local state
     useEffect(() => {
-        if (envs && user && selectedPeer) {
-            setPeerId(selectedPeer.id);
-            getChatHistory({ data: { peerId: selectedPeer.id } }).then((res) => {
-                if (res.success) {
-                    setMessages(res.body);
-                } else {
-                    console.error('[App] Error fetching chat history:', res.body);
-                }
-            });
+        if (currentRoomId) {
+            const roomMsgs = roomMessages.get(currentRoomId) || [];
+            setMessages(roomMsgs);
         }
-    }, [selectedPeer, setPeerId, envs, user]);
-
-    useEffect(() => {
-        if (!lastMessage) return;
-
-        setMessages((prev) => [...prev, lastMessage]);
-    }, [lastMessage, user]);
+    }, [roomMessages, currentRoomId]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -83,10 +91,15 @@ function RouteComponent() {
         if (!users) return null;
 
         return users.map((u) => (
-            <Button key={u.id} variant="ghost" onClick={() => setSelectedPeer(u)}>
-                <StatusAvatar user={u} />
-                <span className="truncate">{u.name}</span>
-            </Button>
+            <div key={u.id} className="flex items-center gap-1">
+                <Button variant="ghost" className="flex-1 justify-start" onClick={() => setSelectedPeer(u)}>
+                    <StatusAvatar user={u} />
+                    <span className="truncate">{u.name}</span>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => openChatWindow(u)} className="px-2 text-xs" title="Open in chat window">
+                    💬
+                </Button>
+            </div>
         ));
     };
 
@@ -110,12 +123,12 @@ function RouteComponent() {
             <div
                 key={i}
                 className={clsx('flex justify-end', {
-                    'justify-start': msg.peerId === user.id
+                    'justify-start': msg.senderId !== user.id
                 })}
             >
                 <Card
                     className={clsx(`bg-primary text-primary-foreground max-w-xs px-4 py-2`, {
-                        'bg-muted text-card-foreground': msg.peerId === user.id
+                        'bg-muted text-card-foreground': msg.senderId !== user.id
                     })}
                 >
                     {msg.text}

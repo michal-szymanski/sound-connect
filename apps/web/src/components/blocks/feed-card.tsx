@@ -1,11 +1,12 @@
 import { Button } from 'src/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from 'src/components/ui/card';
-import { Heart } from 'lucide-react';
+import { Heart, MessageCircle } from 'lucide-react';
 import { useFollowings, useUser } from 'src/lib/react-query';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { Link } from '@tanstack/react-router';
 import { FeedItem, PostReaction } from '@sound-connect/common/types/models';
 import StatusAvatar from '@/web/components/small/status-avatar';
+import { useChatWindows } from '@/web/components/chat/chat-window-manager';
 
 type Props = {
     item: FeedItem;
@@ -29,8 +30,10 @@ const renderLikes = (reactions: PostReaction[]) => {
 const FeedCard = ({ item: { post, user, reactions } }: Props) => {
     const { data: currentUser } = useUser();
     const { data: followings } = useFollowings(currentUser);
+    const { openChatWindow } = useChatWindows();
 
     const canFollow = currentUser?.id !== post.userId && !followings.some((following) => following.id === post.userId);
+    const canMessage = currentUser?.id !== post.userId; // Can message if not own post
 
     if (!user) return null;
 
@@ -64,6 +67,17 @@ const FeedCard = ({ item: { post, user, reactions } }: Props) => {
                     <Button variant="ghost" size="sm" className="group p-0 hover:bg-transparent hover:text-red-500 [&_svg]:size-6">
                         <Heart className="group-hover:fill-red-500" />
                     </Button>
+                    {canMessage && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openChatWindow(user)}
+                            className="group p-0 hover:bg-transparent hover:text-blue-500 [&_svg]:size-6"
+                            title={`Message ${user.name}`}
+                        >
+                            <MessageCircle className="group-hover:fill-blue-500" />
+                        </Button>
+                    )}
                 </div>
                 <div className="text-sm font-semibold">{renderLikes(reactions)}</div>
             </CardFooter>
