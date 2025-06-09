@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { ChatWindow } from './chat-window';
 import { UserDTO } from '@sound-connect/common/types/models';
+import { APP_NAME_NORMALIZED } from '@sound-connect/common/constants';
 
 type ChatWindowState = {
     user: UserDTO;
@@ -27,7 +28,7 @@ export const useChatWindows = () => {
 
 type Props = React.PropsWithChildren;
 
-const STORAGE_KEY = 'chat-windows-state';
+const STORAGE_KEY = `${APP_NAME_NORMALIZED}:chat-windows-state`;
 
 type StoredChatState = {
     user: UserDTO;
