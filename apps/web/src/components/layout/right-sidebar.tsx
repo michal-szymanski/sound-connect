@@ -78,7 +78,6 @@ const RightSidebar = () => {
                                     variant="ghost"
                                     onClick={() => handleContactClick(user)}
                                     className="h-auto w-full justify-start gap-2 rounded-md p-2 hover:bg-gray-200 dark:hover:bg-gray-700"
-                                    disabled={isAnimating}
                                 >
                                     <StatusAvatar user={user} />
                                     <span className="text-sm font-medium">{user.name}</span>
