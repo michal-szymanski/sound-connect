@@ -91,28 +91,29 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
 
     if (isMinimized) {
         return (
-            <div className="group fixed z-50 flex h-12 w-12 items-center justify-center" style={{ right: '20px', bottom: `${bottomOffset}px` }}>
-                <Button
-                    variant="outline"
-                    size="sm"
+            <div
+                className="animate-in fade-in zoom-in group fixed right-5 z-50 flex h-12 w-12 items-center justify-center duration-300"
+                style={{ bottom: `${bottomOffset}px` }}
+            >
+                <div
                     onClick={onToggleMinimize}
-                    className="relative h-12 w-12 rounded-full border-2 border-white p-0 shadow-lg hover:shadow-xl"
+                    className="relative h-12 w-12 transform cursor-pointer rounded-full shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
                     title={`Chat with ${user.name}`}
                 >
-                    <StatusAvatar user={user} />
-                    <Button
-                        variant="ghost"
-                        size="sm"
+                    <div className="relative h-full w-full overflow-hidden rounded-full">
+                        <StatusAvatar user={user} className="h-full w-full" />
+                    </div>
+                    <div
                         onClick={(e) => {
                             e.stopPropagation();
                             onClose();
                         }}
-                        className="absolute -right-1 -top-1 h-5 w-5 rounded-full bg-gray-800 p-0 text-white opacity-0 transition-opacity duration-200 hover:bg-black group-hover:opacity-100"
+                        className="group/close absolute -right-1 -top-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-800 opacity-0 hover:bg-gray-200 group-hover:opacity-100"
                         title="Close chat"
                     >
-                        <X className="h-3 w-3" />
-                    </Button>
-                </Button>
+                        <X className="h-3 w-3 text-white group-hover/close:text-gray-800" />
+                    </div>
+                </div>
             </div>
         );
     }
