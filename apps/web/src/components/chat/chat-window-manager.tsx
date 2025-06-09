@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { ChatWindow } from './chat-window';
 import { UserDTO } from '@sound-connect/common/types/models';
 
@@ -26,6 +26,47 @@ export const useChatWindows = () => {
 };
 
 type Props = React.PropsWithChildren;
+
+const STORAGE_KEY = 'chat-windows-state';
+
+type StoredChatState = {
+    user: UserDTO;
+    isMinimized: boolean;
+};
+
+const loadFromStorage = (): Map<string, ChatWindowState> => {
+    try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (!stored) return new Map();
+
+        const parsed: StoredChatState[] = JSON.parse(stored);
+        const result = new Map<string, ChatWindowState>();
+
+        parsed.forEach((state) => {
+            result.set(state.user.id, {
+                user: state.user,
+                isMinimized: state.isMinimized
+            });
+        });
+
+        return result;
+    } catch (error) {
+        console.error('Failed to load chat windows from localStorage:', error);
+        return new Map();
+    }
+};
+
+const saveToStorage = (windows: Map<string, ChatWindowState>) => {
+    try {
+        const array: StoredChatState[] = Array.from(windows.entries()).map(([userId, state]) => ({
+            user: state.user,
+            isMinimized: state.isMinimized
+        }));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(array));
+    } catch (error) {
+        console.error('Failed to save chat windows to localStorage:', error);
+    }
+};
 
 export const ChatWindowProvider = ({ children }: Props) => {
     const [openWindows, setOpenWindows] = useState<Map<string, ChatWindowState>>(new Map());
@@ -72,6 +113,15 @@ export const ChatWindowProvider = ({ children }: Props) => {
     };
 
     const windowsArray = Array.from(openWindows.entries());
+
+    useEffect(() => {
+        const storedWindows = loadFromStorage();
+        setOpenWindows(storedWindows);
+    }, []);
+
+    useEffect(() => {
+        saveToStorage(openWindows);
+    }, [openWindows]);
 
     return (
         <Context.Provider value={contextValue}>
