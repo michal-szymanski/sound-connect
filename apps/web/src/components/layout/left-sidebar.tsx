@@ -29,7 +29,7 @@ type Item = {
 const LeftSidebar = () => {
     const { data: user } = useUser();
     const [showNotifications, setShowNotification] = useState(false);
-    const { followRequestNotifications } = useWebSocket();
+    const { followRequestNotifications, followRequestAcceptedNotifications } = useWebSocket();
     const { isSidebarVisible } = useSelector((state: RootState) => state.ui);
 
     const getItems = (): Item[] => {
@@ -64,7 +64,9 @@ const LeftSidebar = () => {
         ];
     };
 
-    const unseenNotifications = Array.from(followRequestNotifications.values()).filter((n) => !n.seen);
+    const unseenFollowRequestNotifications = Array.from(followRequestNotifications.values()).filter((n) => !n.seen);
+    const unseenFollowRequestAcceptedNotifications = Array.from(followRequestAcceptedNotifications.values()).filter((n) => !n.seen);
+    const totalUnseenNotifications = unseenFollowRequestNotifications.length + unseenFollowRequestAcceptedNotifications.length;
 
     const renderMenuButton = (item: Item) => {
         if (item.onClick) {
@@ -72,9 +74,9 @@ const LeftSidebar = () => {
                 <SidebarMenuButton onClick={item.onClick} className="flex justify-center xl:justify-start [&>svg]:size-6">
                     <item.icon />
                     <span className="hidden xl:inline">{item.title}</span>
-                    {unseenNotifications.length > 0 && item.title === 'Notifications' && (
+                    {totalUnseenNotifications > 0 && item.title === 'Notifications' && (
                         <Badge variant="destructive" className="ml-auto">
-                            {unseenNotifications.length}
+                            {totalUnseenNotifications}
                         </Badge>
                     )}
                 </SidebarMenuButton>
