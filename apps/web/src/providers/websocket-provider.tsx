@@ -2,6 +2,7 @@ import { useEnvs, useUser } from '@/web/lib/react-query';
 import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
 import {
     FollowRequestNotificationItem,
+    FollowRequestAcceptedNotificationItem,
     OnlineStatus,
     webSocketMessageSchema,
     ChatMessage,
@@ -30,6 +31,7 @@ type WebSocketContext = {
 
     statuses: Map<string, OnlineStatus>;
     followRequestNotifications: Map<string, FollowRequestNotificationItem>;
+    followRequestAcceptedNotifications: Map<string, FollowRequestAcceptedNotificationItem>;
 };
 
 const Context = createContext<WebSocketContext | undefined>(undefined);
@@ -47,6 +49,7 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
 
     const [statuses, setStatuses] = useState<Map<string, OnlineStatus>>(new Map());
     const [followRequestNotifications, setFollowRequestNotifications] = useState<Map<string, FollowRequestNotificationItem>>(new Map());
+    const [followRequestAcceptedNotifications, setFollowRequestAcceptedNotifications] = useState<Map<string, FollowRequestAcceptedNotificationItem>>(new Map());
 
     const queryClient = useQueryClient();
     const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
@@ -194,6 +197,20 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
 
                             queryClient.invalidateQueries({ queryKey: ['followings'] });
                         }
+
+                        if (message.kind === 'follow-request-accepted') {
+                            setFollowRequestAcceptedNotifications(() => {
+                                const newNotifications = new Map();
+                                message.items.forEach((item) => {
+                                    newNotifications.set(item.id, item);
+                                });
+                                return newNotifications;
+                            });
+
+                            queryClient.invalidateQueries({ queryKey: ['followings'] });
+                            queryClient.invalidateQueries({ queryKey: ['followers'] });
+                            queryClient.invalidateQueries({ queryKey: ['follow-request-status'] });
+                        }
                         break;
                     }
 
@@ -237,7 +254,8 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
         roomMessages,
         status,
         statuses,
-        followRequestNotifications
+        followRequestNotifications,
+        followRequestAcceptedNotifications
     };
 
     return <Context.Provider value={contextValue}>{children}</Context.Provider>;

@@ -86,11 +86,23 @@ usersRoutes.post('/users/accept-follow-request', async (c) => {
         return c.json('Follow request is required to be sent first', 400);
     }
 
-    await followUser(notification.userId, user.id);
+    await followUser(user.id, notification.userId);
     const followedUsersByCurrentUser = await getFollowedUsers(user.id);
 
     if (followedUsersByCurrentUser.some((followed) => followed.id === userId)) {
         await stub.removeNotification(notification);
+
+        const requesterStubId = c.env.UserDO.idFromName(`user:${userId}`);
+        const requesterStub = c.env.UserDO.get(requesterStubId);
+
+        const acceptedNotification = {
+            id: crypto.randomUUID(),
+            date: new Date().toISOString(),
+            seen: false,
+            userId: user.id
+        };
+
+        await requesterStub.sendFollowRequestAcceptedNotification(acceptedNotification);
     } else {
         await stub.updateFollowRequestNotifications([{ ...notification, accepted: true }]);
     }
@@ -139,6 +151,29 @@ usersRoutes.get('/users/mutual-followers/:userId', async (c) => {
     return c.json(usersResults);
 });
 
+usersRoutes.get('/users/follow-request-status/:userId', async (c) => {
+    const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const followedUsers = await getFollowedUsers(user.id);
+    if (followedUsers.some((followed) => followed.id === userId)) {
+        return c.json({ status: 'following' });
+    }
+
+    const id = c.env.UserDO.idFromName(`user:${userId}`);
+    const stub = c.env.UserDO.get(id);
+    const notifications = await stub.getFollowRequestNotifications();
+
+    const pendingRequest = notifications.find((n) => n.userId === user.id && !n.accepted);
+
+    if (pendingRequest) {
+        return c.json({ status: 'pending' });
+    }
+
+    return c.json({ status: 'none' });
+});
+
 usersRoutes.get('/users/:userId', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
 
@@ -149,6 +184,51 @@ usersRoutes.get('/users/:userId', async (c) => {
         console.error(`Error fetching user with ID ${userId}:`, error);
         return c.json(`User with ID ${userId} not found`, 404);
     }
+});
+
+usersRoutes.post('/users/delete-follow-request-accepted-notification', async (c) => {
+    const body = await c.req.json();
+    const { notification } = z
+        .object({
+            notification: z.object({
+                id: z.string().uuid(),
+                date: z.string(),
+                seen: z.boolean(),
+                userId: z.string()
+            })
+        })
+        .parse(body);
+
+    const user = c.get('user');
+    const id = c.env.UserDO.idFromName(`user:${user.id}`);
+    const stub = c.env.UserDO.get(id);
+    await stub.removeFollowRequestAcceptedNotification(notification);
+
+    return c.json('ok');
+});
+
+usersRoutes.post('/users/update-follow-request-accepted-notifications', async (c) => {
+    const body = await c.req.json();
+    const { notifications } = z
+        .object({
+            notifications: z.array(
+                z.object({
+                    id: z.string().uuid(),
+                    date: z.string(),
+                    seen: z.boolean(),
+                    userId: z.string()
+                })
+            )
+        })
+        .parse(body);
+
+    const user = c.get('user');
+    const id = c.env.UserDO.idFromName(`user:${user.id}`);
+    const stub = c.env.UserDO.get(id);
+
+    await stub.updateFollowRequestAcceptedNotifications(notifications);
+
+    return c.json('ok');
 });
 
 export { usersRoutes };

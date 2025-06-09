@@ -54,7 +54,7 @@ export const unsubscribeMessageSchema = z.object({
 
 export type UnsubscribeMessage = z.infer<typeof unsubscribeMessageSchema>;
 
-export const notificationKind = z.enum(['follow-request', 'reaction']);
+export const notificationKind = z.enum(['follow-request', 'follow-request-accepted', 'reaction']);
 
 export type NotificationKind = z.infer<typeof notificationKind>;
 
@@ -68,6 +68,15 @@ export const followRequestNotificationItem = z.object({
 
 export type FollowRequestNotificationItem = z.infer<typeof followRequestNotificationItem>;
 
+export const followRequestAcceptedNotificationItem = z.object({
+    id: z.string().uuid(),
+    date: z.string(),
+    seen: z.boolean(),
+    userId: z.string() // The user who accepted your follow request
+});
+
+export type FollowRequestAcceptedNotificationItem = z.infer<typeof followRequestAcceptedNotificationItem>;
+
 export const followRequestNotification = z.object({
     type: z.literal(webSocketMessageTypes.Enum.notification),
     kind: z.literal(notificationKind.Enum['follow-request']),
@@ -75,6 +84,14 @@ export const followRequestNotification = z.object({
 });
 
 export type FollowRequestNotification = z.infer<typeof followRequestNotification>;
+
+export const followRequestAcceptedNotification = z.object({
+    type: z.literal(webSocketMessageTypes.Enum.notification),
+    kind: z.literal(notificationKind.Enum['follow-request-accepted']),
+    items: z.array(followRequestAcceptedNotificationItem)
+});
+
+export type FollowRequestAcceptedNotification = z.infer<typeof followRequestAcceptedNotification>;
 
 export const reactionNotificationItem = z.object({ id: z.string().uuid(), date: z.string(), seen: z.boolean(), userId: z.string(), postId: z.string() });
 
@@ -88,7 +105,7 @@ export const reactionNotification = z.object({
 
 export type ReactionNotification = z.infer<typeof reactionNotification>;
 
-export const notificationMessageSchema = z.discriminatedUnion('kind', [followRequestNotification, reactionNotification]);
+export const notificationMessageSchema = z.discriminatedUnion('kind', [followRequestNotification, followRequestAcceptedNotification, reactionNotification]);
 
 export type NotificationMessage = z.infer<typeof notificationMessageSchema>;
 

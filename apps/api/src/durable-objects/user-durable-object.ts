@@ -3,6 +3,8 @@ import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
 import {
     FollowRequestNotification,
     FollowRequestNotificationItem,
+    FollowRequestAcceptedNotification,
+    FollowRequestAcceptedNotificationItem,
     NewChatMessage,
     OnlineStatusMessage,
     SubscribeMessage,
@@ -261,5 +263,58 @@ export class UserDurableObject extends DurableObject {
 
         await this.setFollowRequestNotifications(existingNotifications);
         await this.broadcastNotifications(existingNotifications);
+    }
+
+    async sendFollowRequestAcceptedNotification(newNotification: FollowRequestAcceptedNotificationItem) {
+        const notifications = await this.addFollowRequestAcceptedNotification(newNotification);
+        await this.broadcastFollowRequestAcceptedNotifications(notifications);
+    }
+
+    private async addFollowRequestAcceptedNotification(newNotification: FollowRequestAcceptedNotificationItem) {
+        const existingNotifications = await this.getFollowRequestAcceptedNotifications();
+        const notifications = [...existingNotifications, newNotification];
+        await this.setFollowRequestAcceptedNotifications(notifications);
+        return notifications;
+    }
+
+    private async broadcastFollowRequestAcceptedNotifications(notifications: FollowRequestAcceptedNotificationItem[]) {
+        if (!this.websocket) return;
+
+        const message: FollowRequestAcceptedNotification = {
+            type: 'notification',
+            kind: 'follow-request-accepted',
+            items: notifications
+        };
+
+        this.websocket.send(JSON.stringify(message));
+    }
+
+    async getFollowRequestAcceptedNotifications() {
+        return (await this.storage.get<FollowRequestAcceptedNotificationItem[]>('notifications:follow-request-accepted')) || [];
+    }
+
+    private async setFollowRequestAcceptedNotifications(notifications: FollowRequestAcceptedNotificationItem[]) {
+        await this.storage.put('notifications:follow-request-accepted', notifications);
+    }
+
+    async removeFollowRequestAcceptedNotification(notification: FollowRequestAcceptedNotificationItem) {
+        const notifications = await this.getFollowRequestAcceptedNotifications();
+        const filtered = notifications.filter((n) => n.id !== notification.id);
+        await this.setFollowRequestAcceptedNotifications(filtered);
+        await this.broadcastFollowRequestAcceptedNotifications(filtered);
+    }
+
+    async updateFollowRequestAcceptedNotifications(updatedNotifications: FollowRequestAcceptedNotificationItem[]) {
+        const existingNotifications = await this.getFollowRequestAcceptedNotifications();
+
+        for (const updated of updatedNotifications) {
+            const index = existingNotifications.findIndex((n) => n.id === updated.id);
+            if (index !== -1) {
+                existingNotifications[index] = updated;
+            }
+        }
+
+        await this.setFollowRequestAcceptedNotifications(existingNotifications);
+        await this.broadcastFollowRequestAcceptedNotifications(existingNotifications);
     }
 }

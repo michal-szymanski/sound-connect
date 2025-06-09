@@ -1,6 +1,6 @@
 import { QueryClient, queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { User, UserDTO } from '@sound-connect/common/types/models';
-import { getFeed, getFollowers, getFollowings, getReactions, search } from '@/web/server-functions/models';
+import { getFeed, getFollowers, getFollowings, getReactions, search, getFollowRequestStatus } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
 import { getEnvs } from '@/web/server-functions/utils';
 
@@ -136,3 +136,21 @@ export const searchQuery = (query: string) => {
 };
 
 export const useSearch = (query: string) => useQuery(searchQuery(query));
+
+export const followRequestStatusQuery = (userId: string) =>
+    queryOptions({
+        queryKey: ['follow-request-status', userId],
+        queryFn: async () => {
+            const result = await getFollowRequestStatus({ data: { userId } });
+            if (!result.success) {
+                throw new Error('Failed to get follow request status');
+            }
+            return result.body;
+        },
+        staleTime: 1000 * 30, // 30 seconds
+        gcTime: 1000 * 60 * 5 // 5 minutes
+    });
+
+export const useFollowRequestStatus = (userId: string) => {
+    return useQuery(followRequestStatusQuery(userId));
+};

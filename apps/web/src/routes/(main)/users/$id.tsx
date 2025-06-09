@@ -5,7 +5,9 @@ import { UserDTO, userDTOSchema, postSchema } from '@sound-connect/common/types/
 import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
 import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';
 import z from 'zod';
-import { useFollowers, useFollowings } from '@/web/lib/react-query';
+import { useFollowers, useFollowings, useFollowRequestStatus } from '@/web/lib/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
@@ -58,35 +60,76 @@ function RouteComponent() {
     const { currentUser, user, posts } = loaderSchema.parse(Route.useLoaderData());
     const { data: followings } = useFollowings(user);
     const { data: followers } = useFollowers(user);
+    const { data: currentUserFollowings } = useFollowings(currentUser);
+    const { data: followRequestStatus } = useFollowRequestStatus(user.id);
+    const queryClient = useQueryClient();
     const router = useRouter();
+    const [optimisticStatus, setOptimisticStatus] = useState<'pending' | 'following' | null>(null);
+
+    useEffect(() => {
+        if (followRequestStatus?.status === 'following') {
+            setOptimisticStatus('following');
+        } else if (followRequestStatus?.status === 'pending') {
+            setOptimisticStatus(null);
+        } else if (followRequestStatus?.status === 'none') {
+            setOptimisticStatus(null);
+        }
+    }, [followRequestStatus?.status]);
+
+    useEffect(() => {
+        const isCurrentUserFollowing = currentUserFollowings?.some((following) => following.id === user.id);
+        if (isCurrentUserFollowing) {
+            setOptimisticStatus(null);
+        }
+    }, [currentUserFollowings, user.id]);
 
     const handleFollow = async () => {
-        const result = await sendFollowRequest({ data: { userId: user.id } });
+        setOptimisticStatus('pending');
 
-        if (!result.success) {
-            return;
+        try {
+            const result = await sendFollowRequest({ data: { userId: user.id } });
+
+            if (!result.success) {
+                setOptimisticStatus(null);
+                return;
+            }
+
+            queryClient.invalidateQueries({ queryKey: ['follow-request-status', user.id] });
+            router.invalidate();
+        } catch (error) {
+            setOptimisticStatus(null);
         }
-
-        router.invalidate();
     };
 
     const handleUnfollow = async () => {
-        const result = await unfollowUser({ data: { userId: user.id } });
+        setOptimisticStatus(null);
 
-        if (!result.success) {
-            return;
-        }
+        try {
+            const result = await unfollowUser({ data: { userId: user.id } });
 
-        router.invalidate();
+            if (!result.success) {
+                return;
+            }
+
+            router.invalidate();
+        } catch (error) {}
     };
 
     const renderFollowButton = () => {
-        if (currentUser.id === user.id || !followings) return null;
+        if (currentUser.id === user.id || !currentUserFollowings) return null;
 
-        const isCurrentUserFollowing = followings.some((following) => following.id === currentUser.id);
+        const isCurrentUserFollowing = currentUserFollowings.some((following) => following.id === user.id);
 
-        if (isCurrentUserFollowing) {
+        if (isCurrentUserFollowing || optimisticStatus === 'following') {
             return <Button onClick={handleUnfollow}>Following</Button>;
+        }
+
+        if (followRequestStatus?.status === 'pending' || optimisticStatus === 'pending') {
+            return (
+                <Button disabled variant="outline">
+                    Requested
+                </Button>
+            );
         }
 
         return <Button onClick={handleFollow}>Follow</Button>;

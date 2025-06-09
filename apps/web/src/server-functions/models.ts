@@ -3,6 +3,7 @@ import { getSession } from '@/web/server-functions/auth';
 import { errorHandler, getSessionCookie } from '@/web/server-functions/helpers';
 import {
     FollowRequestNotificationItem,
+    FollowRequestAcceptedNotificationItem,
     userDTOSchema,
     postReactionSchema,
     postSchema,
@@ -363,4 +364,64 @@ export const search = createServerFn()
             console.error(error);
             return { success: false, body: null } as const;
         }
+    });
+
+export const getFollowRequestStatus = createServerFn({ method: 'GET' })
+    .validator((data: { userId: string }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/users/follow-request-status/${data.userId}`, {
+            method: 'GET',
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        const result = (await response.json()) as { status: 'following' | 'pending' | 'none' };
+        return { success: true, body: result } as const;
+    });
+
+export const deleteFollowRequestAcceptedNotification = createServerFn({ method: 'POST' })
+    .validator((data: { notification: FollowRequestAcceptedNotificationItem }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/users/delete-follow-request-accepted-notification`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
+            body: JSON.stringify(data),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
+    });
+
+export const updateFollowRequestAcceptedNotifications = createServerFn({ method: 'POST' })
+    .validator((data: { notifications: FollowRequestAcceptedNotificationItem[] }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/users/update-follow-request-accepted-notifications`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
+            body: JSON.stringify(data),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
     });
