@@ -4,6 +4,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import * as schema from '@/api/db/schema';
 import { env } from 'cloudflare:workers';
 import { db } from '@/api/db';
+import { APP_NAME_NORMALIZED } from '@sound-connect/common/constants';
 
 export const auth = betterAuth({
     baseURL: env.API_URL,
@@ -22,7 +23,7 @@ export const auth = betterAuth({
             secure: true,
             partitioned: true // New browser standards will mandate this for foreign cookies
         },
-        cookiePrefix: 'sound-connect'
+        cookiePrefix: APP_NAME_NORMALIZED
     },
     session: {
         cookieCache: {

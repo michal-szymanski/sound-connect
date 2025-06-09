@@ -1,12 +1,13 @@
+import { APP_NAME_NORMALIZED } from '@sound-connect/common/constants';
 import { authErrorSchema, sessionSchema } from '@sound-connect/common/types/auth';
 import { userSchema } from '@sound-connect/common/types/models';
 import { getCookie, setHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 
 const SECURE_PREFIX = '__Secure-';
-const SESSION_TOKEN_COOKIE_NAME = 'sound-connect.session_token';
+const SESSION_TOKEN_COOKIE_NAME = `${APP_NAME_NORMALIZED}.session_token`;
 const SECURE_SESSION_TOKEN_COOKIE_NAME = `${SECURE_PREFIX}${SESSION_TOKEN_COOKIE_NAME}`;
-const SESSION_DATA_COOKIE_NAME = 'sound-connect.session_data';
+const SESSION_DATA_COOKIE_NAME = `${APP_NAME_NORMALIZED}.session_data`;
 const SECURE_SESSION_DATA_COOKIE_NAME = `${SECURE_PREFIX}${SESSION_DATA_COOKIE_NAME}`;
 
 export const errorHandler = async (response: Response) => {

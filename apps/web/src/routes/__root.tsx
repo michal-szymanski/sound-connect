@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from '@tanstack/react-router';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
@@ -6,6 +6,7 @@ import globalsCss from '@/web/styles/globals.css?url';
 import type { QueryClient } from '@tanstack/react-query';
 import { getSession } from '@/web/server-functions/auth';
 import { Toaster } from '@/web/components/ui/sonner';
+import { APP_NAME } from '@sound-connect/common/constants';
 
 export const Route = createRootRouteWithContext<{
     queryClient: QueryClient;
@@ -20,7 +21,7 @@ export const Route = createRootRouteWithContext<{
                 content: 'width=device-width, initial-scale=1'
             },
             {
-                title: 'TanStack Start Starter'
+                title: APP_NAME
             }
         ],
         links: [
