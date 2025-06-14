@@ -1,15 +1,7 @@
 import { Button } from '@/web/components/ui/button';
 import { SheetContent, SheetHeader, SheetTitle, Sheet, SheetDescription } from '@/web/components/ui/sheet';
 import { useWebSocket } from '@/web/providers/websocket-provider';
-import {
-    acceptFollowRequest,
-    deleteNotification,
-    deleteFollowRequestAcceptedNotification,
-    getUser,
-    sendFollowRequest,
-    updateNotifications,
-    updateFollowRequestAcceptedNotifications
-} from '@/web/server-functions/models';
+import { deleteNotification, getUser, sendFollowRequest, updateNotification } from '@/web/server-functions/models';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { formatDistanceToNowStrict, parseISO } from 'date-fns';
@@ -64,20 +56,26 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
 
         const unseenFollowRequestNotifications = Array.from(followRequestNotifications.values()).filter((n) => !n.seen);
         if (unseenFollowRequestNotifications.length > 0) {
-            updateNotifications({
-                data: {
-                    notifications: unseenFollowRequestNotifications.map((n) => ({ ...n, seen: true }))
-                }
-            });
+            for (const notification of unseenFollowRequestNotifications) {
+                updateNotification({
+                    data: {
+                        notificationId: notification.id,
+                        notification: { ...notification, seen: true }
+                    }
+                });
+            }
         }
 
         const unseenAcceptedNotifications = Array.from(followRequestAcceptedNotifications.values()).filter((n) => !n.seen);
         if (unseenAcceptedNotifications.length > 0) {
-            updateFollowRequestAcceptedNotifications({
-                data: {
-                    notifications: unseenAcceptedNotifications.map((n) => ({ ...n, seen: true }))
-                }
-            });
+            for (const notification of unseenAcceptedNotifications) {
+                updateNotification({
+                    data: {
+                        notificationId: notification.id,
+                        notification: { ...notification, seen: true }
+                    }
+                });
+            }
         }
     }, [open, followRequestNotifications, followRequestAcceptedNotifications]);
 
@@ -127,7 +125,12 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                             size="sm"
                             onClick={async (e) => {
                                 e.stopPropagation();
-                                await acceptFollowRequest({ data: { notification } });
+                                await updateNotification({
+                                    data: {
+                                        notificationId: notification.id,
+                                        notification: { ...notification, accepted: true }
+                                    }
+                                });
                                 await queryClient.invalidateQueries({ queryKey: ['followers', 'mutual-followers', 'follow-request-status'] });
                             }}
                         >
@@ -139,7 +142,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                         variant="secondary"
                         onClick={async (e) => {
                             e.stopPropagation();
-                            await deleteNotification({ data: { notification } });
+                            await deleteNotification({ data: { notificationId: notification.id } });
                             await queryClient.invalidateQueries({ queryKey: ['follow-request-status', notification.from] });
                         }}
                     >
@@ -181,7 +184,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                         variant="secondary"
                         onClick={async (e) => {
                             e.stopPropagation();
-                            await deleteFollowRequestAcceptedNotification({ data: { notification } });
+                            await deleteNotification({ data: { notificationId: notification.id } });
                         }}
                     >
                         Delete

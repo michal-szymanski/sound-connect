@@ -7,96 +7,75 @@ import crypto from 'crypto';
 
 const notificationsRoutes = new Hono<HonoContext>();
 
-notificationsRoutes.post('/notifications/accept-follow-request', async (c) => {
+notificationsRoutes.put('/notifications/:notificationId', async (c) => {
+    const { notificationId } = z.object({ notificationId: z.string() }).parse(c.req.param());
     const body = await c.req.json();
-    const {
-        notification: { from }
-    } = z.object({ notification: followRequestNotificationItem }).parse(body);
 
     const user = c.get('user');
-
     const id = c.env.UserDO.idFromName(`user:${user.id}`);
     const stub = c.env.UserDO.get(id);
 
-    const notifications = await stub.getFollowRequestNotifications();
-    const notification = notifications.find((n) => n.from === from && !n.accepted);
+    const existingNotificationData = await stub.getNotification(notificationId);
 
-    if (!notification) {
-        return c.json('Follow request is required to be sent first', 400);
+    if (!existingNotificationData) {
+        return c.json('Notification not found', 404);
     }
 
-    await followUser(user.id, notification.from);
+    const { type, notification: existingNotification } = existingNotificationData;
 
-    const requesterFollowedUsers = await getFollowedUsers(from);
-    const isMutualFollowing = requesterFollowedUsers.some((followed) => followed.id === user.id);
+    if (type === 'follow-request') {
+        const updatedNotification = followRequestNotificationItem.parse(body);
+        const existingFollowRequest = existingNotification as any;
 
-    const requesterStubId = c.env.UserDO.idFromName(`user:${from}`);
-    const requesterStub = c.env.UserDO.get(requesterStubId);
+        const wasAccepted = existingFollowRequest.accepted;
+        const isBeingAccepted = updatedNotification.accepted && !wasAccepted;
 
-    const acceptedNotification = followRequestAcceptedNotificationItem.parse({
-        id: crypto.randomUUID(),
-        date: new Date().toISOString(),
-        seen: false,
-        from: user.id,
-        to: from
-    });
+        if (isBeingAccepted) {
+            await followUser(user.id, updatedNotification.from);
 
-    await requesterStub.sendFollowRequestAcceptedNotification(acceptedNotification);
+            const requesterFollowedUsers = await getFollowedUsers(updatedNotification.from);
+            const isMutualFollowing = requesterFollowedUsers.some((followed) => followed.id === user.id);
 
-    if (isMutualFollowing) {
-        await stub.removeNotification(notification);
-    } else {
-        await stub.updateFollowRequestNotifications([{ ...notification, accepted: true }]);
+            const requesterStubId = c.env.UserDO.idFromName(`user:${updatedNotification.from}`);
+            const requesterStub = c.env.UserDO.get(requesterStubId);
+
+            const acceptedNotification = followRequestAcceptedNotificationItem.parse({
+                id: crypto.randomUUID(),
+                date: new Date().toISOString(),
+                seen: false,
+                from: user.id,
+                to: updatedNotification.from
+            });
+
+            await requesterStub.sendFollowRequestAcceptedNotification(acceptedNotification);
+
+            if (isMutualFollowing) {
+                await stub.deleteNotification(notificationId);
+                return c.json('ok');
+            }
+        }
+
+        await stub.updateNotification(notificationId, updatedNotification);
+    } else if (type === 'follow-request-accepted') {
+        const updatedNotification = followRequestAcceptedNotificationItem.parse(body);
+        await stub.updateNotification(notificationId, updatedNotification);
     }
 
     return c.json('ok');
 });
 
-notificationsRoutes.post('/notifications/delete-follow-request', async (c) => {
-    const body = await c.req.json();
-    const { notification } = z.object({ notification: followRequestNotificationItem }).parse(body);
-
-    const user = c.get('user');
-    const id = c.env.UserDO.idFromName(`user:${user.id}`);
-    const stub = c.env.UserDO.get(id);
-    await stub.removeNotification(notification);
-
-    return c.json('ok');
-});
-
-notificationsRoutes.post('/notifications/update-follow-request', async (c) => {
-    const body = await c.req.json();
-    const { notifications } = z.object({ notifications: z.array(followRequestNotificationItem) }).parse(body);
-
-    const user = c.get('user');
-    const id = c.env.UserDO.idFromName(`user:${user.id}`);
-    const stub = c.env.UserDO.get(id);
-    await stub.updateFollowRequestNotifications(notifications);
-
-    return c.json('ok');
-});
-
-notificationsRoutes.post('/notifications/delete-follow-request-accepted', async (c) => {
-    const body = await c.req.json();
-    const { notification } = z.object({ notification: followRequestAcceptedNotificationItem }).parse(body);
-
-    const user = c.get('user');
-    const id = c.env.UserDO.idFromName(`user:${user.id}`);
-    const stub = c.env.UserDO.get(id);
-    await stub.removeFollowRequestAcceptedNotification(notification);
-
-    return c.json('ok');
-});
-
-notificationsRoutes.post('/notifications/update-follow-request-accepted', async (c) => {
-    const body = await c.req.json();
-    const { notifications } = z.object({ notifications: z.array(followRequestAcceptedNotificationItem) }).parse(body);
+notificationsRoutes.delete('/notifications/:notificationId', async (c) => {
+    const { notificationId } = z.object({ notificationId: z.string() }).parse(c.req.param());
 
     const user = c.get('user');
     const id = c.env.UserDO.idFromName(`user:${user.id}`);
     const stub = c.env.UserDO.get(id);
 
-    await stub.updateFollowRequestAcceptedNotifications(notifications);
+    const success = await stub.deleteNotification(notificationId);
+
+    if (!success) {
+        return c.json('Notification not found', 404);
+    }
 
     return c.json('ok');
 });

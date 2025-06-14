@@ -48,7 +48,7 @@ usersRoutes.post('/users/:userId/follow', async (c) => {
     const acceptedNotificationFromTarget = currentUserNotifications.find((n) => n.from === userId && n.accepted);
 
     if (acceptedNotificationFromTarget) {
-        await currentUserStub.removeNotification(acceptedNotificationFromTarget);
+        await currentUserStub.deleteNotification(acceptedNotificationFromTarget.id);
     }
 
     await stub.sendFollowRequestNotification({
