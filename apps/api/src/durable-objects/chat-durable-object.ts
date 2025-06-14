@@ -92,7 +92,6 @@ export class ChatDurableObject extends DurableObject {
         });
 
         await this.storeMessage(message);
-
         await this.broadcastMessage(message);
     }
 
