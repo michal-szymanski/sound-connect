@@ -1,16 +1,16 @@
 import { DurableObject } from 'cloudflare:workers';
 import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
 import {
-    FollowRequestNotification,
     FollowRequestNotificationItem,
-    FollowRequestAcceptedNotification,
     FollowRequestAcceptedNotificationItem,
     NewChatMessage,
-    OnlineStatusMessage,
     SubscribeMessage,
     UnsubscribeMessage,
     WebSocketMessage,
-    webSocketMessageSchema
+    webSocketMessageSchema,
+    followRequestAcceptedNotificationSchema,
+    followRequestNotificationSchema,
+    onlineStatusMessageSchema
 } from '@sound-connect/common/types/models';
 
 import z from 'zod';
@@ -99,7 +99,6 @@ export class UserDurableObject extends DurableObject {
             this.cleanup();
         });
 
-        // Broadcast all notifications after WebSocket is accepted
         await this.broadcastAllNotifications();
     }
 
@@ -205,11 +204,11 @@ export class UserDurableObject extends DurableObject {
             return false;
         }
 
-        const message: OnlineStatusMessage = {
+        const message = onlineStatusMessageSchema.parse({
             type: 'online-status',
             userId,
             status: 'online'
-        };
+        });
 
         this.websocket.send(JSON.stringify(message));
 
@@ -230,11 +229,11 @@ export class UserDurableObject extends DurableObject {
     private async broadcastNotifications(notifications: FollowRequestNotificationItem[]) {
         if (!this.websocket) return;
 
-        const message: FollowRequestNotification = {
+        const message = followRequestNotificationSchema.parse({
             type: 'notification',
             kind: 'follow-request',
             items: notifications
-        };
+        });
 
         this.websocket.send(JSON.stringify(message));
     }
@@ -262,11 +261,11 @@ export class UserDurableObject extends DurableObject {
     private async broadcastFollowRequestAcceptedNotifications(notifications: FollowRequestAcceptedNotificationItem[]) {
         if (!this.websocket) return;
 
-        const message: FollowRequestAcceptedNotification = {
+        const message = followRequestAcceptedNotificationSchema.parse({
             type: 'notification',
             kind: 'follow-request-accepted',
             items: notifications
-        };
+        });
 
         this.websocket.send(JSON.stringify(message));
     }
@@ -297,25 +296,27 @@ export class UserDurableObject extends DurableObject {
     private async broadcastAllNotifications() {
         if (!this.websocket) return;
 
-        // Broadcast follow request notifications
         const followRequestNotifications = await this.getFollowRequestNotifications();
+
         if (followRequestNotifications.length > 0) {
-            const followRequestMessage: FollowRequestNotification = {
+            const followRequestMessage = followRequestNotificationSchema.parse({
                 type: 'notification',
                 kind: 'follow-request',
                 items: followRequestNotifications
-            };
+            });
+
             this.websocket.send(JSON.stringify(followRequestMessage));
         }
 
-        // Broadcast follow request accepted notifications
         const followRequestAcceptedNotifications = await this.getFollowRequestAcceptedNotifications();
+
         if (followRequestAcceptedNotifications.length > 0) {
-            const followRequestAcceptedMessage: FollowRequestAcceptedNotification = {
+            const followRequestAcceptedMessage = followRequestAcceptedNotificationSchema.parse({
                 type: 'notification',
                 kind: 'follow-request-accepted',
                 items: followRequestAcceptedNotifications
-            };
+            });
+
             this.websocket.send(JSON.stringify(followRequestAcceptedMessage));
         }
     }
