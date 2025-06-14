@@ -181,56 +181,15 @@ export const sendFollowRequest = createServerFn({ method: 'POST' })
         return { success: true, body: null } as const;
     });
 
-export const acceptFollowRequest = createServerFn({ method: 'POST' })
-    .validator((data: { notification: FollowRequestNotificationItem }) => data)
+export const deleteNotification = createServerFn()
+    .validator((data: { notificationId: string }) => data)
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/notifications/accept-follow-request`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
-            body: JSON.stringify(data),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            return await errorHandler(response);
-        }
-
-        return { success: true, body: null } as const;
-    });
-
-export const deleteNotification = createServerFn({ method: 'POST' })
-    .validator((data: { notification: FollowRequestNotificationItem }) => data)
-    .handler(async ({ data }) => {
-        const { API, API_URL } = await getBindings();
-        const cookie = getSessionCookie();
-
-        const response = await API.fetch(`${API_URL}/notifications/delete-follow-request`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
-            body: JSON.stringify(data),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            return await errorHandler(response);
-        }
-
-        return { success: true, body: null } as const;
-    });
-
-export const updateNotifications = createServerFn({ method: 'POST' })
-    .validator((data: { notifications: FollowRequestNotificationItem[] }) => data)
-    .handler(async ({ data }) => {
-        const { API, API_URL } = await getBindings();
-        const cookie = getSessionCookie();
-
-        const response = await API.fetch(`${API_URL}/notifications/update-follow-request`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
-            body: JSON.stringify(data),
+        const response = await API.fetch(`${API_URL}/notifications/${data.notificationId}`, {
+            method: 'DELETE',
+            headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
 
@@ -384,36 +343,16 @@ export const getFollowRequestStatus = createServerFn({ method: 'GET' })
         return { success: true, body: result } as const;
     });
 
-export const deleteFollowRequestAcceptedNotification = createServerFn({ method: 'POST' })
-    .validator((data: { notification: FollowRequestAcceptedNotificationItem }) => data)
+export const updateNotification = createServerFn()
+    .validator((data: { notificationId: string; notification: any }) => data)
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/notifications/delete-follow-request-accepted`, {
-            method: 'POST',
+        const response = await API.fetch(`${API_URL}/notifications/${data.notificationId}`, {
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
-            body: JSON.stringify(data),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            return await errorHandler(response);
-        }
-
-        return { success: true, body: null } as const;
-    });
-
-export const updateFollowRequestAcceptedNotifications = createServerFn({ method: 'POST' })
-    .validator((data: { notifications: FollowRequestAcceptedNotificationItem[] }) => data)
-    .handler(async ({ data }) => {
-        const { API, API_URL } = await getBindings();
-        const cookie = getSessionCookie();
-
-        const response = await API.fetch(`${API_URL}/notifications/update-follow-request-accepted`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
-            body: JSON.stringify(data),
+            body: JSON.stringify(data.notification),
             credentials: 'include'
         });
 

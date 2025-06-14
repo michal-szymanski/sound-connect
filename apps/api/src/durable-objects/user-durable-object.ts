@@ -247,27 +247,6 @@ export class UserDurableObject extends DurableObject {
         await this.storage.put('notifications:follow-request', notifications);
     }
 
-    async removeNotification(notification: FollowRequestNotificationItem) {
-        const notifications = await this.getFollowRequestNotifications();
-        const filtered = notifications.filter((n) => n.id !== notification.id);
-        await this.setFollowRequestNotifications(filtered);
-        await this.broadcastNotifications(filtered);
-    }
-
-    async updateFollowRequestNotifications(updatedNotifications: FollowRequestNotificationItem[]) {
-        const existingNotifications = await this.getFollowRequestNotifications();
-
-        for (const updated of updatedNotifications) {
-            const index = existingNotifications.findIndex((n) => n.id === updated.id);
-            if (index !== -1) {
-                existingNotifications[index] = updated;
-            }
-        }
-
-        await this.setFollowRequestNotifications(existingNotifications);
-        await this.broadcastNotifications(existingNotifications);
-    }
-
     async sendFollowRequestAcceptedNotification(newNotification: FollowRequestAcceptedNotificationItem) {
         const notifications = await this.addFollowRequestAcceptedNotification(newNotification);
         await this.broadcastFollowRequestAcceptedNotifications(notifications);
@@ -298,27 +277,6 @@ export class UserDurableObject extends DurableObject {
 
     private async setFollowRequestAcceptedNotifications(notifications: FollowRequestAcceptedNotificationItem[]) {
         await this.storage.put('notifications:follow-request-accepted', notifications);
-    }
-
-    async removeFollowRequestAcceptedNotification(notification: FollowRequestAcceptedNotificationItem) {
-        const notifications = await this.getFollowRequestAcceptedNotifications();
-        const filtered = notifications.filter((n) => n.id !== notification.id);
-        await this.setFollowRequestAcceptedNotifications(filtered);
-        await this.broadcastFollowRequestAcceptedNotifications(filtered);
-    }
-
-    async updateFollowRequestAcceptedNotifications(updatedNotifications: FollowRequestAcceptedNotificationItem[]) {
-        const existingNotifications = await this.getFollowRequestAcceptedNotifications();
-
-        for (const updated of updatedNotifications) {
-            const index = existingNotifications.findIndex((n) => n.id === updated.id);
-            if (index !== -1) {
-                existingNotifications[index] = updated;
-            }
-        }
-
-        await this.setFollowRequestAcceptedNotifications(existingNotifications);
-        await this.broadcastFollowRequestAcceptedNotifications(existingNotifications);
     }
 
     async getStorageForDebug() {
@@ -360,5 +318,71 @@ export class UserDurableObject extends DurableObject {
             };
             this.websocket.send(JSON.stringify(followRequestAcceptedMessage));
         }
+    }
+
+    async updateNotification(notificationId: string, updatedNotification: any) {
+        const followRequestNotifications = await this.getFollowRequestNotifications();
+        const followRequestNotification = followRequestNotifications.find((n) => n.id === notificationId);
+
+        if (followRequestNotification) {
+            Object.assign(followRequestNotification, updatedNotification);
+            await this.setFollowRequestNotifications(followRequestNotifications);
+            await this.broadcastNotifications(followRequestNotifications);
+            return true;
+        }
+
+        const followRequestAcceptedNotifications = await this.getFollowRequestAcceptedNotifications();
+        const acceptedNotification = followRequestAcceptedNotifications.find((n) => n.id === notificationId);
+
+        if (acceptedNotification) {
+            Object.assign(acceptedNotification, updatedNotification);
+            await this.setFollowRequestAcceptedNotifications(followRequestAcceptedNotifications);
+            await this.broadcastFollowRequestAcceptedNotifications(followRequestAcceptedNotifications);
+            return true;
+        }
+
+        return false;
+    }
+
+    async deleteNotification(notificationId: string) {
+        const followRequestNotifications = await this.getFollowRequestNotifications();
+        const followRequestNotification = followRequestNotifications.find((n) => n.id === notificationId);
+
+        if (followRequestNotification) {
+            const filtered = followRequestNotifications.filter((n) => n.id !== notificationId);
+            await this.setFollowRequestNotifications(filtered);
+            await this.broadcastNotifications(filtered);
+            return true;
+        }
+
+        const followRequestAcceptedNotifications = await this.getFollowRequestAcceptedNotifications();
+        const acceptedNotification = followRequestAcceptedNotifications.find((n) => n.id === notificationId);
+
+        if (acceptedNotification) {
+            const filtered = followRequestAcceptedNotifications.filter((n) => n.id !== notificationId);
+            await this.setFollowRequestAcceptedNotifications(filtered);
+            await this.broadcastFollowRequestAcceptedNotifications(filtered);
+            return true;
+        }
+
+        return false;
+    }
+
+    async getNotification(notificationId: string) {
+        const followRequestNotifications = await this.getFollowRequestNotifications();
+        const followRequestNotification = followRequestNotifications.find((n) => n.id === notificationId);
+
+        if (followRequestNotification) {
+            return { type: 'follow-request', notification: followRequestNotification };
+        }
+
+        const followRequestAcceptedNotifications = await this.getFollowRequestAcceptedNotifications();
+        const acceptedNotification = followRequestAcceptedNotifications.find((n) => n.id === notificationId);
+
+        if (acceptedNotification) {
+            return { type: 'follow-request-accepted', notification: acceptedNotification };
+        }
+
+        return null;
     }
 }
