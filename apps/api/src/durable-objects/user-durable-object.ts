@@ -8,25 +8,11 @@ import {
     UnsubscribeMessage,
     WebSocketMessage,
     webSocketMessageSchema,
-    followRequestAcceptedNotificationSchema,
-    followRequestNotificationSchema,
-    onlineStatusMessageSchema,
-    NotificationMessage
+    onlineStatusMessageSchema
 } from '@sound-connect/common/types/models';
+import { NotificationsService } from './services/notifications-service';
 
 import z from 'zod';
-
-type NotificationItem = FollowRequestNotificationItem | FollowRequestAcceptedNotificationItem;
-
-type StoredNotification =
-    | {
-          kind: 'follow-request';
-          notification: FollowRequestNotificationItem;
-      }
-    | {
-          kind: 'follow-request-accepted';
-          notification: FollowRequestAcceptedNotificationItem;
-      };
 
 export class UserDurableObject extends DurableObject {
     private websocket: WebSocket | null = null;
@@ -34,6 +20,7 @@ export class UserDurableObject extends DurableObject {
     private subscribedRooms: Set<string> = new Set();
     private subscribers: Set<string> = new Set();
     private userId: string | null = null;
+    private notificationsService: NotificationsService;
 
     constructor(
         ctx: DurableObjectState,
@@ -41,6 +28,7 @@ export class UserDurableObject extends DurableObject {
     ) {
         super(ctx, env);
         this.storage = ctx.storage;
+        this.notificationsService = new NotificationsService(this.storage, this.sendMessage.bind(this));
     }
 
     async fetch(request: Request): Promise<Response> {
@@ -112,7 +100,105 @@ export class UserDurableObject extends DurableObject {
             this.cleanup();
         });
 
-        await this.broadcastAllNotifications();
+        await this.broadcastNotifications();
+    }
+
+    async getRoomHistory(roomId: string): Promise<Response> {
+        try {
+            const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
+            const chatStub = this.env.ChatDO.get(chatId);
+            const history = await chatStub.getRoomHistory(roomId);
+
+            return new Response(JSON.stringify(history), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        } catch (error) {
+            console.error(`[UserDO] Error getting room history for ${roomId}:`, error);
+            return new Response('Internal Server Error', { status: 500 });
+        }
+    }
+
+    async sendMessage(message: WebSocketMessage) {
+        if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+            this.websocket.send(JSON.stringify(message));
+        }
+    }
+
+    async alarm() {
+        const subscribers = Array.from(this.subscribers);
+
+        for (const userId of subscribers) {
+            const id = this.env.UserDO.idFromName(`user:${userId}`);
+            const stub = this.env.UserDO.get(id);
+            const success = await stub.notifyOnline(this.userId);
+
+            if (!success) {
+                this.unsubscribe([userId]);
+            }
+        }
+
+        await this.storage.setAlarm(Date.now() + ONLINE_STATUS_INTERVAL);
+    }
+
+    async notifyOnline(userId: string | null) {
+        if (!userId || !this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
+            await this.storage.deleteAlarm();
+            return false;
+        }
+
+        const message = onlineStatusMessageSchema.parse({
+            type: 'online-status',
+            userId,
+            status: 'online'
+        });
+
+        this.websocket.send(JSON.stringify(message));
+
+        return true;
+    }
+
+    async sendFollowRequestNotification(newNotification: FollowRequestNotificationItem) {
+        return this.notificationsService.sendFollowRequestNotification(newNotification);
+    }
+
+    async sendFollowRequestAcceptedNotification(newNotification: FollowRequestAcceptedNotificationItem) {
+        return this.notificationsService.sendFollowRequestAcceptedNotification(newNotification);
+    }
+
+    async getFollowRequestNotifications() {
+        return this.notificationsService.getFollowRequestNotifications();
+    }
+
+    async getFollowRequestAcceptedNotifications() {
+        return this.notificationsService.getFollowRequestAcceptedNotifications();
+    }
+
+    async getStorageForDebug() {
+        try {
+            const list = await this.storage.list();
+
+            const storage = Array.from(list.entries()).map(([key, value]) => ({
+                [key]: value
+            }));
+
+            return storage;
+        } catch (error) {
+            console.error(`[UserDO] Error getting storage debug for ${this.userId}:`, error);
+            throw new Error(`Failed to retrieve storage data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+
+    async updateNotification(notificationId: string, updatedNotification: FollowRequestNotificationItem | FollowRequestAcceptedNotificationItem) {
+        return this.notificationsService.updateNotification(notificationId, updatedNotification);
+    }
+
+    async deleteNotification(notificationId: string) {
+        return this.notificationsService.deleteNotification(notificationId);
+    }
+
+    async getNotification(notificationId: string) {
+        return this.notificationsService.getNotification(notificationId);
     }
 
     private async subscribeToRoom({ roomId }: SubscribeMessage) {
@@ -159,245 +245,21 @@ export class UserDurableObject extends DurableObject {
         }
     }
 
-    async getRoomHistory(roomId: string): Promise<Response> {
-        try {
-            const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
-            const chatStub = this.env.ChatDO.get(chatId);
-            const history = await chatStub.getRoomHistory(roomId);
-
-            return new Response(JSON.stringify(history), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (error) {
-            console.error(`[UserDO] Error getting room history for ${roomId}:`, error);
-            return new Response('Internal Server Error', { status: 500 });
-        }
-    }
-
-    async sendMessage(message: WebSocketMessage) {
-        if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-            this.websocket.send(JSON.stringify(message));
-        }
-    }
-
     private async cleanup() {
         for (const roomId of this.subscribedRooms) {
             await this.unsubscribeFromRoom({ type: 'unsubscribe', roomId });
         }
     }
 
-    async alarm() {
-        const subscribers = Array.from(this.subscribers);
-
-        for (const userId of subscribers) {
-            const id = this.env.UserDO.idFromName(`user:${userId}`);
-            const stub = this.env.UserDO.get(id);
-            const success = await stub.notifyOnline(this.userId);
-
-            if (!success) {
-                this.unsubscribe([userId]);
-            }
-        }
-
-        await this.storage.setAlarm(Date.now() + ONLINE_STATUS_INTERVAL);
-    }
-
-    subscribe(userIds: string[]) {
+    private subscribe(userIds: string[]) {
         userIds.forEach((id) => this.subscribers.add(id));
     }
 
-    unsubscribe(userIds: string[]) {
+    private unsubscribe(userIds: string[]) {
         userIds.forEach((id) => this.subscribers.delete(id));
     }
 
-    async notifyOnline(userId: string | null) {
-        if (!userId || !this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
-            await this.storage.deleteAlarm();
-            return false;
-        }
-
-        const message = onlineStatusMessageSchema.parse({
-            type: 'online-status',
-            userId,
-            status: 'online'
-        });
-
-        this.websocket.send(JSON.stringify(message));
-
-        return true;
-    }
-
-    async sendFollowRequestNotification(newNotification: FollowRequestNotificationItem) {
-        await this.addNotification('follow-request', newNotification);
-        const followRequestNotifications = await this.getNotificationsByKind('follow-request');
-        const message = followRequestNotificationSchema.parse({
-            type: 'notification',
-            kind: 'follow-request',
-            items: followRequestNotifications
-        });
-        await this.broadcastNotifications(message);
-    }
-
-    async sendFollowRequestAcceptedNotification(newNotification: FollowRequestAcceptedNotificationItem) {
-        await this.addNotification('follow-request-accepted', newNotification);
-        const followRequestAcceptedNotifications = await this.getNotificationsByKind('follow-request-accepted');
-        const message = followRequestAcceptedNotificationSchema.parse({
-            type: 'notification',
-            kind: 'follow-request-accepted',
-            items: followRequestAcceptedNotifications
-        });
-        await this.broadcastNotifications(message);
-    }
-
-    private async addNotification(kind: 'follow-request', notification: FollowRequestNotificationItem): Promise<void>;
-    private async addNotification(kind: 'follow-request-accepted', notification: FollowRequestAcceptedNotificationItem): Promise<void>;
-    private async addNotification(kind: string, notification: NotificationItem) {
-        const allNotifications = await this.getNotifications();
-        const newStoredNotification = { kind, notification } as StoredNotification;
-        allNotifications.push(newStoredNotification);
-        await this.setNotifications(allNotifications);
-    }
-
-    private async getNotifications(): Promise<StoredNotification[]> {
-        return (await this.storage.get<StoredNotification[]>('notifications')) || [];
-    }
-
-    private async setNotifications(notifications: StoredNotification[]) {
-        await this.storage.put('notifications', notifications);
-    }
-
-    async getNotificationsByKind(kind: 'follow-request'): Promise<FollowRequestNotificationItem[]>;
-    async getNotificationsByKind(kind: 'follow-request-accepted'): Promise<FollowRequestAcceptedNotificationItem[]>;
-    async getNotificationsByKind(kind: string) {
-        const allNotifications = await this.getNotifications();
-        return allNotifications.filter((stored) => stored.kind === kind).map((stored) => stored.notification);
-    }
-
-    async getFollowRequestNotifications() {
-        return this.getNotificationsByKind('follow-request');
-    }
-
-    async getFollowRequestAcceptedNotifications() {
-        return this.getNotificationsByKind('follow-request-accepted');
-    }
-
-    private async broadcastNotifications(message: NotificationMessage) {
-        if (!this.websocket) return;
-        this.websocket.send(JSON.stringify(message));
-    }
-
-    async getStorageForDebug() {
-        try {
-            const list = await this.storage.list();
-
-            const storage = Array.from(list.entries()).map(([key, value]) => ({
-                [key]: value
-            }));
-
-            return storage;
-        } catch (error) {
-            console.error(`[UserDO] Error getting storage debug for ${this.userId}:`, error);
-            throw new Error(`Failed to retrieve storage data: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-    }
-
-    async updateNotification(notificationId: string, updatedNotification: NotificationItem) {
-        const allNotifications = await this.getNotifications();
-        const storedNotification = allNotifications.find((stored) => stored.notification.id === notificationId);
-
-        if (!storedNotification) {
-            return false;
-        }
-
-        Object.assign(storedNotification.notification, updatedNotification);
-        await this.setNotifications(allNotifications);
-
-        if (storedNotification.kind === 'follow-request') {
-            const notificationsOfType = await this.getNotificationsByKind('follow-request');
-            const message = followRequestNotificationSchema.parse({
-                type: 'notification',
-                kind: 'follow-request',
-                items: notificationsOfType
-            });
-            await this.broadcastNotifications(message);
-        } else if (storedNotification.kind === 'follow-request-accepted') {
-            const notificationsOfType = await this.getNotificationsByKind('follow-request-accepted');
-            const message = followRequestAcceptedNotificationSchema.parse({
-                type: 'notification',
-                kind: 'follow-request-accepted',
-                items: notificationsOfType
-            });
-            await this.broadcastNotifications(message);
-        }
-
-        return true;
-    }
-
-    async deleteNotification(notificationId: string) {
-        const allNotifications = await this.getNotifications();
-        const storedNotification = allNotifications.find((stored) => stored.notification.id === notificationId);
-
-        if (!storedNotification) {
-            return false;
-        }
-
-        const filteredNotifications = allNotifications.filter((stored) => stored.notification.id !== notificationId);
-        await this.setNotifications(filteredNotifications);
-
-        if (storedNotification.kind === 'follow-request') {
-            const notificationsOfType = await this.getNotificationsByKind('follow-request');
-            const message = followRequestNotificationSchema.parse({
-                type: 'notification',
-                kind: 'follow-request',
-                items: notificationsOfType
-            });
-            await this.broadcastNotifications(message);
-        } else if (storedNotification.kind === 'follow-request-accepted') {
-            const notificationsOfType = await this.getNotificationsByKind('follow-request-accepted');
-            const message = followRequestAcceptedNotificationSchema.parse({
-                type: 'notification',
-                kind: 'follow-request-accepted',
-                items: notificationsOfType
-            });
-            await this.broadcastNotifications(message);
-        }
-
-        return true;
-    }
-
-    async getNotification(notificationId: string) {
-        const allNotifications = await this.getNotifications();
-        const storedNotification = allNotifications.find((stored) => stored.notification.id === notificationId);
-
-        if (!storedNotification) {
-            return null;
-        }
-
-        return { type: storedNotification.kind, notification: storedNotification.notification };
-    }
-
-    private async broadcastAllNotifications() {
-        if (!this.websocket) return;
-
-        const followRequestNotifications = await this.getNotificationsByKind('follow-request');
-        if (followRequestNotifications.length > 0) {
-            const message = followRequestNotificationSchema.parse({
-                type: 'notification',
-                kind: 'follow-request',
-                items: followRequestNotifications
-            });
-            await this.broadcastNotifications(message);
-        }
-
-        const followRequestAcceptedNotifications = await this.getNotificationsByKind('follow-request-accepted');
-        if (followRequestAcceptedNotifications.length > 0) {
-            const message = followRequestAcceptedNotificationSchema.parse({
-                type: 'notification',
-                kind: 'follow-request-accepted',
-                items: followRequestAcceptedNotifications
-            });
-            await this.broadcastNotifications(message);
-        }
+    private async broadcastNotifications() {
+        await this.notificationsService.broadcastNotifications();
     }
 }
