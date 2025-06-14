@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { HonoContext } from 'types';
 import { getFollowedUsers, followUser } from '@/api/db/queries/users-queries';
-import { followRequestNotificationItem } from '@sound-connect/common/types/models';
+import { followRequestNotificationItem, followRequestAcceptedNotificationItem } from '@sound-connect/common/types/models';
 import crypto from 'crypto';
 
 const notificationsRoutes = new Hono<HonoContext>();
@@ -33,12 +33,12 @@ notificationsRoutes.post('/notifications/accept-follow-request', async (c) => {
     const requesterStubId = c.env.UserDO.idFromName(`user:${userId}`);
     const requesterStub = c.env.UserDO.get(requesterStubId);
 
-    const acceptedNotification = {
+    const acceptedNotification = followRequestAcceptedNotificationItem.parse({
         id: crypto.randomUUID(),
         date: new Date().toISOString(),
         seen: false,
         userId: user.id
-    };
+    });
 
     await requesterStub.sendFollowRequestAcceptedNotification(acceptedNotification);
 
@@ -77,16 +77,7 @@ notificationsRoutes.post('/notifications/update-follow-request', async (c) => {
 
 notificationsRoutes.post('/notifications/delete-follow-request-accepted', async (c) => {
     const body = await c.req.json();
-    const { notification } = z
-        .object({
-            notification: z.object({
-                id: z.string().uuid(),
-                date: z.string(),
-                seen: z.boolean(),
-                userId: z.string()
-            })
-        })
-        .parse(body);
+    const { notification } = z.object({ notification: followRequestAcceptedNotificationItem }).parse(body);
 
     const user = c.get('user');
     const id = c.env.UserDO.idFromName(`user:${user.id}`);
@@ -98,18 +89,7 @@ notificationsRoutes.post('/notifications/delete-follow-request-accepted', async 
 
 notificationsRoutes.post('/notifications/update-follow-request-accepted', async (c) => {
     const body = await c.req.json();
-    const { notifications } = z
-        .object({
-            notifications: z.array(
-                z.object({
-                    id: z.string().uuid(),
-                    date: z.string(),
-                    seen: z.boolean(),
-                    userId: z.string()
-                })
-            )
-        })
-        .parse(body);
+    const { notifications } = z.object({ notifications: z.array(followRequestAcceptedNotificationItem) }).parse(body);
 
     const user = c.get('user');
     const id = c.env.UserDO.idFromName(`user:${user.id}`);
