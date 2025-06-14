@@ -18,6 +18,16 @@ import z from 'zod';
 
 type NotificationItem = FollowRequestNotificationItem | FollowRequestAcceptedNotificationItem;
 
+type StoredNotification =
+    | {
+          kind: 'follow-request';
+          notification: FollowRequestNotificationItem;
+      }
+    | {
+          kind: 'follow-request-accepted';
+          notification: FollowRequestAcceptedNotificationItem;
+      };
+
 export class UserDurableObject extends DurableObject {
     private websocket: WebSocket | null = null;
     private storage: DurableObjectStorage;
@@ -219,57 +229,62 @@ export class UserDurableObject extends DurableObject {
     }
 
     async sendFollowRequestNotification(newNotification: FollowRequestNotificationItem) {
-        const notifications = await this.addFollowRequestNotification(newNotification);
+        await this.addNotification('follow-request', newNotification);
+        const followRequestNotifications = await this.getNotificationsByKind('follow-request');
         const message = followRequestNotificationSchema.parse({
             type: 'notification',
             kind: 'follow-request',
-            items: notifications
+            items: followRequestNotifications
         });
         await this.broadcastNotifications(message);
     }
 
-    private async addFollowRequestNotification(newNotification: FollowRequestNotificationItem) {
-        const notifications = [...(await this.getFollowRequestNotifications()), newNotification];
-        await this.setFollowRequestNotifications(notifications);
-        return notifications;
+    async sendFollowRequestAcceptedNotification(newNotification: FollowRequestAcceptedNotificationItem) {
+        await this.addNotification('follow-request-accepted', newNotification);
+        const followRequestAcceptedNotifications = await this.getNotificationsByKind('follow-request-accepted');
+        const message = followRequestAcceptedNotificationSchema.parse({
+            type: 'notification',
+            kind: 'follow-request-accepted',
+            items: followRequestAcceptedNotifications
+        });
+        await this.broadcastNotifications(message);
+    }
+
+    private async addNotification(kind: 'follow-request', notification: FollowRequestNotificationItem): Promise<void>;
+    private async addNotification(kind: 'follow-request-accepted', notification: FollowRequestAcceptedNotificationItem): Promise<void>;
+    private async addNotification(kind: string, notification: NotificationItem) {
+        const allNotifications = await this.getNotifications();
+        const newStoredNotification = { kind, notification } as StoredNotification;
+        allNotifications.push(newStoredNotification);
+        await this.setNotifications(allNotifications);
+    }
+
+    private async getNotifications(): Promise<StoredNotification[]> {
+        return (await this.storage.get<StoredNotification[]>('notifications')) || [];
+    }
+
+    private async setNotifications(notifications: StoredNotification[]) {
+        await this.storage.put('notifications', notifications);
+    }
+
+    async getNotificationsByKind(kind: 'follow-request'): Promise<FollowRequestNotificationItem[]>;
+    async getNotificationsByKind(kind: 'follow-request-accepted'): Promise<FollowRequestAcceptedNotificationItem[]>;
+    async getNotificationsByKind(kind: string) {
+        const allNotifications = await this.getNotifications();
+        return allNotifications.filter((stored) => stored.kind === kind).map((stored) => stored.notification);
+    }
+
+    async getFollowRequestNotifications() {
+        return this.getNotificationsByKind('follow-request');
+    }
+
+    async getFollowRequestAcceptedNotifications() {
+        return this.getNotificationsByKind('follow-request-accepted');
     }
 
     private async broadcastNotifications(message: NotificationMessage) {
         if (!this.websocket) return;
         this.websocket.send(JSON.stringify(message));
-    }
-
-    async getFollowRequestNotifications() {
-        return (await this.storage.get<FollowRequestNotificationItem[]>('notifications:follow-request')) || [];
-    }
-
-    private async setFollowRequestNotifications(notifications: FollowRequestNotificationItem[]) {
-        await this.storage.put('notifications:follow-request', notifications);
-    }
-
-    async sendFollowRequestAcceptedNotification(newNotification: FollowRequestAcceptedNotificationItem) {
-        const notifications = await this.addFollowRequestAcceptedNotification(newNotification);
-        const message = followRequestAcceptedNotificationSchema.parse({
-            type: 'notification',
-            kind: 'follow-request-accepted',
-            items: notifications
-        });
-        await this.broadcastNotifications(message);
-    }
-
-    private async addFollowRequestAcceptedNotification(newNotification: FollowRequestAcceptedNotificationItem) {
-        const existingNotifications = await this.getFollowRequestAcceptedNotifications();
-        const notifications = [...existingNotifications, newNotification];
-        await this.setFollowRequestAcceptedNotifications(notifications);
-        return notifications;
-    }
-
-    async getFollowRequestAcceptedNotifications() {
-        return (await this.storage.get<FollowRequestAcceptedNotificationItem[]>('notifications:follow-request-accepted')) || [];
-    }
-
-    private async setFollowRequestAcceptedNotifications(notifications: FollowRequestAcceptedNotificationItem[]) {
-        await this.storage.put('notifications:follow-request-accepted', notifications);
     }
 
     async getStorageForDebug() {
@@ -287,10 +302,85 @@ export class UserDurableObject extends DurableObject {
         }
     }
 
+    async updateNotification(notificationId: string, updatedNotification: NotificationItem) {
+        const allNotifications = await this.getNotifications();
+        const storedNotification = allNotifications.find((stored) => stored.notification.id === notificationId);
+
+        if (!storedNotification) {
+            return false;
+        }
+
+        Object.assign(storedNotification.notification, updatedNotification);
+        await this.setNotifications(allNotifications);
+
+        if (storedNotification.kind === 'follow-request') {
+            const notificationsOfType = await this.getNotificationsByKind('follow-request');
+            const message = followRequestNotificationSchema.parse({
+                type: 'notification',
+                kind: 'follow-request',
+                items: notificationsOfType
+            });
+            await this.broadcastNotifications(message);
+        } else if (storedNotification.kind === 'follow-request-accepted') {
+            const notificationsOfType = await this.getNotificationsByKind('follow-request-accepted');
+            const message = followRequestAcceptedNotificationSchema.parse({
+                type: 'notification',
+                kind: 'follow-request-accepted',
+                items: notificationsOfType
+            });
+            await this.broadcastNotifications(message);
+        }
+
+        return true;
+    }
+
+    async deleteNotification(notificationId: string) {
+        const allNotifications = await this.getNotifications();
+        const storedNotification = allNotifications.find((stored) => stored.notification.id === notificationId);
+
+        if (!storedNotification) {
+            return false;
+        }
+
+        const filteredNotifications = allNotifications.filter((stored) => stored.notification.id !== notificationId);
+        await this.setNotifications(filteredNotifications);
+
+        if (storedNotification.kind === 'follow-request') {
+            const notificationsOfType = await this.getNotificationsByKind('follow-request');
+            const message = followRequestNotificationSchema.parse({
+                type: 'notification',
+                kind: 'follow-request',
+                items: notificationsOfType
+            });
+            await this.broadcastNotifications(message);
+        } else if (storedNotification.kind === 'follow-request-accepted') {
+            const notificationsOfType = await this.getNotificationsByKind('follow-request-accepted');
+            const message = followRequestAcceptedNotificationSchema.parse({
+                type: 'notification',
+                kind: 'follow-request-accepted',
+                items: notificationsOfType
+            });
+            await this.broadcastNotifications(message);
+        }
+
+        return true;
+    }
+
+    async getNotification(notificationId: string) {
+        const allNotifications = await this.getNotifications();
+        const storedNotification = allNotifications.find((stored) => stored.notification.id === notificationId);
+
+        if (!storedNotification) {
+            return null;
+        }
+
+        return { type: storedNotification.kind, notification: storedNotification.notification };
+    }
+
     private async broadcastAllNotifications() {
         if (!this.websocket) return;
 
-        const followRequestNotifications = await this.getFollowRequestNotifications();
+        const followRequestNotifications = await this.getNotificationsByKind('follow-request');
         if (followRequestNotifications.length > 0) {
             const message = followRequestNotificationSchema.parse({
                 type: 'notification',
@@ -300,7 +390,7 @@ export class UserDurableObject extends DurableObject {
             await this.broadcastNotifications(message);
         }
 
-        const followRequestAcceptedNotifications = await this.getFollowRequestAcceptedNotifications();
+        const followRequestAcceptedNotifications = await this.getNotificationsByKind('follow-request-accepted');
         if (followRequestAcceptedNotifications.length > 0) {
             const message = followRequestAcceptedNotificationSchema.parse({
                 type: 'notification',
@@ -309,91 +399,5 @@ export class UserDurableObject extends DurableObject {
             });
             await this.broadcastNotifications(message);
         }
-    }
-
-    async updateNotification(notificationId: string, updatedNotification: NotificationItem) {
-        const followRequestNotifications = await this.getFollowRequestNotifications();
-        const followRequestNotification = followRequestNotifications.find((n) => n.id === notificationId);
-
-        if (followRequestNotification) {
-            Object.assign(followRequestNotification, updatedNotification);
-            await this.setFollowRequestNotifications(followRequestNotifications);
-            const message = followRequestNotificationSchema.parse({
-                type: 'notification',
-                kind: 'follow-request',
-                items: followRequestNotifications
-            });
-            await this.broadcastNotifications(message);
-            return true;
-        }
-
-        const followRequestAcceptedNotifications = await this.getFollowRequestAcceptedNotifications();
-        const acceptedNotification = followRequestAcceptedNotifications.find((n) => n.id === notificationId);
-
-        if (acceptedNotification) {
-            Object.assign(acceptedNotification, updatedNotification);
-            await this.setFollowRequestAcceptedNotifications(followRequestAcceptedNotifications);
-            const message = followRequestAcceptedNotificationSchema.parse({
-                type: 'notification',
-                kind: 'follow-request-accepted',
-                items: followRequestAcceptedNotifications
-            });
-            await this.broadcastNotifications(message);
-            return true;
-        }
-
-        return false;
-    }
-
-    async deleteNotification(notificationId: string) {
-        const followRequestNotifications = await this.getFollowRequestNotifications();
-        const followRequestNotification = followRequestNotifications.find((n) => n.id === notificationId);
-
-        if (followRequestNotification) {
-            const filtered = followRequestNotifications.filter((n) => n.id !== notificationId);
-            await this.setFollowRequestNotifications(filtered);
-            const message = followRequestNotificationSchema.parse({
-                type: 'notification',
-                kind: 'follow-request',
-                items: filtered
-            });
-            await this.broadcastNotifications(message);
-            return true;
-        }
-
-        const followRequestAcceptedNotifications = await this.getFollowRequestAcceptedNotifications();
-        const acceptedNotification = followRequestAcceptedNotifications.find((n) => n.id === notificationId);
-
-        if (acceptedNotification) {
-            const filtered = followRequestAcceptedNotifications.filter((n) => n.id !== notificationId);
-            await this.setFollowRequestAcceptedNotifications(filtered);
-            const message = followRequestAcceptedNotificationSchema.parse({
-                type: 'notification',
-                kind: 'follow-request-accepted',
-                items: filtered
-            });
-            await this.broadcastNotifications(message);
-            return true;
-        }
-
-        return false;
-    }
-
-    async getNotification(notificationId: string) {
-        const followRequestNotifications = await this.getFollowRequestNotifications();
-        const followRequestNotification = followRequestNotifications.find((n) => n.id === notificationId);
-
-        if (followRequestNotification) {
-            return { type: 'follow-request', notification: followRequestNotification };
-        }
-
-        const followRequestAcceptedNotifications = await this.getFollowRequestAcceptedNotifications();
-        const acceptedNotification = followRequestAcceptedNotifications.find((n) => n.id === notificationId);
-
-        if (acceptedNotification) {
-            return { type: 'follow-request-accepted', notification: acceptedNotification };
-        }
-
-        return null;
     }
 }
