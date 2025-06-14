@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { HonoContext } from 'types';
 import { getFollowedUsers, followUser } from '@/api/db/queries/users-queries';
-import { followRequestNotificationItem, followRequestAcceptedNotificationItem } from '@sound-connect/common/types/models';
+import { followRequestNotificationItemSchema, followRequestAcceptedNotificationItemSchema } from '@sound-connect/common/types/models';
 import crypto from 'crypto';
 
 const notificationsRoutes = new Hono<HonoContext>();
@@ -24,7 +24,7 @@ notificationsRoutes.put('/notifications/:notificationId', async (c) => {
     const { type, notification: existingNotification } = existingNotificationData;
 
     if (type === 'follow-request') {
-        const updatedNotification = followRequestNotificationItem.parse(body);
+        const updatedNotification = followRequestNotificationItemSchema.parse(body);
         const existingFollowRequest = existingNotification as any;
 
         const wasAccepted = existingFollowRequest.accepted;
@@ -39,7 +39,7 @@ notificationsRoutes.put('/notifications/:notificationId', async (c) => {
             const requesterStubId = c.env.UserDO.idFromName(`user:${updatedNotification.from}`);
             const requesterStub = c.env.UserDO.get(requesterStubId);
 
-            const acceptedNotification = followRequestAcceptedNotificationItem.parse({
+            const acceptedNotification = followRequestAcceptedNotificationItemSchema.parse({
                 id: crypto.randomUUID(),
                 date: new Date().toISOString(),
                 seen: false,
@@ -57,7 +57,7 @@ notificationsRoutes.put('/notifications/:notificationId', async (c) => {
 
         await stub.updateNotification(notificationId, updatedNotification);
     } else if (type === 'follow-request-accepted') {
-        const updatedNotification = followRequestAcceptedNotificationItem.parse(body);
+        const updatedNotification = followRequestAcceptedNotificationItemSchema.parse(body);
         await stub.updateNotification(notificationId, updatedNotification);
     }
 
