@@ -63,7 +63,8 @@ export const followRequestNotificationItem = z.object({
     date: z.string(),
     seen: z.boolean(),
     accepted: z.boolean(),
-    userId: z.string()
+    from: z.string(),
+    to: z.string()
 });
 
 export type FollowRequestNotificationItem = z.infer<typeof followRequestNotificationItem>;
@@ -72,7 +73,8 @@ export const followRequestAcceptedNotificationItem = z.object({
     id: z.string().uuid(),
     date: z.string(),
     seen: z.boolean(),
-    userId: z.string() // The user who accepted your follow request
+    from: z.string(),
+    to: z.string()
 });
 
 export type FollowRequestAcceptedNotificationItem = z.infer<typeof followRequestAcceptedNotificationItem>;

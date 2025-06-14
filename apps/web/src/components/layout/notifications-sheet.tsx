@@ -31,7 +31,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
 
     useEffect(() => {
         for (const notification of Array.from(followRequestNotifications.values())) {
-            getUser({ data: { userId: notification.userId } }).then((res) => {
+            getUser({ data: { userId: notification.from } }).then((res) => {
                 if (res.success) {
                     setUsers((prev) => {
                         if (!prev.find((u) => u.id === res.body.id)) {
@@ -44,7 +44,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
         }
 
         for (const notification of Array.from(followRequestAcceptedNotifications.values())) {
-            getUser({ data: { userId: notification.userId } }).then((res) => {
+            getUser({ data: { userId: notification.from } }).then((res) => {
                 if (res.success) {
                     setUsers((prev) => {
                         if (!prev.find((u) => u.id === res.body.id)) {
@@ -85,7 +85,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
     const queryClient = useQueryClient();
 
     const renderFollowRequestContent = (notification: FollowRequestNotificationItem) => {
-        const user = users.find((u) => u.id === notification.userId);
+        const user = users.find((u) => u.id === notification.from);
 
         if (!user) return null;
 
@@ -116,8 +116,8 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                             size="sm"
                             onClick={async (e) => {
                                 e.stopPropagation();
-                                await sendFollowRequest({ data: { userId: notification.userId } });
-                                await queryClient.invalidateQueries({ queryKey: ['follow-request-status', notification.userId] });
+                                await sendFollowRequest({ data: { userId: notification.from } });
+                                await queryClient.invalidateQueries({ queryKey: ['follow-request-status', notification.from] });
                             }}
                         >
                             Follow
@@ -140,7 +140,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                         onClick={async (e) => {
                             e.stopPropagation();
                             await deleteNotification({ data: { notification } });
-                            await queryClient.invalidateQueries({ queryKey: ['follow-request-status', notification.userId] });
+                            await queryClient.invalidateQueries({ queryKey: ['follow-request-status', notification.from] });
                         }}
                     >
                         Delete
@@ -151,7 +151,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
     };
 
     const renderFollowRequestAcceptedContent = (notification: FollowRequestAcceptedNotificationItem) => {
-        const user = users.find((u) => u.id === notification.userId);
+        const user = users.find((u) => u.id === notification.from);
 
         if (!user) return null;
 

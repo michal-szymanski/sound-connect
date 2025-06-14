@@ -10,7 +10,7 @@ const notificationsRoutes = new Hono<HonoContext>();
 notificationsRoutes.post('/notifications/accept-follow-request', async (c) => {
     const body = await c.req.json();
     const {
-        notification: { userId }
+        notification: { from }
     } = z.object({ notification: followRequestNotificationItem }).parse(body);
 
     const user = c.get('user');
@@ -19,25 +19,26 @@ notificationsRoutes.post('/notifications/accept-follow-request', async (c) => {
     const stub = c.env.UserDO.get(id);
 
     const notifications = await stub.getFollowRequestNotifications();
-    const notification = notifications.find((n) => n.userId === userId && !n.accepted);
+    const notification = notifications.find((n) => n.from === from && !n.accepted);
 
     if (!notification) {
         return c.json('Follow request is required to be sent first', 400);
     }
 
-    await followUser(user.id, notification.userId);
+    await followUser(user.id, notification.from);
 
-    const requesterFollowedUsers = await getFollowedUsers(userId);
+    const requesterFollowedUsers = await getFollowedUsers(from);
     const isMutualFollowing = requesterFollowedUsers.some((followed) => followed.id === user.id);
 
-    const requesterStubId = c.env.UserDO.idFromName(`user:${userId}`);
+    const requesterStubId = c.env.UserDO.idFromName(`user:${from}`);
     const requesterStub = c.env.UserDO.get(requesterStubId);
 
     const acceptedNotification = followRequestAcceptedNotificationItem.parse({
         id: crypto.randomUUID(),
         date: new Date().toISOString(),
         seen: false,
-        userId: user.id
+        from: user.id,
+        to: from
     });
 
     await requesterStub.sendFollowRequestAcceptedNotification(acceptedNotification);

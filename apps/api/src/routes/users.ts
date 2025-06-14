@@ -35,7 +35,7 @@ usersRoutes.post('/users/:userId/follow', async (c) => {
 
     const notifications = await stub.getFollowRequestNotifications();
 
-    const existingPendingNotification = notifications.find((n) => n.userId === user.id && !n.accepted);
+    const existingPendingNotification = notifications.find((n) => n.from === user.id && !n.accepted);
     if (existingPendingNotification) {
         return c.json('User is already notified about follow request', 400);
     }
@@ -45,7 +45,7 @@ usersRoutes.post('/users/:userId/follow', async (c) => {
 
     const currentUserNotifications = await currentUserStub.getFollowRequestNotifications();
 
-    const acceptedNotificationFromTarget = currentUserNotifications.find((n) => n.userId === userId && n.accepted);
+    const acceptedNotificationFromTarget = currentUserNotifications.find((n) => n.from === userId && n.accepted);
 
     if (acceptedNotificationFromTarget) {
         await currentUserStub.removeNotification(acceptedNotificationFromTarget);
@@ -56,7 +56,8 @@ usersRoutes.post('/users/:userId/follow', async (c) => {
         date: new Date().toISOString(),
         seen: false,
         accepted: false,
-        userId: user.id
+        from: user.id,
+        to: userId
     });
 
     return c.json('ok');
@@ -92,7 +93,7 @@ usersRoutes.get('/users/:userId/follow-request-status', async (c) => {
     const stub = c.env.UserDO.get(id);
     const notifications = await stub.getFollowRequestNotifications();
 
-    const pendingRequest = notifications.find((n) => n.userId === user.id && !n.accepted);
+    const pendingRequest = notifications.find((n) => n.from === user.id && !n.accepted);
 
     if (pendingRequest) {
         return c.json({ status: 'pending' });
