@@ -30,22 +30,22 @@ notificationsRoutes.post('/notifications/accept-follow-request', async (c) => {
     const requesterFollowedUsers = await getFollowedUsers(userId);
     const isMutualFollowing = requesterFollowedUsers.some((followed) => followed.id === user.id);
 
+    const requesterStubId = c.env.UserDO.idFromName(`user:${userId}`);
+    const requesterStub = c.env.UserDO.get(requesterStubId);
+
+    const acceptedNotification = {
+        id: crypto.randomUUID(),
+        date: new Date().toISOString(),
+        seen: false,
+        userId: user.id
+    };
+
+    await requesterStub.sendFollowRequestAcceptedNotification(acceptedNotification);
+
     if (isMutualFollowing) {
         await stub.removeNotification(notification);
     } else {
         await stub.updateFollowRequestNotifications([{ ...notification, accepted: true }]);
-
-        const requesterStubId = c.env.UserDO.idFromName(`user:${userId}`);
-        const requesterStub = c.env.UserDO.get(requesterStubId);
-
-        const acceptedNotification = {
-            id: crypto.randomUUID(),
-            date: new Date().toISOString(),
-            seen: false,
-            userId: user.id
-        };
-
-        await requesterStub.sendFollowRequestAcceptedNotification(acceptedNotification);
     }
 
     return c.json('ok');
