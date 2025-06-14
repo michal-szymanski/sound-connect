@@ -317,4 +317,19 @@ export class UserDurableObject extends DurableObject {
         await this.setFollowRequestAcceptedNotifications(existingNotifications);
         await this.broadcastFollowRequestAcceptedNotifications(existingNotifications);
     }
+
+    async getStorageForDebug() {
+        try {
+            const list = await this.storage.list();
+
+            const storage = Array.from(list.entries()).map(([key, value]) => ({
+                [key]: value
+            }));
+
+            return storage;
+        } catch (error) {
+            console.error(`[UserDO] Error getting storage debug for ${this.userId}:`, error);
+            throw new Error(`Failed to retrieve storage data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
 }

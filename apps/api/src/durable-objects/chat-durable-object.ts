@@ -155,4 +155,19 @@ export class ChatDurableObject extends DurableObject {
             }
         }
     }
+
+    async getStorageForDebug() {
+        try {
+            const list = await this.storage.list();
+
+            const storage = Array.from(list.entries()).map(([key, value]) => ({
+                [key]: value
+            }));
+
+            return storage;
+        } catch (error) {
+            console.error(`[ChatDO] Error getting storage debug for room ${this.roomId}:`, error);
+            throw new Error(`Failed to retrieve storage data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
 }
