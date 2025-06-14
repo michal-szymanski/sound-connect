@@ -26,10 +26,10 @@ usersRoutes.post('/users/send-follow-request', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(body);
 
     const user = c.get('user');
-    const followedUsers = await getFollowedUsers(user.id);
 
-    if (followedUsers.some((followed) => followed.id === userId)) {
-        return c.json('User is already followed', 400);
+    const targetUserFollowedUsers = await getFollowedUsers(userId);
+    if (targetUserFollowedUsers.some((followed) => followed.id === user.id)) {
+        return c.json('Users already follow each other', 400);
     }
 
     const id = c.env.UserDO.idFromName(`user:${userId}`);
@@ -37,7 +37,8 @@ usersRoutes.post('/users/send-follow-request', async (c) => {
 
     const notifications = await stub.getFollowRequestNotifications();
 
-    if (notifications.some((n) => n.userId === user.id)) {
+    const existingPendingNotification = notifications.find((n) => n.userId === user.id && !n.accepted);
+    if (existingPendingNotification) {
         return c.json('User is already notified about follow request', 400);
     }
 
@@ -46,10 +47,10 @@ usersRoutes.post('/users/send-follow-request', async (c) => {
 
     const currentUserNotifications = await currentUserStub.getFollowRequestNotifications();
 
-    const notificationToRemove = currentUserNotifications.find((n) => n.userId === userId && n.accepted);
+    const acceptedNotificationFromTarget = currentUserNotifications.find((n) => n.userId === userId && n.accepted);
 
-    if (notificationToRemove) {
-        await currentUserStub.removeNotification(notificationToRemove);
+    if (acceptedNotificationFromTarget) {
+        await currentUserStub.removeNotification(acceptedNotificationFromTarget);
     }
 
     await stub.sendFollowRequestNotification({
@@ -70,11 +71,6 @@ usersRoutes.post('/users/accept-follow-request', async (c) => {
     } = z.object({ notification: followRequestNotificationItem }).parse(body);
 
     const user = c.get('user');
-    const followedUsers = await getFollowedUsers(userId);
-
-    if (followedUsers.some((followed) => followed.id === userId)) {
-        return c.json('User is already followed', 400);
-    }
 
     const id = c.env.UserDO.idFromName(`user:${user.id}`);
     const stub = c.env.UserDO.get(id);
@@ -87,10 +83,14 @@ usersRoutes.post('/users/accept-follow-request', async (c) => {
     }
 
     await followUser(user.id, notification.userId);
-    const followedUsersByCurrentUser = await getFollowedUsers(user.id);
 
-    if (followedUsersByCurrentUser.some((followed) => followed.id === userId)) {
+    const requesterFollowedUsers = await getFollowedUsers(userId);
+    const isMutualFollowing = requesterFollowedUsers.some((followed) => followed.id === user.id);
+
+    if (isMutualFollowing) {
         await stub.removeNotification(notification);
+    } else {
+        await stub.updateFollowRequestNotifications([{ ...notification, accepted: true }]);
 
         const requesterStubId = c.env.UserDO.idFromName(`user:${userId}`);
         const requesterStub = c.env.UserDO.get(requesterStubId);
@@ -103,8 +103,6 @@ usersRoutes.post('/users/accept-follow-request', async (c) => {
         };
 
         await requesterStub.sendFollowRequestAcceptedNotification(acceptedNotification);
-    } else {
-        await stub.updateFollowRequestNotifications([{ ...notification, accepted: true }]);
     }
 
     return c.json('ok');
