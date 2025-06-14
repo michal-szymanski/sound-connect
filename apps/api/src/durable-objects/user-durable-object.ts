@@ -44,8 +44,8 @@ export class UserDurableObject extends DurableObject {
             const wsPair = new WebSocketPair();
             const [client, server] = Object.values(wsPair);
 
-            await this.handleConnection(server);
             server.accept();
+            await this.handleConnection(server);
 
             return new Response(null, { status: 101, webSocket: client });
         }
@@ -98,6 +98,9 @@ export class UserDurableObject extends DurableObject {
             this.websocket = null;
             this.cleanup();
         });
+
+        // Broadcast all notifications after WebSocket is accepted
+        await this.broadcastAllNotifications();
     }
 
     private async subscribeToRoom({ roomId }: SubscribeMessage) {
@@ -330,6 +333,32 @@ export class UserDurableObject extends DurableObject {
         } catch (error) {
             console.error(`[UserDO] Error getting storage debug for ${this.userId}:`, error);
             throw new Error(`Failed to retrieve storage data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+
+    private async broadcastAllNotifications() {
+        if (!this.websocket) return;
+
+        // Broadcast follow request notifications
+        const followRequestNotifications = await this.getFollowRequestNotifications();
+        if (followRequestNotifications.length > 0) {
+            const followRequestMessage: FollowRequestNotification = {
+                type: 'notification',
+                kind: 'follow-request',
+                items: followRequestNotifications
+            };
+            this.websocket.send(JSON.stringify(followRequestMessage));
+        }
+
+        // Broadcast follow request accepted notifications
+        const followRequestAcceptedNotifications = await this.getFollowRequestAcceptedNotifications();
+        if (followRequestAcceptedNotifications.length > 0) {
+            const followRequestAcceptedMessage: FollowRequestAcceptedNotification = {
+                type: 'notification',
+                kind: 'follow-request-accepted',
+                items: followRequestAcceptedNotifications
+            };
+            this.websocket.send(JSON.stringify(followRequestAcceptedMessage));
         }
     }
 }
