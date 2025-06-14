@@ -94,7 +94,7 @@ export const getFollowers = createServerFn()
         const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
 
-        const response = await API.fetch(`${API_URL}/users/followers/${data.userId}`, {
+        const response = await API.fetch(`${API_URL}/users/${data.userId}/followers`, {
             headers
         });
 
@@ -119,7 +119,7 @@ export const getFollowings = createServerFn()
         const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
 
-        const response = await API.fetch(`${API_URL}/users/followings/${data.userId}`, {
+        const response = await API.fetch(`${API_URL}/users/${data.userId}/followings`, {
             headers
         });
 
@@ -168,10 +168,9 @@ export const sendFollowRequest = createServerFn({ method: 'POST' })
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/send-follow-request`, {
+        const response = await API.fetch(`${API_URL}/users/${data.userId}/follow`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
-            body: JSON.stringify(data),
             credentials: 'include'
         });
 
@@ -188,7 +187,7 @@ export const acceptFollowRequest = createServerFn({ method: 'POST' })
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/accept-follow-request`, {
+        const response = await API.fetch(`${API_URL}/notifications/accept-follow-request`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             body: JSON.stringify(data),
@@ -208,7 +207,7 @@ export const deleteNotification = createServerFn({ method: 'POST' })
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/delete-notification`, {
+        const response = await API.fetch(`${API_URL}/notifications/delete-follow-request`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             body: JSON.stringify(data),
@@ -228,7 +227,7 @@ export const updateNotifications = createServerFn({ method: 'POST' })
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/update-notifications`, {
+        const response = await API.fetch(`${API_URL}/notifications/update-follow-request`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             body: JSON.stringify(data),
@@ -248,10 +247,9 @@ export const unfollowUser = createServerFn({ method: 'POST' })
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/unfollow`, {
+        const response = await API.fetch(`${API_URL}/users/${data.userId}/unfollow`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
-            body: JSON.stringify(data),
             credentials: 'include'
         });
 
@@ -268,7 +266,7 @@ export const getMutualFollowers = createServerFn()
         const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
 
-        const response = await API.fetch(`${API_URL}/users/mutual-followers/${data.userId}`, {
+        const response = await API.fetch(`${API_URL}/users/${data.userId}/contacts`, {
             headers
         });
 
@@ -372,7 +370,7 @@ export const getFollowRequestStatus = createServerFn({ method: 'GET' })
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/follow-request-status/${data.userId}`, {
+        const response = await API.fetch(`${API_URL}/users/${data.userId}/follow-request-status`, {
             method: 'GET',
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
@@ -392,7 +390,7 @@ export const deleteFollowRequestAcceptedNotification = createServerFn({ method: 
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/delete-follow-request-accepted-notification`, {
+        const response = await API.fetch(`${API_URL}/notifications/delete-follow-request-accepted`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             body: JSON.stringify(data),
@@ -412,7 +410,7 @@ export const updateFollowRequestAcceptedNotifications = createServerFn({ method:
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/update-follow-request-accepted-notifications`, {
+        const response = await API.fetch(`${API_URL}/notifications/update-follow-request-accepted`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             body: JSON.stringify(data),
