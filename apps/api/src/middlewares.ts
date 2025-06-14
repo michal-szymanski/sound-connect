@@ -3,7 +3,7 @@ import { auth } from 'auth';
 import { Context, Next } from 'hono';
 
 export const authMiddleware = async (c: Context<HonoContext>, next: Next) => {
-    if (c.req.path.startsWith('/api/auth/') || c.req.path === '/health') {
+    if (c.req.path.startsWith('/api/auth/') || c.req.path.startsWith('/debug') || c.req.path === '/health') {
         return next();
     }
 
