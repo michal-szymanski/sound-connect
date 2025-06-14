@@ -101,7 +101,8 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                 <div className="inline-flex items-center gap-3 pr-3">
                     <StatusAvatar user={user} />
                     <div>
-                        <span className="font-bold">{user.name}</span> requested to follow you.{' '}
+                        <span className="font-bold">{user.name}</span>{' '}
+                        {notification.accepted ? 'follow request was accepted. You can now follow back.' : 'requested to follow you.'}{' '}
                         <span className="text-muted-foreground">
                             {formatDistanceToNowStrict(parseISO(notification.date), {
                                 addSuffix: true
