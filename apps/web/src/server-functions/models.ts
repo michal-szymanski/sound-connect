@@ -15,6 +15,8 @@ import { getWebRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
 import { getRoomId } from '@sound-connect/common/helpers';
 
+type NotificationItem = FollowRequestNotificationItem | FollowRequestAcceptedNotificationItem;
+
 export const getFeed = createServerFn().handler(async () => {
     const { headers } = getWebRequest()!;
     const { API, API_URL } = await getBindings();
@@ -344,7 +346,7 @@ export const getFollowRequestStatus = createServerFn({ method: 'GET' })
     });
 
 export const updateNotification = createServerFn()
-    .validator((data: { notificationId: string; notification: any }) => data)
+    .validator((data: { notificationId: string; notification: NotificationItem }) => data)
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
