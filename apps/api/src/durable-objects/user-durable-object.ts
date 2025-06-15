@@ -99,7 +99,6 @@ export class UserDurableObject extends DurableObject {
     }
 
     async notifyOnline(userId: string | null) {
-        console.log('notifyOnline', userId);
         if (!userId || !this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
             await this.storage.deleteAlarm();
             return false;

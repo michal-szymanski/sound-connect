@@ -169,3 +169,10 @@ export const feedItemSchema = z.object({
 });
 
 export type FeedItem = z.infer<typeof feedItemSchema>;
+
+export const postLikeDataSchema = z.object({
+    likesCount: z.number(),
+    isLiked: z.boolean()
+});
+
+export type PostLikeData = z.infer<typeof postLikeDataSchema>;

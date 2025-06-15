@@ -1,6 +1,5 @@
 import { useUser } from '@/web/lib/react-query';
 import { useWebSocket } from '@/web/providers/websocket-provider';
-import { useChatWindows } from '@/web/components/chat/chat-window-manager';
 import { getRoomId } from '@sound-connect/common/helpers';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
@@ -24,7 +23,6 @@ export const Route = createFileRoute('/(main)/messages/')({
 
 function RouteComponent() {
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, status, roomMessages } = useWebSocket();
-    const { openChatWindow } = useChatWindows();
     const { data: user } = useUser();
     const { users } = useContacts();
 
@@ -90,15 +88,10 @@ function RouteComponent() {
         if (!users) return null;
 
         return users.map((u) => (
-            <div key={u.id} className="flex items-center gap-1">
-                <Button variant="ghost" className="flex-1 justify-start" onClick={() => setSelectedPeer(u)}>
-                    <StatusAvatar user={u} />
-                    <span className="truncate">{u.name}</span>
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => openChatWindow(u)} className="px-2 text-xs" title="Open in chat window">
-                    💬
-                </Button>
-            </div>
+            <Button key={u.id} variant="ghost" className="flex justify-start" onClick={() => setSelectedPeer(u)}>
+                <StatusAvatar user={u} />
+                <span className="truncate">{u.name}</span>
+            </Button>
         ));
     };
 
