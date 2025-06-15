@@ -50,6 +50,8 @@ notificationsRoutes.put('/notifications/:notificationId', async (c) => {
             await requesterStub.sendFollowRequestAcceptedNotification(acceptedNotification);
 
             if (isMutualFollowing) {
+                await stub.subscribe(updatedNotification.from);
+                await requesterStub.subscribe(user.id);
                 await stub.deleteNotification(notificationId);
                 return c.json('ok');
             }
