@@ -1,5 +1,7 @@
 import { NewChatMessage, SubscribeMessage, UnsubscribeMessage } from '@sound-connect/common/types/models';
 
+const CHAT_ROOMS_KEY = 'chat-rooms';
+
 export class ChatService {
     private subscribedRooms: Set<string> = new Set();
 
@@ -9,8 +11,17 @@ export class ChatService {
         private userId: string | null
     ) {}
 
+    async getRooms() {
+        return await this.storage.get<string[]>(CHAT_ROOMS_KEY);
+    }
+
+    async setRooms(rooms: string[]) {
+        await this.storage.put(CHAT_ROOMS_KEY, rooms);
+    }
+
     async initializeRooms() {
-        const storedRooms = await this.storage.get<string[]>('subscribed-rooms');
+        const storedRooms = await this.getRooms();
+
         if (storedRooms) {
             this.subscribedRooms = new Set(storedRooms);
         }
@@ -21,28 +32,32 @@ export class ChatService {
     }
 
     async subscribeToRoom({ roomId }: SubscribeMessage) {
-        this.subscribedRooms.add(roomId);
+        if (!this.userId) return;
 
-        await this.storage.put('subscribed-rooms', Array.from(this.subscribedRooms));
+        this.subscribedRooms.add(roomId);
+        await this.setRooms(Array.from(this.subscribedRooms));
 
         try {
             const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
             const chatStub = this.env.ChatDO.get(chatId);
-            await chatStub.subscribeUser(this.userId!, roomId);
+
+            await chatStub.subscribeUser(this.userId, roomId);
         } catch (error) {
             console.error(`[ChatService] Error subscribing to room ${roomId}:`, error);
         }
     }
 
     async unsubscribeFromRoom({ roomId }: UnsubscribeMessage) {
-        this.subscribedRooms.delete(roomId);
+        if (!this.userId) return;
 
-        await this.storage.put('subscribed-rooms', Array.from(this.subscribedRooms));
+        this.subscribedRooms.delete(roomId);
+        await this.setRooms(Array.from(this.subscribedRooms));
 
         try {
             const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
             const chatStub = this.env.ChatDO.get(chatId);
-            await chatStub.unsubscribeUser(this.userId!, roomId);
+
+            await chatStub.unsubscribeUser(this.userId, roomId);
         } catch (error) {
             console.error(`[ChatService] Error unsubscribing from room ${roomId}:`, error);
         }
@@ -55,9 +70,9 @@ export class ChatService {
 
         try {
             const senderId = this.userId;
-
             const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
             const chatStub = this.env.ChatDO.get(chatId);
+
             await chatStub.sendMessage(senderId, roomId, content);
         } catch (error) {
             console.error(`[ChatService] Error sending message to room ${roomId}:`, error);

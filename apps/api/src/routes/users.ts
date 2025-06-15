@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { HonoContext } from 'types';
-import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getMutualFollowers } from '@/api/db/queries/users-queries';
+import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getContacts } from '@/api/db/queries/users-queries';
 import crypto from 'crypto';
 
 const usersRoutes = new Hono<HonoContext>();
@@ -74,7 +74,7 @@ usersRoutes.post('/users/:userId/unfollow', async (c) => {
 
 usersRoutes.get('/users/:userId/contacts', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
-    const usersResults = await getMutualFollowers(userId);
+    const usersResults = await getContacts(userId);
 
     return c.json(usersResults);
 });

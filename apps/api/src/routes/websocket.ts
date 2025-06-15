@@ -1,3 +1,4 @@
+import { getContacts } from '@/api/db/queries/users-queries';
 import { Hono } from 'hono';
 import { HonoContext } from 'types';
 
@@ -14,6 +15,8 @@ websocketRoutes.on(['GET', 'POST'], '/ws/user', async (c) => {
         const user = c.get('user');
         const id = c.env.UserDO.idFromName(`user:${user.id}`);
         const stub = c.env.UserDO.get(id);
+        const contacts = await getContacts(user.id);
+        await stub.initializeSubscribers(contacts);
 
         const modifiedRequest = new Request(c.req.raw, {
             headers: new Headers({
