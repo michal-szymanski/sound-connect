@@ -9,7 +9,6 @@ import {
 } from '@sound-connect/common/types/models';
 import { NotificationsService } from './services/notifications-service';
 import { ChatService } from './services/chat-service';
-
 import z from 'zod';
 
 export class UserDurableObject extends DurableObject {
@@ -70,7 +69,89 @@ export class UserDurableObject extends DurableObject {
         await this.storage.setAlarm(Date.now() + ONLINE_STATUS_INTERVAL);
     }
 
-    async handleConnection(webSocket: WebSocket) {
+    async getStorageForDebug() {
+        try {
+            const list = await this.storage.list();
+
+            const storage = Array.from(list.entries()).map(([key, value]) => ({
+                [key]: value
+            }));
+
+            return storage;
+        } catch (error) {
+            console.error(`[UserDO] Error getting storage debug for ${this.userId}:`, error);
+            throw new Error(`Failed to retrieve storage data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+
+    async getRoomHistory(roomId: string): Promise<Response> {
+        return this.chatService.getRoomHistory(roomId);
+    }
+
+    async sendMessage(message: WebSocketMessage) {
+        if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
+            this.websocket.send(JSON.stringify(message));
+        }
+    }
+
+    async notifyOnline(userId: string | null) {
+        if (!userId || !this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
+            await this.storage.deleteAlarm();
+            return false;
+        }
+
+        const message = onlineStatusMessageSchema.parse({
+            type: 'online-status',
+            userId,
+            status: 'online'
+        });
+
+        this.sendMessage(message);
+
+        return true;
+    }
+
+    async sendFollowRequestNotification(newNotification: FollowRequestNotificationItem) {
+        return this.notificationsService.sendFollowRequestNotification(newNotification);
+    }
+
+    async sendFollowRequestAcceptedNotification(newNotification: FollowRequestAcceptedNotificationItem) {
+        return this.notificationsService.sendFollowRequestAcceptedNotification(newNotification);
+    }
+
+    async getFollowRequestNotifications() {
+        return this.notificationsService.getFollowRequestNotifications();
+    }
+
+    async getFollowRequestAcceptedNotifications() {
+        return this.notificationsService.getFollowRequestAcceptedNotifications();
+    }
+
+    async updateNotification(notificationId: string, updatedNotification: FollowRequestNotificationItem | FollowRequestAcceptedNotificationItem) {
+        return this.notificationsService.updateNotification(notificationId, updatedNotification);
+    }
+
+    async deleteNotification(notificationId: string) {
+        return this.notificationsService.deleteNotification(notificationId);
+    }
+
+    async getNotification(notificationId: string) {
+        return this.notificationsService.getNotification(notificationId);
+    }
+
+    private subscribe(userIds: string[]) {
+        userIds.forEach((id) => this.subscribers.add(id));
+    }
+
+    private unsubscribe(userIds: string[]) {
+        userIds.forEach((id) => this.subscribers.delete(id));
+    }
+
+    private async broadcastNotifications() {
+        await this.notificationsService.broadcastNotifications();
+    }
+
+    private async handleConnection(webSocket: WebSocket) {
         this.websocket = webSocket;
 
         await this.chatService.initializeRooms();
@@ -107,87 +188,5 @@ export class UserDurableObject extends DurableObject {
         });
 
         await this.broadcastNotifications();
-    }
-
-    async getRoomHistory(roomId: string): Promise<Response> {
-        return this.chatService.getRoomHistory(roomId);
-    }
-
-    async sendMessage(message: WebSocketMessage) {
-        if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-            this.websocket.send(JSON.stringify(message));
-        }
-    }
-
-    async notifyOnline(userId: string | null) {
-        if (!userId || !this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
-            await this.storage.deleteAlarm();
-            return false;
-        }
-
-        const message = onlineStatusMessageSchema.parse({
-            type: 'online-status',
-            userId,
-            status: 'online'
-        });
-
-        this.websocket.send(JSON.stringify(message));
-
-        return true;
-    }
-
-    async sendFollowRequestNotification(newNotification: FollowRequestNotificationItem) {
-        return this.notificationsService.sendFollowRequestNotification(newNotification);
-    }
-
-    async sendFollowRequestAcceptedNotification(newNotification: FollowRequestAcceptedNotificationItem) {
-        return this.notificationsService.sendFollowRequestAcceptedNotification(newNotification);
-    }
-
-    async getFollowRequestNotifications() {
-        return this.notificationsService.getFollowRequestNotifications();
-    }
-
-    async getFollowRequestAcceptedNotifications() {
-        return this.notificationsService.getFollowRequestAcceptedNotifications();
-    }
-
-    async getStorageForDebug() {
-        try {
-            const list = await this.storage.list();
-
-            const storage = Array.from(list.entries()).map(([key, value]) => ({
-                [key]: value
-            }));
-
-            return storage;
-        } catch (error) {
-            console.error(`[UserDO] Error getting storage debug for ${this.userId}:`, error);
-            throw new Error(`Failed to retrieve storage data: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-    }
-
-    async updateNotification(notificationId: string, updatedNotification: FollowRequestNotificationItem | FollowRequestAcceptedNotificationItem) {
-        return this.notificationsService.updateNotification(notificationId, updatedNotification);
-    }
-
-    async deleteNotification(notificationId: string) {
-        return this.notificationsService.deleteNotification(notificationId);
-    }
-
-    async getNotification(notificationId: string) {
-        return this.notificationsService.getNotification(notificationId);
-    }
-
-    private subscribe(userIds: string[]) {
-        userIds.forEach((id) => this.subscribers.add(id));
-    }
-
-    private unsubscribe(userIds: string[]) {
-        userIds.forEach((id) => this.subscribers.delete(id));
-    }
-
-    private async broadcastNotifications() {
-        await this.notificationsService.broadcastNotifications();
     }
 }
