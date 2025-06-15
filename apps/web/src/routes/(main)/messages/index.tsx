@@ -85,12 +85,22 @@ function RouteComponent() {
     }, [messages]);
 
     const renderPeers = () => {
-        if (!users) return null;
+        if (!users || users.length === 0) {
+            return <p className="p-4 text-sm text-gray-500 dark:text-gray-400">No contacts found</p>;
+        }
 
         return users.map((u) => (
-            <Button key={u.id} variant="ghost" className="flex justify-start" onClick={() => setSelectedPeer(u)}>
+            <Button
+                key={u.id}
+                variant="ghost"
+                className={clsx(
+                    'h-auto w-full justify-start gap-2 rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700',
+                    selectedPeer?.id === u.id && 'bg-gray-200 dark:bg-gray-700'
+                )}
+                onClick={() => setSelectedPeer(u)}
+            >
                 <StatusAvatar user={u} />
-                <span className="truncate">{u.name}</span>
+                <span className="truncate text-sm font-medium">{u.name}</span>
             </Button>
         ));
     };
@@ -147,6 +157,7 @@ function RouteComponent() {
                                         placeholder="Type a message..."
                                         disabled={status !== 'open' || !selectedPeer}
                                         maxLength={CHAT_MESSAGE_MAX_LENGTH}
+                                        autoComplete="off"
                                     />
                                 </FormControl>
                             </FormItem>
@@ -159,15 +170,17 @@ function RouteComponent() {
     };
 
     return (
-        <div className="mx-auto flex h-[80vh] w-full max-w-4xl overflow-hidden rounded-lg border shadow">
-            <div className="bg-muted flex w-1/4 flex-col border-r">
-                <div className="border-b p-4 font-semibold">Chats</div>
+        <div className="flex h-full w-full overflow-hidden">
+            <div className="bg-muted absolute left-16 top-0 z-20 flex h-screen w-80 flex-col border-r xl:left-64">
+                <div className="border-b p-4 font-semibold">Contacts</div>
                 <div className="min-h-0 flex-1">
-                    <ScrollArea className="h-full">{renderPeers()}</ScrollArea>
+                    <ScrollArea className="h-full">
+                        <div className="space-y-1 p-2">{renderPeers()}</div>
+                    </ScrollArea>
                 </div>
             </div>
-            <div className="flex flex-1 flex-col">
-                <div className="flex items-center gap-2 border-b p-4 font-semibold">{renderHeader()}</div>
+            <div className="ml-96 flex flex-1 flex-col xl:ml-[576px]">
+                <div className="bg-background flex items-center gap-2 border-b p-4 font-semibold">{renderHeader()}</div>
                 <div className="bg-background min-h-0 flex-1">
                     <ScrollArea className="h-full p-4">
                         <div className="space-y-2">
