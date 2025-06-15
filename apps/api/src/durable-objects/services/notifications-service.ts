@@ -6,6 +6,8 @@ import {
     WebSocketMessage
 } from '@sound-connect/common/types/models';
 
+const NOTIFICATIONS_KEY = 'notifications';
+
 type NotificationItem = FollowRequestNotificationItem | FollowRequestAcceptedNotificationItem;
 
 type StoredNotification =
@@ -56,11 +58,11 @@ export class NotificationsService {
     }
 
     private async getNotifications(): Promise<StoredNotification[]> {
-        return (await this.storage.get<StoredNotification[]>('notifications')) || [];
+        return (await this.storage.get<StoredNotification[]>(NOTIFICATIONS_KEY)) || [];
     }
 
     private async setNotifications(notifications: StoredNotification[]) {
-        await this.storage.put('notifications', notifications);
+        await this.storage.put(NOTIFICATIONS_KEY, notifications);
     }
 
     private async getNotificationsByKind(kind: 'follow-request'): Promise<FollowRequestNotificationItem[]>;
