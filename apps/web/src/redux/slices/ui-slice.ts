@@ -3,10 +3,12 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 
 export type UIState = {
     isSidebarVisible: boolean;
+    isSidebarCollapsed: boolean;
 };
 
 const initialState: UIState = {
-    isSidebarVisible: true
+    isSidebarVisible: true,
+    isSidebarCollapsed: false
 };
 
 export const uiSlice = createSlice({
@@ -15,10 +17,13 @@ export const uiSlice = createSlice({
     reducers: {
         showSidebar: (state, action: PayloadAction<boolean>) => {
             state.isSidebarVisible = action.payload;
+        },
+        collapseSidebar: (state, action: PayloadAction<boolean>) => {
+            state.isSidebarCollapsed = action.payload;
         }
     }
 });
 
-export const { showSidebar } = uiSlice.actions;
+export const { showSidebar, collapseSidebar } = uiSlice.actions;
 
 export default uiSlice.reducer;

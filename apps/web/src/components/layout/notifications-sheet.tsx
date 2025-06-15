@@ -8,9 +8,9 @@ import { useElapsedTime } from 'src/lib/utils';
 import StatusAvatar from '@/web/components/small/status-avatar';
 import { FollowRequestNotificationItem, FollowRequestAcceptedNotificationItem, UserDTO } from '@sound-connect/common/types/models';
 import { useQueryClient } from '@tanstack/react-query';
-import { useDispatch } from 'react-redux';
-import { showSidebar } from '@/web/redux/slices/ui-slice';
 import { useUser } from '@/web/lib/react-query';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/web/redux/store';
 
 type Props = {
     open: boolean;
@@ -20,8 +20,24 @@ type Props = {
 const NotificationsSheet = ({ open, setOpen }: Props) => {
     const { followRequestNotifications, followRequestAcceptedNotifications } = useWebSocket();
     const [users, setUsers] = useState<UserDTO[]>([]);
-    const dispatch = useDispatch();
     const { data: currentUser } = useUser();
+    const { isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
+    const [leftPosition, setLeftPosition] = useState('64px');
+
+    // Update position based on sidebar state and screen size
+    useEffect(() => {
+        const updatePosition = () => {
+            if (isSidebarCollapsed) {
+                setLeftPosition('64px');
+            } else {
+                setLeftPosition(window.innerWidth >= 1280 ? '256px' : '64px');
+            }
+        };
+
+        updatePosition();
+        window.addEventListener('resize', updatePosition);
+        return () => window.removeEventListener('resize', updatePosition);
+    }, [isSidebarCollapsed]);
 
     useEffect(() => {
         for (const notification of Array.from(followRequestNotifications.values())) {
@@ -52,8 +68,6 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
     }, [followRequestNotifications, followRequestAcceptedNotifications]);
 
     useEffect(() => {
-        dispatch(showSidebar(!open));
-
         if (!open) return;
 
         const unseenFollowRequestNotifications = Array.from(followRequestNotifications.values()).filter((n) => !n.seen);
@@ -198,23 +212,33 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
     ].sort((a, b) => new Date(b.notification.date).getTime() - new Date(a.notification.date).getTime());
 
     return (
-        <Sheet open={open} onOpenChange={setOpen} modal={false}>
-            <SheetContent side="left">
-                <SheetHeader>
-                    <SheetTitle className="text-2xl">Notifications</SheetTitle>
-                </SheetHeader>
-                {allNotifications.length === 0 && <SheetDescription className="px-7 py-5 text-sm">You don't have any notifications.</SheetDescription>}
-                {allNotifications.map((item) => (
-                    <div key={item.notification.id} className="hover:bg-muted/50 px-7 py-5 text-sm">
-                        {item.type === 'follow-request' ? (
-                            <FollowRequestContent notification={item.notification as FollowRequestNotificationItem} />
-                        ) : (
-                            <FollowRequestAcceptedContent notification={item.notification as FollowRequestAcceptedNotificationItem} />
-                        )}
-                    </div>
-                ))}
-            </SheetContent>
-        </Sheet>
+        <>
+            {open && <div className="fixed inset-0 z-[69] bg-black/50" style={{ left: leftPosition }} onClick={() => setOpen(false)} />}
+            <Sheet open={open} onOpenChange={setOpen} modal={false}>
+                <SheetContent
+                    side="left"
+                    className="z-[70] w-80 border-r"
+                    style={{
+                        left: leftPosition,
+                        transform: open ? 'translateX(0)' : `translateX(-100%)`
+                    }}
+                >
+                    <SheetHeader>
+                        <SheetTitle className="text-2xl">Notifications</SheetTitle>
+                    </SheetHeader>
+                    {allNotifications.length === 0 && <SheetDescription className="px-7 py-5 text-sm">You don't have any notifications.</SheetDescription>}
+                    {allNotifications.map((item) => (
+                        <div key={item.notification.id} className="hover:bg-muted/50 px-7 py-5 text-sm">
+                            {item.type === 'follow-request' ? (
+                                <FollowRequestContent notification={item.notification as FollowRequestNotificationItem} />
+                            ) : (
+                                <FollowRequestAcceptedContent notification={item.notification as FollowRequestAcceptedNotificationItem} />
+                            )}
+                        </div>
+                    ))}
+                </SheetContent>
+            </Sheet>
+        </>
     );
 };
 

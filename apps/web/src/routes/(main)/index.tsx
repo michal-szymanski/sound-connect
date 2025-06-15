@@ -22,7 +22,7 @@ function RouteComponent() {
     const { data: user } = useUser();
 
     return (
-        <div className="container mx-auto flex flex-col items-center gap-5 xl:px-52">
+        <div className="flex flex-col items-center gap-5">
             <Card className="w-full">
                 <CardContent className="w-full">
                     <div className="inline-flex w-full items-center justify-center gap-5">

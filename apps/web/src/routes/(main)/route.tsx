@@ -7,6 +7,8 @@ import { ChatWindowProvider } from '@/web/components/chat/chat-window-manager';
 import { store } from '@/web/redux/store';
 import { createFileRoute, Outlet, redirect, useLocation } from '@tanstack/react-router';
 import { Provider as ReduxProvider } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/web/redux/store';
 
 export const Route = createFileRoute('/(main)')({
     component: RouteComponent,
@@ -21,39 +23,45 @@ export const Route = createFileRoute('/(main)')({
     }
 });
 
-function RouteComponent() {
+function LayoutContent() {
     const location = useLocation();
     const isMessagesPage = location.pathname === '/messages';
+    const { isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
 
     return (
-        <ReduxProvider store={store}>
-            <WebSocketProvider>
-                <ChatWindowProvider>
-                    <SidebarProvider>
-                        <LeftSidebar />
-                        {isMessagesPage ? (
-                            <>
-                                <div className="fixed left-0 right-0 top-0 z-10 ml-16 xl:ml-64">
-                                    <Header />
-                                </div>
-                                <main className="h-screen flex-1 pt-16">
-                                    <Outlet />
-                                </main>
-                            </>
-                        ) : (
-                            <>
-                                <main className="w-full py-20">
-                                    <Header />
-                                    <div className="px-26 xl:px-56">
+        <WebSocketProvider>
+            <ChatWindowProvider>
+                <SidebarProvider>
+                    <LeftSidebar />
+                    <Header />
+                    {isMessagesPage ? (
+                        <>
+                            <main className="h-screen flex-1 pt-16">
+                                <Outlet />
+                            </main>
+                        </>
+                    ) : (
+                        <>
+                            <main className={`py-20 ${isSidebarCollapsed ? 'ml-16' : 'ml-16 xl:ml-64'}`}>
+                                <div className="flex justify-center">
+                                    <div className="w-full max-w-2xl px-6">
                                         <Outlet />
                                     </div>
-                                </main>
-                                <RightSidebar />
-                            </>
-                        )}
-                    </SidebarProvider>
-                </ChatWindowProvider>
-            </WebSocketProvider>
+                                </div>
+                            </main>
+                            <RightSidebar />
+                        </>
+                    )}
+                </SidebarProvider>
+            </ChatWindowProvider>
+        </WebSocketProvider>
+    );
+}
+
+function RouteComponent() {
+    return (
+        <ReduxProvider store={store}>
+            <LayoutContent />
         </ReduxProvider>
     );
 }
