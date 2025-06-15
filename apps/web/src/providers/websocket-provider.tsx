@@ -195,7 +195,7 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
                                 return newNotifications;
                             });
 
-                            queryClient.invalidateQueries({ queryKey: ['followings'] });
+                            queryClient.invalidateQueries({ queryKey: ['followings', user.id] });
                         }
 
                         if (message.kind === 'follow-request-accepted') {
@@ -207,8 +207,8 @@ export const WebSocketProvider: React.FC<Props> = ({ children }) => {
                                 return newNotifications;
                             });
 
-                            queryClient.invalidateQueries({ queryKey: ['followings'] });
-                            queryClient.invalidateQueries({ queryKey: ['followers'] });
+                            queryClient.invalidateQueries({ queryKey: ['followings', user.id] });
+                            queryClient.invalidateQueries({ queryKey: ['followers', user.id] });
                             queryClient.invalidateQueries({ queryKey: ['follow-request-status'] });
                         }
                         break;
