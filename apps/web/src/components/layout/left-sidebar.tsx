@@ -9,15 +9,16 @@ import {
     SidebarMenuItem
 } from 'src/components/ui/sidebar';
 import { Bell, Cog, House, LucideIcon, Mail, UserRound } from 'lucide-react';
-import { Link } from '@tanstack/react-router';
+import { Link, useLocation } from '@tanstack/react-router';
 import AccountButton from '@/web/components/small/account-button';
 import { useUser } from '@/web/lib/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import NotificationsSheet from '@/web/components/layout/notifications-sheet';
 import { Badge } from '@/web/components/ui/badge';
 import { useWebSocket } from '@/web/providers/websocket-provider';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/web/redux/store';
+import { collapseSidebar } from '@/web/redux/slices/ui-slice';
 
 type Item = {
     title: string;
@@ -30,7 +31,11 @@ const LeftSidebar = () => {
     const { data: user } = useUser();
     const [showNotifications, setShowNotification] = useState(false);
     const { followRequestNotifications, followRequestAcceptedNotifications } = useWebSocket();
-    const { isSidebarVisible } = useSelector((state: RootState) => state.ui);
+    const { isSidebarVisible, isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
+    const dispatch = useDispatch();
+    const location = useLocation();
+
+    const isMessagesPage = location.pathname === '/messages';
 
     const getItems = (): Item[] => {
         if (!user) return [];
@@ -43,7 +48,11 @@ const LeftSidebar = () => {
             },
             {
                 title: 'Notifications',
-                onClick: () => setShowNotification((prev) => !prev),
+                onClick: () => {
+                    if (!showNotifications) {
+                        setShowNotification(true);
+                    }
+                },
                 icon: Bell
             },
             {
@@ -69,13 +78,27 @@ const LeftSidebar = () => {
     const totalUnseenNotifications = unseenFollowRequestNotifications.length + unseenFollowRequestAcceptedNotifications.length;
 
     const renderMenuButton = (item: Item) => {
+        const isActive = item.url ? location.pathname === item.url : false;
+        const isNotificationsButton = item.title === 'Notifications';
+
         if (item.onClick) {
             return (
-                <SidebarMenuButton onClick={item.onClick} className="flex justify-center xl:justify-start [&>svg]:size-6">
-                    <item.icon />
-                    <span className="hidden xl:inline">{item.title}</span>
-                    {totalUnseenNotifications > 0 && item.title === 'Notifications' && (
-                        <Badge variant="destructive" className="ml-auto">
+                <SidebarMenuButton
+                    onClick={isNotificationsButton && showNotifications ? undefined : item.onClick}
+                    className={`relative flex min-h-12 items-center transition-all duration-300 [&>svg]:size-6 ${
+                        isSidebarCollapsed ? 'w-16 justify-center' : 'w-full justify-center px-3 xl:justify-start'
+                    } ${isActive ? 'bg-primary/10 text-primary' : ''} ${isNotificationsButton && showNotifications ? 'pointer-events-none' : ''}`}
+                >
+                    <item.icon className="flex-shrink-0" />
+                    <span
+                        className={`truncate transition-all duration-300 ${
+                            isSidebarCollapsed ? 'w-0 overflow-hidden opacity-0' : 'ml-2 hidden w-auto opacity-100 xl:block'
+                        }`}
+                    >
+                        {item.title}
+                    </span>
+                    {totalUnseenNotifications > 0 && item.title === 'Notifications' && !isSidebarCollapsed && (
+                        <Badge variant="destructive" className="absolute right-2 flex-shrink-0 transition-opacity duration-300">
                             {totalUnseenNotifications}
                         </Badge>
                     )}
@@ -85,36 +108,57 @@ const LeftSidebar = () => {
 
         return (
             <SidebarMenuButton asChild>
-                <Link to={item.url} preload={false} className="flex justify-center xl:justify-start [&>svg]:size-6">
-                    <item.icon />
-                    <span className="hidden xl:inline">{item.title}</span>
+                <Link
+                    to={item.url}
+                    preload={false}
+                    className={`flex min-h-12 items-center transition-all duration-300 [&>svg]:size-6 ${
+                        isSidebarCollapsed ? 'w-16 justify-center' : 'w-full justify-center px-3 xl:justify-start'
+                    } ${isActive ? 'bg-primary/10 text-primary' : ''}`}
+                >
+                    <item.icon className="flex-shrink-0" />
+                    <span
+                        className={`truncate transition-all duration-300 ${
+                            isSidebarCollapsed ? 'w-0 overflow-hidden opacity-0' : 'ml-2 hidden w-auto opacity-100 xl:block'
+                        }`}
+                    >
+                        {item.title}
+                    </span>
                 </Link>
             </SidebarMenuButton>
         );
     };
+
+    useEffect(() => {
+        const shouldCollapse = showNotifications || isMessagesPage;
+        dispatch(collapseSidebar(shouldCollapse));
+    }, [showNotifications, isMessagesPage, dispatch]);
 
     return (
         <div className="relative flex">
             <Sidebar
                 collapsible="none"
                 data-state={!isSidebarVisible ? 'closed' : 'open'}
-                className={`z-52 fixed inset-y-0 left-0 w-52 text-white transition-transform duration-500 data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0`}
+                className={`fixed inset-y-0 left-0 z-[80] overflow-hidden text-white transition-all duration-300 data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0 ${
+                    isSidebarCollapsed ? 'w-16' : 'w-16 xl:w-64'
+                }`}
             >
-                <SidebarContent className="flex-none lg:flex-1">
-                    <SidebarGroup className="w-min lg:w-full">
-                        <SidebarGroupContent className="w-min lg:w-full">
-                            <SidebarMenu className="w-min flex-row lg:w-full lg:flex-col">
+                <SidebarContent className={`flex-none overflow-hidden lg:flex-1 ${isSidebarCollapsed ? 'w-16' : 'w-full'}`}>
+                    <SidebarGroup className={`overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'w-16 px-0' : 'w-full px-2'}`}>
+                        <SidebarGroupContent className="overflow-hidden">
+                            <SidebarMenu className={`flex-col space-y-1 overflow-hidden ${isSidebarCollapsed ? 'w-16' : 'w-full'}`}>
                                 {getItems().map((item) => (
-                                    <SidebarMenuItem key={item.title}>{renderMenuButton(item)}</SidebarMenuItem>
+                                    <SidebarMenuItem key={item.title} className={`overflow-hidden ${isSidebarCollapsed ? 'w-16' : 'w-full'}`}>
+                                        {renderMenuButton(item)}
+                                    </SidebarMenuItem>
                                 ))}
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </SidebarGroup>
                 </SidebarContent>
-                <SidebarFooter>
-                    <SidebarMenu>
-                        <SidebarMenuItem>
-                            <AccountButton />
+                <SidebarFooter className={`overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'w-16 px-0' : 'w-full px-2'}`}>
+                    <SidebarMenu className="overflow-hidden">
+                        <SidebarMenuItem className={`overflow-hidden ${isSidebarCollapsed ? 'w-16' : 'w-full'}`}>
+                            <AccountButton isCollapsed={isSidebarCollapsed} />
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarFooter>

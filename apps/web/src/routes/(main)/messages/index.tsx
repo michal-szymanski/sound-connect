@@ -16,6 +16,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/web/components/ui/form';
 import StatusAvatar from '@/web/components/small/status-avatar';
 import useContacts from '@/web/hooks/use-contacts';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/web/redux/store';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
@@ -25,6 +27,7 @@ function RouteComponent() {
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, status, roomMessages } = useWebSocket();
     const { data: user } = useUser();
     const { users } = useContacts();
+    const { isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
 
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
     const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
@@ -171,7 +174,7 @@ function RouteComponent() {
 
     return (
         <div className="flex h-full w-full overflow-hidden">
-            <div className="bg-muted absolute left-16 top-0 z-20 flex h-screen w-80 flex-col border-r xl:left-64">
+            <div className={`bg-muted absolute top-0 z-[60] flex h-screen w-80 flex-col border-r ${isSidebarCollapsed ? 'left-16' : 'left-16 xl:left-64'}`}>
                 <div className="border-b p-4 font-semibold">Contacts</div>
                 <div className="min-h-0 flex-1">
                     <ScrollArea className="h-full">
@@ -179,7 +182,7 @@ function RouteComponent() {
                     </ScrollArea>
                 </div>
             </div>
-            <div className="ml-96 flex flex-1 flex-col xl:ml-[576px]">
+            <div className={`flex flex-1 flex-col ${isSidebarCollapsed ? 'ml-96' : 'ml-96 xl:ml-[576px]'}`}>
                 <div className="bg-background flex items-center gap-2 border-b p-4 font-semibold">{renderHeader()}</div>
                 <div className="bg-background min-h-0 flex-1">
                     <ScrollArea className="h-full p-4">
