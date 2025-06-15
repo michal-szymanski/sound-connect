@@ -10,6 +10,7 @@ import { FollowRequestNotificationItem, FollowRequestAcceptedNotificationItem, U
 import { useQueryClient } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { showSidebar } from '@/web/redux/slices/ui-slice';
+import { useUser } from '@/web/lib/react-query';
 
 type Props = {
     open: boolean;
@@ -20,6 +21,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
     const { followRequestNotifications, followRequestAcceptedNotifications } = useWebSocket();
     const [users, setUsers] = useState<UserDTO[]>([]);
     const dispatch = useDispatch();
+    const { data: currentUser } = useUser();
 
     useEffect(() => {
         for (const notification of Array.from(followRequestNotifications.values())) {
@@ -131,7 +133,9 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                                         notification: { ...notification, accepted: true }
                                     }
                                 });
-                                await queryClient.invalidateQueries({ queryKey: ['followers', 'mutual-followers', 'follow-request-status'] });
+                                await queryClient.invalidateQueries({ queryKey: ['followers', currentUser?.id] });
+                                await queryClient.invalidateQueries({ queryKey: ['followings', currentUser?.id] });
+                                await queryClient.invalidateQueries({ queryKey: ['follow-request-status'] });
                             }}
                         >
                             Accept
