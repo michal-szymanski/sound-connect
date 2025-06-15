@@ -82,7 +82,7 @@ export const unfollowUser = async (userId: string, followedUserId: string) => {
 };
 
 const uf2 = aliasedTable(usersFollowersTable, 'uf2');
-const getMutualFollowersQuery = db
+const getContactsQuery = db
     .select({
         id: users.id,
         name: users.name,
@@ -94,8 +94,8 @@ const getMutualFollowersQuery = db
     .where(eq(usersFollowersTable.userId, sql.placeholder('userId')))
     .prepare();
 
-export const getMutualFollowers = async (userId: string) => {
-    const results = await getMutualFollowersQuery.execute({ userId });
+export const getContacts = async (userId: string) => {
+    const results = await getContactsQuery.execute({ userId });
     const schema = z.array(userDTOSchema);
     return schema.parse(results);
 };

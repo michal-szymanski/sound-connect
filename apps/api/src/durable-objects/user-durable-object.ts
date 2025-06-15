@@ -5,7 +5,8 @@ import {
     FollowRequestAcceptedNotificationItem,
     WebSocketMessage,
     webSocketMessageSchema,
-    onlineStatusMessageSchema
+    onlineStatusMessageSchema,
+    UserDTO
 } from '@sound-connect/common/types/models';
 import { NotificationsService } from './services/notifications-service';
 import { ChatService } from './services/chat-service';
@@ -44,8 +45,9 @@ export class UserDurableObject extends DurableObject {
             const wsPair = new WebSocketPair();
             const [client, server] = Object.values(wsPair);
 
-            server.accept();
             await this.handleConnection(server);
+            await this.chatService.initializeRooms();
+            await this.storage.setAlarm(Date.now() + ONLINE_STATUS_INTERVAL);
 
             return new Response(null, { status: 101, webSocket: client });
         }
@@ -91,6 +93,7 @@ export class UserDurableObject extends DurableObject {
     }
 
     async notifyOnline(userId: string | null) {
+        console.log('notifyOnline', userId);
         if (!userId || !this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
             await this.storage.deleteAlarm();
             return false;
@@ -135,8 +138,8 @@ export class UserDurableObject extends DurableObject {
         return this.notificationsService.getNotification(notificationId);
     }
 
-    private subscribe(userIds: string[]) {
-        userIds.forEach((id) => this.subscribers.add(id));
+    initializeSubscribers(users: UserDTO[]) {
+        this.subscribers = new Set(users.map((user) => user.id));
     }
 
     private unsubscribe(userIds: string[]) {
@@ -148,9 +151,8 @@ export class UserDurableObject extends DurableObject {
     }
 
     private async handleConnection(webSocket: WebSocket) {
+        webSocket.accept();
         this.websocket = webSocket;
-
-        await this.chatService.initializeRooms();
 
         webSocket.addEventListener('message', async (event) => {
             try {
