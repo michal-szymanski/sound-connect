@@ -1,6 +1,9 @@
 import { ChatMessage, chatMessageSchema, WebSocketMessage } from '@sound-connect/common/types/models';
 import { DurableObject } from 'cloudflare:workers';
 
+const MESSAGES_KEY = 'messages';
+const PARTICIPANTS_KEY = 'participants';
+
 export class ChatDurableObject extends DurableObject {
     private storage: DurableObjectStorage;
     private roomId: string | null = null;
@@ -12,32 +15,6 @@ export class ChatDurableObject extends DurableObject {
     ) {
         super(ctx, env);
         this.storage = ctx.storage;
-    }
-
-    async fetch(request: Request): Promise<Response> {
-        const url = new URL(request.url);
-        const userId = request.headers.get('X-User-Id');
-
-        const pathMatch = url.pathname.match(/\/room\/([^\/]+)/);
-        if (pathMatch) {
-            this.roomId = pathMatch[1];
-        }
-
-        if (!this.roomId) {
-            return new Response('Bad Request: Missing room ID', { status: 400 });
-        }
-
-        if (!userId) {
-            return new Response('Unauthorized: Missing user ID', { status: 401 });
-        }
-
-        await this.loadParticipants();
-
-        if (request.method === 'GET' && url.pathname.endsWith('/history')) {
-            return await this.getRoomHistoryResponse();
-        }
-
-        return new Response('Not Found', { status: 404 });
     }
 
     async subscribeUser(userId: string, roomId: string): Promise<void> {
@@ -97,42 +74,30 @@ export class ChatDurableObject extends DurableObject {
 
     async getRoomHistory(roomId: string): Promise<ChatMessage[]> {
         this.roomId = roomId;
-        const historyKey = 'messages';
 
-        const history = (await this.storage.get<ChatMessage[]>(historyKey)) || [];
+        const history = (await this.storage.get<ChatMessage[]>(MESSAGES_KEY)) || [];
 
         return history;
     }
 
     private async loadParticipants() {
-        const storedParticipants = (await this.storage.get<string[]>('participants')) || [];
+        const storedParticipants = (await this.storage.get<string[]>(PARTICIPANTS_KEY)) || [];
         this.participants = new Set(storedParticipants);
     }
 
     private async saveParticipants() {
-        await this.storage.put('participants', Array.from(this.participants));
+        await this.storage.put(PARTICIPANTS_KEY, Array.from(this.participants));
     }
 
     private async storeMessage(message: ChatMessage) {
-        const historyKey = 'messages';
-        const history = (await this.storage.get<ChatMessage[]>(historyKey)) || [];
+        const history = (await this.storage.get<ChatMessage[]>(MESSAGES_KEY)) || [];
         history.push(message);
 
         if (history.length > 1000) {
             history.splice(0, history.length - 1000);
         }
 
-        await this.storage.put(historyKey, history);
-    }
-
-    private async getRoomHistoryResponse(): Promise<Response> {
-        const historyKey = 'messages';
-        const history = (await this.storage.get<ChatMessage[]>(historyKey)) || [];
-
-        return new Response(JSON.stringify(history), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-        });
+        await this.storage.put(MESSAGES_KEY, history);
     }
 
     private async broadcastMessage(message: WebSocketMessage, excludeUserId?: string) {
