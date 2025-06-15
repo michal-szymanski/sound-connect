@@ -22,7 +22,7 @@ export class UserDurableObject extends DurableObject {
 
     constructor(
         ctx: DurableObjectState,
-        public env: Cloudflare.Env
+        public override env: Cloudflare.Env
     ) {
         super(ctx, env);
         this.storage = ctx.storage;
@@ -30,7 +30,7 @@ export class UserDurableObject extends DurableObject {
         this.chatService = new ChatService(this.storage, this.env, this.userId);
     }
 
-    async fetch(request: Request): Promise<Response> {
+    override async fetch(request: Request): Promise<Response> {
         const upgradeHeader = request.headers.get('Upgrade');
         const userId = request.headers.get('X-User-Id');
 
@@ -57,7 +57,7 @@ export class UserDurableObject extends DurableObject {
         return new Response('Not Found', { status: 404 });
     }
 
-    async alarm() {
+    override async alarm() {
         if (!this.userId) {
             return;
         }

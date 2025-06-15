@@ -12,6 +12,11 @@
         "noImplicitAny": true,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedIndexedAccess": true,
+        "noImplicitOverride": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUncheckedSideEffectImports": true,
+        "allowUnusedLabels": false,
+        "allowUnreachableCode": false,
         "noEmit": true
     }
 }

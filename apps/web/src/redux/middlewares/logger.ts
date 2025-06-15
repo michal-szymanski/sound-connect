@@ -8,7 +8,7 @@ const colors = {
 } as const;
 
 export const loggerMiddleware: Middleware = (store) => (next) => (action) => {
-    if (process.env.NODE_ENV !== 'development') {
+    if (process.env['NODE_ENV'] !== 'development') {
         return next(action);
     }
 

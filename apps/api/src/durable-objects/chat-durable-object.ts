@@ -11,7 +11,7 @@ export class ChatDurableObject extends DurableObject {
 
     constructor(
         ctx: DurableObjectState,
-        public env: Cloudflare.Env
+        public override env: Cloudflare.Env
     ) {
         super(ctx, env);
         this.storage = ctx.storage;
