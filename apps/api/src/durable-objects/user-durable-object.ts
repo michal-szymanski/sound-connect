@@ -84,10 +84,6 @@ export class UserDurableObject extends DurableObject {
         }
     }
 
-    async getRoomHistory(roomId: string): Promise<Response> {
-        return this.chatService.getRoomHistory(roomId);
-    }
-
     async sendMessage(message: WebSocketMessage) {
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
             this.websocket.send(JSON.stringify(message));

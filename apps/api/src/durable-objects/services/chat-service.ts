@@ -64,22 +64,6 @@ export class ChatService {
         }
     }
 
-    async getRoomHistory(roomId: string): Promise<Response> {
-        try {
-            const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
-            const chatStub = this.env.ChatDO.get(chatId);
-            const history = await chatStub.getRoomHistory(roomId);
-
-            return new Response(JSON.stringify(history), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (error) {
-            console.error(`[ChatService] Error getting room history for ${roomId}:`, error);
-            return new Response('Internal Server Error', { status: 500 });
-        }
-    }
-
     async cleanup() {
         for (const roomId of this.subscribedRooms) {
             await this.unsubscribeFromRoom({ type: 'unsubscribe', roomId });
