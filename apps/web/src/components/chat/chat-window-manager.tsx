@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import { ChatWindow } from './chat-window';
 import { UserDTO } from '@sound-connect/common/types/models';
 import { APP_NAME_NORMALIZED } from '@sound-connect/common/constants';
+import { useLocation } from '@tanstack/react-router';
 
 type ChatWindowState = {
     user: UserDTO;
@@ -71,6 +72,7 @@ const saveToStorage = (windows: Map<string, ChatWindowState>) => {
 
 export const ChatWindowProvider = ({ children }: Props) => {
     const [openWindows, setOpenWindows] = useState<Map<string, ChatWindowState>>(new Map());
+    const location = useLocation();
 
     const openChatWindow = useCallback((user: UserDTO) => {
         setOpenWindows((prev) => {
@@ -114,6 +116,7 @@ export const ChatWindowProvider = ({ children }: Props) => {
     };
 
     const windowsArray = Array.from(openWindows.entries());
+    const isOnMessagesPage = location.pathname === '/messages';
 
     useEffect(() => {
         const storedWindows = loadFromStorage();
@@ -127,16 +130,17 @@ export const ChatWindowProvider = ({ children }: Props) => {
     return (
         <Context.Provider value={contextValue}>
             {children}
-            {windowsArray.map(([userId, windowState], index) => (
-                <ChatWindow
-                    key={userId}
-                    user={windowState.user}
-                    isMinimized={windowState.isMinimized}
-                    position={index}
-                    onClose={() => closeChatWindow(userId)}
-                    onToggleMinimize={() => toggleMinimize(userId)}
-                />
-            ))}
+            {!isOnMessagesPage &&
+                windowsArray.map(([userId, windowState], index) => (
+                    <ChatWindow
+                        key={userId}
+                        user={windowState.user}
+                        isMinimized={windowState.isMinimized}
+                        position={index}
+                        onClose={() => closeChatWindow(userId)}
+                        onToggleMinimize={() => toggleMinimize(userId)}
+                    />
+                ))}
         </Context.Provider>
     );
 };
