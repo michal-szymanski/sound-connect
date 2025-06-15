@@ -8,7 +8,8 @@ import {
     postReactionSchema,
     postSchema,
     feedItemSchema,
-    chatMessageSchema
+    chatMessageSchema,
+    postLikeDataSchema
 } from '@sound-connect/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { getWebRequest } from '@tanstack/react-start/server';
@@ -202,6 +203,25 @@ export const deleteNotification = createServerFn()
         return { success: true, body: null } as const;
     });
 
+export const followUser = createServerFn({ method: 'POST' })
+    .validator((data: { userId: string }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/users/${data.userId}/follow`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
+    });
+
 export const unfollowUser = createServerFn({ method: 'POST' })
     .validator((data: { userId: string }) => data)
     .handler(async ({ data }) => {
@@ -363,4 +383,109 @@ export const updateNotification = createServerFn()
         }
 
         return { success: true, body: null } as const;
+    });
+
+export const likePost = createServerFn({ method: 'POST' })
+    .validator((data: { postId: number }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/posts/${data.postId}/like`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = postLikeDataSchema;
+
+            return { success: true, body: schema.parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: null } as const;
+        }
+    });
+
+export const unlikePost = createServerFn({ method: 'POST' })
+    .validator((data: { postId: number }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/posts/${data.postId}/like`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = postLikeDataSchema;
+
+            return { success: true, body: schema.parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: null } as const;
+        }
+    });
+
+export const getPostLikesUsers = createServerFn()
+    .validator((data: { postId: number }) => data)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/posts/${data.postId}/likes/users`, {
+            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = z.array(userDTOSchema);
+
+            return { success: true, body: schema.parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: null } as const;
+        }
+    });
+
+export const getPostLikes = createServerFn()
+    .validator((data: { postId: number }) => data)
+    .handler(async ({ data }) => {
+        const { headers } = getWebRequest()!;
+        const { API, API_URL } = await getBindings();
+
+        const response = await API.fetch(`${API_URL}/posts/${data.postId}/likes`, {
+            headers
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = postLikeDataSchema;
+
+            return { success: true, body: schema.parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: null } as const;
+        }
     });

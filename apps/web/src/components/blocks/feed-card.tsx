@@ -1,12 +1,16 @@
 import { Button } from 'src/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from 'src/components/ui/card';
-import { Heart, MessageCircle } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { useFollowings, useUser } from 'src/lib/react-query';
-import { formatDistanceToNowStrict } from 'date-fns';
 import { Link } from '@tanstack/react-router';
+import { useElapsedTime } from 'src/lib/utils';
 import { FeedItem, PostReaction } from '@sound-connect/common/types/models';
 import StatusAvatar from '@/web/components/small/status-avatar';
-import { useChatWindows } from '@/web/components/chat/chat-window-manager';
+import { likePost, unlikePost } from '@/web/server-functions/models';
+import { useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import LikesDialog from '@/web/components/dialogs/likes-dialog';
 
 type Props = {
     item: FeedItem;
@@ -22,18 +26,77 @@ const formatContent = (content: string) => {
 };
 
 const renderLikes = (reactions: PostReaction[]) => {
-    if (!reactions) return null;
-    const suffix = reactions.length === 1 ? 'like' : 'likes';
-    return `${reactions.length} ${suffix}`;
+    if (!reactions || reactions.length === 0) return null;
+    const count = reactions.length;
+    if (count === 1) return '1 like';
+    return `${count.toLocaleString()} likes`;
 };
 
 const FeedCard = ({ item: { post, user, reactions } }: Props) => {
     const { data: currentUser } = useUser();
     const { data: followings } = useFollowings(currentUser);
-    const { openChatWindow } = useChatWindows();
+    const queryClient = useQueryClient();
+    const [isLiking, setIsLiking] = useState(false);
+    const [justLiked, setJustLiked] = useState(false);
+    const [isLikesDialogOpen, setIsLikesDialogOpen] = useState(false);
+    const elapsedTime = useElapsedTime(post.createdAt);
 
     const canFollow = currentUser?.id !== post.userId && !followings.some((following) => following.id === post.userId);
-    const canMessage = currentUser?.id !== post.userId;
+
+    const [optimisticLikes, setOptimisticLikes] = useState<PostReaction[]>(reactions);
+    const [optimisticIsLiked, setOptimisticIsLiked] = useState(reactions.some((reaction) => reaction.userId === currentUser?.id));
+
+    // Update optimistic state when reactions prop changes
+    useEffect(() => {
+        setOptimisticLikes(reactions);
+        setOptimisticIsLiked(reactions.some((reaction) => reaction.userId === currentUser?.id));
+    }, [reactions, currentUser?.id]);
+
+    const isLiked = optimisticIsLiked;
+    const likesCount = optimisticLikes.length;
+
+    const handleLikeToggle = async () => {
+        if (!currentUser || isLiking) return;
+
+        setIsLiking(true);
+
+        // Optimistic update
+        const wasLiked = optimisticIsLiked;
+        if (wasLiked) {
+            // Remove like optimistically
+            setOptimisticLikes((prev) => prev.filter((reaction) => reaction.userId !== currentUser.id));
+            setOptimisticIsLiked(false);
+        } else {
+            // Add like optimistically
+            const newReaction: PostReaction = {
+                id: Date.now(), // temporary ID
+                userId: currentUser.id,
+                postId: post.id,
+                createdAt: new Date().toISOString()
+            };
+            setOptimisticLikes((prev) => [...prev, newReaction]);
+            setOptimisticIsLiked(true);
+            setJustLiked(true);
+            setTimeout(() => setJustLiked(false), 300);
+        }
+
+        try {
+            if (wasLiked) {
+                await unlikePost({ data: { postId: post.id } });
+            } else {
+                await likePost({ data: { postId: post.id } });
+            }
+
+            queryClient.invalidateQueries({ queryKey: ['feed'] });
+        } catch (error) {
+            // Revert optimistic update on error
+            setOptimisticLikes(reactions);
+            setOptimisticIsLiked(reactions.some((reaction) => reaction.userId === currentUser?.id));
+            toast.error('Failed to update like status');
+        } finally {
+            setIsLiking(false);
+        }
+    };
 
     if (!user) return null;
 
@@ -47,11 +110,7 @@ const FeedCard = ({ item: { post, user, reactions } }: Props) => {
                     </Link>
                 </Button>
                 <div className="text-muted-foreground">•</div>
-                <div className="text-muted-foreground">
-                    {formatDistanceToNowStrict(new Date(post.createdAt), {
-                        addSuffix: true
-                    })}
-                </div>
+                <div className="text-muted-foreground">{elapsedTime}</div>
                 {canFollow && (
                     <>
                         <div className="text-muted-foreground">•</div>
@@ -62,25 +121,30 @@ const FeedCard = ({ item: { post, user, reactions } }: Props) => {
                 )}
             </CardHeader>
             <CardContent className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: formatContent(post.content) }} />
-            <CardFooter className="flex-col items-start gap-1">
+            <CardFooter className="flex-col items-start gap-2">
                 <div className="inline-flex gap-1">
-                    <Button variant="ghost" size="sm" className="group p-0 hover:bg-transparent hover:text-red-500 [&_svg]:size-6">
-                        <Heart className="group-hover:fill-red-500" />
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleLikeToggle}
+                        className="group cursor-pointer rounded-full p-2 hover:bg-transparent hover:text-current dark:hover:bg-transparent"
+                    >
+                        <Heart
+                            className={`size-6 transition-colors duration-150 ease-out ${
+                                isLiked ? 'fill-red-500 text-red-500' : 'text-gray-700 group-hover:text-white dark:text-gray-300 dark:group-hover:text-white'
+                            } ${justLiked ? 'animate-heartbeat' : ''}`}
+                        />
                     </Button>
-                    {canMessage && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openChatWindow(user)}
-                            className="group p-0 hover:bg-transparent hover:text-blue-500 [&_svg]:size-6"
-                            title={`Message ${user.name}`}
-                        >
-                            <MessageCircle className="group-hover:fill-blue-500" />
-                        </Button>
+                </div>
+                <div className="flex h-5 items-center">
+                    {optimisticLikes.length > 0 && (
+                        <button onClick={() => setIsLikesDialogOpen(true)} className="text-sm font-semibold text-gray-900 hover:underline dark:text-gray-100">
+                            {renderLikes(optimisticLikes)}
+                        </button>
                     )}
                 </div>
-                <div className="text-sm font-semibold">{renderLikes(reactions)}</div>
             </CardFooter>
+            <LikesDialog isOpen={isLikesDialogOpen} onClose={() => setIsLikesDialogOpen(false)} postId={post.id} />
         </Card>
     );
 };

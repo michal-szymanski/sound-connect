@@ -4,7 +4,7 @@ import { useWebSocket } from '@/web/providers/websocket-provider';
 import { deleteNotification, getUser, sendFollowRequest, updateNotification } from '@/web/server-functions/models';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { formatDistanceToNowStrict, parseISO } from 'date-fns';
+import { useElapsedTime } from 'src/lib/utils';
 import StatusAvatar from '@/web/components/small/status-avatar';
 import { FollowRequestNotificationItem, FollowRequestAcceptedNotificationItem, UserDTO } from '@sound-connect/common/types/models';
 import { useQueryClient } from '@tanstack/react-query';
@@ -84,8 +84,9 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
     const router = useRouter();
     const queryClient = useQueryClient();
 
-    const renderFollowRequestContent = (notification: FollowRequestNotificationItem) => {
+    const FollowRequestContent = ({ notification }: { notification: FollowRequestNotificationItem }) => {
         const user = users.find((u) => u.id === notification.from);
+        const elapsedTime = useElapsedTime(notification.date);
 
         if (!user) return null;
 
@@ -103,11 +104,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                     <div>
                         <span className="font-bold">{user.name}</span>{' '}
                         {notification.accepted ? 'follow request was accepted. You can now follow back.' : 'requested to follow you.'}{' '}
-                        <span className="text-muted-foreground">
-                            {formatDistanceToNowStrict(parseISO(notification.date), {
-                                addSuffix: true
-                            })}
-                        </span>
+                        <span className="text-muted-foreground">{elapsedTime}</span>
                     </div>
                 </div>
                 <div className="inline-flex gap-2">
@@ -157,8 +154,9 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
         );
     };
 
-    const renderFollowRequestAcceptedContent = (notification: FollowRequestAcceptedNotificationItem) => {
+    const FollowRequestAcceptedContent = ({ notification }: { notification: FollowRequestAcceptedNotificationItem }) => {
         const user = users.find((u) => u.id === notification.from);
+        const elapsedTime = useElapsedTime(notification.date);
 
         if (!user) return null;
 
@@ -175,11 +173,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                     <StatusAvatar user={user} />
                     <div>
                         <span className="font-bold">{user.name}</span> accepted your follow request.{' '}
-                        <span className="text-muted-foreground">
-                            {formatDistanceToNowStrict(parseISO(notification.date), {
-                                addSuffix: true
-                            })}
-                        </span>
+                        <span className="text-muted-foreground">{elapsedTime}</span>
                     </div>
                 </div>
                 <div className="inline-flex gap-2">
@@ -212,9 +206,11 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                 {allNotifications.length === 0 && <SheetDescription className="px-7 py-5 text-sm">You don't have any notifications.</SheetDescription>}
                 {allNotifications.map((item) => (
                     <div key={item.notification.id} className="hover:bg-muted/50 px-7 py-5 text-sm">
-                        {item.type === 'follow-request'
-                            ? renderFollowRequestContent(item.notification as FollowRequestNotificationItem)
-                            : renderFollowRequestAcceptedContent(item.notification as FollowRequestAcceptedNotificationItem)}
+                        {item.type === 'follow-request' ? (
+                            <FollowRequestContent notification={item.notification as FollowRequestNotificationItem} />
+                        ) : (
+                            <FollowRequestAcceptedContent notification={item.notification as FollowRequestAcceptedNotificationItem} />
+                        )}
                     </div>
                 ))}
             </SheetContent>
