@@ -47,6 +47,7 @@ export class UserDurableObject extends DurableObject {
 
             await this.handleConnection(server);
             await this.chatService.initializeRooms();
+            await this.subscribeOthersToCurrentUser();
             await this.storage.setAlarm(Date.now() + ONLINE_STATUS_INTERVAL);
 
             return new Response(null, { status: 101, webSocket: client });
@@ -56,6 +57,10 @@ export class UserDurableObject extends DurableObject {
     }
 
     async alarm() {
+        if (!this.userId) {
+            return;
+        }
+
         const subscribers = Array.from(this.subscribers);
 
         for (const userId of subscribers) {
@@ -64,7 +69,7 @@ export class UserDurableObject extends DurableObject {
             const success = await stub.notifyOnline(this.userId);
 
             if (!success) {
-                this.unsubscribe([userId]);
+                this.unsubscribe(userId);
             }
         }
 
@@ -142,8 +147,24 @@ export class UserDurableObject extends DurableObject {
         this.subscribers = new Set(users.map((user) => user.id));
     }
 
-    private unsubscribe(userIds: string[]) {
-        userIds.forEach((id) => this.subscribers.delete(id));
+    private async subscribeOthersToCurrentUser() {
+        if (!this.userId) return;
+
+        const subscribers = Array.from(this.subscribers);
+
+        for (const userId of subscribers) {
+            const id = this.env.UserDO.idFromName(`user:${userId}`);
+            const stub = this.env.UserDO.get(id);
+            await stub.subscribe(this.userId);
+        }
+    }
+
+    async subscribe(userId: string) {
+        this.subscribers.add(userId);
+    }
+
+    private unsubscribe(userId: string) {
+        this.subscribers.delete(userId);
     }
 
     private async broadcastNotifications() {
