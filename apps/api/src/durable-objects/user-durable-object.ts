@@ -43,7 +43,8 @@ export class UserDurableObject extends DurableObject {
 
         if (upgradeHeader && upgradeHeader.toLowerCase() === 'websocket') {
             const wsPair = new WebSocketPair();
-            const [client, server] = Object.values(wsPair);
+            const client = wsPair[0];
+            const server = wsPair[1];
 
             await this.handleConnection(server);
             await this.chatService.initializeRooms();
