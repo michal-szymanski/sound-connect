@@ -1,0 +1,21 @@
+import { mediaTable } from '@/api/db/schema';
+import { db } from '@/api/db';
+import { mediaSchema, mediaTypeSchema } from '@sound-connect/common/types/models';
+import z from 'zod';
+import { sql } from 'drizzle-orm';
+
+export const addMedia = async (postId: number, mediaKeys: string[]) => {
+    if (mediaKeys.length === 0) {
+        return [];
+    }
+
+    const values = mediaKeys.map((mediaKey) => ({
+        postId,
+        url: mediaKey,
+        type: mediaTypeSchema.parse('image')
+    }));
+
+    const results = await db.insert(mediaTable).values(values).returning();
+
+    return z.array(mediaSchema).parse(results);
+};

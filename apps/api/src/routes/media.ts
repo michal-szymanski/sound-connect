@@ -38,7 +38,7 @@ mediaRoutes.get('/media/:key', async (c) => {
             return c.json({ success: false, body: { message: 'Media not found' } }, 404);
         }
 
-        return c.json(r2Object);
+        return c.text(`https://${c.env.UsersBucket}.${c.env.a}.r2.cloudflarestorage.com/${key}`);
     } catch (error) {
         console.error(`[Server] Error getting media:`, error);
         return c.json({ message: 'Internal Server Error' }, 500);

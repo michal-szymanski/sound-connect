@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { HonoContext } from 'types';
 import { addPost, getFeed, getPostsByUserId, getReactions, likePost, unlikePost, getPostLikesData, getPostLikesUsers } from '@/api/db/queries/posts-queries';
+import { addMedia } from '@/api/db/queries/media-queries';
 
 const postsRoutes = new Hono<HonoContext>();
 
@@ -13,12 +14,58 @@ postsRoutes.get('/posts/:userId', async (c) => {
 });
 
 postsRoutes.post('/posts', async (c) => {
-    const body = await c.req.json();
-    const { content } = z.object({ content: z.string() }).parse(body);
-    const user = c.get('user');
-    await addPost(user.id, content);
+    try {
+        const form = await c.req.formData();
 
-    return c.json('ok');
+        const { content, media } = z
+            .object({
+                content: z.string(),
+                media: z.array(z.instanceof(File)).optional()
+            })
+            .parse({
+                content: form.get('content'),
+                media: form.getAll('media')
+            });
+
+        console.log({
+            content,
+            media
+        });
+        const user = c.get('user');
+        const postResults = await addPost(user.id, content);
+
+        if (!postResults) {
+            return c.json({ error: 'Failed to add post' }, 500);
+        }
+
+        if (!media || !media.length) {
+            return c.json({ post: postResults, media: [] });
+        }
+
+        const mediaKeys = [];
+
+        for (const file of media) {
+            const key = crypto.randomUUID();
+            const uploadedFile = await c.env.UsersBucket.put(key, file);
+
+            if (uploadedFile) {
+                mediaKeys.push(uploadedFile.key);
+            }
+        }
+
+        console.log({ postResults });
+        const mediaResults = await addMedia(postResults.id, mediaKeys);
+
+        return c.json({ post: postResults, media: mediaResults });
+    } catch (error) {
+        if (error instanceof z.ZodError) {
+            console.error({ error: z.prettifyError(error) });
+        } else {
+            console.error({ error });
+        }
+
+        return c.json({ error: 'Failed to add post' }, 500);
+    }
 });
 
 postsRoutes.get('/feed', async (c) => {

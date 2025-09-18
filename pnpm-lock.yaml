@@ -87,8 +87,8 @@ importers:
         specifier: ^4.0.0
         version: 4.15.2(@cloudflare/workers-types@4.20250517.0)
       zod:
-        specifier: ^3.25.32
-        version: 3.25.32
+        specifier: ^4.1.9
+        version: 4.1.9
 
   apps/web:
     dependencies:
@@ -102,8 +102,8 @@ importers:
         specifier: ^1.1.1
         version: 1.1.1(emoji-mart@5.6.0)(react@19.1.0)
       '@hookform/resolvers':
-        specifier: ^5.0.1
-        version: 5.0.1(react-hook-form@7.56.4)
+        specifier: ^5.2.2
+        version: 5.2.2(react-hook-form@7.56.4)
       '@radix-ui/react-aspect-ratio':
         specifier: ^1.1.2
         version: 1.1.6(@types/react-dom@19.1.5)(@types/react@19.1.4)(react-dom@19.1.0)(react@19.1.0)
@@ -253,10 +253,10 @@ importers:
         version: 4.3.0(typescript@5.8.3)(vite@6.3.5)
       wrangler:
         specifier: ^4.12.0
-        version: 4.15.2
+        version: 4.15.2(@cloudflare/workers-types@4.20250517.0)
       zod:
-        specifier: ^3.25.32
-        version: 3.25.32
+        specifier: ^4.1.9
+        version: 4.1.9
     devDependencies:
       '@types/react':
         specifier: ^19.0.12
@@ -277,8 +277,8 @@ importers:
   packages/common:
     dependencies:
       zod:
-        specifier: ^3.25.32
-        version: 3.25.32
+        specifier: ^4.1.9
+        version: 4.1.9
 
 packages:
 
@@ -609,7 +609,7 @@ packages:
       tinyglobby: 0.2.13
       unenv: 2.0.0-rc.15
       vite: 6.3.5(@types/node@22.15.18)
-      wrangler: 4.15.2
+      wrangler: 4.15.2(@cloudflare/workers-types@4.20250517.0)
       ws: 8.18.0
     transitivePeerDependencies:
       - bufferutil
@@ -1844,8 +1844,8 @@ packages:
     resolution: {integrity: sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw==}
     dev: false
 
-  /@hookform/resolvers@5.0.1(react-hook-form@7.56.4):
-    resolution: {integrity: sha512-u/+Jp83luQNx9AdyW2fIPGY6Y7NG68eN2ZW8FOJYL+M0i4s49+refdJdOp/A9n9HFQtQs3HIDHQvX3ZET2o7YA==}
+  /@hookform/resolvers@5.2.2(react-hook-form@7.56.4):
+    resolution: {integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==}
     peerDependencies:
       react-hook-form: ^7.55.0
     dependencies:
@@ -11955,32 +11955,6 @@ packages:
       '@cloudflare/workerd-windows-64': 1.20250508.0
     dev: false
 
-  /wrangler@4.15.2:
-    resolution: {integrity: sha512-Rv7zP61DOVzIS3af+/1UzJkRVpqu6VDRi6uIVMiwD1LkXG5Ov08tv94jgnE9bSjVf0paQg3dl0E89h+wQ0x/Bw==}
-    engines: {node: '>=18.0.0'}
-    hasBin: true
-    peerDependencies:
-      '@cloudflare/workers-types': ^4.20250508.0
-    peerDependenciesMeta:
-      '@cloudflare/workers-types':
-        optional: true
-    dependencies:
-      '@cloudflare/kv-asset-handler': 0.4.0
-      '@cloudflare/unenv-preset': 2.3.1(unenv@2.0.0-rc.15)(workerd@1.20250508.0)
-      blake3-wasm: 2.1.5
-      esbuild: 0.25.4
-      miniflare: 4.20250508.2
-      path-to-regexp: 6.3.0
-      unenv: 2.0.0-rc.15
-      workerd: 1.20250508.0
-    optionalDependencies:
-      fsevents: 2.3.3
-      sharp: 0.33.5
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: false
-
   /wrangler@4.15.2(@cloudflare/workers-types@4.20250517.0):
     resolution: {integrity: sha512-Rv7zP61DOVzIS3af+/1UzJkRVpqu6VDRi6uIVMiwD1LkXG5Ov08tv94jgnE9bSjVf0paQg3dl0E89h+wQ0x/Bw==}
     engines: {node: '>=18.0.0'}
@@ -12162,4 +12136,8 @@ packages:
 
   /zod@3.25.32:
     resolution: {integrity: sha512-OSm2xTIRfW8CV5/QKgngwmQW/8aPfGdaQFlrGoErlgg/Epm7cjb6K6VEyExfe65a3VybUOnu381edLb0dfJl0g==}
+    dev: false
+
+  /zod@4.1.9:
+    resolution: {integrity: sha512-HI32jTq0AUAC125z30E8bQNz0RQ+9Uc+4J7V97gLYjZVKRjeydPgGt6dvQzFrav7MYOUGFqqOGiHpA/fdbd0cQ==}
     dev: false

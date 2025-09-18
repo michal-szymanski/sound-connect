@@ -300,17 +300,19 @@ export const getChatHistory = createServerFn()
     });
 
 export const addPost = createServerFn({ method: 'POST' })
-    .validator((data: { content: string }) => data)
+    .validator((data: FormData) => data)
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
 
         const response = await API.fetch(`${API_URL}/posts`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
-            body: JSON.stringify(data),
+            headers: { Cookie: cookie ?? '' },
+            body: data,
             credentials: 'include'
         });
+
+        console.log({ response });
 
         if (!response.ok) {
             return await errorHandler(response);

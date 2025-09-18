@@ -32,7 +32,7 @@ const renderLikes = (reactions: PostReaction[]) => {
     return `${count.toLocaleString()} likes`;
 };
 
-const FeedCard = ({ item: { post, user, reactions } }: Props) => {
+const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
     const { data: currentUser } = useUser();
     const { data: followings } = useFollowings(currentUser);
     const queryClient = useQueryClient();
@@ -120,7 +120,12 @@ const FeedCard = ({ item: { post, user, reactions } }: Props) => {
                     </>
                 )}
             </CardHeader>
-            <CardContent className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: formatContent(post.content) }} />
+            <CardContent>
+                <div className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: formatContent(post.content) }} />
+                {media.map((m) => (
+                    <img key={m.id} src={`/media/${m.url}`} alt={m.type} className="h-auto w-full" />
+                ))}
+            </CardContent>
             <CardFooter className="flex-col items-start gap-2">
                 <div className="inline-flex gap-1">
                     <Button

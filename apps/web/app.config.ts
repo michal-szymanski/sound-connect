@@ -22,5 +22,12 @@ export default defineConfig({
         preset: 'cloudflare-module',
         unenv: cloudflare,
         modules: [nitroCloudflareBindings]
+        // routeRules: {
+        //     '/media/**': {
+        //         proxy: {
+        //             to: 'https://media.sound-connect.com/**'
+        //         }
+        //     }
+        // }
     }
 });

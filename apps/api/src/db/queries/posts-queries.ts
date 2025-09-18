@@ -1,4 +1,4 @@
-import { postsReactionsTable, postsTable, users } from '@/api/db/schema';
+import { mediaTable, postsReactionsTable, postsTable, users } from '@/api/db/schema';
 import { feedItemSchema, postReactionSchema, postSchema, userDTOSchema } from '@sound-connect/common/types/models';
 import { desc, eq, inArray, sql, and, count } from 'drizzle-orm';
 import z from 'zod';
@@ -58,9 +58,12 @@ export const getFeed = async () => {
         .from(postsReactionsTable)
         .where(inArray(postsReactionsTable.postId, postIds));
 
+    const media = await db.select().from(mediaTable).where(inArray(mediaTable.postId, postIds));
+
     const postsWithReactions = posts.map((post) => ({
         ...post,
-        reactions: reactions.filter((reaction) => reaction.postId === post.post.id)
+        reactions: reactions.filter((reaction) => reaction.postId === post.post.id),
+        media: media.filter((m) => m.postId === post.post.id)
     }));
 
     const schema = z.array(feedItemSchema);
@@ -92,14 +95,18 @@ const addPostQuery = db
         content: sql.placeholder('content'),
         createdAt: sql.placeholder('createdAt')
     })
+    .returning()
     .prepare();
 
 export const addPost = async (userId: string, content: string) => {
-    return addPostQuery.execute({
+    const results = await addPostQuery.execute({
         userId,
         content,
         createdAt: new Date().toISOString()
     });
+
+    const [post] = z.array(postSchema).parse(results);
+    return post;
 };
 
 const likePostQuery = db
