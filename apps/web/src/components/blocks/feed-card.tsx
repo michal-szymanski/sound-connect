@@ -125,12 +125,7 @@ const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
                 {media && media.length > 0 && (
                     <div className="mt-3 grid gap-2">
                         {media.map((m) => (
-                            <img
-                                key={m.id}
-                                src={`${'http://localhost:8787'}/media/${m.url}`}
-                                alt={m.type}
-                                className="h-auto w-full rounded-lg border object-cover"
-                            />
+                            <img key={m.id} src={`/media/${m.url}`} alt={m.type} className="h-auto w-full rounded-lg border object-cover" />
                         ))}
                     </div>
                 )}
