@@ -122,9 +122,18 @@ const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
             </CardHeader>
             <CardContent>
                 <div className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: formatContent(post.content) }} />
-                {media.map((m) => (
-                    <img key={m.id} src={`/media/${m.url}`} alt={m.type} className="h-auto w-full" />
-                ))}
+                {media && media.length > 0 && (
+                    <div className="mt-3 grid gap-2">
+                        {media.map((m) => (
+                            <img
+                                key={m.id}
+                                src={`${'http://localhost:8787'}/media/${m.url}`}
+                                alt={m.type}
+                                className="h-auto w-full rounded-lg border object-cover"
+                            />
+                        ))}
+                    </div>
+                )}
             </CardContent>
             <CardFooter className="flex-col items-start gap-2">
                 <div className="inline-flex gap-1">
