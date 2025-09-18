@@ -9,6 +9,7 @@ import { searchRoutes } from './routes/search';
 import { chatRoutes } from './routes/chat';
 import { websocketRoutes } from './routes/websocket';
 import { debugRoutes } from './routes/debug';
+import { mediaRoutes } from '@/api/routes/media';
 
 const app = new Hono<HonoContext>();
 
@@ -34,6 +35,7 @@ app.route('/', searchRoutes);
 app.route('/', chatRoutes);
 app.route('/', websocketRoutes);
 app.route('/', debugRoutes);
+app.route('/', mediaRoutes);
 
 export { ChatDurableObject } from '@/api/durable-objects/chat-durable-object';
 export { UserDurableObject } from '@/api/durable-objects/user-durable-object';

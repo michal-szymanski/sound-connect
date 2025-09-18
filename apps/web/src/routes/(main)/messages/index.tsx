@@ -32,6 +32,7 @@ function RouteComponent() {
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
     const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [leftPosition, setLeftPosition] = useState('64px');
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const formSchema = z.object({
@@ -44,6 +45,20 @@ function RouteComponent() {
             text: ''
         }
     });
+
+    useEffect(() => {
+        const updatePosition = () => {
+            if (isSidebarCollapsed) {
+                setLeftPosition('64px');
+            } else {
+                setLeftPosition(window.innerWidth >= 1280 ? '256px' : '64px');
+            }
+        };
+
+        updatePosition();
+        window.addEventListener('resize', updatePosition);
+        return () => window.removeEventListener('resize', updatePosition);
+    }, [isSidebarCollapsed]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!selectedPeer || !user || !values.text || !currentRoomId) return;
@@ -89,22 +104,22 @@ function RouteComponent() {
 
     const renderPeers = () => {
         if (!users || users.length === 0) {
-            return <p className="p-4 text-sm text-gray-500 dark:text-gray-400">No contacts found</p>;
+            return <div className="text-muted-foreground px-7 py-5 text-sm">No contacts found</div>;
         }
 
         return users.map((u) => (
-            <Button
+            <div
                 key={u.id}
-                variant="ghost"
-                className={clsx(
-                    'h-auto w-full justify-start gap-2 rounded-md p-3 hover:bg-gray-200 dark:hover:bg-gray-700',
-                    selectedPeer?.id === u.id && 'bg-gray-200 dark:bg-gray-700'
-                )}
+                className={clsx('hover:bg-muted/50 cursor-pointer px-7 py-5 text-sm', selectedPeer?.id === u.id && 'bg-muted/50')}
                 onClick={() => setSelectedPeer(u)}
             >
-                <StatusAvatar user={u} />
-                <span className="truncate text-sm font-medium">{u.name}</span>
-            </Button>
+                <div className="inline-flex w-full items-center gap-3">
+                    <StatusAvatar user={u} />
+                    <div>
+                        <span className="font-medium">{u.name}</span>
+                    </div>
+                </div>
+            </div>
         ));
     };
 
@@ -173,16 +188,16 @@ function RouteComponent() {
     };
 
     return (
-        <div className="flex h-full w-full overflow-hidden">
-            <div className={`bg-muted absolute top-0 z-[60] flex h-screen w-80 flex-col border-r ${isSidebarCollapsed ? 'left-16' : 'left-16 xl:left-64'}`}>
-                <div className="border-b p-4 font-semibold">Contacts</div>
-                <div className="min-h-0 flex-1">
-                    <ScrollArea className="h-full">
-                        <div className="space-y-1 p-2">{renderPeers()}</div>
-                    </ScrollArea>
+        <div className="flex h-full w-full flex-col overflow-hidden">
+            <div className="bg-background absolute top-0 z-[60] flex h-screen w-80 flex-col border-r" style={{ left: leftPosition }}>
+                <div className="flex flex-col gap-1.5 p-4">
+                    <h2 className="text-foreground text-2xl font-semibold">Contacts</h2>
+                </div>
+                <div className="min-h-0 flex-1 overflow-hidden">
+                    <ScrollArea className="h-full">{renderPeers()}</ScrollArea>
                 </div>
             </div>
-            <div className={`flex flex-1 flex-col ${isSidebarCollapsed ? 'ml-96' : 'ml-96 xl:ml-[576px]'}`}>
+            <div className="flex flex-1 flex-col" style={{ marginLeft: `calc(${leftPosition} + 320px)` }}>
                 <div className="bg-background flex items-center gap-2 border-b p-4 font-semibold">{renderHeader()}</div>
                 <div className="bg-background min-h-0 flex-1">
                     <ScrollArea className="h-full p-4">
