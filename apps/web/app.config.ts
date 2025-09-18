@@ -5,6 +5,9 @@ import { cloudflare } from 'unenv';
 import nitroCloudflareBindings from 'nitro-cloudflare-dev';
 import svgr from 'vite-plugin-svgr';
 
+const apiUrl = 'http://localhost:8787';
+//const apiUrl = process.env.API_URL;
+
 export default defineConfig({
     vite: {
         plugins: [
@@ -21,13 +24,13 @@ export default defineConfig({
     server: {
         preset: 'cloudflare-module',
         unenv: cloudflare,
-        modules: [nitroCloudflareBindings]
-        // routeRules: {
-        //     '/media/**': {
-        //         proxy: {
-        //             to: 'https://media.sound-connect.com/**'
-        //         }
-        //     }
-        // }
+        modules: [nitroCloudflareBindings],
+        routeRules: {
+            '/media/**': {
+                proxy: {
+                    to: `${apiUrl}/media/**`
+                }
+            }
+        }
     }
 });
