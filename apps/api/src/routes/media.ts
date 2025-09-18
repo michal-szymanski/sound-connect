@@ -38,7 +38,20 @@ mediaRoutes.get('/media/:key', async (c) => {
             return c.json({ success: false, body: { message: 'Media not found' } }, 404);
         }
 
-        return c.text(`https://${c.env.UsersBucket}.${c.env.a}.r2.cloudflarestorage.com/${key}`);
+        const headers = new Headers();
+        r2Object.writeHttpMetadata(headers);
+
+        for (const [headerKey, value] of headers.entries()) {
+            c.header(headerKey, value);
+        }
+
+        c.header('etag', r2Object.httpEtag);
+
+        c.header('Cache-Control', 'public, max-age=31536000');
+
+        return new Response(r2Object.body, {
+            headers: c.res.headers
+        });
     } catch (error) {
         console.error(`[Server] Error getting media:`, error);
         return c.json({ message: 'Internal Server Error' }, 500);
