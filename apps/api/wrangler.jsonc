@@ -35,6 +35,12 @@
             }
         ]
     },
+    "r2_buckets": [
+        {
+            "binding": "UsersBucket",
+            "bucket_name": "users-bucket"
+        }
+    ],
     "migrations": [
         {
             "tag": "v1",

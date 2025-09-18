@@ -42,7 +42,7 @@ function LayoutContent() {
                         </>
                     ) : (
                         <>
-                            <main className={`py-20 ${isSidebarCollapsed ? 'ml-16' : 'ml-16 xl:ml-64'}`}>
+                            <main className="ml-16 py-20 xl:ml-64">
                                 <div className="flex justify-center">
                                     <div className="w-full max-w-2xl px-6">
                                         <Outlet />

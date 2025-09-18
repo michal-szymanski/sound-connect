@@ -17,6 +17,7 @@ import { addPost } from '@/web/server-functions/models';
 import { useQueryClient } from '@tanstack/react-query';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import clsx from 'clsx';
+import FilePicker from '@/web/components/small/file-picker';
 
 const AddPostDialog = () => {
     const text = `What's on your mind?`;
@@ -106,6 +107,7 @@ const AddPostDialog = () => {
 
                         <div className="inline-flex items-end justify-end gap-3">
                             <EmojiPicker onEmojiSelect={handleAddEmoji} dialogRef={dialogContentRef} />
+                            <FilePicker />
                         </div>
                         <SubmitButton isSpinner={isSpinner} className="w-full">
                             Publish
