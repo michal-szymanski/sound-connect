@@ -8,130 +8,170 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as mainRouteRouteImport } from './routes/(main)/route'
+import { Route as authRouteRouteImport } from './routes/(auth)/route'
+import { Route as mainIndexRouteImport } from './routes/(main)/index'
+import { Route as mainSettingsIndexRouteImport } from './routes/(main)/settings/index'
+import { Route as mainMessagesIndexRouteImport } from './routes/(main)/messages/index'
+import { Route as authSignUpIndexRouteImport } from './routes/(auth)/sign-up/index'
+import { Route as authSignInIndexRouteImport } from './routes/(auth)/sign-in/index'
+import { Route as mainUsersIdRouteImport } from './routes/(main)/users/$id'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as mainRouteImport } from './routes/(main)/route'
-import { Route as authRouteImport } from './routes/(auth)/route'
-import { Route as mainIndexImport } from './routes/(main)/index'
-import { Route as mainSettingsIndexImport } from './routes/(main)/settings/index'
-import { Route as mainMessagesIndexImport } from './routes/(main)/messages/index'
-import { Route as authSignUpIndexImport } from './routes/(auth)/sign-up/index'
-import { Route as authSignInIndexImport } from './routes/(auth)/sign-in/index'
-import { Route as mainUsersIdImport } from './routes/(main)/users/$id'
-
-// Create/Update Routes
-
-const mainRouteRoute = mainRouteImport.update({
+const mainRouteRoute = mainRouteRouteImport.update({
   id: '/(main)',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const authRouteRoute = authRouteImport.update({
+const authRouteRoute = authRouteRouteImport.update({
   id: '/(auth)',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const mainIndexRoute = mainIndexImport.update({
+const mainIndexRoute = mainIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => mainRouteRoute,
 } as any)
-
-const mainSettingsIndexRoute = mainSettingsIndexImport.update({
+const mainSettingsIndexRoute = mainSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
   getParentRoute: () => mainRouteRoute,
 } as any)
-
-const mainMessagesIndexRoute = mainMessagesIndexImport.update({
+const mainMessagesIndexRoute = mainMessagesIndexRouteImport.update({
   id: '/messages/',
   path: '/messages/',
   getParentRoute: () => mainRouteRoute,
 } as any)
-
-const authSignUpIndexRoute = authSignUpIndexImport.update({
+const authSignUpIndexRoute = authSignUpIndexRouteImport.update({
   id: '/sign-up/',
   path: '/sign-up/',
   getParentRoute: () => authRouteRoute,
 } as any)
-
-const authSignInIndexRoute = authSignInIndexImport.update({
+const authSignInIndexRoute = authSignInIndexRouteImport.update({
   id: '/sign-in/',
   path: '/sign-in/',
   getParentRoute: () => authRouteRoute,
 } as any)
-
-const mainUsersIdRoute = mainUsersIdImport.update({
+const mainUsersIdRoute = mainUsersIdRouteImport.update({
   id: '/users/$id',
   path: '/users/$id',
   getParentRoute: () => mainRouteRoute,
 } as any)
 
-// Populate the FileRoutesByPath interface
+export interface FileRoutesByFullPath {
+  '/': typeof mainIndexRoute
+  '/users/$id': typeof mainUsersIdRoute
+  '/sign-in': typeof authSignInIndexRoute
+  '/sign-up': typeof authSignUpIndexRoute
+  '/messages': typeof mainMessagesIndexRoute
+  '/settings': typeof mainSettingsIndexRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof mainIndexRoute
+  '/users/$id': typeof mainUsersIdRoute
+  '/sign-in': typeof authSignInIndexRoute
+  '/sign-up': typeof authSignUpIndexRoute
+  '/messages': typeof mainMessagesIndexRoute
+  '/settings': typeof mainSettingsIndexRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/(auth)': typeof authRouteRouteWithChildren
+  '/(main)': typeof mainRouteRouteWithChildren
+  '/(main)/': typeof mainIndexRoute
+  '/(main)/users/$id': typeof mainUsersIdRoute
+  '/(auth)/sign-in/': typeof authSignInIndexRoute
+  '/(auth)/sign-up/': typeof authSignUpIndexRoute
+  '/(main)/messages/': typeof mainMessagesIndexRoute
+  '/(main)/settings/': typeof mainSettingsIndexRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | '/'
+    | '/users/$id'
+    | '/sign-in'
+    | '/sign-up'
+    | '/messages'
+    | '/settings'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/users/$id' | '/sign-in' | '/sign-up' | '/messages' | '/settings'
+  id:
+    | '__root__'
+    | '/(auth)'
+    | '/(main)'
+    | '/(main)/'
+    | '/(main)/users/$id'
+    | '/(auth)/sign-in/'
+    | '/(auth)/sign-up/'
+    | '/(main)/messages/'
+    | '/(main)/settings/'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  authRouteRoute: typeof authRouteRouteWithChildren
+  mainRouteRoute: typeof mainRouteRouteWithChildren
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/(auth)': {
-      id: '/(auth)'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof authRouteImport
-      parentRoute: typeof rootRoute
-    }
     '/(main)': {
       id: '/(main)'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof mainRouteImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof mainRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)': {
+      id: '/(auth)'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof authRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/(main)/': {
       id: '/(main)/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof mainIndexImport
-      parentRoute: typeof mainRouteImport
-    }
-    '/(main)/users/$id': {
-      id: '/(main)/users/$id'
-      path: '/users/$id'
-      fullPath: '/users/$id'
-      preLoaderRoute: typeof mainUsersIdImport
-      parentRoute: typeof mainRouteImport
-    }
-    '/(auth)/sign-in/': {
-      id: '/(auth)/sign-in/'
-      path: '/sign-in'
-      fullPath: '/sign-in'
-      preLoaderRoute: typeof authSignInIndexImport
-      parentRoute: typeof authRouteImport
-    }
-    '/(auth)/sign-up/': {
-      id: '/(auth)/sign-up/'
-      path: '/sign-up'
-      fullPath: '/sign-up'
-      preLoaderRoute: typeof authSignUpIndexImport
-      parentRoute: typeof authRouteImport
-    }
-    '/(main)/messages/': {
-      id: '/(main)/messages/'
-      path: '/messages'
-      fullPath: '/messages'
-      preLoaderRoute: typeof mainMessagesIndexImport
-      parentRoute: typeof mainRouteImport
+      preLoaderRoute: typeof mainIndexRouteImport
+      parentRoute: typeof mainRouteRoute
     }
     '/(main)/settings/': {
       id: '/(main)/settings/'
       path: '/settings'
       fullPath: '/settings'
-      preLoaderRoute: typeof mainSettingsIndexImport
-      parentRoute: typeof mainRouteImport
+      preLoaderRoute: typeof mainSettingsIndexRouteImport
+      parentRoute: typeof mainRouteRoute
+    }
+    '/(main)/messages/': {
+      id: '/(main)/messages/'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof mainMessagesIndexRouteImport
+      parentRoute: typeof mainRouteRoute
+    }
+    '/(auth)/sign-up/': {
+      id: '/(auth)/sign-up/'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof authSignUpIndexRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/(auth)/sign-in/': {
+      id: '/(auth)/sign-in/'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof authSignInIndexRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/(main)/users/$id': {
+      id: '/(main)/users/$id'
+      path: '/users/$id'
+      fullPath: '/users/$id'
+      preLoaderRoute: typeof mainUsersIdRouteImport
+      parentRoute: typeof mainRouteRoute
     }
   }
 }
-
-// Create and export the route tree
 
 interface authRouteRouteChildren {
   authSignInIndexRoute: typeof authSignInIndexRoute
@@ -165,124 +205,10 @@ const mainRouteRouteWithChildren = mainRouteRoute._addFileChildren(
   mainRouteRouteChildren,
 )
 
-export interface FileRoutesByFullPath {
-  '/': typeof mainIndexRoute
-  '/users/$id': typeof mainUsersIdRoute
-  '/sign-in': typeof authSignInIndexRoute
-  '/sign-up': typeof authSignUpIndexRoute
-  '/messages': typeof mainMessagesIndexRoute
-  '/settings': typeof mainSettingsIndexRoute
-}
-
-export interface FileRoutesByTo {
-  '/': typeof mainIndexRoute
-  '/users/$id': typeof mainUsersIdRoute
-  '/sign-in': typeof authSignInIndexRoute
-  '/sign-up': typeof authSignUpIndexRoute
-  '/messages': typeof mainMessagesIndexRoute
-  '/settings': typeof mainSettingsIndexRoute
-}
-
-export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/(auth)': typeof authRouteRouteWithChildren
-  '/(main)': typeof mainRouteRouteWithChildren
-  '/(main)/': typeof mainIndexRoute
-  '/(main)/users/$id': typeof mainUsersIdRoute
-  '/(auth)/sign-in/': typeof authSignInIndexRoute
-  '/(auth)/sign-up/': typeof authSignUpIndexRoute
-  '/(main)/messages/': typeof mainMessagesIndexRoute
-  '/(main)/settings/': typeof mainSettingsIndexRoute
-}
-
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/users/$id'
-    | '/sign-in'
-    | '/sign-up'
-    | '/messages'
-    | '/settings'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/users/$id' | '/sign-in' | '/sign-up' | '/messages' | '/settings'
-  id:
-    | '__root__'
-    | '/(auth)'
-    | '/(main)'
-    | '/(main)/'
-    | '/(main)/users/$id'
-    | '/(auth)/sign-in/'
-    | '/(auth)/sign-up/'
-    | '/(main)/messages/'
-    | '/(main)/settings/'
-  fileRoutesById: FileRoutesById
-}
-
-export interface RootRouteChildren {
-  authRouteRoute: typeof authRouteRouteWithChildren
-  mainRouteRoute: typeof mainRouteRouteWithChildren
-}
-
 const rootRouteChildren: RootRouteChildren = {
   authRouteRoute: authRouteRouteWithChildren,
   mainRouteRoute: mainRouteRouteWithChildren,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/(auth)",
-        "/(main)"
-      ]
-    },
-    "/(auth)": {
-      "filePath": "(auth)/route.tsx",
-      "children": [
-        "/(auth)/sign-in/",
-        "/(auth)/sign-up/"
-      ]
-    },
-    "/(main)": {
-      "filePath": "(main)/route.tsx",
-      "children": [
-        "/(main)/",
-        "/(main)/users/$id",
-        "/(main)/messages/",
-        "/(main)/settings/"
-      ]
-    },
-    "/(main)/": {
-      "filePath": "(main)/index.tsx",
-      "parent": "/(main)"
-    },
-    "/(main)/users/$id": {
-      "filePath": "(main)/users/$id.tsx",
-      "parent": "/(main)"
-    },
-    "/(auth)/sign-in/": {
-      "filePath": "(auth)/sign-in/index.tsx",
-      "parent": "/(auth)"
-    },
-    "/(auth)/sign-up/": {
-      "filePath": "(auth)/sign-up/index.tsx",
-      "parent": "/(auth)"
-    },
-    "/(main)/messages/": {
-      "filePath": "(main)/messages/index.tsx",
-      "parent": "/(main)"
-    },
-    "/(main)/settings/": {
-      "filePath": "(main)/settings/index.tsx",
-      "parent": "/(main)"
-    }
-  }
-}
-ROUTE_MANIFEST_END */
