@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { type ReactNode } from 'react';
 import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from '@tanstack/react-router';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -59,8 +60,8 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             </head>
             <body>
                 {children}
-                <TanStackRouterDevtools position="bottom-right" />
-                <ReactQueryDevtools buttonPosition="bottom-right" />
+                {/* <TanStackRouterDevtools position="bottom-right" />
+                <ReactQueryDevtools buttonPosition="bottom-right" /> */}
                 <Toaster position="top-right" duration={7000} />
                 <Scripts />
             </body>

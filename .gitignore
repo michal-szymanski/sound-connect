@@ -4,6 +4,8 @@ apps/web/app.config.timestamp*
 apps/web/.vinxi
 apps/web/.output
 apps/web/dist
+apps/web/.tanstack
+.nitro
 
 # Api
 
