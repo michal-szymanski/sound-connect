@@ -17,7 +17,9 @@ import { addPost } from '@/web/server-functions/models';
 import { useQueryClient } from '@tanstack/react-query';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import clsx from 'clsx';
-import FilePicker from '@/web/components/small/file-picker';
+import useFileUpload from '@/web/hooks/use-file-upload';
+import { Button } from '@/web/components/ui/button';
+import { X, ImagePlus } from 'lucide-react';
 
 const AddPostDialog = () => {
     const text = `What's on your mind?`;
@@ -26,6 +28,11 @@ const AddPostDialog = () => {
     const dialogContentRef = useRef<HTMLDivElement | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const queryClient = useQueryClient();
+
+    const { selectFiles, FileInput, uploadedFiles, removeFile, clearAllFiles } = useFileUpload({
+        accept: 'image/*,video/*',
+        multiple: true
+    });
 
     const formSchema = z.object({
         content: z.string().min(1).max(POST_TEXT_MAX_LENGTH)
@@ -40,7 +47,14 @@ const AddPostDialog = () => {
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            const result = await addPost({ data: { content: values.content } });
+            const formData = new FormData();
+            formData.append('content', values.content);
+
+            uploadedFiles.forEach((fileWithPreview) => {
+                formData.append('media', fileWithPreview.file);
+            });
+
+            const result = await addPost({ data: formData });
 
             if (result.success) {
                 queryClient.invalidateQueries({ queryKey: ['feed'] });
@@ -57,7 +71,8 @@ const AddPostDialog = () => {
 
         setOpen(false);
         form.reset();
-    }, [form.formState.isSubmitSuccessful]);
+        clearAllFiles();
+    }, [form.formState.isSubmitSuccessful, clearAllFiles]);
 
     useEffect(() => {
         dispatch(showSidebar(!open));
@@ -105,9 +120,43 @@ const AddPostDialog = () => {
                             )}
                         />
 
+                        {uploadedFiles.length > 0 && (
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                                {uploadedFiles.map((fileWithPreview) => (
+                                    <div key={fileWithPreview.id} className="group relative">
+                                        <div className="aspect-square overflow-hidden rounded-lg border">
+                                            {fileWithPreview.file.type.startsWith('image/') ? (
+                                                <img src={fileWithPreview.previewUrl} alt={fileWithPreview.file.name} className="h-full w-full object-cover" />
+                                            ) : (
+                                                <video src={fileWithPreview.previewUrl} className="h-full w-full object-cover" controls={false} muted />
+                                            )}
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="sm"
+                                            className="absolute -right-2 -top-2 h-6 w-6 rounded-full p-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                            onClick={() => removeFile(fileWithPreview.id)}
+                                        >
+                                            <X className="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
                         <div className="inline-flex items-end justify-end gap-3">
                             <EmojiPicker onEmojiSelect={handleAddEmoji} dialogRef={dialogContentRef} />
-                            <FilePicker />
+                            <FileInput />
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={selectFiles}
+                                className="text-muted-foreground bg-auto p-0 has-[>svg]:px-0 dark:hover:bg-inherit [&_svg:not([class*='size-'])]:size-5"
+                            >
+                                <span className="sr-only">Select media files</span>
+                                <ImagePlus />
+                            </Button>
                         </div>
                         <SubmitButton isSpinner={isSpinner} className="w-full">
                             Publish

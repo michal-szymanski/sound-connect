@@ -10,7 +10,7 @@ export const onlineStatusSchema = z.enum(['online', 'offline']);
 export type OnlineStatus = z.infer<typeof onlineStatusSchema>;
 
 export const onlineStatusMessageSchema = z.object({
-    type: z.literal(webSocketMessageTypes.Enum['online-status']),
+    type: z.literal(webSocketMessageTypes.enum['online-status']),
     userId: z.string(),
     status: onlineStatusSchema
 });
@@ -19,7 +19,7 @@ export type OnlineStatusMessage = z.infer<typeof onlineStatusMessageSchema>;
 
 export const chatMessageSchema = z.object({
     id: z.string().uuid(),
-    type: z.literal(webSocketMessageTypes.Enum.chat),
+    type: z.literal(webSocketMessageTypes.enum.chat),
     content: z.string().max(CHAT_MESSAGE_MAX_LENGTH),
     roomId: z.string(),
     senderId: z.string(),
@@ -41,14 +41,14 @@ export const roomNotificationSchema = z.object({
 export type RoomNotification = z.infer<typeof roomNotificationSchema>;
 
 export const subscribeMessageSchema = z.object({
-    type: z.literal(webSocketMessageTypes.Enum['subscribe']),
+    type: z.literal(webSocketMessageTypes.enum['subscribe']),
     roomId: z.string()
 });
 
 export type SubscribeMessage = z.infer<typeof subscribeMessageSchema>;
 
 export const unsubscribeMessageSchema = z.object({
-    type: z.literal(webSocketMessageTypes.Enum['unsubscribe']),
+    type: z.literal(webSocketMessageTypes.enum['unsubscribe']),
     roomId: z.string()
 });
 
@@ -80,16 +80,16 @@ export const followRequestAcceptedNotificationItemSchema = z.object({
 export type FollowRequestAcceptedNotificationItem = z.infer<typeof followRequestAcceptedNotificationItemSchema>;
 
 export const followRequestNotificationSchema = z.object({
-    type: z.literal(webSocketMessageTypes.Enum.notification),
-    kind: z.literal(notificationKind.Enum['follow-request']),
+    type: z.literal(webSocketMessageTypes.enum.notification),
+    kind: z.literal(notificationKind.enum['follow-request']),
     items: z.array(followRequestNotificationItemSchema)
 });
 
 export type FollowRequestNotification = z.infer<typeof followRequestNotificationSchema>;
 
 export const followRequestAcceptedNotificationSchema = z.object({
-    type: z.literal(webSocketMessageTypes.Enum.notification),
-    kind: z.literal(notificationKind.Enum['follow-request-accepted']),
+    type: z.literal(webSocketMessageTypes.enum.notification),
+    kind: z.literal(notificationKind.enum['follow-request-accepted']),
     items: z.array(followRequestAcceptedNotificationItemSchema)
 });
 
@@ -100,8 +100,8 @@ export const reactionNotificationItem = z.object({ id: z.string().uuid(), date: 
 export type ReactionNotificationItem = z.infer<typeof reactionNotificationItem>;
 
 export const reactionNotification = z.object({
-    type: z.literal(webSocketMessageTypes.Enum.notification),
-    kind: z.literal(notificationKind.Enum['reaction']),
+    type: z.literal(webSocketMessageTypes.enum.notification),
+    kind: z.literal(notificationKind.enum['reaction']),
     items: z.array(reactionNotificationItem)
 });
 
@@ -162,10 +162,24 @@ export const userDTOSchema = userSchema.omit({ email: true, emailVerified: true,
 
 export type UserDTO = z.infer<typeof userDTOSchema>;
 
+export const mediaTypeSchema = z.enum(['image', 'video']);
+
+export type MediaType = z.infer<typeof mediaTypeSchema>;
+
+export const mediaSchema = z.object({
+    id: z.number(),
+    postId: z.number(),
+    type: mediaTypeSchema,
+    url: z.string()
+});
+
+export type Media = z.infer<typeof mediaSchema>;
+
 export const feedItemSchema = z.object({
     post: postSchema,
     user: userDTOSchema,
-    reactions: z.array(postReactionSchema)
+    reactions: z.array(postReactionSchema),
+    media: z.array(mediaSchema)
 });
 
 export type FeedItem = z.infer<typeof feedItemSchema>;
