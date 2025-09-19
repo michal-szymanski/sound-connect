@@ -8,6 +8,8 @@ import viteReact from '@vitejs/plugin-react';
 export default defineConfig(({ mode }) => {
     const { API_URL } = loadEnv(mode, process.cwd(), '');
 
+    console.log(`[App] Configuring proxy for /media -> ${API_URL}/media`);
+
     return {
         server: {
             port: 3000,
