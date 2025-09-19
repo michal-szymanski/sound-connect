@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
             proxy: {
                 '/media': {
                     target: API_URL,
-                    changeOrigin: true
+                    changeOrigin: false
                 }
             }
         },
