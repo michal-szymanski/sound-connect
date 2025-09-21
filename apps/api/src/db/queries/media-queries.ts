@@ -11,7 +11,7 @@ export const addMedia = async (postId: number, mediaKeys: string[]) => {
 
     const values = mediaKeys.map((mediaKey) => ({
         postId,
-        url: mediaKey,
+        key: mediaKey,
         type: mediaTypeSchema.parse('image')
     }));
 
