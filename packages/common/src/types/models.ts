@@ -170,7 +170,7 @@ export const mediaSchema = z.object({
     id: z.number(),
     postId: z.number(),
     type: mediaTypeSchema,
-    url: z.string()
+    key: z.string()
 });
 
 export type Media = z.infer<typeof mediaSchema>;
