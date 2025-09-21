@@ -38,7 +38,7 @@ const Context = createContext<WebSocketContext | undefined>(undefined);
 
 type Props = React.PropsWithChildren;
 
-export const WebSocketProvider: React.FC<Props> = ({ children }) => {
+export const WebSocketProvider = ({ children }: Props) => {
     const ws = useRef<WebSocket | null>(null);
     const { data: envs } = useEnvs();
     const { data: user } = useUser();
