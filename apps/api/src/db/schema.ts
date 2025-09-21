@@ -96,7 +96,7 @@ export const mediaTable = sqliteTable('media', {
         .notNull()
         .references(() => postsTable.id),
     type: text({ enum: mediaTypeEnum }),
-    url: text('url').notNull()
+    key: text('key').notNull()
 });
 
 export const musicGroupsTable = sqliteTable('music_groups', {

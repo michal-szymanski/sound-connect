@@ -128,7 +128,7 @@ function RouteComponent() {
 
         return (
             <Button variant="link" asChild>
-                <Link to={`/users/${selectedPeer.id}`}>
+                <Link to="/users/$id" params={{ id: selectedPeer.id }}>
                     <StatusAvatar user={selectedPeer} />
                     <span>{selectedPeer.name}</span>
                 </Link>
