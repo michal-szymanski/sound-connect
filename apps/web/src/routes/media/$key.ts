@@ -3,15 +3,11 @@ import { createServerFileRoute } from '@tanstack/react-start/server';
 
 export const ServerRoute = createServerFileRoute('/media/$key').methods({
     GET: async ({ params, request }) => {
-        const { API_URL } = getBindings();
+        const { API, API_URL } = getBindings();
         const { key } = params;
 
-        return new Response(null, {
-            status: 302,
-            headers: {
-                ...request.headers,
-                Location: `${API_URL}/media/${key}`
-            }
+        return await API.fetch(`${API_URL}/media/${key}`, {
+            headers: request.headers
         });
     }
 });
