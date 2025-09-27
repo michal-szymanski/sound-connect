@@ -27,8 +27,8 @@
         },
         "filesystem": {
             "type": "stdio",
-            "command": "npx",
-            "args": ["@modelcontextprotocol/server-filesystem", "${WORKSPACE_PATH}"]
+            "command": "pnpm",
+            "args": ["dlx", "@modelcontextprotocol/server-filesystem", "${WORKSPACE_PATH}"]
         }
     }
 }
