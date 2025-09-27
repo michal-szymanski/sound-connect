@@ -145,7 +145,7 @@ const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
                         />
                     </Button>
                 </div>
-                <div className="flex h-5 items-center">
+                <div className="flex h-5 items-center pl-1">
                     {optimisticLikes.length > 0 && (
                         <button onClick={() => setIsLikesDialogOpen(true)} className="text-sm font-semibold text-gray-900 hover:underline dark:text-gray-100">
                             {renderLikes(optimisticLikes)}
