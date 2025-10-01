@@ -1,6 +1,6 @@
-import { QueryClient, queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { QueryClient, queryOptions, useQuery, useSuspenseQuery, infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query';
 import { User, UserDTO } from '@sound-connect/common/types/models';
-import { getFeed, getFollowers, getFollowings, getReactions, search, getFollowRequestStatus } from '@/web/server-functions/models';
+import { getFeedPaginated, getFollowers, getFollowings, getReactions, search, getFollowRequestStatus } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
 import { getEnvs } from '@/web/server-functions/utils';
 
@@ -19,20 +19,27 @@ export const useReactions = ({ postId }: { postId: number }) =>
     });
 
 export const feedQuery = () =>
-    queryOptions({
-        queryKey: ['feed'],
-        queryFn: async () => {
-            const result = await getFeed();
+    infiniteQueryOptions({
+        queryKey: ['feed-infinite'],
+        queryFn: async ({ pageParam }) => {
+            const result = await getFeedPaginated({ data: { limit: 10, offset: pageParam } });
 
             if (result.success) {
                 return result.body;
             }
 
             return [];
+        },
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, allPages) => {
+            if (lastPage.length < 10) {
+                return undefined;
+            }
+            return allPages.length * 10;
         }
     });
 
-export const useFeed = () => useSuspenseQuery(feedQuery());
+export const useFeed = () => useInfiniteQuery(feedQuery());
 
 export const userQuery = (user?: User | UserDTO | null) =>
     queryOptions({

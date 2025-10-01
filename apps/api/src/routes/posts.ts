@@ -69,7 +69,17 @@ postsRoutes.post('/posts', async (c) => {
 });
 
 postsRoutes.get('/feed', async (c) => {
-    const feedResults = await getFeed();
+    const { limit, offset } = z
+        .object({
+            limit: z.coerce.number().positive().max(50).optional().default(10),
+            offset: z.coerce.number().min(0).optional().default(0)
+        })
+        .parse({
+            limit: c.req.query('limit'),
+            offset: c.req.query('offset')
+        });
+
+    const feedResults = await getFeed(limit, offset);
 
     return c.json(feedResults, 200);
 });
