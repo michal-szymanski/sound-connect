@@ -41,6 +41,35 @@ export const getFeed = createServerFn().handler(async () => {
     }
 });
 
+export const getFeedPaginated = createServerFn()
+    .validator((data: { limit?: number; offset?: number }) => data)
+    .handler(async ({ data }) => {
+        const { headers } = getWebRequest()!;
+        const { API, API_URL } = await getBindings();
+
+        const searchParams = new URLSearchParams();
+        if (data.limit) searchParams.set('limit', data.limit.toString());
+        if (data.offset) searchParams.set('offset', data.offset.toString());
+
+        const response = await API.fetch(`${API_URL}/feed?${searchParams.toString()}`, {
+            headers
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = z.array(feedItemSchema);
+
+            return { success: true, body: schema.parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: null } as const;
+        }
+    });
+
 export const getPosts = createServerFn()
     .validator((data: { userId: string }) => data)
     .handler(async ({ data }) => {

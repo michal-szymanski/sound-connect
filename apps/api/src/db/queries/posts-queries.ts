@@ -20,7 +20,7 @@ export const getPostsByUserId = async (userId: string) => {
     return schema.parse(results);
 };
 
-export const getFeed = async () => {
+export const getFeed = async (limit: number = 10, offset: number = 0) => {
     const posts = await db
         .select({
             post: {
@@ -38,7 +38,9 @@ export const getFeed = async () => {
         })
         .from(postsTable)
         .innerJoin(users, eq(postsTable.userId, users.id))
-        .orderBy(desc(postsTable.createdAt));
+        .orderBy(desc(postsTable.createdAt))
+        .limit(limit)
+        .offset(offset);
 
     if (posts.length === 0) {
         return [];
