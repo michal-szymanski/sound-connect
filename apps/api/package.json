@@ -14,7 +14,7 @@
         "db:seed": "tsx src/db/seed.ts",
         "prettier:check": "prettier . --check",
         "prettier:format": "prettier . --write",
-        "dev": "pnpm db:migrate:local && wrangler dev --port 4000",
+        "dev": "pnpm db:migrate:local && wrangler dev --local --port 4000 -c wrangler.jsonc -c ../posts-queue-consumer/wrangler.jsonc --persist-to .wrangler/state",
         "deploy": "wrangler deploy --minify src/server.ts",
         "types": "wrangler types --env-interface CloudflareBindings",
         "tail": "wrangler tail",

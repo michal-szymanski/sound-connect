@@ -4,8 +4,6 @@
   "private": true,
   "scripts": {
     "deploy": "wrangler deploy",
-    "dev": "wrangler dev --port 5000",
-    "start": "wrangler dev --port 5000",
     "types": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {

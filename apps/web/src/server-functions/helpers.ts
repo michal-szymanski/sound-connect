@@ -14,6 +14,8 @@ export const errorHandler = async (response: Response) => {
     try {
         const errorBody = await response.text();
 
+        console.error(errorBody);
+
         const json = JSON.parse(errorBody);
 
         return {
