@@ -39,6 +39,13 @@ postsRoutes.post('/posts', async (c) => {
         }
 
         if (!media || !media.length) {
+            await c.env.PostsQueue.send({
+                postId: postResults.id,
+                userId: user.id,
+                content,
+                mediaKeys: []
+            });
+
             return c.json({ post: postResults, media: [] });
         }
 
@@ -55,6 +62,13 @@ postsRoutes.post('/posts', async (c) => {
 
         console.log({ postResults });
         const mediaResults = await addMedia(postResults.id, mediaKeys);
+
+        await c.env.PostsQueue.send({
+            postId: postResults.id,
+            userId: user.id,
+            content,
+            mediaKeys
+        });
 
         return c.json({ post: postResults, media: mediaResults });
     } catch (error) {
