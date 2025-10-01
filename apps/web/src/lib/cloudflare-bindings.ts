@@ -22,7 +22,14 @@ export function getBindings(): Cloudflare.Env {
         "Dev bindings not initialized yet. Call initDevEnv() first."
       );
     }
-    return cachedEnv;
+    return {
+      ...cachedEnv,
+      API: {
+        fetch: (url: RequestInfo | URL, init?: RequestInit) => {
+          return fetch(url, init);
+        }
+      } as unknown as Fetcher
+    };
   }
 
   return process.env as unknown as Cloudflare.Env;

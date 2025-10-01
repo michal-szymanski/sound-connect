@@ -341,8 +341,6 @@ export const addPost = createServerFn({ method: 'POST' })
             credentials: 'include'
         });
 
-        console.log({ response });
-
         if (!response.ok) {
             return await errorHandler(response);
         }
