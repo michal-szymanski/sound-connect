@@ -10,6 +10,9 @@ export const getPostsByUserId = async (userId: string) => {
             id: postsTable.id,
             userId: postsTable.userId,
             content: postsTable.content,
+            status: postsTable.status,
+            moderationReason: postsTable.moderationReason,
+            moderatedAt: postsTable.moderatedAt,
             createdAt: postsTable.createdAt,
             updatedAt: postsTable.updatedAt
         })
@@ -27,6 +30,9 @@ export const getFeed = async (limit: number = 10, offset: number = 0) => {
                 id: postsTable.id,
                 userId: postsTable.userId,
                 content: postsTable.content,
+                status: postsTable.status,
+                moderationReason: postsTable.moderationReason,
+                moderatedAt: postsTable.moderatedAt,
                 createdAt: postsTable.createdAt,
                 updatedAt: postsTable.updatedAt
             },
@@ -38,6 +44,7 @@ export const getFeed = async (limit: number = 10, offset: number = 0) => {
         })
         .from(postsTable)
         .innerJoin(users, eq(postsTable.userId, users.id))
+        .where(eq(postsTable.status, 'approved'))
         .orderBy(desc(postsTable.createdAt))
         .limit(limit)
         .offset(offset);
@@ -92,6 +99,7 @@ export const addPost = async (userId: string, content: string) => {
         .values({
             userId,
             content,
+            status: 'pending',
             createdAt: new Date().toISOString()
         })
         .returning();

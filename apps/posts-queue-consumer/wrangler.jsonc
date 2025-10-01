@@ -1,0 +1,42 @@
+{
+  "name": "sound-connect-posts-queue-consumer",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-11-19",
+  "compatibility_flags": ["nodejs_compat"],
+  "queues": {
+    "consumers": [
+      {
+        "queue": "posts-queue",
+        "max_batch_size": 10,
+        "max_batch_timeout": 30,
+        "max_retries": 3,
+        "dead_letter_queue": "posts-queue-dlq"
+      }
+    ]
+  },
+  "vars": {
+    "API_URL": "https://sound-connect-api.michalsz.workers.dev",
+    "CLIENT_URL": "https://sound-connect-web.michalsz.workers.dev"
+  },
+  "env": {
+    "production": {
+      "vars": {
+        "API_URL": "https://sound-connect-api.michalsz.workers.dev",
+        "CLIENT_URL": "https://sound-connect-web.michalsz.workers.dev"
+      }
+    },
+    "staging": {
+      "vars": {
+        "API_URL": "https://sound-connect-api-staging.michalsz.workers.dev",
+        "CLIENT_URL": "https://sound-connect-web-staging.michalsz.workers.dev"
+      }
+    }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sound-connect-db",
+      "database_id": "placeholder-replace-with-actual-db-id"
+    }
+  ]
+}

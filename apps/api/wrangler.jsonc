@@ -41,6 +41,15 @@
             "bucket_name": "users-bucket"
         }
     ],
+    "queues": {
+        "producers": [
+            {
+                "queue": "posts-queue",
+                "binding": "PostsQueue"
+            }
+        ],
+        "consumers": []
+    },
     "migrations": [
         {
             "tag": "v1",

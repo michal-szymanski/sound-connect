@@ -1,0 +1,23 @@
+{
+  "name": "@sound-connect/posts-queue-consumer",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --port 5000",
+    "start": "wrangler dev --port 5000",
+    "types": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "@sound-connect/common": "workspace:*",
+    "drizzle-orm": "^0.36.4",
+    "hono": "^4.6.12",
+    "zod": "^4.1.9"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241218.0",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.8.3",
+    "wrangler": "^4.40.3"
+  }
+}

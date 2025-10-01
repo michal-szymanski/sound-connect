@@ -127,10 +127,17 @@ export const webSocketMessageSchema = z.union([
 
 export type WebSocketMessage = z.infer<typeof webSocketMessageSchema>;
 
+export const postStatusSchema = z.enum(['pending', 'approved', 'rejected', 'flagged']);
+
+export type PostStatus = z.infer<typeof postStatusSchema>;
+
 export const postSchema = z.object({
     id: z.number(),
     userId: z.string(),
     content: z.string(),
+    status: postStatusSchema.default('pending'),
+    moderationReason: z.string().nullable(),
+    moderatedAt: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string().nullable()
 });
