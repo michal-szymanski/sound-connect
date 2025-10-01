@@ -47,8 +47,7 @@
                 "queue": "posts-queue",
                 "binding": "PostsQueue"
             }
-        ],
-        "consumers": []
+        ]
     },
     "migrations": [
         {
