@@ -6,6 +6,7 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 
 - **Frontend**: `apps/web` - Tanstack Start (95% Tanstack Router + extras), ShadCN, TailwindCSS, hosted on Cloudflare Workers
 - **Backend**: `apps/api` - Cloudflare Workers, Durable Objects for real-time communication, Drizzle.js ORM with D1 database
+- **Posts Queue Consumer**: `apps/posts-queue-consumer` - Cloudflare Workers consuming from Cloudflare Queues for content moderation
 - **Common**: `packages/common` - Shared types, constants, and utilities between frontend and backend
 
 ## Development Rules
