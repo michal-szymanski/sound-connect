@@ -2,6 +2,8 @@
 
 This is the frontend part of the Sound Connect social media application for musicians.
 
+📚 **[← Back to Main Documentation](../../CLAUDE.md)**
+
 ## Technology Stack
 - **Framework**: Tanstack Start (95% Tanstack Router + extras) - currently in beta
 - **UI Components**: ShadCN and TailwindCSS

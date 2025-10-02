@@ -2,6 +2,8 @@
 
 This worker is responsible for processing posts from the Cloudflare Queue and performing content moderation.
 
+📚 **[← Back to Main Documentation](../../CLAUDE.md)**
+
 ## Technology Stack
 - **Runtime**: Cloudflare Workers
 - **Queue**: Cloudflare Queues for message consumption
