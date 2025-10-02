@@ -5,8 +5,9 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 ## Architecture
 
 - **Frontend**: `apps/web` - Tanstack Start (95% Tanstack Router + extras), ShadCN, TailwindCSS, hosted on Cloudflare Workers
-- **Backend**: `apps/api` - Cloudflare Workers, Durable Objects for real-time communication, Drizzle.js ORM with D1 database
-- **Posts Queue Consumer**: `apps/posts-queue-consumer` - Cloudflare Workers consuming from Cloudflare Queues for content moderation
+- **Backend**:
+  - `apps/api` - REST API built with Cloudflare Workers, Durable Objects for real-time communication, Drizzle.js ORM with D1 database
+  - `apps/posts-queue-consumer` - Queue consumer worker for content moderation, using Cloudflare Queues
 - **Common**: `packages/common` - Shared types, constants, and utilities between frontend and backend
 
 ## Development Rules
@@ -27,7 +28,10 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 
 ## Monorepo Structure
 
-- **[Frontend](apps/web/CLAUDE.md)**: `apps/web` - Web application
-- **[Backend API](apps/api/CLAUDE.md)**: `apps/api` - API server
-- **[Posts Queue Consumer](apps/posts-queue-consumer/CLAUDE.md)**: `apps/posts-queue-consumer` - Queue consumer for post moderation
-- **[Common Package](packages/common/CLAUDE.md)**: `packages/common` - Shared utilities and types
+- **Frontend**:
+  - **[Web Application](apps/web/CLAUDE.md)**: `apps/web` - Web application
+- **Backend**:
+  - **[REST API](apps/api/CLAUDE.md)**: `apps/api` - API server
+  - **[Posts Queue Consumer](apps/posts-queue-consumer/CLAUDE.md)**: `apps/posts-queue-consumer` - Queue consumer for post moderation
+- **Shared**:
+  - **[Common Package](packages/common/CLAUDE.md)**: `packages/common` - Shared utilities and types
