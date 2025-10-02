@@ -25,9 +25,9 @@ export default {
             try {
                 await processPost(message.body, env);
                 message.ack();
-                console.log(`Successfully processed post ${message.body.postId}`);
+                console.log(`Successfully processed post with ID: ${message.body.postId}`);
             } catch (error) {
-                console.error(`Failed to process post ${message.body.postId}:`, error);
+                console.error(`Failed to process post with ID: ${message.body.postId}:`, error);
                 message.retry();
             }
         }
