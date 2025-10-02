@@ -2,6 +2,8 @@
 
 This is the backend part of the Sound Connect social media application for musicians.
 
+📚 **[← Back to Main Documentation](../../CLAUDE.md)**
+
 ## Technology Stack
 - **Runtime**: Cloudflare Workers for auth and database access
 - **Real-time Communication**: Cloudflare Durable Objects

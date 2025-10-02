@@ -2,6 +2,8 @@
 
 This package contains shared components between the backend and frontend parts of the Sound Connect application.
 
+📚 **[← Back to Main Documentation](../../CLAUDE.md)**
+
 ## Contents
 - Common types shared between backend and frontend
 - Constants used across the application

@@ -26,8 +26,7 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 
 ## Monorepo Structure
 
-- **Frontend**: `apps/web` - Web application
-- **Backend**: `apps/api` - API server
-- **Common**: `packages/common` - Shared utilities and types
-
-> See individual CLAUDE.md files in each directory for specific details and rules.
+- **[Frontend](apps/web/CLAUDE.md)**: `apps/web` - Web application
+- **[Backend API](apps/api/CLAUDE.md)**: `apps/api` - API server
+- **[Posts Queue Consumer](apps/posts-queue-consumer/CLAUDE.md)**: `apps/posts-queue-consumer` - Queue consumer for post moderation
+- **[Common Package](packages/common/CLAUDE.md)**: `packages/common` - Shared utilities and types
