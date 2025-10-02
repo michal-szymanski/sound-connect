@@ -6,8 +6,16 @@ export const ServerRoute = createServerFileRoute('/media/$key').methods({
         const { API, API_URL } = getBindings();
         const { key } = params;
 
-        return await API.fetch(`${API_URL}/media/${key}`, {
+        const response = await API.fetch(`${API_URL}/media/${key}`, {
             headers: request.headers
+        });
+
+        const headers = new Headers(response.headers);
+        headers.delete('content-encoding');
+
+        return new Response(response.body, {
+            status: response.status,
+            headers
         });
     }
 });

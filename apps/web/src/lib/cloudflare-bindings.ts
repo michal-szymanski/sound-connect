@@ -24,6 +24,7 @@ export function getBindings(): Cloudflare.Env {
     }
     return {
       ...cachedEnv,
+      API_URL: "http://localhost:4000",
       API: {
         fetch: (url: RequestInfo | URL, init?: RequestInit) => {
           return fetch(url, init);
