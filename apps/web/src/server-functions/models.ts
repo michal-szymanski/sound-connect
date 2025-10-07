@@ -518,3 +518,27 @@ export const getPostLikes = createServerFn()
             return { success: false, body: null } as const;
         }
     });
+
+export const getPost = createServerFn()
+    .validator((data: { postId: number }) => data)
+    .handler(async ({ data }) => {
+        const { headers } = getWebRequest()!;
+        const { API, API_URL } = await getBindings();
+
+        const response = await API.fetch(`${API_URL}/posts/${data.postId}`, {
+            headers
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+
+            return { success: true, body: feedItemSchema.parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: null } as const;
+        }
+    });

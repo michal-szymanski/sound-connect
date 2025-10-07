@@ -1,6 +1,6 @@
 import { QueryClient, queryOptions, useQuery, useSuspenseQuery, infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query';
 import { User, UserDTO } from '@sound-connect/common/types/models';
-import { getFeedPaginated, getFollowers, getFollowings, getReactions, search, getFollowRequestStatus } from '@/web/server-functions/models';
+import { getFeedPaginated, getFollowers, getFollowings, getReactions, search, getFollowRequestStatus, getPost } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
 import { getEnvs } from '@/web/server-functions/utils';
 
@@ -161,3 +161,19 @@ export const followRequestStatusQuery = (userId: string) =>
 export const useFollowRequestStatus = (userId: string) => {
     return useQuery(followRequestStatusQuery(userId));
 };
+
+export const postQuery = (postId: number) =>
+    queryOptions({
+        queryKey: ['post', postId],
+        queryFn: async () => {
+            const result = await getPost({ data: { postId } });
+
+            if (result.success) {
+                return result.body;
+            }
+
+            return null;
+        }
+    });
+
+export const usePost = (postId: number) => useSuspenseQuery(postQuery(postId));

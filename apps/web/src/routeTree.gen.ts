@@ -19,6 +19,7 @@ import { Route as mainMessagesIndexRouteImport } from './routes/(main)/messages/
 import { Route as authSignUpIndexRouteImport } from './routes/(auth)/sign-up/index'
 import { Route as authSignInIndexRouteImport } from './routes/(auth)/sign-in/index'
 import { Route as mainUsersIdRouteImport } from './routes/(main)/users/$id'
+import { Route as mainPostsPostIdRouteImport } from './routes/(main)/posts/$postId'
 import { ServerRoute as MediaKeyServerRouteImport } from './routes/media/$key'
 
 const rootServerRouteImport = createServerRootRoute()
@@ -61,6 +62,11 @@ const mainUsersIdRoute = mainUsersIdRouteImport.update({
   path: '/users/$id',
   getParentRoute: () => mainRouteRoute,
 } as any)
+const mainPostsPostIdRoute = mainPostsPostIdRouteImport.update({
+  id: '/posts/$postId',
+  path: '/posts/$postId',
+  getParentRoute: () => mainRouteRoute,
+} as any)
 const MediaKeyServerRoute = MediaKeyServerRouteImport.update({
   id: '/media/$key',
   path: '/media/$key',
@@ -69,6 +75,7 @@ const MediaKeyServerRoute = MediaKeyServerRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof mainIndexRoute
+  '/posts/$postId': typeof mainPostsPostIdRoute
   '/users/$id': typeof mainUsersIdRoute
   '/sign-in': typeof authSignInIndexRoute
   '/sign-up': typeof authSignUpIndexRoute
@@ -77,6 +84,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof mainIndexRoute
+  '/posts/$postId': typeof mainPostsPostIdRoute
   '/users/$id': typeof mainUsersIdRoute
   '/sign-in': typeof authSignInIndexRoute
   '/sign-up': typeof authSignUpIndexRoute
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/(auth)': typeof authRouteRouteWithChildren
   '/(main)': typeof mainRouteRouteWithChildren
   '/(main)/': typeof mainIndexRoute
+  '/(main)/posts/$postId': typeof mainPostsPostIdRoute
   '/(main)/users/$id': typeof mainUsersIdRoute
   '/(auth)/sign-in/': typeof authSignInIndexRoute
   '/(auth)/sign-up/': typeof authSignUpIndexRoute
@@ -98,18 +107,27 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/posts/$postId'
     | '/users/$id'
     | '/sign-in'
     | '/sign-up'
     | '/messages'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/users/$id' | '/sign-in' | '/sign-up' | '/messages' | '/settings'
+  to:
+    | '/'
+    | '/posts/$postId'
+    | '/users/$id'
+    | '/sign-in'
+    | '/sign-up'
+    | '/messages'
+    | '/settings'
   id:
     | '__root__'
     | '/(auth)'
     | '/(main)'
     | '/(main)/'
+    | '/(main)/posts/$postId'
     | '/(main)/users/$id'
     | '/(auth)/sign-in/'
     | '/(auth)/sign-up/'
@@ -201,6 +219,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof mainUsersIdRouteImport
       parentRoute: typeof mainRouteRoute
     }
+    '/(main)/posts/$postId': {
+      id: '/(main)/posts/$postId'
+      path: '/posts/$postId'
+      fullPath: '/posts/$postId'
+      preLoaderRoute: typeof mainPostsPostIdRouteImport
+      parentRoute: typeof mainRouteRoute
+    }
   }
 }
 declare module '@tanstack/react-start/server' {
@@ -231,6 +256,7 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 
 interface mainRouteRouteChildren {
   mainIndexRoute: typeof mainIndexRoute
+  mainPostsPostIdRoute: typeof mainPostsPostIdRoute
   mainUsersIdRoute: typeof mainUsersIdRoute
   mainMessagesIndexRoute: typeof mainMessagesIndexRoute
   mainSettingsIndexRoute: typeof mainSettingsIndexRoute
@@ -238,6 +264,7 @@ interface mainRouteRouteChildren {
 
 const mainRouteRouteChildren: mainRouteRouteChildren = {
   mainIndexRoute: mainIndexRoute,
+  mainPostsPostIdRoute: mainPostsPostIdRoute,
   mainUsersIdRoute: mainUsersIdRoute,
   mainMessagesIndexRoute: mainMessagesIndexRoute,
   mainSettingsIndexRoute: mainSettingsIndexRoute,
