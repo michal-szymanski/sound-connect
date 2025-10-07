@@ -1,6 +1,6 @@
 import { Button } from 'src/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from 'src/components/ui/card';
-import { Heart } from 'lucide-react';
+import { Heart, MoreHorizontal } from 'lucide-react';
 import { useFollowings, useUser } from 'src/lib/react-query';
 import { Link } from '@tanstack/react-router';
 import { useElapsedTime } from 'src/lib/utils';
@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import LikesDialog from '@/web/components/dialogs/likes-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/web/components/ui/dropdown-menu';
 
 type Props = {
     item: FeedItem;
@@ -119,6 +120,22 @@ const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
                         </Button>
                     </>
                 )}
+                <div className="ml-auto">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="size-8">
+                                <MoreHorizontal className="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                                <Link to="/posts/$postId" params={{ postId: post.id.toString() }}>
+                                    View post
+                                </Link>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
             </CardHeader>
             <CardContent>
                 <div className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: formatContent(post.content) }} />

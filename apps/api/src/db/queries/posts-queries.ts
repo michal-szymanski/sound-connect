@@ -23,6 +23,57 @@ export const getPostsByUserId = async (userId: string) => {
     return schema.parse(results);
 };
 
+export const getPostById = async (postId: number) => {
+    const posts = await db
+        .select({
+            post: {
+                id: postsTable.id,
+                userId: postsTable.userId,
+                content: postsTable.content,
+                status: postsTable.status,
+                moderationReason: postsTable.moderationReason,
+                moderatedAt: postsTable.moderatedAt,
+                createdAt: postsTable.createdAt,
+                updatedAt: postsTable.updatedAt
+            },
+            user: {
+                id: users.id,
+                name: users.name,
+                image: users.image
+            }
+        })
+        .from(postsTable)
+        .innerJoin(users, eq(postsTable.userId, users.id))
+        .where(and(eq(postsTable.id, postId), eq(postsTable.status, 'approved')))
+        .limit(1);
+
+    if (posts.length === 0) {
+        return null;
+    }
+
+    const [post] = posts;
+
+    const reactions = await db
+        .select({
+            id: postsReactionsTable.id,
+            userId: postsReactionsTable.userId,
+            postId: postsReactionsTable.postId,
+            createdAt: postsReactionsTable.createdAt
+        })
+        .from(postsReactionsTable)
+        .where(eq(postsReactionsTable.postId, postId));
+
+    const media = await db.select().from(mediaTable).where(eq(mediaTable.postId, postId));
+
+    const postWithReactions = {
+        ...post,
+        reactions,
+        media
+    };
+
+    return feedItemSchema.parse(postWithReactions);
+};
+
 export const getFeed = async (limit: number = 10, offset: number = 0) => {
     const posts = await db
         .select({
