@@ -1,15 +1,12 @@
 import { Button } from 'src/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from 'src/components/ui/card';
 import { Heart, MoreHorizontal } from 'lucide-react';
-import { useFollowings, useUser } from 'src/lib/react-query';
+import { useFollowings, useUser, useLikeToggle } from 'src/lib/react-query';
 import { Link } from '@tanstack/react-router';
 import { useElapsedTime } from 'src/lib/utils';
 import { FeedItem, PostReaction } from '@sound-connect/common/types/models';
 import StatusAvatar from '@/web/components/small/status-avatar';
-import { likePost, unlikePost } from '@/web/server-functions/models';
-import { useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { useState } from 'react';
 import LikesDialog from '@/web/components/dialogs/likes-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/web/components/ui/dropdown-menu';
 
@@ -36,67 +33,25 @@ const renderLikes = (reactions: PostReaction[]) => {
 const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
     const { data: currentUser } = useUser();
     const { data: followings } = useFollowings(currentUser);
-    const queryClient = useQueryClient();
-    const [isLiking, setIsLiking] = useState(false);
     const [justLiked, setJustLiked] = useState(false);
     const [isLikesDialogOpen, setIsLikesDialogOpen] = useState(false);
     const elapsedTime = useElapsedTime(post.createdAt);
 
     const canFollow = currentUser?.id !== post.userId && !followings.some((following) => following.id === post.userId);
 
-    const [optimisticLikes, setOptimisticLikes] = useState<PostReaction[]>(reactions);
-    const [optimisticIsLiked, setOptimisticIsLiked] = useState(reactions.some((reaction) => reaction.userId === currentUser?.id));
+    const isLiked = reactions.some((reaction) => reaction.userId === currentUser?.id);
 
-    // Update optimistic state when reactions prop changes
-    useEffect(() => {
-        setOptimisticLikes(reactions);
-        setOptimisticIsLiked(reactions.some((reaction) => reaction.userId === currentUser?.id));
-    }, [reactions, currentUser?.id]);
+    const likeMutation = useLikeToggle(post.id, currentUser);
 
-    const isLiked = optimisticIsLiked;
-    const likesCount = optimisticLikes.length;
+    const handleLikeToggle = () => {
+        if (!currentUser || likeMutation.isPending) return;
 
-    const handleLikeToggle = async () => {
-        if (!currentUser || isLiking) return;
-
-        setIsLiking(true);
-
-        // Optimistic update
-        const wasLiked = optimisticIsLiked;
-        if (wasLiked) {
-            // Remove like optimistically
-            setOptimisticLikes((prev) => prev.filter((reaction) => reaction.userId !== currentUser.id));
-            setOptimisticIsLiked(false);
-        } else {
-            // Add like optimistically
-            const newReaction: PostReaction = {
-                id: Date.now(), // temporary ID
-                userId: currentUser.id,
-                postId: post.id,
-                createdAt: new Date().toISOString()
-            };
-            setOptimisticLikes((prev) => [...prev, newReaction]);
-            setOptimisticIsLiked(true);
+        if (!isLiked) {
             setJustLiked(true);
             setTimeout(() => setJustLiked(false), 300);
         }
 
-        try {
-            if (wasLiked) {
-                await unlikePost({ data: { postId: post.id } });
-            } else {
-                await likePost({ data: { postId: post.id } });
-            }
-
-            queryClient.invalidateQueries({ queryKey: ['feed'] });
-        } catch (error) {
-            // Revert optimistic update on error
-            setOptimisticLikes(reactions);
-            setOptimisticIsLiked(reactions.some((reaction) => reaction.userId === currentUser?.id));
-            toast.error('Failed to update like status');
-        } finally {
-            setIsLiking(false);
-        }
+        likeMutation.mutate(isLiked);
     };
 
     if (!user) return null;
@@ -163,9 +118,9 @@ const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
                     </Button>
                 </div>
                 <div className="flex h-5 items-center pl-1">
-                    {optimisticLikes.length > 0 && (
+                    {reactions.length > 0 && (
                         <button onClick={() => setIsLikesDialogOpen(true)} className="text-sm font-semibold text-gray-900 hover:underline dark:text-gray-100">
-                            {renderLikes(optimisticLikes)}
+                            {renderLikes(reactions)}
                         </button>
                     )}
                 </div>
