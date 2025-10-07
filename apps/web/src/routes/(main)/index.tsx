@@ -44,7 +44,7 @@ function RouteComponent() {
 
     return (
         <div className="flex flex-col items-center gap-5">
-            <Card className="w-full">
+            <Card className="w-[500px]">
                 <CardContent className="w-full">
                     <div className="inline-flex w-full items-center justify-center gap-5">
                         <StatusAvatar user={userDTOSchema.parse(user)} />

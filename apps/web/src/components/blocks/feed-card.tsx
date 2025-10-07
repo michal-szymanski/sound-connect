@@ -102,7 +102,7 @@ const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
     if (!user) return null;
 
     return (
-        <Card className="w-full">
+        <Card className="w-[500px]">
             <CardHeader className="inline-flex items-center space-x-2 space-y-0 text-sm">
                 <Button variant="link" className="w-min px-0" size="lg" asChild>
                     <Link to="/users/$id" params={{ id: post.userId }}>
@@ -121,7 +121,7 @@ const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
                     </>
                 )}
                 <div className="ml-auto">
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="size-8">
                                 <MoreHorizontal className="size-4" />
