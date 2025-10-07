@@ -1,8 +1,9 @@
-import { QueryClient, queryOptions, useQuery, useSuspenseQuery, infiniteQueryOptions, useInfiniteQuery } from '@tanstack/react-query';
-import { User, UserDTO } from '@sound-connect/common/types/models';
-import { getFeedPaginated, getFollowers, getFollowings, getReactions, search, getFollowRequestStatus, getPost } from '@/web/server-functions/models';
+import { QueryClient, queryOptions, useQuery, useSuspenseQuery, infiniteQueryOptions, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { User, UserDTO, FeedItem, PostReaction } from '@sound-connect/common/types/models';
+import { getFeedPaginated, getFollowers, getFollowings, getReactions, search, getFollowRequestStatus, getPost, likePost, unlikePost } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
 import { getEnvs } from '@/web/server-functions/utils';
+import { toast } from 'sonner';
 
 export const useReactions = ({ postId }: { postId: number }) =>
     useQuery({
@@ -177,3 +178,61 @@ export const postQuery = (postId: number) =>
     });
 
 export const usePost = (postId: number) => useSuspenseQuery(postQuery(postId));
+
+export const useLikeToggle = (postId: number, currentUser: User | UserDTO | null) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (isLiked: boolean) => {
+            if (isLiked) {
+                return await unlikePost({ data: { postId } });
+            } else {
+                return await likePost({ data: { postId } });
+            }
+        },
+        onMutate: async (isLiked: boolean) => {
+            await queryClient.cancelQueries({ queryKey: ['feed-infinite'] });
+
+            const previousData = queryClient.getQueryData(['feed-infinite']);
+
+            queryClient.setQueryData(['feed-infinite'], (old: { pages: FeedItem[][]; pageParams: number[] } | undefined) => {
+                if (!old || !currentUser) return old;
+
+                return {
+                    ...old,
+                    pages: old.pages.map((page) =>
+                        page.map((item) => {
+                            if (item.post.id !== postId) return item;
+
+                            if (isLiked) {
+                                return {
+                                    ...item,
+                                    reactions: item.reactions.filter((reaction) => reaction.userId !== currentUser.id)
+                                };
+                            } else {
+                                const newReaction: PostReaction = {
+                                    id: Date.now(),
+                                    userId: currentUser.id,
+                                    postId,
+                                    createdAt: new Date().toISOString()
+                                };
+                                return {
+                                    ...item,
+                                    reactions: [...item.reactions, newReaction]
+                                };
+                            }
+                        })
+                    )
+                };
+            });
+
+            return { previousData };
+        },
+        onError: (_error, _variables, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(['feed-infinite'], context.previousData);
+            }
+            toast.error('Failed to update like status');
+        }
+    });
+};
