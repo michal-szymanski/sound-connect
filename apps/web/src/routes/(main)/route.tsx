@@ -42,7 +42,7 @@ function LayoutContent() {
                         </>
                     ) : (
                         <>
-                            <main className="ml-16 py-20 xl:ml-64">
+                            <main className="w-full py-20">
                                 <div className="flex justify-center">
                                     <div className="w-full max-w-2xl px-6">
                                         <Outlet />
