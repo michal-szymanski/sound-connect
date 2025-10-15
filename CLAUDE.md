@@ -6,13 +6,14 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 
 - **Frontend**: `apps/web` - Tanstack Start (95% Tanstack Router + extras), ShadCN, TailwindCSS, hosted on Cloudflare Workers
 - **Backend**:
-  - `apps/api` - REST API built with Cloudflare Workers, Durable Objects for real-time communication, Drizzle.js ORM with D1 database
-  - `apps/posts-queue-consumer` - Queue consumer worker for content moderation, using Cloudflare Queues
+    - `apps/api` - REST API built with Cloudflare Workers, Durable Objects for real-time communication, Drizzle.js ORM with D1 database
+    - `apps/posts-queue-consumer` - Queue consumer worker for content moderation, using Cloudflare Queues
 - **Common**: `packages/common` - Shared types, constants, and utilities between frontend and backend
 
 ## Development Rules
 
 ### General Rules (Apply to All Projects)
+
 - NEVER generate comments within the code. No exceptions.
 - ALWAYS generate types instead of interfaces unless technically impossible.
 - Connection with durable objects should be done with semantic function names and synthetic request should not be passed to "fetch" function unless necessary.
@@ -29,9 +30,11 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 ## Monorepo Structure
 
 - **Frontend**:
-  - **[Web Application](apps/web/CLAUDE.md)**: `apps/web` - Web application
+    - **[Web Application](apps/web/CLAUDE.md)**: `apps/web` - Web application
 - **Backend**:
-  - **[REST API](apps/api/CLAUDE.md)**: `apps/api` - API server
-  - **[Posts Queue Consumer](apps/posts-queue-consumer/CLAUDE.md)**: `apps/posts-queue-consumer` - Queue consumer for post moderation
+    - **[REST API](apps/api/CLAUDE.md)**: `apps/api` - API server
+    - **[Posts Queue Consumer](apps/posts-queue-consumer/CLAUDE.md)**: `apps/posts-queue-consumer` - Queue consumer for post moderation
 - **Shared**:
-  - **[Common Package](packages/common/CLAUDE.md)**: `packages/common` - Shared utilities and types
+    - **[Common Package](packages/common/CLAUDE.md)**: `packages/common` - Shared utilities and types
+- **Infrastructure**:
+    - **[Terraform](terraform/README.md)**: `terraform/` - Infrastructure as Code for Cloudflare resources (D1, R2, Queues, Workers)
