@@ -1,0 +1,34 @@
+{
+    "mcpServers": {
+        "cloudflare-docs": {
+            "type": "sse",
+            "url": "https://docs.mcp.cloudflare.com/sse"
+        },
+        "cloudflare-workers-bindings": {
+            "type": "sse",
+            "url": "https://bindings.mcp.cloudflare.com/sse",
+            "headers": {
+                "Authorization": "Bearer ${CLOUDFLARE_API_TOKEN}"
+            }
+        },
+        "cloudflare-workers-builds": {
+            "type": "sse",
+            "url": "https://builds.mcp.cloudflare.com/sse",
+            "headers": {
+                "Authorization": "Bearer ${CLOUDFLARE_API_TOKEN}"
+            }
+        },
+        "cloudflare-observability": {
+            "type": "sse",
+            "url": "https://observability.mcp.cloudflare.com/sse",
+            "headers": {
+                "Authorization": "Bearer ${CLOUDFLARE_API_TOKEN}"
+            }
+        },
+        "filesystem": {
+            "type": "stdio",
+            "command": "pnpm",
+            "args": ["dlx", "@modelcontextprotocol/server-filesystem", "${WORKSPACE_PATH}"]
+        }
+    }
+}
