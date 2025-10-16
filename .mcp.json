@@ -28,7 +28,12 @@
         "filesystem": {
             "type": "stdio",
             "command": "pnpm",
-            "args": ["dlx", "@modelcontextprotocol/server-filesystem", "${WORKSPACE_PATH}"]
+            "args": ["dlx", "@modelcontextprotocol/server-filesystem", "."]
+        },
+        "chrome-devtools": {
+            "type": "stdio",
+            "command": "pnpm",
+            "args": ["dlx", "chrome-devtools-mcp"]
         }
     }
 }
