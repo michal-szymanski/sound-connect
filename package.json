@@ -21,6 +21,8 @@
     "studio": "pnpm --filter @sound-connect/api db:studio:local"
   },
   "devDependencies": {
+    "@modelcontextprotocol/server-filesystem": "^2025.8.21",
+    "chrome-devtools-mcp": "^0.8.1",
     "prettier": "^3.5.0",
     "prettier-plugin-tailwindcss": "^0.6.11"
   }
