@@ -8,21 +8,17 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createServerRootRoute } from '@tanstack/react-start/server'
-
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as mainRouteRouteImport } from './routes/(main)/route'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as mainIndexRouteImport } from './routes/(main)/index'
+import { Route as MediaKeyRouteImport } from './routes/media/$key'
 import { Route as mainSettingsIndexRouteImport } from './routes/(main)/settings/index'
 import { Route as mainMessagesIndexRouteImport } from './routes/(main)/messages/index'
 import { Route as authSignUpIndexRouteImport } from './routes/(auth)/sign-up/index'
 import { Route as authSignInIndexRouteImport } from './routes/(auth)/sign-in/index'
 import { Route as mainUsersIdRouteImport } from './routes/(main)/users/$id'
 import { Route as mainPostsPostIdRouteImport } from './routes/(main)/posts/$postId'
-import { ServerRoute as MediaKeyServerRouteImport } from './routes/media/$key'
-
-const rootServerRouteImport = createServerRootRoute()
 
 const mainRouteRoute = mainRouteRouteImport.update({
   id: '/(main)',
@@ -36,6 +32,11 @@ const mainIndexRoute = mainIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => mainRouteRoute,
+} as any)
+const MediaKeyRoute = MediaKeyRouteImport.update({
+  id: '/media/$key',
+  path: '/media/$key',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const mainSettingsIndexRoute = mainSettingsIndexRouteImport.update({
   id: '/settings/',
@@ -67,13 +68,9 @@ const mainPostsPostIdRoute = mainPostsPostIdRouteImport.update({
   path: '/posts/$postId',
   getParentRoute: () => mainRouteRoute,
 } as any)
-const MediaKeyServerRoute = MediaKeyServerRouteImport.update({
-  id: '/media/$key',
-  path: '/media/$key',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
+  '/media/$key': typeof MediaKeyRoute
   '/': typeof mainIndexRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
   '/users/$id': typeof mainUsersIdRoute
@@ -83,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof mainSettingsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/media/$key': typeof MediaKeyRoute
   '/': typeof mainIndexRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
   '/users/$id': typeof mainUsersIdRoute
@@ -95,6 +93,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(auth)': typeof authRouteRouteWithChildren
   '/(main)': typeof mainRouteRouteWithChildren
+  '/media/$key': typeof MediaKeyRoute
   '/(main)/': typeof mainIndexRoute
   '/(main)/posts/$postId': typeof mainPostsPostIdRoute
   '/(main)/users/$id': typeof mainUsersIdRoute
@@ -106,6 +105,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/media/$key'
     | '/'
     | '/posts/$postId'
     | '/users/$id'
@@ -115,6 +115,7 @@ export interface FileRouteTypes {
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/media/$key'
     | '/'
     | '/posts/$postId'
     | '/users/$id'
@@ -126,6 +127,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/(auth)'
     | '/(main)'
+    | '/media/$key'
     | '/(main)/'
     | '/(main)/posts/$postId'
     | '/(main)/users/$id'
@@ -138,42 +140,22 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   authRouteRoute: typeof authRouteRouteWithChildren
   mainRouteRoute: typeof mainRouteRouteWithChildren
-}
-export interface FileServerRoutesByFullPath {
-  '/media/$key': typeof MediaKeyServerRoute
-}
-export interface FileServerRoutesByTo {
-  '/media/$key': typeof MediaKeyServerRoute
-}
-export interface FileServerRoutesById {
-  __root__: typeof rootServerRouteImport
-  '/media/$key': typeof MediaKeyServerRoute
-}
-export interface FileServerRouteTypes {
-  fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/media/$key'
-  fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/media/$key'
-  id: '__root__' | '/media/$key'
-  fileServerRoutesById: FileServerRoutesById
-}
-export interface RootServerRouteChildren {
-  MediaKeyServerRoute: typeof MediaKeyServerRoute
+  MediaKeyRoute: typeof MediaKeyRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/(main)': {
       id: '/(main)'
-      path: '/'
-      fullPath: '/'
+      path: ''
+      fullPath: ''
       preLoaderRoute: typeof mainRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)': {
       id: '/(auth)'
-      path: '/'
-      fullPath: '/'
+      path: ''
+      fullPath: ''
       preLoaderRoute: typeof authRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -183,6 +165,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof mainIndexRouteImport
       parentRoute: typeof mainRouteRoute
+    }
+    '/media/$key': {
+      id: '/media/$key'
+      path: '/media/$key'
+      fullPath: '/media/$key'
+      preLoaderRoute: typeof MediaKeyRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/(main)/settings/': {
       id: '/(main)/settings/'
@@ -228,17 +217,6 @@ declare module '@tanstack/react-router' {
     }
   }
 }
-declare module '@tanstack/react-start/server' {
-  interface ServerFileRoutesByPath {
-    '/media/$key': {
-      id: '/media/$key'
-      path: '/media/$key'
-      fullPath: '/media/$key'
-      preLoaderRoute: typeof MediaKeyServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
-  }
-}
 
 interface authRouteRouteChildren {
   authSignInIndexRoute: typeof authSignInIndexRoute
@@ -277,13 +255,17 @@ const mainRouteRouteWithChildren = mainRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   authRouteRoute: authRouteRouteWithChildren,
   mainRouteRoute: mainRouteRouteWithChildren,
+  MediaKeyRoute: MediaKeyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-const rootServerRouteChildren: RootServerRouteChildren = {
-  MediaKeyServerRoute: MediaKeyServerRoute,
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
 }
-export const serverRouteTree = rootServerRouteImport
-  ._addFileChildren(rootServerRouteChildren)
-  ._addFileTypes<FileServerRouteTypes>()

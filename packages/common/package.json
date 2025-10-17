@@ -10,6 +10,6 @@
     "./types/auth": "./src/types/auth.ts"
   },
   "dependencies": {
-    "zod": "^4.1.9"
+    "zod": "catalog:"
   }
 }
