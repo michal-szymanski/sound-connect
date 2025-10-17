@@ -1,9 +1,9 @@
-import { Button } from 'src/components/ui/button';
-import { Card, CardHeader, CardContent, CardFooter } from 'src/components/ui/card';
+import { Button } from '@/web/components/ui/button';
+import { Card, CardContent, CardFooter } from '@/web/components/ui/card';
 import { Heart, MoreHorizontal } from 'lucide-react';
-import { useFollowings, useUser, useLikeToggle } from 'src/lib/react-query';
+import { useFollowings, useUser, useLikeToggle } from '@/web/lib/react-query';
 import { Link } from '@tanstack/react-router';
-import { useElapsedTime } from 'src/lib/utils';
+import { useElapsedTime } from '@/web/lib/utils';
 import { FeedItem, PostReaction } from '@sound-connect/common/types/models';
 import StatusAvatar from '@/web/components/small/status-avatar';
 import { useState } from 'react';
@@ -30,7 +30,7 @@ const renderLikes = (reactions: PostReaction[]) => {
     return `${count.toLocaleString()} likes`;
 };
 
-const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
+export function Post({ item: { post, user, media, reactions } }: Props) {
     const { data: currentUser } = useUser();
     const { data: followings } = useFollowings(currentUser);
     const [justLiked, setJustLiked] = useState(false);
@@ -58,7 +58,7 @@ const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
 
     return (
         <Card className="w-[500px]">
-            <CardHeader className="inline-flex items-center space-x-2 space-y-0 text-sm">
+            <div className="inline-flex w-full items-center space-x-2 space-y-0 px-6 py-4 text-sm">
                 <Button variant="link" className="w-min px-0" size="lg" asChild>
                     <Link to="/users/$id" params={{ id: post.userId }}>
                         <StatusAvatar user={user} />
@@ -91,7 +91,7 @@ const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-            </CardHeader>
+            </div>
             <CardContent>
                 <div className="whitespace-pre-wrap break-words" dangerouslySetInnerHTML={{ __html: formatContent(post.content) }} />
                 {media && media.length > 0 && (
@@ -128,6 +128,4 @@ const FeedCard = ({ item: { post, user, media, reactions } }: Props) => {
             <LikesDialog isOpen={isLikesDialogOpen} onClose={() => setIsLikesDialogOpen(false)} postId={post.id} />
         </Card>
     );
-};
-
-export default FeedCard;
+}
