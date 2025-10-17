@@ -2,20 +2,18 @@ import { getBindings } from '@/web/lib/cloudflare-bindings';
 import { getSession } from '@/web/server-functions/auth';
 import { errorHandler, getSessionCookie } from '@/web/server-functions/helpers';
 import {
-    FollowRequestNotificationItem,
-    FollowRequestAcceptedNotificationItem,
     userDTOSchema,
     postReactionSchema,
     postSchema,
     feedItemSchema,
     chatMessageSchema,
-    postLikeDataSchema
+    postLikeDataSchema,
+    followRequestAcceptedNotificationItemSchema,
+    followRequestNotificationItemSchema
 } from '@sound-connect/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { getRoomId } from '@sound-connect/common/helpers';
-
-type NotificationItem = FollowRequestNotificationItem | FollowRequestAcceptedNotificationItem;
 
 export const getFeed = createServerFn().handler(async () => {
     const { API, API_URL } = await getBindings();
@@ -42,7 +40,7 @@ export const getFeed = createServerFn().handler(async () => {
 });
 
 export const getFeedPaginated = createServerFn()
-    .validator((data: { limit?: number; offset?: number }) => data)
+    .inputValidator(z.object({ limit: z.number().optional(), offset: z.number().optional() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -72,7 +70,7 @@ export const getFeedPaginated = createServerFn()
     });
 
 export const getPosts = createServerFn()
-    .validator((data: { userId: string }) => data)
+    .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -98,7 +96,7 @@ export const getPosts = createServerFn()
     });
 
 export const getReactions = createServerFn()
-    .validator((data: { postId: number }) => data)
+    .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -124,7 +122,7 @@ export const getReactions = createServerFn()
     });
 
 export const getFollowers = createServerFn()
-    .validator((data: { userId: string }) => data)
+    .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -150,7 +148,7 @@ export const getFollowers = createServerFn()
     });
 
 export const getFollowings = createServerFn()
-    .validator((data: { userId: string }) => data)
+    .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -176,7 +174,7 @@ export const getFollowings = createServerFn()
     });
 
 export const getUser = createServerFn()
-    .validator((data: { userId: string }) => data)
+    .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -201,7 +199,7 @@ export const getUser = createServerFn()
     });
 
 export const sendFollowRequest = createServerFn({ method: 'POST' })
-    .validator((data: { userId: string }) => data)
+    .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -220,7 +218,7 @@ export const sendFollowRequest = createServerFn({ method: 'POST' })
     });
 
 export const deleteNotification = createServerFn()
-    .validator((data: { notificationId: string }) => data)
+    .inputValidator(z.object({ notificationId: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -239,7 +237,7 @@ export const deleteNotification = createServerFn()
     });
 
 export const followUser = createServerFn({ method: 'POST' })
-    .validator((data: { userId: string }) => data)
+    .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -258,7 +256,7 @@ export const followUser = createServerFn({ method: 'POST' })
     });
 
 export const unfollowUser = createServerFn({ method: 'POST' })
-    .validator((data: { userId: string }) => data)
+    .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -277,7 +275,7 @@ export const unfollowUser = createServerFn({ method: 'POST' })
     });
 
 export const getMutualFollowers = createServerFn()
-    .validator((data: { userId: string }) => data)
+    .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -303,7 +301,7 @@ export const getMutualFollowers = createServerFn()
     });
 
 export const getChatHistory = createServerFn()
-    .validator((data: { peerId: string }) => data)
+    .inputValidator(z.object({ peerId: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -337,7 +335,7 @@ export const getChatHistory = createServerFn()
     });
 
 export const addPost = createServerFn({ method: 'POST' })
-    .validator((data: FormData) => data)
+    .inputValidator(z.instanceof(FormData))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -357,7 +355,7 @@ export const addPost = createServerFn({ method: 'POST' })
     });
 
 export const search = createServerFn()
-    .validator((data: { query: string }) => data)
+    .inputValidator(z.object({ query: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -383,7 +381,7 @@ export const search = createServerFn()
     });
 
 export const getFollowRequestStatus = createServerFn({ method: 'GET' })
-    .validator((data: { userId: string }) => data)
+    .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -403,7 +401,9 @@ export const getFollowRequestStatus = createServerFn({ method: 'GET' })
     });
 
 export const updateNotification = createServerFn()
-    .validator((data: { notificationId: string; notification: NotificationItem }) => data)
+    .inputValidator(
+        z.object({ notificationId: z.string(), notification: z.union([followRequestNotificationItemSchema, followRequestAcceptedNotificationItemSchema]) })
+    )
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -423,7 +423,7 @@ export const updateNotification = createServerFn()
     });
 
 export const likePost = createServerFn({ method: 'POST' })
-    .validator((data: { postId: number }) => data)
+    .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -450,7 +450,7 @@ export const likePost = createServerFn({ method: 'POST' })
     });
 
 export const unlikePost = createServerFn({ method: 'POST' })
-    .validator((data: { postId: number }) => data)
+    .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -477,7 +477,7 @@ export const unlikePost = createServerFn({ method: 'POST' })
     });
 
 export const getPostLikesUsers = createServerFn()
-    .validator((data: { postId: number }) => data)
+    .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -503,7 +503,7 @@ export const getPostLikesUsers = createServerFn()
     });
 
 export const getPostLikes = createServerFn()
-    .validator((data: { postId: number }) => data)
+    .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();
@@ -529,7 +529,7 @@ export const getPostLikes = createServerFn()
     });
 
 export const getPost = createServerFn()
-    .validator((data: { postId: number }) => data)
+    .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
         const cookie = getSessionCookie();

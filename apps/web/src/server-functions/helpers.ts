@@ -1,7 +1,7 @@
 import { APP_NAME_NORMALIZED } from '@sound-connect/common/constants';
 import { authErrorSchema, sessionSchema } from '@sound-connect/common/types/auth';
 import { userSchema } from '@sound-connect/common/types/models';
-import { getCookie, setHeader } from '@tanstack/react-start/server';
+import { getCookie, setResponseHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 
 const SECURE_PREFIX = '__Secure-';
@@ -36,12 +36,12 @@ export const setSessionCookies = (response: Response) => {
         .getSetCookie()
         .find((cookie) => cookie.startsWith(SESSION_DATA_COOKIE_NAME) || cookie.startsWith(SECURE_SESSION_DATA_COOKIE_NAME));
 
-    setHeader('Set-Cookie', [sessionTokenCookie, sessionDataCookie]);
+    setResponseHeader('Set-Cookie', [sessionTokenCookie, sessionDataCookie].filter(Boolean) as string[]);
     return true;
 };
 
 export const deleteSessionCookies = () => {
-    setHeader('Set-Cookie', [
+    setResponseHeader('Set-Cookie', [
         `${SESSION_TOKEN_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
         `${SECURE_SESSION_TOKEN_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
         `${SESSION_DATA_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,

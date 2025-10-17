@@ -5,18 +5,19 @@
   "scripts": {
     "build": "tsc --noEmit",
     "deploy": "wrangler deploy",
-    "types": "wrangler types --env-interface CloudflareBindings"
+    "types": "wrangler types --env-interface CloudflareBindings",
+    "tsc": "tsc --noEmit"
   },
   "dependencies": {
     "@sound-connect/common": "workspace:*",
     "drizzle-orm": "^0.36.4",
-    "hono": "^4.6.12",
-    "zod": "^4.1.9"
+    "hono": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241218.0",
+    "@cloudflare/workers-types": "^4.20251011.0",
     "@types/node": "^22.10.2",
-    "typescript": "^5.8.3",
-    "wrangler": "^4.40.3"
+    "typescript": "catalog:",
+    "wrangler": "catalog:"
   }
 }

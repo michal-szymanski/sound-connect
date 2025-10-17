@@ -3,7 +3,7 @@ import { deleteSessionCookies, errorHandler, getSessionFromCookie, setSessionCoo
 import { userSchema } from '@sound-connect/common/types/models';
 import { sessionSchema } from '@sound-connect/common/types/auth';
 import { createServerFn } from '@tanstack/react-start';
-import { getWebRequest, getHeader } from '@tanstack/react-start/server';
+import { getRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
 
 export const getSession = createServerFn().handler(async () => {
@@ -13,7 +13,7 @@ export const getSession = createServerFn().handler(async () => {
         return { success: true, body: session.user } as const;
     }
 
-    const { headers } = getWebRequest()!;
+    const { headers } = getRequest();
     const { API, API_URL } = await getBindings();
 
     const response = await API.fetch(`${API_URL}/api/auth/get-session`, {
@@ -42,7 +42,7 @@ export const getSession = createServerFn().handler(async () => {
 });
 
 export const signIn = createServerFn({ method: 'POST' })
-    .validator((data: { email: string; password: string; rememberMe: boolean }) => data)
+    .inputValidator(z.object({ email: z.string(), password: z.string(), rememberMe: z.boolean() }))
     .handler(async ({ data }) => {
         const { API, API_URL, CLIENT_URL } = await getBindings();
 
@@ -87,7 +87,8 @@ export const signOut = createServerFn({
     method: 'POST'
 }).handler(async () => {
     const { API, API_URL } = await getBindings();
-    const cookie = getHeader('Cookie');
+    const { headers } = getRequest();
+    const cookie = headers.get('Cookie');
 
     if (!cookie) {
         return { success: false, body: null } as const;
@@ -124,7 +125,7 @@ export const signOut = createServerFn({
 export const signUp = createServerFn({
     method: 'POST'
 })
-    .validator((data: { name: string; email: string; password: string }) => data)
+    .inputValidator(z.object({ name: z.string(), email: z.string(), password: z.string() }))
     .handler(async ({ data }) => {
         const { API, API_URL, CLIENT_URL } = await getBindings();
 
