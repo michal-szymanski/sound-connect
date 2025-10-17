@@ -12,18 +12,18 @@ import {
     postLikeDataSchema
 } from '@sound-connect/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
-import { getWebRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
 import { getRoomId } from '@sound-connect/common/helpers';
 
 type NotificationItem = FollowRequestNotificationItem | FollowRequestAcceptedNotificationItem;
 
 export const getFeed = createServerFn().handler(async () => {
-    const { headers } = getWebRequest()!;
     const { API, API_URL } = await getBindings();
+    const cookie = getSessionCookie();
 
     const response = await API.fetch(`${API_URL}/feed`, {
-        headers
+        headers: { Cookie: cookie ?? '' },
+        credentials: 'include'
     });
 
     if (!response.ok) {
@@ -44,15 +44,16 @@ export const getFeed = createServerFn().handler(async () => {
 export const getFeedPaginated = createServerFn()
     .validator((data: { limit?: number; offset?: number }) => data)
     .handler(async ({ data }) => {
-        const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
 
         const searchParams = new URLSearchParams();
         if (data.limit) searchParams.set('limit', data.limit.toString());
         if (data.offset) searchParams.set('offset', data.offset.toString());
 
         const response = await API.fetch(`${API_URL}/feed?${searchParams.toString()}`, {
-            headers
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -73,11 +74,12 @@ export const getFeedPaginated = createServerFn()
 export const getPosts = createServerFn()
     .validator((data: { userId: string }) => data)
     .handler(async ({ data }) => {
-        const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
 
         const response = await API.fetch(`${API_URL}/posts/${data.userId}`, {
-            headers
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -98,11 +100,12 @@ export const getPosts = createServerFn()
 export const getReactions = createServerFn()
     .validator((data: { postId: number }) => data)
     .handler(async ({ data }) => {
-        const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
 
         const response = await API.fetch(`${API_URL}/posts/${data.postId}/reactions`, {
-            headers
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -123,11 +126,12 @@ export const getReactions = createServerFn()
 export const getFollowers = createServerFn()
     .validator((data: { userId: string }) => data)
     .handler(async ({ data }) => {
-        const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
 
         const response = await API.fetch(`${API_URL}/users/${data.userId}/followers`, {
-            headers
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -148,11 +152,12 @@ export const getFollowers = createServerFn()
 export const getFollowings = createServerFn()
     .validator((data: { userId: string }) => data)
     .handler(async ({ data }) => {
-        const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
 
         const response = await API.fetch(`${API_URL}/users/${data.userId}/followings`, {
-            headers
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -174,10 +179,11 @@ export const getUser = createServerFn()
     .validator((data: { userId: string }) => data)
     .handler(async ({ data }) => {
         const { API, API_URL } = await getBindings();
-        const { headers } = getWebRequest()!;
+        const cookie = getSessionCookie();
 
         const response = await API.fetch(`${API_URL}/users/${data.userId}`, {
-            headers
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -273,11 +279,12 @@ export const unfollowUser = createServerFn({ method: 'POST' })
 export const getMutualFollowers = createServerFn()
     .validator((data: { userId: string }) => data)
     .handler(async ({ data }) => {
-        const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
 
         const response = await API.fetch(`${API_URL}/users/${data.userId}/contacts`, {
-            headers
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -298,8 +305,8 @@ export const getMutualFollowers = createServerFn()
 export const getChatHistory = createServerFn()
     .validator((data: { peerId: string }) => data)
     .handler(async ({ data }) => {
-        const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
 
         const result = await getSession();
 
@@ -310,7 +317,8 @@ export const getChatHistory = createServerFn()
         const user = result.body;
         const roomId = getRoomId(user.id, data.peerId);
         const response = await API.fetch(`${API_URL}/chat/${roomId}/history`, {
-            headers
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -497,11 +505,12 @@ export const getPostLikesUsers = createServerFn()
 export const getPostLikes = createServerFn()
     .validator((data: { postId: number }) => data)
     .handler(async ({ data }) => {
-        const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
 
         const response = await API.fetch(`${API_URL}/posts/${data.postId}/likes`, {
-            headers
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -522,11 +531,12 @@ export const getPostLikes = createServerFn()
 export const getPost = createServerFn()
     .validator((data: { postId: number }) => data)
     .handler(async ({ data }) => {
-        const { headers } = getWebRequest()!;
         const { API, API_URL } = await getBindings();
+        const cookie = getSessionCookie();
 
         const response = await API.fetch(`${API_URL}/posts/${data.postId}`, {
-            headers
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
         });
 
         if (!response.ok) {

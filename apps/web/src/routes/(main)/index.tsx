@@ -1,5 +1,5 @@
 import AddPostDialog from '@/web/components/dialogs/add-post-dialog';
-import FeedCard from '@/web/components/blocks/feed-card';
+import { Post } from '@/web/components/post';
 import StatusAvatar from '@/web/components/small/status-avatar';
 import { Card, CardContent } from '@/web/components/ui/card';
 import { envsQuery, feedQuery, followersQuery, followingsQuery, useFeed, userQuery, useUser } from '@/web/lib/react-query';
@@ -53,7 +53,7 @@ function RouteComponent() {
                 </CardContent>
             </Card>
             {feed.map((item) => (
-                <FeedCard key={item.post.id} item={item} />
+                <Post key={item.post.id} item={item} />
             ))}
             {isFetchingNextPage && (
                 <div className="flex justify-center py-4">
