@@ -5,15 +5,15 @@
   "scripts": {
     "dev": "vite dev",
     "dev:wrangler": "wrangler dev --port=3000",
-    "build": "vite build",
-    "start": "vite start",
+    "build": "vite build && tsc --noEmit",
+    "preview": "vite preview && tsc --noEmit",
+    "deploy": "wrangler deploy",
     "types": "wrangler types --env-interface CloudflareBindings",
     "tail": "wrangler tail",
-    "deploy": "wrangler deploy",
     "tsc": "tsc --noEmit"
   },
   "dependencies": {
-    "@cloudflare/vite-plugin": "^1.1.1",
+    "@cloudflare/vite-plugin": "^1.13.13",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@hookform/resolvers": "^5.2.2",
@@ -66,8 +66,8 @@
     "tw-animate-css": "^1.2.5",
     "unenv": "^1.10.0",
     "vinxi": "^0.5.6",
-    "vite": "^7.1.6",
-    "vite-plugin-svgr": "^4.3.0",
+    "vite": "^7.1.10",
+    "vite-plugin-svgr": "^4.5.0",
     "wrangler": "catalog:",
     "zod": "catalog:"
   },
@@ -75,7 +75,7 @@
     "@cloudflare/workers-types": "catalog:",
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
-    "@vitejs/plugin-react": "^4.4.1",
+    "@vitejs/plugin-react": "^4.7.0",
     "typescript": "catalog:",
     "vite-tsconfig-paths": "^5.1.4"
   }

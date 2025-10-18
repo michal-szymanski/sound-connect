@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import svgr from 'vite-plugin-svgr';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import viteReact from '@vitejs/plugin-react';
+import { cloudflare } from '@cloudflare/vite-plugin';
 
 export default defineConfig({
     server: {
@@ -13,11 +14,12 @@ export default defineConfig({
         exclude: ['wrangler']
     },
     plugins: [
+        cloudflare({ viteEnvironment: { name: 'ssr' } }),
+        tanstackStart(),
+        viteReact(),
         tsConfigPaths({
             projects: ['./tsconfig.json']
         }),
-        tanstackStart({ target: 'cloudflare-module', customViteReactPlugin: true }),
-        viteReact(),
         tailwindcss(),
         svgr()
     ]
