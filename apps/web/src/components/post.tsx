@@ -101,7 +101,7 @@ export function Post({ item }: Props) {
                 </div>
 
                 <div className="text-muted-foreground flex items-center gap-2">
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" onClick={() => setIsModalOpen(true)}>
                         <MessageCircle className="h-5 w-5" />
                     </Button>
                     <span className="text-sm font-medium tabular-nums">0</span>
