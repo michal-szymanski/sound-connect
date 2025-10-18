@@ -1,11 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthError } from '@sound-connect/common/types/auth';
-import { createFileRoute, Link, redirect, useRouter } from '@tanstack/react-router';
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import SubmitButton from '@/web/components/small/submit-button';
-import { Button } from '@/web/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/web/components/ui/form';
 import { Input } from '@/web/components/ui/input';
 import { signUp } from '@/web/server-functions/auth';
@@ -60,7 +59,7 @@ function RouteComponent() {
             } else if (result.body) {
                 handleServerError(result.body);
             }
-        } catch (error) {
+        } catch (_error) {
             toast.error('Could not sign up', {
                 description: 'Unknown error occurred'
             });

@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthError } from '@sound-connect/common/types/auth';
-import { createFileRoute, Link, redirect, useRouter } from '@tanstack/react-router';
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -61,7 +61,7 @@ function RouteComponent() {
             } else if (result.body) {
                 handleServerError(result.body);
             }
-        } catch (error) {
+        } catch (_error) {
             toast.error('Could not sign in', {
                 description: 'Unknown error occurred'
             });
@@ -111,7 +111,7 @@ function RouteComponent() {
                             </form>
                         </Form>
                         <div className="text-center text-sm">
-                            Don't have an account?{' '}
+                            Don&apos;t have an account?{' '}
                             <Link to="/sign-up" className="underline underline-offset-4">
                                 Sign Up
                             </Link>

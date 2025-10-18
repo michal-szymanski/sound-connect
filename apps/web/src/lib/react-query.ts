@@ -1,4 +1,4 @@
-import { User, UserDTO, FeedItem, PostReaction, CommentReaction } from '@sound-connect/common/types/models';
+import { User, UserDTO, FeedItem, PostReaction } from '@sound-connect/common/types/models';
 import {
     QueryClient,
     queryOptions,
@@ -297,7 +297,7 @@ export const useCreateComment = (postId: number) => {
     });
 };
 
-export const useCommentLikeToggle = (commentId: number, postId: number, currentUser: User | UserDTO | null) => {
+export const useCommentLikeToggle = (commentId: number, postId: number, _currentUser: User | UserDTO | null) => {
     const queryClient = useQueryClient();
 
     return useMutation({

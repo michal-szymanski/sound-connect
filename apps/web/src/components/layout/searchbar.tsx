@@ -47,7 +47,7 @@ const SearchBar = () => {
                                         key={user.id}
                                         value={user.id}
                                         className="h-10 cursor-pointer"
-                                        onSelect={(currentValue) => {
+                                        onSelect={(_currentValue) => {
                                             setQuery('');
                                             router.navigate({ to: `/users/${user.id}` });
                                             setOpen(false);

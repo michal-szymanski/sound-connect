@@ -55,7 +55,9 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
             const initializeRoom = async () => {
                 try {
                     await loadRoomHistory(newRoomId);
-                } catch (_error) {}
+                } catch (error) {
+                    console.error('Failed to load room history:', error);
+                }
 
                 subscribeToRoom(newRoomId);
             };

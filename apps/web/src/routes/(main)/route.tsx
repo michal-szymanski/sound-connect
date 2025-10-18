@@ -26,7 +26,7 @@ export const Route = createFileRoute('/(main)')({
 function LayoutContent() {
     const location = useLocation();
     const isMessagesPage = location.pathname === '/messages';
-    const { isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
+    const { isSidebarCollapsed: _isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
 
     return (
         <WebSocketProvider>

@@ -226,7 +226,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                     <SheetHeader>
                         <SheetTitle className="text-2xl">Notifications</SheetTitle>
                     </SheetHeader>
-                    {allNotifications.length === 0 && <SheetDescription className="px-7 py-5 text-sm">You don't have any notifications.</SheetDescription>}
+                    {allNotifications.length === 0 && <SheetDescription className="px-7 py-5 text-sm">You don&apos;t have any notifications.</SheetDescription>}
                     {allNotifications.map((item) => (
                         <div key={item.notification.id} className="hover:bg-muted/50 px-7 py-5 text-sm">
                             {item.type === 'follow-request' ? (
