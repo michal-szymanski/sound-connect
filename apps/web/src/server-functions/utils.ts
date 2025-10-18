@@ -1,9 +1,9 @@
-import { getBindings } from '@/web/lib/cloudflare-bindings';
+import { env } from 'cloudflare:workers';
 import { createServerFn } from '@tanstack/react-start';
 
 export const getEnvs = createServerFn().handler(async () => {
     try {
-        const { API_URL, CLIENT_URL } = await getBindings();
+        const { API_URL, CLIENT_URL } = env;
 
         return { success: true, body: { API_URL, CLIENT_URL } } as const;
     } catch (error) {

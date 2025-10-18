@@ -1,4 +1,4 @@
-import { getBindings } from '@/web/lib/cloudflare-bindings';
+import { env } from 'cloudflare:workers';
 import { deleteSessionCookies, errorHandler, getSessionFromCookie, setSessionCookies } from '@/web/server-functions/helpers';
 import { userSchema } from '@sound-connect/common/types/models';
 import { sessionSchema } from '@sound-connect/common/types/auth';
@@ -14,7 +14,7 @@ export const getSession = createServerFn().handler(async () => {
     }
 
     const { headers } = getRequest();
-    const { API, API_URL } = await getBindings();
+    const { API, API_URL } = env;
 
     const response = await API.fetch(`${API_URL}/api/auth/get-session`, {
         headers
@@ -44,7 +44,7 @@ export const getSession = createServerFn().handler(async () => {
 export const signIn = createServerFn({ method: 'POST' })
     .inputValidator(z.object({ email: z.string(), password: z.string(), rememberMe: z.boolean() }))
     .handler(async ({ data }) => {
-        const { API, API_URL, CLIENT_URL } = await getBindings();
+        const { API, API_URL, CLIENT_URL } = env;
 
         const response = await API.fetch(`${API_URL}/api/auth/sign-in/email`, {
             method: 'POST',
@@ -86,7 +86,7 @@ export const signIn = createServerFn({ method: 'POST' })
 export const signOut = createServerFn({
     method: 'POST'
 }).handler(async () => {
-    const { API, API_URL } = await getBindings();
+    const { API, API_URL } = env;
     const { headers } = getRequest();
     const cookie = headers.get('Cookie');
 
@@ -127,7 +127,7 @@ export const signUp = createServerFn({
 })
     .inputValidator(z.object({ name: z.string(), email: z.string(), password: z.string() }))
     .handler(async ({ data }) => {
-        const { API, API_URL, CLIENT_URL } = await getBindings();
+        const { API, API_URL, CLIENT_URL } = env;
 
         const response = await API.fetch(`${API_URL}/api/auth/sign-up/email`, {
             method: 'POST',
