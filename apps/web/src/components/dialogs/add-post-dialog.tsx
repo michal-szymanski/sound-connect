@@ -92,7 +92,7 @@ const AddPostDialog = () => {
             <DialogTrigger className="border-input dark:bg-input/30 text-muted-foreground shadow-xs dark:hover:bg-accent h-12 flex-1 rounded-md border bg-transparent px-3 py-1 text-left text-sm font-normal">
                 {text}
             </DialogTrigger>
-            <DialogContent ref={dialogContentRef} className="flex max-h-[90vh] w-full max-w-2xl flex-col p-6">
+            <DialogContent ref={dialogContentRef} className="!z-[100] flex max-h-[90vh] w-full max-w-2xl flex-col p-6">
                 <DialogHeader className="mb-4">
                     <DialogTitle>Create post</DialogTitle>
                     <VisuallyHidden.Root>

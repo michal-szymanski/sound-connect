@@ -24,6 +24,7 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 - When creating typescript props type ALWAYS use name "Props".
 - Every payload MUST be validated with the same zod schema on frontend before sending and on backend after receiving it.
 - NEVER use Array.findIndex, ALWAYS use Array.find instead.
+- When using chrome-devtools MCP: ALWAYS use list_pages first to check for existing localhost:3000 instances. NEVER use new_page for localhost:3000 if the dev server is already running. Navigate existing pages instead to avoid port conflicts.
 - Before making any edit, check if it violates these rules.
 - If a rule conflict arises, ask the user for clarification rather than breaking the rule.
 
