@@ -118,6 +118,7 @@ export function Post({ item }: Props) {
             <PostModal
                 open={isModalOpen}
                 onOpenChange={setIsModalOpen}
+                postId={post.id}
                 author={{
                     name: user.name,
                     username: username,
