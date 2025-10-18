@@ -1,4 +1,4 @@
-import { count, desc, eq, isNull, and } from 'drizzle-orm';
+import { count, desc, eq, isNull, and, inArray } from 'drizzle-orm';
 import { commentsTable, commentsReactionsTable, users } from '@/api/db/schema';
 import { db } from '@/api/db';
 
@@ -33,13 +33,13 @@ export async function getCommentsByPostId(postId: number, currentUserId?: string
 
     const reactions = await db
         .select({
+            id: commentsReactionsTable.id,
             commentId: commentsReactionsTable.commentId,
-            reactionId: commentsReactionsTable.id,
             userId: commentsReactionsTable.userId,
             createdAt: commentsReactionsTable.createdAt
         })
         .from(commentsReactionsTable)
-        .where(eq(commentsReactionsTable.commentId, commentIds[0]));
+        .where(inArray(commentsReactionsTable.commentId, commentIds));
 
     const replies = await db
         .select({
@@ -60,19 +60,21 @@ export async function getCommentsByPostId(postId: number, currentUserId?: string
         })
         .from(commentsTable)
         .leftJoin(users, eq(commentsTable.userId, users.id))
-        .where(eq(commentsTable.parentCommentId, commentIds[0]))
+        .where(inArray(commentsTable.parentCommentId, commentIds))
         .orderBy(desc(commentsTable.createdAt));
 
-    const replyReactions = replies.length
+    const replyIds = replies.map((r) => r.comment.id);
+
+    const replyReactions = replyIds.length
         ? await db
               .select({
+                  id: commentsReactionsTable.id,
                   commentId: commentsReactionsTable.commentId,
-                  reactionId: commentsReactionsTable.id,
                   userId: commentsReactionsTable.userId,
                   createdAt: commentsReactionsTable.createdAt
               })
               .from(commentsReactionsTable)
-              .where(eq(commentsReactionsTable.commentId, replies[0].comment.id))
+              .where(inArray(commentsReactionsTable.commentId, replyIds))
         : [];
 
     return comments.map((comment) => {

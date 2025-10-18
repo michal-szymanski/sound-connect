@@ -1,4 +1,4 @@
-import { mediaTable, postsReactionsTable, postsTable, users } from '@/api/db/schema';
+import { mediaTable, postsReactionsTable, postsTable, users, commentsTable } from '@/api/db/schema';
 import { feedItemSchema, postReactionSchema, postSchema, userDTOSchema } from '@sound-connect/common/types/models';
 import { desc, eq, inArray, and, count } from 'drizzle-orm';
 import z from 'zod';
@@ -65,10 +65,16 @@ export const getPostById = async (postId: number) => {
 
     const media = await db.select().from(mediaTable).where(eq(mediaTable.postId, postId));
 
+    const [commentsCountResult] = await db
+        .select({ count: count() })
+        .from(commentsTable)
+        .where(eq(commentsTable.postId, postId));
+
     const postWithReactions = {
         ...post,
         reactions,
-        media
+        media,
+        commentsCount: commentsCountResult?.count ?? 0
     };
 
     return feedItemSchema.parse(postWithReactions);
@@ -118,10 +124,20 @@ export const getFeed = async (limit: number = 10, offset: number = 0) => {
 
     const media = await db.select().from(mediaTable).where(inArray(mediaTable.postId, postIds));
 
+    const commentsCounts = await db
+        .select({
+            postId: commentsTable.postId,
+            count: count()
+        })
+        .from(commentsTable)
+        .where(inArray(commentsTable.postId, postIds))
+        .groupBy(commentsTable.postId);
+
     const postsWithReactions = posts.map((post) => ({
         ...post,
         reactions: reactions.filter((reaction) => reaction.postId === post.post.id),
-        media: media.filter((m) => m.postId === post.post.id)
+        media: media.filter((m) => m.postId === post.post.id),
+        commentsCount: commentsCounts.find((c) => c.postId === post.post.id)?.count ?? 0
     }));
 
     const schema = z.array(feedItemSchema);
@@ -160,7 +176,7 @@ export const addPost = async (userId: string, content: string) => {
 };
 
 export const likePost = async (userId: string, postId: number) => {
-    db.insert(postsReactionsTable).values({
+    await db.insert(postsReactionsTable).values({
         userId,
         postId,
         createdAt: new Date().toISOString()
@@ -168,7 +184,7 @@ export const likePost = async (userId: string, postId: number) => {
 };
 
 export const unlikePost = async (userId: string, postId: number) => {
-    db.delete(postsReactionsTable).where(and(eq(postsReactionsTable.userId, userId), eq(postsReactionsTable.postId, postId)));
+    await db.delete(postsReactionsTable).where(and(eq(postsReactionsTable.userId, userId), eq(postsReactionsTable.postId, postId)));
 };
 
 export const getPostLikeStatus = async (userId: string, postId: number) => {

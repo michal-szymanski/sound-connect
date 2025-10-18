@@ -25,7 +25,7 @@ const formatContent = (content: string) => {
 };
 
 export function Post({ item }: Props) {
-    const { post, user, media, reactions } = item;
+    const { post, user, media, reactions, commentsCount } = item;
     const { data: currentUser } = useUser();
     const { data: followings } = useFollowings(currentUser);
     const [isLikesDialogOpen, setIsLikesDialogOpen] = useState(false);
@@ -104,7 +104,7 @@ export function Post({ item }: Props) {
                     <Button variant="ghost" size="sm" onClick={() => setIsModalOpen(true)}>
                         <MessageCircle className="h-5 w-5" />
                     </Button>
-                    <span className="text-sm font-medium tabular-nums">0</span>
+                    <span className="text-sm font-medium tabular-nums">{commentsCount}</span>
                 </div>
 
                 <div className="text-muted-foreground flex items-center gap-2">
