@@ -48,10 +48,10 @@ export async function containsOffensiveContent(content: string): Promise<boolean
     const bannedWords = ['spam', 'scam', 'offensive'];
 
     const lowercaseContent = content.toLowerCase();
-    return bannedWords.some(word => lowercaseContent.includes(word));
+    return bannedWords.some((word) => lowercaseContent.includes(word));
 }
 
-export async function moderateMedia(mediaKeys: string[], env: CloudflareBindings): Promise<ModerationResult> {
+export async function moderateMedia(mediaKeys: string[]): Promise<ModerationResult> {
     for (const mediaKey of mediaKeys) {
         console.log(`Checking media: ${mediaKey}`);
     }
@@ -62,14 +62,10 @@ export async function moderateMedia(mediaKeys: string[], env: CloudflareBindings
     };
 }
 
-export async function updatePostStatus(
-    postId: number,
-    status: PostStatus,
-    reason?: string,
-    env?: CloudflareBindings
-): Promise<void> {
+export async function updatePostStatus(postId: number, status: PostStatus, reason?: string, env?: CloudflareBindings): Promise<void> {
     try {
-        await db(env).update(postsTable)
+        await db(env)
+            .update(postsTable)
             .set({
                 status,
                 moderationReason: reason,

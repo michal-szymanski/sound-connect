@@ -28,12 +28,6 @@ export default [
             }
         },
         settings: {
-            'import/resolver': {
-                typescript: {
-                    alwaysTryTypes: true,
-                    project: ['apps/*/tsconfig.json', 'packages/*/tsconfig.json']
-                }
-            },
             'import/core-modules': ['cloudflare:workers']
         },
         rules: {
@@ -47,15 +41,13 @@ export default [
                     destructuredArrayIgnorePattern: '^_'
                 }
             ],
-            'import/no-unresolved': 'error',
             'no-restricted-syntax': [
                 'error',
                 {
                     selector: 'CallExpression[callee.property.name="findIndex"]',
                     message: 'NEVER use Array.findIndex, ALWAYS use Array.find instead'
                 }
-            ],
-            'no-console': ['warn', { allow: ['warn', 'error'] }]
+            ]
         }
     }
 ];

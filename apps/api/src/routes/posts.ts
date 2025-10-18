@@ -135,7 +135,7 @@ postsRoutes.post('/posts/:postId/like', async (c) => {
         const likesData = await getPostLikesData(user.id, postId);
 
         return c.json({ success: true, ...likesData });
-    } catch (error) {
+    } catch (_error) {
         return c.json({ error: 'Failed to like post' }, 500);
     }
 });
@@ -149,7 +149,7 @@ postsRoutes.delete('/posts/:postId/like', async (c) => {
         const likesData = await getPostLikesData(user.id, postId);
 
         return c.json({ success: true, ...likesData });
-    } catch (error) {
+    } catch (_error) {
         return c.json({ error: 'Failed to unlike post' }, 500);
     }
 });
@@ -161,7 +161,7 @@ postsRoutes.get('/posts/:postId/likes', async (c) => {
     try {
         const likesData = await getPostLikesData(user.id, postId);
         return c.json(likesData);
-    } catch (error) {
+    } catch (_error) {
         return c.json({ error: 'Failed to get likes data' }, 500);
     }
 });
@@ -172,7 +172,7 @@ postsRoutes.get('/posts/:postId/likes/users', async (c) => {
     try {
         const likesUsers = await getPostLikesUsers(postId);
         return c.json(likesUsers);
-    } catch (error) {
+    } catch (_error) {
         return c.json({ error: 'Failed to get likes users' }, 500);
     }
 });

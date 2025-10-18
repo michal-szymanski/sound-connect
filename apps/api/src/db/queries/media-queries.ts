@@ -2,7 +2,6 @@ import { mediaTable } from '@/api/db/schema';
 import { db } from '@/api/db';
 import { mediaSchema, mediaTypeSchema } from '@sound-connect/common/types/models';
 import z from 'zod';
-import { sql } from 'drizzle-orm';
 
 export const addMedia = async (postId: number, mediaKeys: string[]) => {
     if (mediaKeys.length === 0) {

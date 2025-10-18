@@ -2,6 +2,7 @@
     "name": "@sound-connect/api",
     "version": "1.0.0",
     "private": true,
+    "type": "module",
     "scripts": {
         "start": "pnpm db:push && pnpm db:seed && tsx src/server.ts",
         "db:push": "drizzle-kit push",
