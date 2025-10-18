@@ -1,4 +1,3 @@
-import { Button } from '@/web/components/ui/button';
 
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
@@ -6,6 +5,7 @@ import clsx from 'clsx';
 import { Smile } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Button } from '@/web/components/ui/button';
 
 type Props = {
     onEmojiSelect: (emoji: { native: string }) => void;

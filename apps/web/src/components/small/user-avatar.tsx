@@ -1,8 +1,8 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/web/components/ui/avatar';
 import OnlineStatusIcon from '@/web/components/small/online-status-icon';
-import { useWebSocket } from '@/web/providers/websocket-provider';
+import { Avatar, AvatarFallback, AvatarImage } from '@/web/components/ui/avatar';
 import { useUser } from '@/web/lib/react-query';
 import { cn } from '@/web/lib/utils';
+import { useWebSocket } from '@/web/providers/websocket-provider';
 
 type Props = {
     user: {

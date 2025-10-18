@@ -1,3 +1,14 @@
+import { Link, useLocation } from '@tanstack/react-router';
+import { Bell, Cog, House, LucideIcon, Mail, UserRound } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import NotificationsSheet from '@/web/components/layout/notifications-sheet';
+import AccountButton from '@/web/components/small/account-button';
+import { Badge } from '@/web/components/ui/badge';
+import { useUser } from '@/web/lib/react-query';
+import { useWebSocket } from '@/web/providers/websocket-provider';
+import { collapseSidebar } from '@/web/redux/slices/ui-slice';
+import { RootState } from '@/web/redux/store';
 import {
     Sidebar,
     SidebarContent,
@@ -8,17 +19,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from 'src/components/ui/sidebar';
-import { Bell, Cog, House, LucideIcon, Mail, UserRound } from 'lucide-react';
-import { Link, useLocation } from '@tanstack/react-router';
-import AccountButton from '@/web/components/small/account-button';
-import { useUser } from '@/web/lib/react-query';
-import { useState, useEffect } from 'react';
-import NotificationsSheet from '@/web/components/layout/notifications-sheet';
-import { Badge } from '@/web/components/ui/badge';
-import { useWebSocket } from '@/web/providers/websocket-provider';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '@/web/redux/store';
-import { collapseSidebar } from '@/web/redux/slices/ui-slice';
 
 type Item = {
     title: string;

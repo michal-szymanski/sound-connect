@@ -1,6 +1,7 @@
 {
   "name": "sound-connect",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "pnpm run -r --parallel --aggregate-output dev",
     "dev:no-chrome": "pnpm run -r --parallel --aggregate-output dev",
@@ -14,6 +15,8 @@
     "tail:web": "pnpm --filter @sound-connect/web tail",
     "tail:api": "pnpm --filter @sound-connect/api tail",
     "tail:queue": "pnpm --filter @sound-connect/posts-queue-consumer tail",
+    "lint": "pnpm run -r --parallel --aggregate-output lint",
+    "lint:fix": "pnpm run -r --parallel --aggregate-output lint:fix",
     "prettier:format": "prettier ./apps --write",
     "prettier:check": "prettier ./apps --check",
     "wipe:do": "zsh -c 'rm -rf apps/api/.wrangler/**/do'",
@@ -22,10 +25,18 @@
     "studio": "pnpm --filter @sound-connect/api db:studio:local"
   },
   "devDependencies": {
+    "@eslint/js": "^9.38.0",
     "@modelcontextprotocol/server-filesystem": "^2025.8.21",
     "chrome-devtools-mcp": "^0.8.1",
+    "eslint": "^9.38.0",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-deprecation": "^3.0.0",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.0",
     "prettier": "^3.5.0",
-    "prettier-plugin-tailwindcss": "^0.6.11"
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "typescript-eslint": "^8.46.1"
   },
   "volta": {
     "node": "22.20.0",

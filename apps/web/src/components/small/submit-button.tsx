@@ -1,7 +1,7 @@
+import clsx from 'clsx';
 import React from 'react';
 import Spinner from '@/web/components/small/spinner';
 import { Button } from '@/web/components/ui/button';
-import clsx from 'clsx';
 import { cn } from '@/web/lib/utils';
 
 type Props = React.PropsWithChildren<{

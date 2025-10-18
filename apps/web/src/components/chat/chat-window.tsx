@@ -1,20 +1,20 @@
-import { useState, useEffect, useRef } from 'react';
-import { X, Minus, Send } from 'lucide-react';
-import { Button } from '@/web/components/ui/button';
-import { Input } from '@/web/components/ui/input';
-import { Card, CardContent, CardHeader } from '@/web/components/ui/card';
-import { ScrollArea } from '@/web/components/ui/scroll-area';
-import { Form, FormControl, FormField, FormItem } from '@/web/components/ui/form';
-import UserAvatar from '@/web/components/small/user-avatar';
-import { ChatMessage, UserDTO } from '@sound-connect/common/types/models';
-import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
-import { useWebSocket } from '@/web/providers/websocket-provider';
-import { useUser } from '@/web/lib/react-query';
-import { getRoomId } from '@sound-connect/common/helpers';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
+import { getRoomId } from '@sound-connect/common/helpers';
+import { ChatMessage, UserDTO } from '@sound-connect/common/types/models';
 import clsx from 'clsx';
+import { X, Minus, Send } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import UserAvatar from '@/web/components/small/user-avatar';
+import { Button } from '@/web/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/web/components/ui/card';
+import { Form, FormControl, FormField, FormItem } from '@/web/components/ui/form';
+import { Input } from '@/web/components/ui/input';
+import { ScrollArea } from '@/web/components/ui/scroll-area';
+import { useUser } from '@/web/lib/react-query';
+import { useWebSocket } from '@/web/providers/websocket-provider';
 
 type Props = {
     user: UserDTO;
@@ -55,7 +55,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
             const initializeRoom = async () => {
                 try {
                     await loadRoomHistory(newRoomId);
-                } catch (error) {}
+                } catch (_error) {}
 
                 subscribeToRoom(newRoomId);
             };

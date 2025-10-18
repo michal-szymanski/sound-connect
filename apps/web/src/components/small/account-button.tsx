@@ -1,9 +1,9 @@
+import clsx from 'clsx';
 import SignOutButton from '@/web/components/small/sign-out-button';
 import UserAvatar from '@/web/components/small/user-avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/web/components/ui/dropdown-menu';
-import { useUser } from '@/web/lib/react-query';
 import { SidebarMenuButton } from '@/web/components/ui/sidebar';
-import clsx from 'clsx';
+import { useUser } from '@/web/lib/react-query';
 
 type Props = {
     isCollapsed: boolean;

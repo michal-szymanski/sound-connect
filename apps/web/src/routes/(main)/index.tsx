@@ -1,11 +1,11 @@
+import { userDTOSchema } from '@sound-connect/common/types/models';
+import { createFileRoute } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import AddPostDialog from '@/web/components/dialogs/add-post-dialog';
 import { Post } from '@/web/components/post';
 import UserAvatar from '@/web/components/small/user-avatar';
 import { Card, CardContent } from '@/web/components/ui/card';
 import { envsQuery, feedQuery, followersQuery, followingsQuery, useFeed, userQuery, useUser } from '@/web/lib/react-query';
-import { userDTOSchema } from '@sound-connect/common/types/models';
-import { createFileRoute } from '@tanstack/react-router';
-import { useEffect } from 'react';
 
 export const Route = createFileRoute('/(main)/')({
     component: RouteComponent,

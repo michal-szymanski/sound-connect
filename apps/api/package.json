@@ -16,7 +16,9 @@
         "deploy": "wrangler deploy --minify src/server.ts",
         "types": "wrangler types --env-interface CloudflareBindings",
         "tail": "wrangler tail",
-        "tsc": "tsc --noEmit"
+        "tsc": "tsc --noEmit",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix"
     },
     "dependencies": {
         "@cloudflare/workers-types": "catalog:",

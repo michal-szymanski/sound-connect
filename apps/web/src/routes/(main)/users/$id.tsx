@@ -1,13 +1,13 @@
+import { UserDTO, userDTOSchema, postSchema } from '@sound-connect/common/types/models';
+import { useQueryClient } from '@tanstack/react-query';
+import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
+import { useState, useEffect } from 'react';
+import z from 'zod';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { Button } from '@/web/components/ui/button';
 import { Card } from '@/web/components/ui/card';
-import UserAvatar from '@/web/components/small/user-avatar';
-import { sendFollowRequest, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
-import { UserDTO, userDTOSchema, postSchema } from '@sound-connect/common/types/models';
-import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
-import z from 'zod';
 import { useFollowers, useFollowings, useFollowRequestStatus } from '@/web/lib/react-query';
-import { useQueryClient } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { sendFollowRequest, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
@@ -96,7 +96,7 @@ function RouteComponent() {
 
             queryClient.invalidateQueries({ queryKey: ['follow-request-status', user.id] });
             router.invalidate();
-        } catch (error) {
+        } catch (_error) {
             setOptimisticStatus(null);
         }
     };
@@ -112,7 +112,9 @@ function RouteComponent() {
             }
 
             router.invalidate();
-        } catch (error) {}
+        } catch (error) {
+            console.error('Failed to unfollow user:', error);
+        }
     };
 
     const renderFollowButton = () => {

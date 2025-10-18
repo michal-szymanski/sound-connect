@@ -22,7 +22,7 @@ export const errorHandler = async (response: Response) => {
             success: false,
             body: authErrorSchema.parse(json)
         } as const;
-    } catch (e) {
+    } catch (_e) {
         return { success: false, body: null } as const;
     }
 };
@@ -76,7 +76,7 @@ export const getSessionFromCookie = () => {
         const schema = z.object({ session: z.object({ session: sessionSchema, user: userSchema }), expiresAt: z.number(), signature: z.string() });
         const { session } = schema.parse(json);
         return session;
-    } catch (error) {
+    } catch (_error) {
         return null;
     }
 };

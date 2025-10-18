@@ -1,7 +1,7 @@
-import { Post } from '@/web/components/post';
-import { envsQuery, followersQuery, followingsQuery, userQuery, postQuery } from '@/web/lib/react-query';
 import { createFileRoute, notFound } from '@tanstack/react-router';
 import { z } from 'zod';
+import { Post } from '@/web/components/post';
+import { envsQuery, followersQuery, followingsQuery, userQuery, postQuery } from '@/web/lib/react-query';
 
 export const Route = createFileRoute('/(main)/posts/$postId')({
     component: RouteComponent,

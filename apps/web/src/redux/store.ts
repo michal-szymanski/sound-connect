@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
-import uiReducer from './slices/ui-slice';
 import { loggerMiddleware } from '@/web/redux/middlewares/logger';
+import uiReducer from './slices/ui-slice';
 
 export const store = configureStore({
     reducer: {

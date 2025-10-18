@@ -1,25 +1,25 @@
-import SubmitButton from '@/web/components/small/submit-button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/web/components/ui/dialog';
-import { Form, FormField, FormItem } from '@/web/components/ui/form';
-import { Textarea } from '@/web/components/ui/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { DialogDescription } from '@radix-ui/react-dialog';
 import { POST_TEXT_MAX_LENGTH } from '@sound-connect/common/constants';
+import { useQueryClient } from '@tanstack/react-query';
+import clsx from 'clsx';
+import { X, ImagePlus } from 'lucide-react';
+import { VisuallyHidden } from 'radix-ui';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import z from 'zod';
 import EmojiPicker from '@/web/components/small/emoji-picker';
-import { useDispatch } from 'react-redux';
-import { showSidebar } from '@/web/redux/slices/ui-slice';
-import { VisuallyHidden } from 'radix-ui';
-import { DialogDescription } from '@radix-ui/react-dialog';
-import { addPost } from '@/web/server-functions/models';
-import { useQueryClient } from '@tanstack/react-query';
-import { ScrollArea } from '@/web/components/ui/scroll-area';
-import clsx from 'clsx';
-import useFileUpload from '@/web/hooks/use-file-upload';
+import SubmitButton from '@/web/components/small/submit-button';
 import { Button } from '@/web/components/ui/button';
-import { X, ImagePlus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/web/components/ui/dialog';
+import { Form, FormField, FormItem } from '@/web/components/ui/form';
+import { ScrollArea } from '@/web/components/ui/scroll-area';
+import { Textarea } from '@/web/components/ui/textarea';
+import useFileUpload from '@/web/hooks/use-file-upload';
+import { showSidebar } from '@/web/redux/slices/ui-slice';
+import { addPost } from '@/web/server-functions/models';
 
 const AddPostDialog = () => {
     const text = `What's on your mind?`;
@@ -59,7 +59,7 @@ const AddPostDialog = () => {
             if (result.success) {
                 queryClient.invalidateQueries({ queryKey: ['feed'] });
             }
-        } catch (error) {
+        } catch (_error) {
             toast.error('Could not publish the post', {
                 description: 'Unknown error occurred'
             });

@@ -1,14 +1,14 @@
-import { Button } from '@/web/components/ui/button';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AuthError } from '@sound-connect/common/types/auth';
 import { createFileRoute, Link, redirect, useRouter } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 import { z } from 'zod';
+import SubmitButton from '@/web/components/small/submit-button';
+import { Button } from '@/web/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/web/components/ui/form';
 import { Input } from '@/web/components/ui/input';
 import { signUp } from '@/web/server-functions/auth';
-import { AuthError } from '@sound-connect/common/types/auth';
-import { toast } from 'sonner';
-import SubmitButton from '@/web/components/small/submit-button';
 
 export const Route = createFileRoute('/(auth)/sign-up/')({
     component: RouteComponent

@@ -1,9 +1,9 @@
-import { DropdownMenuItem } from '@/web/components/ui/dropdown-menu';
-import { signOut } from '@/web/server-functions/auth';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { LogOut } from 'lucide-react';
 import { toast } from 'sonner';
+import { DropdownMenuItem } from '@/web/components/ui/dropdown-menu';
+import { signOut } from '@/web/server-functions/auth';
 
 const SignOutButton = () => {
     const router = useRouter();

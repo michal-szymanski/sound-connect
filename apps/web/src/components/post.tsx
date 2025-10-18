@@ -1,15 +1,15 @@
-import { Button } from '@/web/components/ui/button';
-import { Card, CardFooter } from '@/web/components/ui/card';
-import { Heart, MoreHorizontal, MessageCircle, Share2 } from 'lucide-react';
-import { useFollowings, useUser, useLikeToggle } from '@/web/lib/react-query';
-import { Link } from '@tanstack/react-router';
-import { useElapsedTime } from '@/web/lib/utils';
 import { FeedItem } from '@sound-connect/common/types/models';
-import UserAvatar from '@/web/components/small/user-avatar';
+import { Link } from '@tanstack/react-router';
+import { Heart, MoreHorizontal, MessageCircle, Share2 } from 'lucide-react';
 import { useState } from 'react';
 import LikesDialog from '@/web/components/dialogs/likes-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/web/components/ui/dropdown-menu';
 import { PostModal } from '@/web/components/post-modal';
+import UserAvatar from '@/web/components/small/user-avatar';
+import { Button } from '@/web/components/ui/button';
+import { Card, CardFooter } from '@/web/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/web/components/ui/dropdown-menu';
+import { useFollowings, useUser, useLikeToggle } from '@/web/lib/react-query';
+import { useElapsedTime } from '@/web/lib/utils';
 
 type Props = {
     item: FeedItem;
