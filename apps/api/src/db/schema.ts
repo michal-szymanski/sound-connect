@@ -65,22 +65,24 @@ export const postsTable = sqliteTable('posts', {
 export const postsReactionsTable = sqliteTable('posts_reactions', {
     id: integer().primaryKey(),
     userId: text('user_id').notNull(),
-    postId: integer('postId')
+    postId: integer('post_id')
         .notNull()
         .references(() => postsTable.id),
-    createdAt: text('createdAt').notNull()
+    createdAt: text('created_at').notNull()
 });
 
+// @ts-expect-error - Self-referencing foreign key requires circular reference
 export const commentsTable = sqliteTable('comments', {
     id: integer().primaryKey(),
     userId: text('user_id').notNull(),
-    postId: integer('postId')
+    postId: integer('post_id')
         .notNull()
         .references(() => postsTable.id),
+    // @ts-expect-error - Self-referencing foreign key requires circular reference
     parentCommentId: integer('parent_comment_id').references(() => commentsTable.id),
     content: text('content').notNull(),
-    createdAt: text('createdAt').notNull(),
-    updatedAt: text('updatedAt')
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at')
 });
 
 export const commentsReactionsTable = sqliteTable('comments_reactions', {
@@ -89,7 +91,7 @@ export const commentsReactionsTable = sqliteTable('comments_reactions', {
     commentId: integer('comment_id')
         .notNull()
         .references(() => commentsTable.id),
-    createdAt: text('createdAt').notNull()
+    createdAt: text('created_at').notNull()
 });
 
 export const mediaTypeEnum = ['image', 'video'] as const;

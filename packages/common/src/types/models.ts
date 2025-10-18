@@ -220,14 +220,19 @@ export const commentReactionSchema = z.object({
 
 export type CommentReaction = z.infer<typeof commentReactionSchema>;
 
-export const commentWithUserSchema = z.object({
+export type CommentWithUser = {
+    comment: Comment;
+    user: UserDTO;
+    reactions: CommentReaction[];
+    replies?: CommentWithUser[];
+};
+
+export const commentWithUserSchema: z.ZodType<CommentWithUser> = z.object({
     comment: commentSchema,
     user: userDTOSchema,
     reactions: z.array(commentReactionSchema),
     replies: z.array(z.lazy(() => commentWithUserSchema)).optional()
 });
-
-export type CommentWithUser = z.infer<typeof commentWithUserSchema>;
 
 export const createCommentSchema = z.object({
     postId: z.number(),
