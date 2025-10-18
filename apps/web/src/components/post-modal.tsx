@@ -58,6 +58,8 @@ export function PostModal({
     const handleSubmitComment = () => {
         if (!commentText.trim() || createCommentMutation.isPending) return;
 
+        const parentCommentId = replyingTo;
+
         createCommentMutation.mutate(
             {
                 content: commentText.trim(),
@@ -67,6 +69,9 @@ export function PostModal({
                 onSuccess: () => {
                     setCommentText('');
                     setReplyingTo(null);
+                    if (parentCommentId) {
+                        setExpandedReplies((prev) => new Set(prev).add(parentCommentId));
+                    }
                 }
             }
         );
