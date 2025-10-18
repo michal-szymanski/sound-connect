@@ -121,7 +121,7 @@
         @apply h-full;
     }
     body {
-        @apply bg-background text-foreground h-full !overflow-y-scroll;
+        @apply bg-background text-foreground scrollbar-gutter-stable h-full !overflow-y-scroll;
     }
 
     button,
@@ -152,10 +152,13 @@ button {
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        @apply bg-background text-foreground;
+    }
+    body[data-scroll-locked] {
+        margin-right: 0 !important;
     }
 }
