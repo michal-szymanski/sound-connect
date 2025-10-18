@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from 'src/components
 import { Button } from 'src/components/ui/button';
 import { Link } from '@tanstack/react-router';
 import { UserDTO } from '@sound-connect/common/types/models';
-import StatusAvatar from '@/web/components/small/status-avatar';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { useFollowings, useUser } from 'src/lib/react-query';
 import { followUser, getPostLikesUsers } from '@/web/server-functions/models';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -78,7 +78,7 @@ const LikesDialog = ({ isOpen, onClose, postId }: Props) => {
                                         className="hover:bg-muted/50 flex flex-1 items-center space-x-3 rounded-lg p-2 transition-colors"
                                         onClick={onClose}
                                     >
-                                        <StatusAvatar user={user} />
+                                        <UserAvatar user={user} />
                                         <span className="font-medium">{user.name}</span>
                                     </Link>
                                     {canFollow(user.id) && (

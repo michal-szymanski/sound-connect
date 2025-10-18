@@ -1,6 +1,5 @@
 export const APP_NAME = 'Sound Connect';
 export const APP_NAME_NORMALIZED = 'sound-connect';
-export const DEFAULT_AVATAR_URL = 'https://github.com/shadcn.png';
 export const CHAT_MESSAGE_MAX_LENGTH = 1000;
 export const POST_TEXT_MAX_LENGTH = 1000;
 export const ONLINE_STATUS_INTERVAL = 2000;

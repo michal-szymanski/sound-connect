@@ -5,7 +5,7 @@ import { Input } from '@/web/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/web/components/ui/card';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import { Form, FormControl, FormField, FormItem } from '@/web/components/ui/form';
-import StatusAvatar from '@/web/components/small/status-avatar';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { ChatMessage, UserDTO } from '@sound-connect/common/types/models';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
 import { useWebSocket } from '@/web/providers/websocket-provider';
@@ -101,7 +101,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                     title={`Chat with ${user.name}`}
                 >
                     <div className="relative h-full w-full overflow-hidden rounded-full">
-                        <StatusAvatar user={user} className="h-full w-full" />
+                        <UserAvatar user={user} className="h-full w-full" />
                     </div>
                     <div
                         onClick={(e) => {
@@ -126,7 +126,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
             <CardHeader className="flex-shrink-0 cursor-pointer border-b p-3" onClick={onToggleMinimize}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <StatusAvatar user={user} />
+                        <UserAvatar user={user} />
                         <span className="truncate text-sm font-medium">{user.name}</span>
                     </div>
                     <div className="flex items-center gap-1">

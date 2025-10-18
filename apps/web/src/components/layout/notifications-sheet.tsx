@@ -5,7 +5,7 @@ import { deleteNotification, getUser, sendFollowRequest, updateNotification } fr
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useElapsedTime } from 'src/lib/utils';
-import StatusAvatar from '@/web/components/small/status-avatar';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { FollowRequestNotificationItem, FollowRequestAcceptedNotificationItem, UserDTO } from '@sound-connect/common/types/models';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUser } from '@/web/lib/react-query';
@@ -114,7 +114,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                 }}
             >
                 <div className="inline-flex items-center gap-3 pr-3">
-                    <StatusAvatar user={user} />
+                    <UserAvatar user={user} />
                     <div>
                         <span className="font-bold">{user.name}</span>{' '}
                         {notification.accepted ? 'follow request was accepted. You can now follow back.' : 'requested to follow you.'}{' '}
@@ -184,7 +184,7 @@ const NotificationsSheet = ({ open, setOpen }: Props) => {
                 }}
             >
                 <div className="inline-flex items-center gap-3 pr-3">
-                    <StatusAvatar user={user} />
+                    <UserAvatar user={user} />
                     <div>
                         <span className="font-bold">{user.name}</span> accepted your follow request.{' '}
                         <span className="text-muted-foreground">{elapsedTime}</span>
