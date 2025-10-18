@@ -67,18 +67,14 @@ export function PostModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="h-[90vh] w-[90vw] max-w-[1400px] sm:max-w-[1400px] gap-0 p-0 flex flex-row overflow-hidden !z-[100]" showCloseButton={true}>
-                <div className="flex flex-1 items-center justify-center bg-black overflow-hidden">
-                    {image ? (
+            <DialogContent className={`h-[90vh] gap-0 p-0 flex flex-row overflow-hidden !z-[100] ${image ? 'w-[90vw] max-w-[1400px] sm:max-w-[1400px]' : 'w-[500px]'}`} showCloseButton={true}>
+                {image && (
+                    <div className="flex flex-1 items-center justify-center bg-black overflow-hidden">
                         <img src={image} alt="Post content" className="max-h-full max-w-full object-contain" />
-                    ) : (
-                        <div className="bg-muted flex h-full w-full items-center justify-center">
-                            <span className="text-muted-foreground">No image</span>
-                        </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
-                <div className="bg-card border-border flex w-[500px] flex-shrink-0 flex-col overflow-hidden border-l">
+                <div className={`bg-card border-border flex w-[500px] flex-shrink-0 flex-col overflow-hidden ${image ? 'border-l' : ''}`}>
                         {/* Post Header */}
                         <div className="border-border flex flex-shrink-0 items-center border-b p-3">
                             <div className="flex items-center gap-2">
