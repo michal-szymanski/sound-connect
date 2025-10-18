@@ -113,7 +113,10 @@ export async function createComment(userId: string, postId: number, content: str
         })
         .returning();
 
-    return result[0];
+    if (Array.isArray(result) && result.length > 0) {
+        return result[0];
+    }
+    throw new Error('Failed to create comment');
 }
 
 export async function likeComment(userId: string, commentId: number) {
@@ -140,7 +143,7 @@ export async function getCommentLikesData(userId: string, commentId: number) {
         .where(and(eq(commentsReactionsTable.commentId, commentId), eq(commentsReactionsTable.userId, userId)));
 
     return {
-        likesCount: likesCountResult.count,
+        likesCount: likesCountResult?.count ?? 0,
         isLiked: userLike.length > 0
     };
 }
