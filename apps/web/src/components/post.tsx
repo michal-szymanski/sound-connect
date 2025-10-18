@@ -9,6 +9,7 @@ import StatusAvatar from '@/web/components/small/status-avatar';
 import { useState } from 'react';
 import LikesDialog from '@/web/components/dialogs/likes-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/web/components/ui/dropdown-menu';
+import { PostModal } from '@/web/components/post-modal';
 
 type Props = {
     item: FeedItem;
@@ -23,10 +24,12 @@ const formatContent = (content: string) => {
     });
 };
 
-export function Post({ item: { post, user, media, reactions } }: Props) {
+export function Post({ item }: Props) {
+    const { post, user, media, reactions } = item;
     const { data: currentUser } = useUser();
     const { data: followings } = useFollowings(currentUser);
     const [isLikesDialogOpen, setIsLikesDialogOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const elapsedTime = useElapsedTime(post.createdAt);
 
     const canFollow = currentUser?.id !== post.userId && !followings.some((following) => following.id === post.userId);
@@ -83,7 +86,7 @@ export function Post({ item: { post, user, media, reactions } }: Props) {
                 />
             </div>
             {media && media.length > 0 && (
-                <div className="bg-muted relative aspect-video w-full overflow-hidden">
+                <div className="bg-muted relative aspect-video w-full cursor-pointer overflow-hidden" onClick={() => setIsModalOpen(true)}>
                     {media.map((m) => (
                         <img key={m.id} src={`/media/${m.key}`} alt={m.type} className="h-full w-full object-cover" />
                     ))}
@@ -112,6 +115,22 @@ export function Post({ item: { post, user, media, reactions } }: Props) {
                 </div>
             </CardFooter>
             <LikesDialog isOpen={isLikesDialogOpen} onClose={() => setIsLikesDialogOpen(false)} postId={post.id} />
+            <PostModal
+                open={isModalOpen}
+                onOpenChange={setIsModalOpen}
+                author={{
+                    name: user.name,
+                    username: username,
+                    avatar: user.image || ''
+                }}
+                content={post.content}
+                image={media && media.length > 0 && media[0] ? `/media/${media[0].key}` : undefined}
+                timestamp={elapsedTime}
+                likes={reactions.length}
+                comments={[]}
+                shares={0}
+                isLiked={isLiked}
+            />
         </Card>
     );
 }

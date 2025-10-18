@@ -138,7 +138,7 @@ const LeftSidebar = () => {
             <Sidebar
                 collapsible="none"
                 data-state={!isSidebarVisible ? 'closed' : 'open'}
-                className={`fixed inset-y-0 left-0 z-[80] overflow-hidden text-white transition-all duration-300 data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0 ${
+                className={`fixed inset-y-0 left-0 z-10 overflow-hidden text-white transition-all duration-300 data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0 ${
                     isSidebarCollapsed ? 'w-16' : 'w-16 xl:w-64'
                 }`}
             >
