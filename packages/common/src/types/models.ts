@@ -186,7 +186,8 @@ export const feedItemSchema = z.object({
     post: postSchema,
     user: userDTOSchema,
     reactions: z.array(postReactionSchema),
-    media: z.array(mediaSchema)
+    media: z.array(mediaSchema),
+    commentsCount: z.number()
 });
 
 export type FeedItem = z.infer<typeof feedItemSchema>;

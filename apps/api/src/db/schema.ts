@@ -65,22 +65,22 @@ export const postsTable = sqliteTable('posts', {
 export const postsReactionsTable = sqliteTable('posts_reactions', {
     id: integer().primaryKey(),
     userId: text('user_id').notNull(),
-    postId: integer()
+    postId: integer('postId')
         .notNull()
         .references(() => postsTable.id),
-    createdAt: text().notNull()
+    createdAt: text('createdAt').notNull()
 });
 
 export const commentsTable = sqliteTable('comments', {
     id: integer().primaryKey(),
     userId: text('user_id').notNull(),
-    postId: integer()
+    postId: integer('postId')
         .notNull()
         .references(() => postsTable.id),
     parentCommentId: integer('parent_comment_id').references(() => commentsTable.id),
     content: text('content').notNull(),
-    createdAt: text().notNull(),
-    updatedAt: text()
+    createdAt: text('createdAt').notNull(),
+    updatedAt: text('updatedAt')
 });
 
 export const commentsReactionsTable = sqliteTable('comments_reactions', {
@@ -89,7 +89,7 @@ export const commentsReactionsTable = sqliteTable('comments_reactions', {
     commentId: integer('comment_id')
         .notNull()
         .references(() => commentsTable.id),
-    createdAt: text().notNull()
+    createdAt: text('createdAt').notNull()
 });
 
 export const mediaTypeEnum = ['image', 'video'] as const;

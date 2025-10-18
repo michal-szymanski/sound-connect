@@ -262,6 +262,7 @@ export const useCreateComment = (postId: number) => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['comments', postId] });
+            queryClient.invalidateQueries({ queryKey: ['feed-infinite'] });
         },
         onError: () => {
             toast.error('Failed to create comment');
