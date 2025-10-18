@@ -101,6 +101,22 @@ export async function getCommentsByPostId(postId: number, currentUserId?: string
 }
 
 export async function createComment(userId: string, postId: number, content: string, parentCommentId?: number | null) {
+    if (parentCommentId) {
+        const parentComment = await db
+            .select({ parentCommentId: commentsTable.parentCommentId })
+            .from(commentsTable)
+            .where(eq(commentsTable.id, parentCommentId))
+            .limit(1);
+
+        if (parentComment.length === 0) {
+            throw new Error('Parent comment not found');
+        }
+
+        if (parentComment[0].parentCommentId !== null) {
+            throw new Error('Cannot reply to a reply');
+        }
+    }
+
     const result = await db
         .insert(commentsTable)
         .values({
