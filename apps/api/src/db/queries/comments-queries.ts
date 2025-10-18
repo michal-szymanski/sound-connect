@@ -1,0 +1,144 @@
+import { count, desc, eq, isNull, and } from 'drizzle-orm';
+import { commentsTable, commentsReactionsTable, users } from '@/api/db/schema';
+import { db } from '@/api/db';
+
+export async function getCommentsByPostId(postId: number, currentUserId?: string) {
+    const comments = await db
+        .select({
+            comment: {
+                id: commentsTable.id,
+                userId: commentsTable.userId,
+                postId: commentsTable.postId,
+                parentCommentId: commentsTable.parentCommentId,
+                content: commentsTable.content,
+                createdAt: commentsTable.createdAt,
+                updatedAt: commentsTable.updatedAt
+            },
+            user: {
+                id: users.id,
+                name: users.name,
+                image: users.image
+            }
+        })
+        .from(commentsTable)
+        .leftJoin(users, eq(commentsTable.userId, users.id))
+        .where(and(eq(commentsTable.postId, postId), isNull(commentsTable.parentCommentId)))
+        .orderBy(desc(commentsTable.createdAt));
+
+    const commentIds = comments.map((c) => c.comment.id);
+
+    if (commentIds.length === 0) {
+        return [];
+    }
+
+    const reactions = await db
+        .select({
+            commentId: commentsReactionsTable.commentId,
+            reactionId: commentsReactionsTable.id,
+            userId: commentsReactionsTable.userId,
+            createdAt: commentsReactionsTable.createdAt
+        })
+        .from(commentsReactionsTable)
+        .where(eq(commentsReactionsTable.commentId, commentIds[0]));
+
+    const replies = await db
+        .select({
+            comment: {
+                id: commentsTable.id,
+                userId: commentsTable.userId,
+                postId: commentsTable.postId,
+                parentCommentId: commentsTable.parentCommentId,
+                content: commentsTable.content,
+                createdAt: commentsTable.createdAt,
+                updatedAt: commentsTable.updatedAt
+            },
+            user: {
+                id: users.id,
+                name: users.name,
+                image: users.image
+            }
+        })
+        .from(commentsTable)
+        .leftJoin(users, eq(commentsTable.userId, users.id))
+        .where(eq(commentsTable.parentCommentId, commentIds[0]))
+        .orderBy(desc(commentsTable.createdAt));
+
+    const replyReactions = replies.length
+        ? await db
+              .select({
+                  commentId: commentsReactionsTable.commentId,
+                  reactionId: commentsReactionsTable.id,
+                  userId: commentsReactionsTable.userId,
+                  createdAt: commentsReactionsTable.createdAt
+              })
+              .from(commentsReactionsTable)
+              .where(eq(commentsReactionsTable.commentId, replies[0].comment.id))
+        : [];
+
+    return comments.map((comment) => {
+        const commentReactions = reactions.filter((r) => r.commentId === comment.comment.id);
+
+        const commentReplies = replies
+            .filter((r) => r.comment.parentCommentId === comment.comment.id)
+            .map((reply) => {
+                const replyReactionsList = replyReactions.filter((r) => r.commentId === reply.comment.id);
+                return {
+                    comment: reply.comment,
+                    user: reply.user,
+                    reactions: replyReactionsList
+                };
+            });
+
+        return {
+            comment: comment.comment,
+            user: comment.user,
+            reactions: commentReactions,
+            replies: commentReplies
+        };
+    });
+}
+
+export async function createComment(userId: string, postId: number, content: string, parentCommentId?: number | null) {
+    const result = await db
+        .insert(commentsTable)
+        .values({
+            userId,
+            postId,
+            parentCommentId: parentCommentId || null,
+            content,
+            createdAt: new Date().toISOString(),
+            updatedAt: null
+        })
+        .returning();
+
+    return result[0];
+}
+
+export async function likeComment(userId: string, commentId: number) {
+    await db.insert(commentsReactionsTable).values({
+        userId,
+        commentId,
+        createdAt: new Date().toISOString()
+    });
+}
+
+export async function unlikeComment(userId: string, commentId: number) {
+    await db.delete(commentsReactionsTable).where(and(eq(commentsReactionsTable.userId, userId), eq(commentsReactionsTable.commentId, commentId)));
+}
+
+export async function getCommentLikesData(userId: string, commentId: number) {
+    const [likesCountResult] = await db
+        .select({ count: count() })
+        .from(commentsReactionsTable)
+        .where(eq(commentsReactionsTable.commentId, commentId));
+
+    const userLike = await db
+        .select()
+        .from(commentsReactionsTable)
+        .where(and(eq(commentsReactionsTable.commentId, commentId), eq(commentsReactionsTable.userId, userId)));
+
+    return {
+        likesCount: likesCountResult.count,
+        isLiked: userLike.length > 0
+    };
+}

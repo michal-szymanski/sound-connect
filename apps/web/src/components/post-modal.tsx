@@ -3,24 +3,12 @@ import { Button } from '@/web/components/ui/button';
 import { Dialog, DialogContent } from '@/web/components/ui/dialog';
 import { Input } from '@/web/components/ui/input';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
-import { Heart, MessageCircle, Share2, MoreHorizontal, Send } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Send } from 'lucide-react';
 import { useState, useRef } from 'react';
-import { useUser, useLikeToggle } from '@/web/lib/react-query';
+import { useUser, useLikeToggle, useComments, useCreateComment, useCommentLikeToggle } from '@/web/lib/react-query';
+import { useElapsedTime } from '@/web/lib/utils';
 
-interface Comment {
-    id: string;
-    author: {
-        name: string;
-        username: string;
-        avatar: string;
-    };
-    content: string;
-    timestamp: string;
-    likes: number;
-    replies?: Comment[];
-}
-
-interface PostModalProps {
+type PostModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     postId: number;
@@ -33,10 +21,9 @@ interface PostModalProps {
     image?: string;
     timestamp: string;
     likes: number;
-    comments: Comment[];
     shares: number;
     isLiked?: boolean;
-}
+};
 
 export function PostModal({
     open,
@@ -47,15 +34,17 @@ export function PostModal({
     image,
     timestamp,
     likes,
-    comments: initialComments,
     shares,
     isLiked = false
 }: PostModalProps) {
     const [commentText, setCommentText] = useState('');
-    const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
+    const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
+    const [replyingTo, setReplyingTo] = useState<number | null>(null);
     const commentInputRef = useRef<HTMLInputElement>(null);
     const { data: currentUser } = useUser();
     const likeMutation = useLikeToggle(postId, currentUser);
+    const { data: comments = [], isLoading } = useComments(postId);
+    const createCommentMutation = useCreateComment(postId);
 
     const handleLikeToggle = () => {
         if (!currentUser || likeMutation.isPending) return;
@@ -66,7 +55,34 @@ export function PostModal({
         commentInputRef.current?.focus();
     };
 
-    const toggleReplies = (commentId: string) => {
+    const handleSubmitComment = () => {
+        if (!commentText.trim() || createCommentMutation.isPending) return;
+
+        createCommentMutation.mutate(
+            {
+                content: commentText.trim(),
+                parentCommentId: replyingTo
+            },
+            {
+                onSuccess: () => {
+                    setCommentText('');
+                    setReplyingTo(null);
+                }
+            }
+        );
+    };
+
+    const handleReply = (commentId: number) => {
+        setReplyingTo(commentId);
+        commentInputRef.current?.focus();
+    };
+
+    const cancelReply = () => {
+        setReplyingTo(null);
+        setCommentText('');
+    };
+
+    const toggleReplies = (commentId: number) => {
         setExpandedReplies((prev) => {
             const newSet = new Set(prev);
             if (newSet.has(commentId)) {
@@ -77,8 +93,6 @@ export function PostModal({
             return newSet;
         });
     };
-
-    console.log('PostModal image:', image);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -124,65 +138,37 @@ export function PostModal({
                         {/* Comments Section */}
                         <ScrollArea className="h-0 flex-1">
                             <div className="space-y-4 p-3">
-                                {initialComments.map((comment) => (
-                                    <div key={comment.id}>
-                                        <div className="flex gap-2">
-                                            <Avatar className="h-8 w-8">
-                                                <AvatarImage src={comment.author.avatar || '/placeholder.svg'} alt={comment.author.name} />
-                                                <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-foreground text-sm font-semibold">{comment.author.name}</span>
-                                                    <span className="text-muted-foreground text-xs">{comment.timestamp}</span>
+                                {isLoading ? (
+                                    <div className="text-muted-foreground text-center text-sm">Loading comments...</div>
+                                ) : comments.length === 0 ? (
+                                    <div className="text-muted-foreground text-center text-sm">No comments yet</div>
+                                ) : (
+                                    comments.map((commentData) => (
+                                        <div key={commentData.comment.id}>
+                                            <CommentItem commentData={commentData} currentUser={currentUser} postId={postId} onReply={handleReply} />
+
+                                            {commentData.replies && commentData.replies.length > 0 && (
+                                                <div className="ml-10 mt-3">
+                                                    <button
+                                                        onClick={() => toggleReplies(commentData.comment.id)}
+                                                        className="text-muted-foreground hover:text-foreground mb-3 flex items-center gap-2 text-xs font-semibold"
+                                                    >
+                                                        <div className="bg-muted-foreground/30 h-px w-6" />
+                                                        {expandedReplies.has(commentData.comment.id) ? `Hide replies` : `View replies (${commentData.replies.length})`}
+                                                    </button>
+
+                                                    {expandedReplies.has(commentData.comment.id) && (
+                                                        <div className="space-y-3">
+                                                            {commentData.replies.map((replyData) => (
+                                                                <CommentItem key={replyData.comment.id} commentData={replyData} currentUser={currentUser} postId={postId} onReply={handleReply} isReply />
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <p className="text-foreground mt-0.5 text-sm">{comment.content}</p>
-                                                <div className="mt-1 flex items-center gap-3">
-                                                    <button className="text-muted-foreground hover:text-foreground text-xs">{comment.likes} likes</button>
-                                                    <button className="text-muted-foreground hover:text-foreground text-xs">Reply</button>
-                                                </div>
-                                            </div>
+                                            )}
                                         </div>
-
-                                        {comment.replies && comment.replies.length > 0 && (
-                                            <div className="ml-10 mt-3">
-                                                <button
-                                                    onClick={() => toggleReplies(comment.id)}
-                                                    className="text-muted-foreground hover:text-foreground mb-3 flex items-center gap-2 text-xs font-semibold"
-                                                >
-                                                    <div className="bg-muted-foreground/30 h-px w-6" />
-                                                    {expandedReplies.has(comment.id) ? `Hide replies` : `View replies (${comment.replies.length})`}
-                                                </button>
-
-                                                {expandedReplies.has(comment.id) && (
-                                                    <div className="space-y-3">
-                                                        {comment.replies.map((reply) => (
-                                                            <div key={reply.id} className="flex gap-2">
-                                                                <Avatar className="h-7 w-7">
-                                                                    <AvatarImage src={reply.author.avatar || '/placeholder.svg'} alt={reply.author.name} />
-                                                                    <AvatarFallback>{reply.author.name.charAt(0)}</AvatarFallback>
-                                                                </Avatar>
-                                                                <div className="flex-1">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="text-foreground text-sm font-semibold">{reply.author.name}</span>
-                                                                        <span className="text-muted-foreground text-xs">{reply.timestamp}</span>
-                                                                    </div>
-                                                                    <p className="text-foreground mt-0.5 text-sm">{reply.content}</p>
-                                                                    <div className="mt-1 flex items-center gap-3">
-                                                                        <button className="text-muted-foreground hover:text-foreground text-xs">
-                                                                            {reply.likes} likes
-                                                                        </button>
-                                                                        <button className="text-muted-foreground hover:text-foreground text-xs">Reply</button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </ScrollArea>
 
@@ -207,15 +193,35 @@ export function PostModal({
 
                         {/* Comment Input */}
                         <div className="border-border flex-shrink-0 border-t p-3">
+                            {replyingTo && (
+                                <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+                                    <span>Replying to comment...</span>
+                                    <button onClick={cancelReply} className="hover:text-foreground">
+                                        Cancel
+                                    </button>
+                                </div>
+                            )}
                             <div className="flex items-center gap-2">
                                 <Input
                                     ref={commentInputRef}
-                                    placeholder="Add a comment..."
+                                    placeholder={replyingTo ? 'Add a reply...' : 'Add a comment...'}
                                     value={commentText}
                                     onChange={(e) => setCommentText(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleSubmitComment();
+                                        }
+                                    }}
                                     className="flex-1 border-0 px-3 focus-visible:ring-0"
                                 />
-                                <Button size="sm" variant="ghost" disabled={!commentText.trim()} className="text-primary disabled:text-muted-foreground">
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    disabled={!commentText.trim() || createCommentMutation.isPending}
+                                    onClick={handleSubmitComment}
+                                    className="text-primary disabled:text-muted-foreground"
+                                >
                                     <Send className="h-4 w-4" />
                                 </Button>
                             </div>
@@ -223,5 +229,64 @@ export function PostModal({
                     </div>
             </DialogContent>
         </Dialog>
+    );
+}
+
+type CommentItemProps = {
+    commentData: {
+        comment: {
+            id: number;
+            userId: string;
+            content: string;
+            createdAt: string;
+        };
+        user: {
+            id: string;
+            name: string;
+            image: string | null;
+        };
+        reactions: Array<{
+            id: number;
+            userId: string;
+        }>;
+    };
+    currentUser: { id: string } | null;
+    postId: number;
+    onReply: (commentId: number) => void;
+    isReply?: boolean;
+};
+
+function CommentItem({ commentData, currentUser, postId, onReply, isReply }: CommentItemProps) {
+    const commentElapsedTime = useElapsedTime(commentData.comment.createdAt);
+    const isCommentLiked = commentData.reactions.some((r) => r.userId === currentUser?.id);
+    const commentLikeMutation = useCommentLikeToggle(commentData.comment.id, postId, currentUser);
+
+    const handleLikeToggle = () => {
+        if (!currentUser || commentLikeMutation.isPending) return;
+        commentLikeMutation.mutate(isCommentLiked);
+    };
+
+    return (
+        <div className="flex gap-2">
+            <Avatar className={isReply ? 'h-7 w-7' : 'h-8 w-8'}>
+                <AvatarImage src={commentData.user.image || '/placeholder.svg'} alt={commentData.user.name} />
+                <AvatarFallback>{commentData.user.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+                <div className="flex items-center gap-2">
+                    <span className="text-foreground text-sm font-semibold">{commentData.user.name}</span>
+                    <span className="text-muted-foreground text-xs">{commentElapsedTime}</span>
+                </div>
+                <p className="text-foreground mt-0.5 text-sm">{commentData.comment.content}</p>
+                <div className="mt-1 flex items-center gap-3">
+                    <button onClick={handleLikeToggle} className={`text-xs ${isCommentLiked ? 'text-red-500 font-semibold' : 'text-muted-foreground hover:text-foreground'}`}>
+                        {commentData.reactions.length} {commentData.reactions.length === 1 ? 'like' : 'likes'}
+                    </button>
+                    <button onClick={() => onReply(commentData.comment.id)} className="text-muted-foreground hover:text-foreground text-xs">
+                        Reply
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }

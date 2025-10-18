@@ -1,0 +1,1 @@
+ALTER TABLE `comments` ADD `parent_comment_id` integer REFERENCES comments(id);

@@ -9,7 +9,9 @@ import {
     chatMessageSchema,
     postLikeDataSchema,
     followRequestAcceptedNotificationItemSchema,
-    followRequestNotificationItemSchema
+    followRequestNotificationItemSchema,
+    commentWithUserSchema,
+    createCommentSchema
 } from '@sound-connect/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
@@ -551,4 +553,87 @@ export const getPost = createServerFn()
             console.error(error);
             return { success: false, body: null } as const;
         }
+    });
+
+export const getComments = createServerFn()
+    .inputValidator(z.object({ postId: z.number() }))
+    .handler(async ({ data }) => {
+        const { API, API_URL } = env;
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/posts/${data.postId}/comments`, {
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+
+            return { success: true, body: z.array(commentWithUserSchema).parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: [] } as const;
+        }
+    });
+
+export const createComment = createServerFn({ method: 'POST' })
+    .inputValidator(createCommentSchema)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = env;
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/comments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
+    });
+
+export const likeComment = createServerFn({ method: 'POST' })
+    .inputValidator(z.object({ commentId: z.number() }))
+    .handler(async ({ data }) => {
+        const { API, API_URL } = env;
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/comments/${data.commentId}/like`, {
+            method: 'POST',
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
+    });
+
+export const unlikeComment = createServerFn()
+    .inputValidator(z.object({ commentId: z.number() }))
+    .handler(async ({ data }) => {
+        const { API, API_URL } = env;
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/comments/${data.commentId}/like`, {
+            method: 'DELETE',
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
     });
