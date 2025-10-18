@@ -67,7 +67,7 @@ export function PostModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="h-[90vh] w-[90vw] max-w-[1400px] sm:max-w-[1400px] gap-0 p-0 flex flex-row overflow-hidden" showCloseButton={true}>
+            <DialogContent className="h-[90vh] w-[90vw] max-w-[1400px] sm:max-w-[1400px] gap-0 p-0 flex flex-row overflow-hidden !z-[100]" showCloseButton={true}>
                 <div className="flex flex-1 items-center justify-center bg-black overflow-hidden">
                     {image ? (
                         <img src={image} alt="Post content" className="max-h-full max-w-full object-contain" />

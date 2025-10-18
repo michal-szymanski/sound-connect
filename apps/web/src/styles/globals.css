@@ -121,7 +121,12 @@
         @apply h-full;
     }
     body {
-        @apply bg-background text-foreground scrollbar-gutter-stable h-full !overflow-y-scroll;
+        @apply bg-background text-foreground h-full !overflow-y-scroll;
+        scrollbar-gutter: stable;
+    }
+
+    body[data-scroll-locked] {
+        margin-right: 0 !important;
     }
 
     button,
@@ -151,14 +156,6 @@ button {
     cursor: pointer;
 }
 
-@layer base {
-    * {
-        @apply border-border outline-ring/50;
-    }
-    body {
-        @apply bg-background text-foreground;
-    }
-    body[data-scroll-locked] {
-        margin-right: 0 !important;
-    }
+[data-slot='dialog-overlay'] {
+    z-index: 99;
 }
