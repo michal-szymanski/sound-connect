@@ -1,21 +1,23 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/web/components/ui/avatar';
 import { Button } from '@/web/components/ui/button';
 import { Dialog, DialogContent } from '@/web/components/ui/dialog';
 import { Input } from '@/web/components/ui/input';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { Heart, MessageCircle, Share2, Send } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useUser, useLikeToggle, useComments, useCreateComment, useCommentLikeToggle } from '@/web/lib/react-query';
 import { useElapsedTime } from '@/web/lib/utils';
+import { Link } from '@tanstack/react-router';
 
 type PostModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     postId: number;
     author: {
+        id: string;
         name: string;
         username: string;
-        avatar: string;
+        avatar: string | null;
     };
     content: string;
     image?: string;
@@ -112,12 +114,13 @@ export function PostModal({
                         {/* Post Header */}
                         <div className="border-border flex flex-shrink-0 items-center border-b p-3">
                             <div className="flex items-center gap-2">
-                                <Avatar className="h-9 w-9">
-                                    <AvatarImage src={author.avatar || '/placeholder.svg'} alt={author.name} />
-                                    <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
+                                <Link to="/users/$id" params={{ id: author.id }}>
+                                    <UserAvatar user={{ id: author.id, name: author.name, image: author.avatar }} className="h-9 w-9" />
+                                </Link>
                                 <div className="flex flex-col">
-                                    <span className="text-foreground text-sm font-semibold">{author.name}</span>
+                                    <Link to="/users/$id" params={{ id: author.id }} className="text-foreground text-sm font-semibold hover:underline">
+                                        {author.name}
+                                    </Link>
                                     <span className="text-muted-foreground text-xs">@{author.username}</span>
                                 </div>
                             </div>
@@ -126,13 +129,14 @@ export function PostModal({
                         {/* Post Content */}
                         <div className="border-border flex-shrink-0 border-b p-3">
                             <div className="flex gap-2">
-                                <Avatar className="h-9 w-9">
-                                    <AvatarImage src={author.avatar || '/placeholder.svg'} alt={author.name} />
-                                    <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
+                                <Link to="/users/$id" params={{ id: author.id }}>
+                                    <UserAvatar user={{ id: author.id, name: author.name, image: author.avatar }} className="h-9 w-9" />
+                                </Link>
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-foreground text-sm font-semibold">{author.name}</span>
+                                        <Link to="/users/$id" params={{ id: author.id }} className="text-foreground text-sm font-semibold hover:underline">
+                                            {author.name}
+                                        </Link>
                                         <span className="text-muted-foreground text-xs">{timestamp}</span>
                                     </div>
                                     <p className="text-foreground mt-1 text-sm">{content}</p>
@@ -273,13 +277,14 @@ function CommentItem({ commentData, currentUser, postId, onReply, isReply }: Com
 
     return (
         <div className="flex gap-2">
-            <Avatar className={isReply ? 'h-7 w-7' : 'h-8 w-8'}>
-                <AvatarImage src={commentData.user.image || '/placeholder.svg'} alt={commentData.user.name} />
-                <AvatarFallback>{commentData.user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
+            <Link to="/users/$id" params={{ id: commentData.user.id }}>
+                <UserAvatar user={commentData.user} className={isReply ? 'h-7 w-7' : 'h-8 w-8'} />
+            </Link>
             <div className="flex-1">
                 <div className="flex items-center gap-2">
-                    <span className="text-foreground text-sm font-semibold">{commentData.user.name}</span>
+                    <Link to="/users/$id" params={{ id: commentData.user.id }} className="text-foreground text-sm font-semibold hover:underline">
+                        {commentData.user.name}
+                    </Link>
                     <span className="text-muted-foreground text-xs">{commentElapsedTime}</span>
                 </div>
                 <p className="text-foreground mt-0.5 text-sm">{commentData.comment.content}</p>

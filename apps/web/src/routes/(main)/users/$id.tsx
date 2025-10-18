@@ -1,9 +1,9 @@
 import { Button } from '@/web/components/ui/button';
 import { Card } from '@/web/components/ui/card';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { sendFollowRequest, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
 import { UserDTO, userDTOSchema, postSchema } from '@sound-connect/common/types/models';
 import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
-import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';
 import z from 'zod';
 import { useFollowers, useFollowings, useFollowRequestStatus } from '@/web/lib/react-query';
 import { useQueryClient } from '@tanstack/react-query';
@@ -145,13 +145,7 @@ function RouteComponent() {
                         className="object-fit h-90 w-full"
                     />
                 </div>
-                <img
-                    src={user.image ?? DEFAULT_AVATAR_URL}
-                    alt="Shadcn"
-                    className="relative -top-20 left-10 rounded-full object-cover"
-                    width={160}
-                    height={160}
-                />
+                <UserAvatar user={user} className="relative -top-20 left-10 h-40 w-40" fallbackClassName="text-6xl" />
                 <div>
                     <h1 className="relative -top-10 left-10 text-xl">{user.name}</h1>
                     <div className="flex w-full flex-col items-end gap-5 p-5">

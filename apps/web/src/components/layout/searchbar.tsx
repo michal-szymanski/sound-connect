@@ -4,7 +4,7 @@ import { Button } from '@/web/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/web/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/web/components/ui/popover';
 import { useState } from 'react';
-import StatusAvatar from '@/web/components/small/status-avatar';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { useRouter } from '@tanstack/react-router';
 import { useSearch } from '@/web/lib/react-query';
 import Loader from '@/web/components/small/loader';
@@ -54,7 +54,7 @@ const SearchBar = () => {
                                         }}
                                     >
                                         <div className="inline-flex items-center gap-2">
-                                            <StatusAvatar user={user} />
+                                            <UserAvatar user={user} />
                                             <span>{user.name}</span>
                                         </div>
                                     </CommandItem>

@@ -1,6 +1,6 @@
 import AddPostDialog from '@/web/components/dialogs/add-post-dialog';
 import { Post } from '@/web/components/post';
-import StatusAvatar from '@/web/components/small/status-avatar';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { Card, CardContent } from '@/web/components/ui/card';
 import { envsQuery, feedQuery, followersQuery, followingsQuery, useFeed, userQuery, useUser } from '@/web/lib/react-query';
 import { userDTOSchema } from '@sound-connect/common/types/models';
@@ -47,7 +47,7 @@ function RouteComponent() {
             <Card className="w-[500px]">
                 <CardContent className="w-full">
                     <div className="inline-flex w-full items-center justify-center gap-5">
-                        <StatusAvatar user={userDTOSchema.parse(user)} />
+                        <UserAvatar user={userDTOSchema.parse(user)} />
                         <AddPostDialog />
                     </div>
                 </CardContent>

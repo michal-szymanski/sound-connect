@@ -1,4 +1,4 @@
-import StatusAvatar from '@/web/components/small/status-avatar';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { Button } from '@/web/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/web/components/ui/sheet';
 import { useChatWindows } from '@/web/components/chat/chat-window-manager';
@@ -79,7 +79,7 @@ const RightSidebar = () => {
                                     onClick={() => handleContactClick(user)}
                                     className="h-auto w-full justify-start gap-2 rounded-md p-2 hover:bg-gray-200 dark:hover:bg-gray-700"
                                 >
-                                    <StatusAvatar user={user} />
+                                    <UserAvatar user={user} />
                                     <span className="text-sm font-medium">{user.name}</span>
                                 </Button>
                             ))}

@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/web/components/ui/form';
-import StatusAvatar from '@/web/components/small/status-avatar';
+import UserAvatar from '@/web/components/small/user-avatar';
 import useContacts from '@/web/hooks/use-contacts';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/web/redux/store';
@@ -114,7 +114,7 @@ function RouteComponent() {
                 onClick={() => setSelectedPeer(u)}
             >
                 <div className="inline-flex w-full items-center gap-3">
-                    <StatusAvatar user={u} />
+                    <UserAvatar user={u} />
                     <div>
                         <span className="font-medium">{u.name}</span>
                     </div>
@@ -129,7 +129,7 @@ function RouteComponent() {
         return (
             <Button variant="link" asChild>
                 <Link to="/users/$id" params={{ id: selectedPeer.id }}>
-                    <StatusAvatar user={selectedPeer} />
+                    <UserAvatar user={selectedPeer} />
                     <span>{selectedPeer.name}</span>
                 </Link>
             </Button>

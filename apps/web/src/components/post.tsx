@@ -5,7 +5,7 @@ import { useFollowings, useUser, useLikeToggle } from '@/web/lib/react-query';
 import { Link } from '@tanstack/react-router';
 import { useElapsedTime } from '@/web/lib/utils';
 import { FeedItem } from '@sound-connect/common/types/models';
-import StatusAvatar from '@/web/components/small/status-avatar';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { useState } from 'react';
 import LikesDialog from '@/web/components/dialogs/likes-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/web/components/ui/dropdown-menu';
@@ -52,7 +52,7 @@ export function Post({ item }: Props) {
             <div className="flex items-start justify-between px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Link to="/users/$id" params={{ id: post.userId }}>
-                        <StatusAvatar user={user} />
+                        <UserAvatar user={user} />
                     </Link>
                     <div className="flex flex-col">
                         <Link to="/users/$id" params={{ id: post.userId }} className="text-foreground text-sm font-semibold hover:underline">
@@ -120,9 +120,10 @@ export function Post({ item }: Props) {
                 onOpenChange={setIsModalOpen}
                 postId={post.id}
                 author={{
+                    id: user.id,
                     name: user.name,
                     username: username,
-                    avatar: user.image || ''
+                    avatar: user.image
                 }}
                 content={post.content}
                 image={media && media.length > 0 && media[0] ? `/media/${media[0].key}` : undefined}

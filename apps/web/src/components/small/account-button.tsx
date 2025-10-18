@@ -1,8 +1,7 @@
 import SignOutButton from '@/web/components/small/sign-out-button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/web/components/ui/avatar';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/web/components/ui/dropdown-menu';
 import { useUser } from '@/web/lib/react-query';
-import { DEFAULT_AVATAR_URL } from '@sound-connect/common/constants';
 import { SidebarMenuButton } from '@/web/components/ui/sidebar';
 import clsx from 'clsx';
 
@@ -25,10 +24,7 @@ export const AccountButton = ({ isCollapsed }: Props) => {
                         isCollapsed ? 'w-16 justify-center' : 'w-full justify-center px-3 xl:justify-start'
                     }`}
                 >
-                    <Avatar className="size-8 flex-shrink-0">
-                        <AvatarImage src={user.image ?? DEFAULT_AVATAR_URL} />
-                        <AvatarFallback className="bg-primary text-primary-foreground">{user.name?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar user={user} className="size-8 flex-shrink-0" fallbackClassName="bg-primary text-primary-foreground" />
                     <span
                         className={clsx('ml-2 hidden w-auto truncate opacity-100 transition-all duration-300 xl:block', {
                             'w-0 overflow-hidden opacity-0': isCollapsed
