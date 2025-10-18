@@ -43,7 +43,7 @@ export function PostModal({
     const commentInputRef = useRef<HTMLInputElement>(null);
     const { data: currentUser } = useUser();
     const likeMutation = useLikeToggle(postId, currentUser);
-    const { data: comments = [], isLoading } = useComments(postId);
+    const { data: comments = [], isLoading } = useComments(postId, open);
     const createCommentMutation = useCreateComment(postId);
 
     const handleLikeToggle = () => {

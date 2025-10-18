@@ -251,7 +251,10 @@ export const commentsQuery = (postId: number) =>
         }
     });
 
-export const useComments = (postId: number) => useQuery(commentsQuery(postId));
+export const useComments = (postId: number, enabled: boolean = true) => useQuery({
+    ...commentsQuery(postId),
+    enabled
+});
 
 export const useCreateComment = (postId: number) => {
     const queryClient = useQueryClient();
