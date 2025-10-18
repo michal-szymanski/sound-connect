@@ -1,8 +1,8 @@
+import { APP_NAME_NORMALIZED } from '@sound-connect/common/constants';
+import { UserDTO } from '@sound-connect/common/types/models';
+import { useLocation } from '@tanstack/react-router';
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { ChatWindow } from './chat-window';
-import { UserDTO } from '@sound-connect/common/types/models';
-import { APP_NAME_NORMALIZED } from '@sound-connect/common/constants';
-import { useLocation } from '@tanstack/react-router';
 
 type ChatWindowState = {
     user: UserDTO;
@@ -60,7 +60,7 @@ const loadFromStorage = (): Map<string, ChatWindowState> => {
 
 const saveToStorage = (windows: Map<string, ChatWindowState>) => {
     try {
-        const array: StoredChatState[] = Array.from(windows.entries()).map(([userId, state]) => ({
+        const array: StoredChatState[] = Array.from(windows.entries()).map(([_userId, state]) => ({
             user: state.user,
             isMinimized: state.isMinimized
         }));

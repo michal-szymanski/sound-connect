@@ -1,13 +1,13 @@
 import { useDebouncedValue } from '@tanstack/react-pacer';
+import { useRouter } from '@tanstack/react-router';
 import { ChevronsUpDownIcon } from 'lucide-react';
+import { useState } from 'react';
+import Loader from '@/web/components/small/loader';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { Button } from '@/web/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/web/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/web/components/ui/popover';
-import { useState } from 'react';
-import UserAvatar from '@/web/components/small/user-avatar';
-import { useRouter } from '@tanstack/react-router';
 import { useSearch } from '@/web/lib/react-query';
-import Loader from '@/web/components/small/loader';
 
 const SearchBar = () => {
     const [open, setOpen] = useState(false);

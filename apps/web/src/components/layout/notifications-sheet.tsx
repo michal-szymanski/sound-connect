@@ -1,16 +1,16 @@
-import { Button } from '@/web/components/ui/button';
-import { SheetContent, SheetHeader, SheetTitle, Sheet, SheetDescription } from '@/web/components/ui/sheet';
-import { useWebSocket } from '@/web/providers/websocket-provider';
-import { deleteNotification, getUser, sendFollowRequest, updateNotification } from '@/web/server-functions/models';
-import { useRouter } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
-import { useElapsedTime } from 'src/lib/utils';
-import UserAvatar from '@/web/components/small/user-avatar';
 import { FollowRequestNotificationItem, FollowRequestAcceptedNotificationItem, UserDTO } from '@sound-connect/common/types/models';
 import { useQueryClient } from '@tanstack/react-query';
-import { useUser } from '@/web/lib/react-query';
+import { useRouter } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import UserAvatar from '@/web/components/small/user-avatar';
+import { Button } from '@/web/components/ui/button';
+import { SheetContent, SheetHeader, SheetTitle, Sheet, SheetDescription } from '@/web/components/ui/sheet';
+import { useUser } from '@/web/lib/react-query';
+import { useWebSocket } from '@/web/providers/websocket-provider';
 import { RootState } from '@/web/redux/store';
+import { deleteNotification, getUser, sendFollowRequest, updateNotification } from '@/web/server-functions/models';
+import { useElapsedTime } from 'src/lib/utils';
 
 type Props = {
     open: boolean;

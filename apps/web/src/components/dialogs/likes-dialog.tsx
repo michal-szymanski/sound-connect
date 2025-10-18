@@ -1,13 +1,13 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from 'src/components/ui/dialog';
-import { Button } from 'src/components/ui/button';
-import { Link } from '@tanstack/react-router';
 import { UserDTO } from '@sound-connect/common/types/models';
-import UserAvatar from '@/web/components/small/user-avatar';
-import { useFollowings, useUser } from 'src/lib/react-query';
-import { followUser, getPostLikesUsers } from '@/web/server-functions/models';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import UserAvatar from '@/web/components/small/user-avatar';
+import { followUser, getPostLikesUsers } from '@/web/server-functions/models';
+import { Button } from 'src/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from 'src/components/ui/dialog';
+import { useFollowings, useUser } from 'src/lib/react-query';
 
 type Props = {
     isOpen: boolean;

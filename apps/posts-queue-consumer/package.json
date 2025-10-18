@@ -6,7 +6,9 @@
     "build": "tsc --noEmit",
     "deploy": "wrangler deploy",
     "types": "wrangler types --env-interface CloudflareBindings",
-    "tsc": "tsc --noEmit"
+    "tsc": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@sound-connect/common": "workspace:*",

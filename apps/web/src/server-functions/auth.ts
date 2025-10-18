@@ -1,10 +1,10 @@
 import { env } from 'cloudflare:workers';
-import { deleteSessionCookies, errorHandler, getSessionFromCookie, setSessionCookies } from '@/web/server-functions/helpers';
-import { userSchema } from '@sound-connect/common/types/models';
 import { sessionSchema } from '@sound-connect/common/types/auth';
+import { userSchema } from '@sound-connect/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
+import { deleteSessionCookies, errorHandler, getSessionFromCookie, setSessionCookies } from '@/web/server-functions/helpers';
 
 export const getSession = createServerFn().handler(async () => {
     const session = getSessionFromCookie();

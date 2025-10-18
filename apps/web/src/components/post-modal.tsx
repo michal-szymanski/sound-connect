@@ -1,13 +1,13 @@
+import { Link } from '@tanstack/react-router';
+import { Heart, MessageCircle, Share2, Send } from 'lucide-react';
+import { useState, useRef } from 'react';
+import UserAvatar from '@/web/components/small/user-avatar';
 import { Button } from '@/web/components/ui/button';
 import { Dialog, DialogContent } from '@/web/components/ui/dialog';
 import { Input } from '@/web/components/ui/input';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
-import UserAvatar from '@/web/components/small/user-avatar';
-import { Heart, MessageCircle, Share2, Send } from 'lucide-react';
-import { useState, useRef } from 'react';
 import { useUser, useLikeToggle, useComments, useCreateComment, useCommentLikeToggle } from '@/web/lib/react-query';
 import { useElapsedTime } from '@/web/lib/utils';
-import { Link } from '@tanstack/react-router';
 
 type PostModalProps = {
     open: boolean;
@@ -36,7 +36,7 @@ export function PostModal({
     image,
     timestamp,
     likes,
-    shares,
+    shares: _shares,
     isLiked = false
 }: PostModalProps) {
     const [commentText, setCommentText] = useState('');

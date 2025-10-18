@@ -1,10 +1,10 @@
+import { Users } from 'lucide-react';
+import { useState } from 'react';
+import { useChatWindows } from '@/web/components/chat/chat-window-manager';
 import UserAvatar from '@/web/components/small/user-avatar';
 import { Button } from '@/web/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/web/components/ui/sheet';
-import { useChatWindows } from '@/web/components/chat/chat-window-manager';
 import useContacts from '@/web/hooks/use-contacts';
-import { useState } from 'react';
-import { Users } from 'lucide-react';
 
 const RightSidebar = () => {
     const [isOpen, setIsOpen] = useState(false);

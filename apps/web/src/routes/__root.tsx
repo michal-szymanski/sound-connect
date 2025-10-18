@@ -1,13 +1,11 @@
 /// <reference types="vite/client" />
-import { type ReactNode } from 'react';
-import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from '@tanstack/react-router';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
-import globalsCss from '@/web/styles/globals.css?url';
-import type { QueryClient } from '@tanstack/react-query';
-import { getSession } from '@/web/server-functions/auth';
-import { Toaster } from '@/web/components/ui/sonner';
 import { APP_NAME } from '@sound-connect/common/constants';
+import type { QueryClient } from '@tanstack/react-query';
+import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from '@tanstack/react-router';
+import { type ReactNode } from 'react';
+import { Toaster } from '@/web/components/ui/sonner';
+import { getSession } from '@/web/server-functions/auth';
+import globalsCss from '@/web/styles/globals.css?url';
 
 export const Route = createRootRouteWithContext<{
     queryClient: QueryClient;

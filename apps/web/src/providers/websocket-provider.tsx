@@ -1,4 +1,3 @@
-import { useEnvs, useUser } from '@/web/lib/react-query';
 import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
 import {
     FollowRequestNotificationItem,
@@ -11,10 +10,11 @@ import {
     subscribeMessageSchema,
     unsubscribeMessageSchema
 } from '@sound-connect/common/types/models';
-import { getChatHistory } from '@/web/server-functions/models';
 import { useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import z from 'zod';
+import { useEnvs, useUser } from '@/web/lib/react-query';
+import { getChatHistory } from '@/web/server-functions/models';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 

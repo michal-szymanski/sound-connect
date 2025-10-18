@@ -1,7 +1,7 @@
-import { useFollowers, useFollowings, useUser } from '@/web/lib/react-query';
 import { UserDTO } from '@sound-connect/common/types/models';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import { useFollowers, useFollowings, useUser } from '@/web/lib/react-query';
 
 const useContacts = () => {
     const { data: user } = useUser();
