@@ -2,7 +2,8 @@
   "name": "sound-connect",
   "private": true,
   "scripts": {
-    "dev": "pnpm run -r --parallel --aggregate-output dev",
+    "dev": "pnpm run -r --parallel --aggregate-output dev & ./scripts/launch-chrome.sh",
+    "dev:no-chrome": "pnpm run -r --parallel --aggregate-output dev",
     "dev:web": "pnpm --filter @sound-connect/web dev",
     "dev:api": "pnpm --filter @sound-connect/api dev",
     "dev:queue": "pnpm --filter @sound-connect/posts-queue-consumer dev",
