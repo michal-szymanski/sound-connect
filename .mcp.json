@@ -33,7 +33,7 @@
         "chrome-devtools": {
             "type": "stdio",
             "command": "pnpm",
-            "args": ["dlx", "chrome-devtools-mcp"]
+            "args": ["dlx", "chrome-devtools-mcp", "--headless=true", "--isolated=true"]
         }
     }
 }
