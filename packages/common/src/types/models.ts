@@ -197,3 +197,41 @@ export const postLikeDataSchema = z.object({
 });
 
 export type PostLikeData = z.infer<typeof postLikeDataSchema>;
+
+export const commentSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    postId: z.number(),
+    parentCommentId: z.number().nullable(),
+    content: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
+export type Comment = z.infer<typeof commentSchema>;
+
+export const commentReactionSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    commentId: z.number(),
+    createdAt: z.string()
+});
+
+export type CommentReaction = z.infer<typeof commentReactionSchema>;
+
+export const commentWithUserSchema = z.object({
+    comment: commentSchema,
+    user: userDTOSchema,
+    reactions: z.array(commentReactionSchema),
+    replies: z.array(z.lazy(() => commentWithUserSchema)).optional()
+});
+
+export type CommentWithUser = z.infer<typeof commentWithUserSchema>;
+
+export const createCommentSchema = z.object({
+    postId: z.number(),
+    parentCommentId: z.number().nullable().optional(),
+    content: z.string().min(1).max(500)
+});
+
+export type CreateComment = z.infer<typeof createCommentSchema>;

@@ -1,6 +1,6 @@
 import { QueryClient, queryOptions, useQuery, useSuspenseQuery, infiniteQueryOptions, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { User, UserDTO, FeedItem, PostReaction } from '@sound-connect/common/types/models';
-import { getFeedPaginated, getFollowers, getFollowings, getReactions, search, getFollowRequestStatus, getPost, likePost, unlikePost } from '@/web/server-functions/models';
+import { User, UserDTO, FeedItem, PostReaction, CommentReaction } from '@sound-connect/common/types/models';
+import { getFeedPaginated, getFollowers, getFollowings, getReactions, search, getFollowRequestStatus, getPost, likePost, unlikePost, getComments, createComment, likeComment, unlikeComment } from '@/web/server-functions/models';
 import { getSession } from '@/web/server-functions/auth';
 import { getEnvs } from '@/web/server-functions/utils';
 import { toast } from 'sonner';
@@ -233,6 +233,58 @@ export const useLikeToggle = (postId: number, currentUser: User | UserDTO | null
                 queryClient.setQueryData(['feed-infinite'], context.previousData);
             }
             toast.error('Failed to update like status');
+        }
+    });
+};
+
+export const commentsQuery = (postId: number) =>
+    queryOptions({
+        queryKey: ['comments', postId],
+        queryFn: async () => {
+            const result = await getComments({ data: { postId } });
+
+            if (result.success) {
+                return result.body;
+            }
+
+            return [];
+        }
+    });
+
+export const useComments = (postId: number) => useQuery(commentsQuery(postId));
+
+export const useCreateComment = (postId: number) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ content, parentCommentId }: { content: string; parentCommentId?: number | null }) => {
+            return await createComment({ data: { postId, content, parentCommentId } });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['comments', postId] });
+        },
+        onError: () => {
+            toast.error('Failed to create comment');
+        }
+    });
+};
+
+export const useCommentLikeToggle = (commentId: number, postId: number, currentUser: User | UserDTO | null) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (isLiked: boolean) => {
+            if (isLiked) {
+                return await unlikeComment({ data: { commentId } });
+            } else {
+                return await likeComment({ data: { commentId } });
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['comments', postId] });
+        },
+        onError: () => {
+            toast.error('Failed to update comment like status');
         }
     });
 };

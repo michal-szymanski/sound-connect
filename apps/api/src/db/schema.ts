@@ -77,6 +77,7 @@ export const commentsTable = sqliteTable('comments', {
     postId: integer()
         .notNull()
         .references(() => postsTable.id),
+    parentCommentId: integer('parent_comment_id').references(() => commentsTable.id),
     content: text('content').notNull(),
     createdAt: text().notNull(),
     updatedAt: text()
@@ -85,7 +86,7 @@ export const commentsTable = sqliteTable('comments', {
 export const commentsReactionsTable = sqliteTable('comments_reactions', {
     id: integer().primaryKey(),
     userId: text('user_id').notNull(),
-    comment_id: integer()
+    commentId: integer('comment_id')
         .notNull()
         .references(() => commentsTable.id),
     createdAt: text().notNull()
@@ -167,7 +168,7 @@ export const commentsRelations = relations(commentsTable, ({ one, many }) => ({
 }));
 
 export const commentsReactionsRelations = relations(commentsReactionsTable, ({ one }) => ({
-    comment: one(commentsTable, { fields: [commentsReactionsTable.comment_id], references: [commentsTable.id] })
+    comment: one(commentsTable, { fields: [commentsReactionsTable.commentId], references: [commentsTable.id] })
 }));
 
 export const mediaRelations = relations(mediaTable, ({ one }) => ({

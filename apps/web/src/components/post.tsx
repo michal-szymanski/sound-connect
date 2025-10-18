@@ -128,7 +128,6 @@ export function Post({ item }: Props) {
                 image={media && media.length > 0 && media[0] ? `/media/${media[0].key}` : undefined}
                 timestamp={elapsedTime}
                 likes={reactions.length}
-                comments={[]}
                 shares={0}
                 isLiked={isLiked}
             />
