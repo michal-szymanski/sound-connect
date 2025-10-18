@@ -287,9 +287,11 @@ function CommentItem({ commentData, currentUser, postId, onReply, isReply }: Com
                     <button onClick={handleLikeToggle} className={`text-xs ${isCommentLiked ? 'text-red-500 font-semibold' : 'text-muted-foreground hover:text-foreground'}`}>
                         {commentData.reactions.length} {commentData.reactions.length === 1 ? 'like' : 'likes'}
                     </button>
-                    <button onClick={() => onReply(commentData.comment.id)} className="text-muted-foreground hover:text-foreground text-xs">
-                        Reply
-                    </button>
+                    {!isReply && (
+                        <button onClick={() => onReply(commentData.comment.id)} className="text-muted-foreground hover:text-foreground text-xs">
+                            Reply
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
