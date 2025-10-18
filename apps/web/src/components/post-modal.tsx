@@ -4,7 +4,8 @@ import { Dialog, DialogContent } from '@/web/components/ui/dialog';
 import { Input } from '@/web/components/ui/input';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Send } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { useUser, useLikeToggle } from '@/web/lib/react-query';
 
 interface Comment {
     id: string;
@@ -22,6 +23,7 @@ interface Comment {
 interface PostModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    postId: number;
     author: {
         name: string;
         username: string;
@@ -39,6 +41,7 @@ interface PostModalProps {
 export function PostModal({
     open,
     onOpenChange,
+    postId,
     author,
     content,
     image,
@@ -50,6 +53,18 @@ export function PostModal({
 }: PostModalProps) {
     const [commentText, setCommentText] = useState('');
     const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set());
+    const commentInputRef = useRef<HTMLInputElement>(null);
+    const { data: currentUser } = useUser();
+    const likeMutation = useLikeToggle(postId, currentUser);
+
+    const handleLikeToggle = () => {
+        if (!currentUser || likeMutation.isPending) return;
+        likeMutation.mutate(isLiked);
+    };
+
+    const handleCommentButtonClick = () => {
+        commentInputRef.current?.focus();
+    };
 
     const toggleReplies = (commentId: string) => {
         setExpandedReplies((prev) => {
@@ -175,10 +190,10 @@ export function PostModal({
                         <div className="border-border flex-shrink-0 space-y-2 border-t p-3">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <Button variant="ghost" size="sm" className={`h-8 px-2 ${isLiked ? 'text-red-500' : 'text-muted-foreground'}`}>
+                                    <Button variant="ghost" size="sm" onClick={handleLikeToggle} className={`h-8 px-2 ${isLiked ? 'text-red-500' : 'text-muted-foreground'}`}>
                                         <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
                                     </Button>
-                                    <Button variant="ghost" size="sm" className="text-muted-foreground h-8 px-2">
+                                    <Button variant="ghost" size="sm" onClick={handleCommentButtonClick} className="text-muted-foreground h-8 px-2">
                                         <MessageCircle className="h-5 w-5" />
                                     </Button>
                                     <Button variant="ghost" size="sm" className="text-muted-foreground h-8 px-2">
@@ -186,7 +201,7 @@ export function PostModal({
                                     </Button>
                                 </div>
                             </div>
-                            <div className="text-foreground text-sm font-semibold">{likes} likes</div>
+                            <div className="text-foreground text-sm font-semibold tabular-nums">{likes} {likes === 1 ? 'like' : 'likes'}</div>
                             <div className="text-muted-foreground text-xs">{timestamp}</div>
                         </div>
 
@@ -194,10 +209,11 @@ export function PostModal({
                         <div className="border-border flex-shrink-0 border-t p-3">
                             <div className="flex items-center gap-2">
                                 <Input
+                                    ref={commentInputRef}
                                     placeholder="Add a comment..."
                                     value={commentText}
                                     onChange={(e) => setCommentText(e.target.value)}
-                                    className="flex-1 border-0 px-0 focus-visible:ring-0"
+                                    className="flex-1 border-0 px-3 focus-visible:ring-0"
                                 />
                                 <Button size="sm" variant="ghost" disabled={!commentText.trim()} className="text-primary disabled:text-muted-foreground">
                                     <Send className="h-4 w-4" />
