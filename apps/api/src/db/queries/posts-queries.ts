@@ -65,10 +65,7 @@ export const getPostById = async (postId: number) => {
 
     const media = await db.select().from(mediaTable).where(eq(mediaTable.postId, postId));
 
-    const [commentsCountResult] = await db
-        .select({ count: count() })
-        .from(commentsTable)
-        .where(eq(commentsTable.postId, postId));
+    const [commentsCountResult] = await db.select({ count: count() }).from(commentsTable).where(eq(commentsTable.postId, postId));
 
     const postWithReactions = {
         ...post,

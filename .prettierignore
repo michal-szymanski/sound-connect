@@ -2,13 +2,15 @@
 apps/web/dist
 apps/web/routeTree.gen.ts
 apps/web/src/components/ui
-apps/web/worker-configuration.d.ts
 apps/web/src/lib/cloudflare-bindings.ts
 apps/web/src/routeTree.gen.ts
 
 # Api
-apps/api/worker-configuration.d.ts
 apps/api/src/db/migrations
+
+# Generated files
+**/worker-configuration.d.ts
+**/wrangler-env.d.ts
 
 # Common
 package.json

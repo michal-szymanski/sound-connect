@@ -1,8 +1,31 @@
 import { User, UserDTO, FeedItem, PostReaction, CommentReaction } from '@sound-connect/common/types/models';
-import { QueryClient, queryOptions, useQuery, useSuspenseQuery, infiniteQueryOptions, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+    QueryClient,
+    queryOptions,
+    useQuery,
+    useSuspenseQuery,
+    infiniteQueryOptions,
+    useInfiniteQuery,
+    useMutation,
+    useQueryClient
+} from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getSession } from '@/web/server-functions/auth';
-import { getFeedPaginated, getFollowers, getFollowings, getReactions, search, getFollowRequestStatus, getPost, likePost, unlikePost, getComments, createComment, likeComment, unlikeComment } from '@/web/server-functions/models';
+import {
+    getFeedPaginated,
+    getFollowers,
+    getFollowings,
+    getReactions,
+    search,
+    getFollowRequestStatus,
+    getPost,
+    likePost,
+    unlikePost,
+    getComments,
+    createComment,
+    likeComment,
+    unlikeComment
+} from '@/web/server-functions/models';
 import { getEnvs } from '@/web/server-functions/utils';
 
 export const useReactions = ({ postId }: { postId: number }) =>
@@ -251,10 +274,11 @@ export const commentsQuery = (postId: number) =>
         }
     });
 
-export const useComments = (postId: number, enabled: boolean = true) => useQuery({
-    ...commentsQuery(postId),
-    enabled
-});
+export const useComments = (postId: number, enabled: boolean = true) =>
+    useQuery({
+        ...commentsQuery(postId),
+        enabled
+    });
 
 export const useCreateComment = (postId: number) => {
     const queryClient = useQueryClient();
