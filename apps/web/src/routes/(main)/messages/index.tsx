@@ -76,7 +76,9 @@ function RouteComponent() {
             const initializeRoom = async () => {
                 try {
                     await loadRoomHistory(roomId);
-                } catch (error) {}
+                } catch (error) {
+                    console.error('Failed to load room history:', error);
+                }
 
                 subscribeToRoom(roomId);
             };
