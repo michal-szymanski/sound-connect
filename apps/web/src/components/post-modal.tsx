@@ -8,6 +8,7 @@ import { Input } from '@/web/components/ui/input';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import { useUser, useLikeToggle, useComments, useCreateComment, useCommentLikeToggle } from '@/web/lib/react-query';
 import { useElapsedTime } from '@/web/lib/utils';
+import type { User, UserDTO } from '@sound-connect/common/types/models';
 
 type PostModalProps = {
     open: boolean;
@@ -259,7 +260,7 @@ type CommentItemProps = {
             userId: string;
         }>;
     };
-    currentUser: { id: string } | null;
+    currentUser: User | UserDTO | null;
     postId: number;
     onReply: (commentId: number) => void;
     isReply?: boolean;

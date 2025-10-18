@@ -7,11 +7,10 @@ import { getCommentsByPostId, createComment, likeComment, unlikeComment, getComm
 const commentsRoutes = new Hono<HonoContext>();
 
 commentsRoutes.get('/posts/:postId/comments', async (c) => {
-    const user = c.get('user');
     const { postId } = z.object({ postId: z.coerce.number().positive() }).parse(c.req.param());
 
     try {
-        const comments = await getCommentsByPostId(postId, user?.id);
+        const comments = await getCommentsByPostId(postId);
         return c.json(comments);
     } catch (error) {
         console.error({ error });

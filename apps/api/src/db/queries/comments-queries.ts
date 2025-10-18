@@ -2,7 +2,7 @@ import { count, desc, eq, isNull, and, inArray } from 'drizzle-orm';
 import { commentsTable, commentsReactionsTable, users } from '@/api/db/schema';
 import { db } from '@/api/db';
 
-export async function getCommentsByPostId(postId: number, currentUserId?: string) {
+export async function getCommentsByPostId(postId: number) {
     const comments = await db
         .select({
             comment: {
@@ -108,11 +108,13 @@ export async function createComment(userId: string, postId: number, content: str
             .where(eq(commentsTable.id, parentCommentId))
             .limit(1);
 
-        if (parentComment.length === 0) {
+        const parent = parentComment[0];
+
+        if (!parent) {
             throw new Error('Parent comment not found');
         }
 
-        if (parentComment[0].parentCommentId !== null) {
+        if (parent.parentCommentId !== null) {
             throw new Error('Cannot reply to a reply');
         }
     }
@@ -148,10 +150,7 @@ export async function unlikeComment(userId: string, commentId: number) {
 }
 
 export async function getCommentLikesData(userId: string, commentId: number) {
-    const [likesCountResult] = await db
-        .select({ count: count() })
-        .from(commentsReactionsTable)
-        .where(eq(commentsReactionsTable.commentId, commentId));
+    const [likesCountResult] = await db.select({ count: count() }).from(commentsReactionsTable).where(eq(commentsReactionsTable.commentId, commentId));
 
     const userLike = await db
         .select()

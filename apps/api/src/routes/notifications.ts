@@ -25,7 +25,7 @@ notificationsRoutes.put('/notifications/:notificationId', async (c) => {
 
     if (type === 'follow-request') {
         const updatedNotification = followRequestNotificationItemSchema.parse(body);
-        const existingFollowRequest = existingNotification as any;
+        const existingFollowRequest = followRequestNotificationItemSchema.parse(existingNotification);
 
         const wasAccepted = existingFollowRequest.accepted;
         const isBeingAccepted = updatedNotification.accepted && !wasAccepted;
