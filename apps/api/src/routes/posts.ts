@@ -27,7 +27,7 @@ postsRoutes.get('/posts/:postId', async (c) => {
     return c.json(postResult);
 });
 
-postsRoutes.get('/posts/:userId', async (c) => {
+postsRoutes.get('/users/:userId/posts', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
     const postsResults = await getPostsByUserId(userId);
 

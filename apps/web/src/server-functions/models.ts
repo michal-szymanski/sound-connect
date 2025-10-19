@@ -77,7 +77,7 @@ export const getPosts = createServerFn()
         const { API, API_URL } = env;
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/posts/${data.userId}`, {
+        const response = await API.fetch(`${API_URL}/users/${data.userId}/posts`, {
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
