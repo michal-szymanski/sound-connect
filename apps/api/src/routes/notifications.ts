@@ -60,6 +60,27 @@ notificationsRoutes.put('/notifications/:notificationId', async (c) => {
         await stub.updateNotification(notificationId, updatedNotification);
     } else if (type === 'follow-request-accepted') {
         const updatedNotification = followRequestAcceptedNotificationItemSchema.parse(body);
+
+        const followedUsers = await getFollowedUsers(user.id);
+        const isAlreadyFollowing = followedUsers.some((followed) => followed.id === updatedNotification.from);
+
+        if (!isAlreadyFollowing) {
+            await followUser(user.id, updatedNotification.from);
+
+            const accepterFollowedUsers = await getFollowedUsers(updatedNotification.from);
+            const isMutualFollowing = accepterFollowedUsers.some((followed) => followed.id === user.id);
+
+            if (isMutualFollowing) {
+                const accepterStubId = c.env.UserDO.idFromName(`user:${updatedNotification.from}`);
+                const accepterStub = c.env.UserDO.get(accepterStubId);
+
+                await stub.subscribe(updatedNotification.from);
+                await accepterStub.subscribe(user.id);
+                await stub.deleteNotification(notificationId);
+                return c.json('ok');
+            }
+        }
+
         await stub.updateNotification(notificationId, updatedNotification);
     }
 

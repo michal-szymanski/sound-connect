@@ -50,7 +50,7 @@ export const getUserById = async (userId: string) => {
 };
 
 export const followUser = async (userId: string, followedUserId: string) => {
-    db.insert(usersFollowersTable).values({
+    return db.insert(usersFollowersTable).values({
         userId,
         followedUserId,
         createdAt: new Date().toISOString()
@@ -58,7 +58,7 @@ export const followUser = async (userId: string, followedUserId: string) => {
 };
 
 export const unfollowUser = async (userId: string, followedUserId: string) => {
-    db.delete(usersFollowersTable).where(and(eq(usersFollowersTable.userId, userId), eq(usersFollowersTable.followedUserId, followedUserId)));
+    return db.delete(usersFollowersTable).where(and(eq(usersFollowersTable.userId, userId), eq(usersFollowersTable.followedUserId, followedUserId)));
 };
 
 export const getContacts = async (userId: string) => {
