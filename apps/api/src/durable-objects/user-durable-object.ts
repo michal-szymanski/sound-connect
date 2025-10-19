@@ -143,6 +143,11 @@ export class UserDurableObject extends DurableObject {
         return this.notificationsService.getNotification(notificationId);
     }
 
+    async clearAllNotifications() {
+        await this.storage.delete('notifications');
+        return true;
+    }
+
     initializeSubscribers(users: UserDTO[]) {
         this.subscribers = new Set(users.map((user) => user.id));
     }
