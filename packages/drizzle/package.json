@@ -4,13 +4,11 @@
   "main": "./src",
   "exports": {
     ".": "./src/index.ts",
-    "./schema": "./src/schema.ts",
-    "./queries/*": "./src/queries/*.ts"
+    "./schema": "./src/schema.ts"
   },
   "dependencies": {
     "@sound-connect/common": "workspace:*",
     "drizzle-orm": "catalog:",
-    "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
