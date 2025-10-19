@@ -19,7 +19,7 @@ export async function processPost(postData: PostQueueMessage, _env: CloudflareBi
     }
 }
 
-export async function moderatePost(postData: PostQueueMessage): Promise<ModerationResult> {
+async function moderatePost(postData: PostQueueMessage): Promise<ModerationResult> {
     const moderationResult: ModerationResult = {
         status: 'approved' as PostStatus,
         confidence: 1.0
@@ -42,14 +42,14 @@ export async function moderatePost(postData: PostQueueMessage): Promise<Moderati
     return moderationResult;
 }
 
-export async function containsOffensiveContent(content: string): Promise<boolean> {
+async function containsOffensiveContent(content: string): Promise<boolean> {
     const bannedWords = ['spam', 'scam', 'offensive'];
 
     const lowercaseContent = content.toLowerCase();
     return bannedWords.some((word) => lowercaseContent.includes(word));
 }
 
-export async function moderateMedia(mediaKeys: string[]): Promise<ModerationResult> {
+async function moderateMedia(mediaKeys: string[]): Promise<ModerationResult> {
     for (const mediaKey of mediaKeys) {
         console.log(`Checking media: ${mediaKey}`);
     }
