@@ -1,6 +1,8 @@
 import { count, desc, eq, isNull, and, inArray } from 'drizzle-orm';
-import { commentsTable, commentsReactionsTable, users } from '@/api/db/schema';
-import { db } from '@/api/db';
+import { schema } from '@sound-connect/drizzle';
+import { db } from '../index';
+
+const { commentsTable, commentsReactionsTable, users } = schema;
 
 export async function getCommentsByPostId(postId: number) {
     const comments = await db

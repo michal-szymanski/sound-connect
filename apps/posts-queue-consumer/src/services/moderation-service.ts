@@ -1,27 +1,29 @@
 import { PostStatus } from '@sound-connect/common/types/models';
 import { PostQueueMessage, ModerationResult } from '../types';
-import { db } from '../db';
-import { postsTable } from '../db/schema';
+import { db } from '@/posts-queue-consumer/db';
+import { schema } from '@sound-connect/drizzle';
 import { eq } from 'drizzle-orm';
 
-export async function processPost(postData: PostQueueMessage, env: CloudflareBindings): Promise<void> {
+const { postsTable } = schema;
+
+export async function processPost(postData: PostQueueMessage, _env: CloudflareBindings): Promise<void> {
     console.log(`Processing post ${postData.postId} by user ${postData.userId}`);
 
     try {
-        const moderationResult = await moderatePost(postData, env);
+        const moderationResult = await moderatePost(postData);
 
-        await updatePostStatus(postData.postId, moderationResult['status'], moderationResult['reason'], env);
+        await updatePostStatus(postData.postId, moderationResult['status'], moderationResult['reason']);
 
         console.log(`Post ${postData.postId} moderation complete: ${moderationResult['status']}`);
     } catch (error) {
         console.error(`Error processing post ${postData.postId}:`, error);
 
-        await updatePostStatus(postData.postId, 'rejected', 'Processing error', env);
+        await updatePostStatus(postData.postId, 'rejected', 'Processing error');
         throw error;
     }
 }
 
-export async function moderatePost(postData: PostQueueMessage, env: CloudflareBindings): Promise<ModerationResult> {
+export async function moderatePost(postData: PostQueueMessage): Promise<ModerationResult> {
     const moderationResult: ModerationResult = {
         status: 'approved' as PostStatus,
         confidence: 1.0
@@ -35,7 +37,7 @@ export async function moderatePost(postData: PostQueueMessage, env: CloudflareBi
     }
 
     if (postData.mediaKeys && postData.mediaKeys.length > 0) {
-        const mediaModeration = await moderateMedia(postData.mediaKeys, env);
+        const mediaModeration = await moderateMedia(postData.mediaKeys);
         if (mediaModeration['status'] !== 'approved') {
             return mediaModeration;
         }
@@ -62,9 +64,9 @@ export async function moderateMedia(mediaKeys: string[]): Promise<ModerationResu
     };
 }
 
-export async function updatePostStatus(postId: number, status: PostStatus, reason?: string, env?: CloudflareBindings): Promise<void> {
+export async function updatePostStatus(postId: number, status: PostStatus, reason?: string): Promise<void> {
     try {
-        await db(env)
+        await db
             .update(postsTable)
             .set({
                 status,

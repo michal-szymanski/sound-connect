@@ -1,8 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1';
+import * as schema from '@sound-connect/drizzle/schema';
+import { env } from 'cloudflare:workers';
 
-export const db = (env?: CloudflareBindings) => {
-    if (!env?.DB) {
-        throw new Error('Database binding not found');
-    }
-    return drizzle(env.DB);
-};
+export const db = drizzle<typeof schema>(env.DB, { schema });
