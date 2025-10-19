@@ -148,6 +148,23 @@ export class UserDurableObject extends DurableObject {
         return true;
     }
 
+    async clearAllSubscribers() {
+        this.subscribers.clear();
+        return true;
+    }
+
+    async clearChatRooms() {
+        await this.storage.delete('chat-rooms');
+        return true;
+    }
+
+    async resetUserState() {
+        await this.storage.delete('notifications');
+        await this.storage.delete('chat-rooms');
+        this.subscribers.clear();
+        return true;
+    }
+
     initializeSubscribers(users: UserDTO[]) {
         this.subscribers = new Set(users.map((user) => user.id));
     }

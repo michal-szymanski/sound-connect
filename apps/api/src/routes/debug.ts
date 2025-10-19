@@ -44,13 +44,13 @@ debugRoutes.delete('/debug/clear-all-notifications', async (c) => {
         for (const user of allUsers) {
             const id = c.env.UserDO.idFromName(`user:${user.id}`);
             const stub = c.env.UserDO.get(id);
-            await stub.clearAllNotifications();
+            await stub.resetUserState();
             clearedCount++;
         }
 
-        return c.json({ success: true, clearedCount, message: `Cleared notifications for ${clearedCount} users` });
+        return c.json({ success: true, clearedCount, message: `Reset state for ${clearedCount} users (notifications, subscribers, chat rooms)` });
     } catch (error) {
-        console.error('Error clearing notifications:', error);
+        console.error('Error resetting user state:', error);
         return c.json({ error: 'Internal server error' }, 500);
     }
 });
