@@ -12,8 +12,8 @@ if (!dbFile) {
 const dbFilePath = path.join(dbDirectory, dbFile);
 
 export default defineConfig({
-    schema: 'src/db/schema.ts',
-    out: 'src/db/migrations',
+    schema: '../../packages/drizzle/src/schema.ts',
+    out: '../../packages/drizzle/src/migrations',
     dialect: 'sqlite',
     dbCredentials: {
         url: dbFilePath

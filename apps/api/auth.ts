@@ -1,7 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { openAPI } from 'better-auth/plugins';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import * as schema from '@/api/db/schema';
+import { schema } from '@sound-connect/drizzle';
 import { env } from 'cloudflare:workers';
 import { db } from '@/api/db';
 import { APP_NAME_NORMALIZED } from '@sound-connect/common/constants';

@@ -2,7 +2,9 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { HonoContext } from 'types';
 import { db } from '@/api/db';
-import { users } from '@/api/db/schema';
+import { schema } from '@sound-connect/drizzle';
+
+const { users } = schema;
 
 const debugRoutes = new Hono<HonoContext>();
 

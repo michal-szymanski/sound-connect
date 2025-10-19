@@ -1,8 +1,10 @@
-import { mediaTable, postsReactionsTable, postsTable, users, commentsTable } from '@/api/db/schema';
+import { schema } from '@sound-connect/drizzle';
 import { feedItemSchema, postReactionSchema, postSchema, userDTOSchema } from '@sound-connect/common/types/models';
 import { desc, eq, inArray, and, count } from 'drizzle-orm';
 import z from 'zod';
-import { db } from '@/api/db';
+import { db } from '../index';
+
+const { mediaTable, postsReactionsTable, postsTable, users, commentsTable } = schema;
 
 export const getPostsByUserId = async (userId: string) => {
     const results = await db

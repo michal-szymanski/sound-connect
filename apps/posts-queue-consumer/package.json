@@ -13,13 +13,14 @@
   },
   "dependencies": {
     "@sound-connect/common": "workspace:*",
-    "drizzle-orm": "^0.36.4",
+    "@sound-connect/drizzle": "workspace:*",
+    "drizzle-orm": "catalog:",
     "hono": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
-    "@types/node": "^22.10.2",
+    "@types/node": "catalog:",
     "typescript": "catalog:",
     "wrangler": "catalog:"
   }

@@ -1,9 +1,11 @@
-import { users, usersFollowersTable } from '@/api//db/schema';
-import { db } from '@/api/db';
+import { schema } from '@sound-connect/drizzle';
 import { userDTOSchema } from '@sound-connect/common/types/models';
 import { aliasedTable, eq, sql } from 'drizzle-orm';
 import { and } from 'drizzle-orm';
 import z from 'zod';
+import { db } from '../index';
+
+const { users, usersFollowersTable } = schema;
 
 export const getFollowedUsers = async (userId: string) => {
     const results = await db
