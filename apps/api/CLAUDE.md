@@ -16,6 +16,12 @@ This is the backend part of the Sound Connect social media application for music
 - `src/types/` - Backend-specific types
 - Database ORM: Drizzle.js with D1
 
+## Development
+
+- **Dev Server**: `http://localhost:4000`
+- Both `apps/api` and `apps/posts-queue-consumer` run together on this port during development
+- The API serves the web app running on `http://localhost:3000`
+
 ## AI Rules
 
 - Use Cloudflare Workers for authentication and database access

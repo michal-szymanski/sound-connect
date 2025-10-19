@@ -17,6 +17,11 @@ This is the frontend part of the Sound Connect social media application for musi
 - `src/server-functions/` - Communication with backend API, results wrapped in envelopes for consistency
 - `src/types/` - Frontend-specific types
 
+## Development
+
+- **Dev Server**: `http://localhost:3000`
+- The web app runs independently and communicates with the API on `http://localhost:4000`
+
 ## AI Rules
 
 - Never modify files in `src/components/ui` directory - these are ShadCN generated files
