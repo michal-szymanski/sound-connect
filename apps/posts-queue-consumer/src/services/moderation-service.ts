@@ -1,10 +1,6 @@
 import { PostStatus } from '@sound-connect/common/types/models';
 import { PostQueueMessage, ModerationResult } from '../types';
-import { db } from '@/posts-queue-consumer/db';
-import { schema } from '@sound-connect/drizzle';
-import { eq } from 'drizzle-orm';
-
-const { postsTable } = schema;
+import { updatePostStatus } from '@/posts-queue-consumer/db/queries/posts-queries';
 
 export async function processPost(postData: PostQueueMessage, _env: CloudflareBindings): Promise<void> {
     console.log(`Processing post ${postData.postId} by user ${postData.userId}`);
@@ -62,22 +58,4 @@ export async function moderateMedia(mediaKeys: string[]): Promise<ModerationResu
         status: 'approved' as PostStatus,
         confidence: 1.0
     };
-}
-
-export async function updatePostStatus(postId: number, status: PostStatus, reason?: string): Promise<void> {
-    try {
-        await db
-            .update(postsTable)
-            .set({
-                status,
-                moderationReason: reason,
-                moderatedAt: new Date().toISOString()
-            })
-            .where(eq(postsTable.id, postId));
-
-        console.log(`Updated post ${postId} status to: ${status}`);
-    } catch (error) {
-        console.error(`Failed to update post ${postId} status:`, error);
-        throw error;
-    }
 }
