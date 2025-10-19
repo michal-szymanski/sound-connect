@@ -14,7 +14,11 @@ export default [
             '**/.vinxi/**',
             '**/worker-configuration.d.ts',
             '**/wrangler-env.d.ts',
-            '**/components/ui/**'
+            '**/components/ui/**',
+            '**/e2e/**',
+            'playwright.config.ts',
+            'playwright-report/**',
+            'test-results/**'
         ]
     },
     {

@@ -22,6 +22,17 @@ This is the frontend part of the Sound Connect social media application for musi
 - **Dev Server**: `http://localhost:3000`
 - The web app runs independently and communicates with the API on `http://localhost:4000`
 
+## Test Users
+
+For Playwright e2e tests, the following test users are seeded in the database:
+
+| Email         | Password | Name              |
+| ------------- | -------- | ----------------- |
+| pw1@test.test | Test123! | Playwright User 1 |
+| pw2@test.test | Test123! | Playwright User 2 |
+
+These users are defined in the migration: `packages/drizzle/src/migrations/0009_seed_playwright_users.sql`
+
 ## AI Rules
 
 - Never modify files in `src/components/ui` directory - these are ShadCN generated files

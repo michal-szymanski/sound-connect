@@ -7,8 +7,6 @@ apps/web/dist
 apps/web/.tanstack
 .nitro
 
-# Api
-
 # Common
 node_modules
 .wrangler
@@ -17,3 +15,8 @@ node_modules
 .cursor
 .dev.vars
 .vscode
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/
