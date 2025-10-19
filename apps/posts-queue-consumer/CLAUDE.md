@@ -39,6 +39,12 @@ This worker is responsible for processing posts from the Cloudflare Queue and pe
 - `rejected`: Post failed moderation
 - `flagged`: Post requires manual review
 
+## Development
+
+- **Dev Server**: `http://localhost:4000`
+- This worker runs together with `apps/api` on the same port during development
+- The queue consumer is automatically invoked when messages are added to the queue
+
 ## AI Rules
 
 - Always handle errors gracefully to prevent message loss
