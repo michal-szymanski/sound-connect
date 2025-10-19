@@ -24,11 +24,15 @@
     "wipe:do": "zsh -c 'rm -rf apps/api/.wrangler/**/do'",
     "wipe:db": "zsh -c 'rm -rf apps/api/.wrangler/**/d1'",
     "wipe": "zsh -c 'rm -rf apps/api/.wrangler'",
-    "studio": "pnpm --filter @sound-connect/api db:studio:local"
+    "studio": "pnpm --filter @sound-connect/api db:studio:local",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",
     "@modelcontextprotocol/server-filesystem": "^2025.8.21",
+    "@playwright/test": "^1.56.1",
     "chrome-devtools-mcp": "^0.8.1",
     "eslint": "^9.38.0",
     "eslint-import-resolver-typescript": "^4.4.4",
