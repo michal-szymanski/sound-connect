@@ -28,12 +28,20 @@
         "filesystem": {
             "type": "stdio",
             "command": "pnpm",
-            "args": ["dlx", "@modelcontextprotocol/server-filesystem", "."]
+            "args": ["dlx", "@modelcontextprotocol/server-filesystem", "${WORKSPACE_PATH}"]
         },
         "chrome-devtools": {
             "type": "stdio",
             "command": "pnpm",
             "args": ["dlx", "chrome-devtools-mcp", "--headless=true", "--isolated=true"]
+        },
+        "playwright": {
+            "command": "pnpm",
+            "args": ["dlx", "@playwright/mcp@latest"]
+        },
+        "vite": {
+            "type": "sse",
+            "url": "http://localhost:3000/__mcp/sse"
         }
     }
 }
