@@ -1,4 +1,0 @@
-api_url    = "https://sound-connect-api.michal-szymanski92.workers.dev"
-client_url = "https://sound-connect-web.michal-szymanski92.workers.dev"
-
-project_name = "sound-connect"
