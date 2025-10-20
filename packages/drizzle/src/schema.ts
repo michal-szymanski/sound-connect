@@ -52,18 +52,18 @@ export const verifications = sqliteTable('verifications', {
 });
 
 export const postsTable = sqliteTable('posts', {
-    id: integer().primaryKey(),
+    id: integer('id').primaryKey(),
     userId: text('user_id').notNull(),
     content: text('content').notNull(),
     status: text('status').default('pending').notNull(),
     moderationReason: text('moderation_reason'),
     moderatedAt: text('moderated_at'),
-    createdAt: text().notNull(),
-    updatedAt: text()
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at')
 });
 
 export const postsReactionsTable = sqliteTable('posts_reactions', {
-    id: integer().primaryKey(),
+    id: integer('id').primaryKey(),
     userId: text('user_id').notNull(),
     postId: integer('post_id')
         .notNull()
@@ -73,7 +73,7 @@ export const postsReactionsTable = sqliteTable('posts_reactions', {
 
 // @ts-expect-error - Self-referencing foreign key requires circular reference
 export const commentsTable = sqliteTable('comments', {
-    id: integer().primaryKey(),
+    id: integer('id').primaryKey(),
     userId: text('user_id').notNull(),
     postId: integer('post_id')
         .notNull()
@@ -86,7 +86,7 @@ export const commentsTable = sqliteTable('comments', {
 });
 
 export const commentsReactionsTable = sqliteTable('comments_reactions', {
-    id: integer().primaryKey(),
+    id: integer('id').primaryKey(),
     userId: text('user_id').notNull(),
     commentId: integer('comment_id')
         .notNull()
@@ -97,61 +97,61 @@ export const commentsReactionsTable = sqliteTable('comments_reactions', {
 export const mediaTypeEnum = ['image', 'video'] as const;
 
 export const mediaTable = sqliteTable('media', {
-    id: integer().primaryKey(),
-    postId: integer()
+    id: integer('id').primaryKey(),
+    postId: integer('post_id')
         .notNull()
         .references(() => postsTable.id),
-    type: text({ enum: mediaTypeEnum }).notNull(),
+    type: text('type', { enum: mediaTypeEnum }).notNull(),
     key: text('key').notNull()
 });
 
 export const musicGroupsTable = sqliteTable('music_groups', {
-    id: integer().primaryKey(),
+    id: integer('id').primaryKey(),
     name: text('name').notNull(),
-    createdAt: text().notNull(),
-    updatedAt: text()
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at')
 });
 
 export const musicGroupMembersTable = sqliteTable('music_groups_members', {
-    id: integer().primaryKey(),
+    id: integer('id').primaryKey(),
     userId: text('user_id').notNull(),
-    musicGroupId: integer()
+    musicGroupId: integer('music_group_id')
         .notNull()
         .references(() => musicGroupsTable.id),
-    isAdmin: integer({ mode: 'boolean' })
+    isAdmin: integer('is_admin', { mode: 'boolean' })
 });
 
 export const usersFollowersTable = sqliteTable('users_followers', {
-    id: integer().primaryKey(),
+    id: integer('id').primaryKey(),
     followedUserId: text('followed_user_id')
         .notNull()
         .references(() => users.id),
     userId: text('user_id')
         .notNull()
         .references(() => users.id),
-    createdAt: text().notNull()
+    createdAt: text('created_at').notNull()
 });
 
 export const musicGroupsFollowersTable = sqliteTable('music_groups_followers', {
-    id: integer().primaryKey(),
+    id: integer('id').primaryKey(),
     followerId: text('follower_id').notNull(),
-    musicGroupId: integer()
+    musicGroupId: integer('music_group_id')
         .notNull()
         .references(() => musicGroupsTable.id),
-    createdAt: text().notNull()
+    createdAt: text('created_at').notNull()
 });
 
 export const messagesTable = sqliteTable('messages', {
-    id: integer().primaryKey(),
-    senderId: text()
+    id: integer('id').primaryKey(),
+    senderId: text('sender_id')
         .notNull()
         .references(() => users.id),
-    receiverId: text()
+    receiverId: text('receiver_id')
         .notNull()
         .references(() => users.id),
-    content: text().notNull(),
-    createdAt: text().notNull(),
-    updatedAt: text()
+    content: text('content').notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at')
 });
 
 export const postsRelations = relations(postsTable, ({ many }) => ({

@@ -1,88 +1,296 @@
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
-import {
-    users,
-    sessions,
-    accounts,
-    verifications,
-    postsTable,
-    postsReactionsTable,
-    commentsTable,
-    commentsReactionsTable,
-    mediaTable,
-    musicGroupsTable,
-    musicGroupMembersTable,
-    usersFollowersTable,
-    musicGroupsFollowersTable,
-    messagesTable
-} from '@sound-connect/drizzle/schema';
 
-export const createUserSchema = createInsertSchema(users);
-export const userSchema = createSelectSchema(users);
+export const createUserSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+    emailVerified: z.boolean(),
+    image: z.string().nullable(),
+    createdAt: z.date(),
+    updatedAt: z.date()
+});
+
+export const userSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+    emailVerified: z.boolean(),
+    image: z.string().nullable(),
+    createdAt: z.date(),
+    updatedAt: z.date()
+});
+
 export type CreateUser = z.infer<typeof createUserSchema>;
 export type User = z.infer<typeof userSchema>;
 
-export const createSessionSchema = createInsertSchema(sessions);
-export const sessionSchema = createSelectSchema(sessions);
+export const userDTOSchema = userSchema.omit({ email: true, emailVerified: true, createdAt: true, updatedAt: true });
+export type UserDTO = z.infer<typeof userDTOSchema>;
+
+export const createSessionSchema = z.object({
+    id: z.string(),
+    expiresAt: z.date(),
+    token: z.string(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+    ipAddress: z.string().nullable(),
+    userAgent: z.string().nullable(),
+    userId: z.string()
+});
+
+export const sessionSchema = z.object({
+    id: z.string(),
+    expiresAt: z.date(),
+    token: z.string(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+    ipAddress: z.string().nullable(),
+    userAgent: z.string().nullable(),
+    userId: z.string()
+});
+
 export type CreateSession = z.infer<typeof createSessionSchema>;
 export type Session = z.infer<typeof sessionSchema>;
 
-export const createAccountSchema = createInsertSchema(accounts);
-export const accountSchema = createSelectSchema(accounts);
+export const createAccountSchema = z.object({
+    id: z.string(),
+    accountId: z.string(),
+    providerId: z.string(),
+    userId: z.string(),
+    accessToken: z.string().nullable(),
+    refreshToken: z.string().nullable(),
+    idToken: z.string().nullable(),
+    accessTokenExpiresAt: z.date().nullable(),
+    refreshTokenExpiresAt: z.date().nullable(),
+    scope: z.string().nullable(),
+    password: z.string().nullable(),
+    createdAt: z.date(),
+    updatedAt: z.date()
+});
+
+export const accountSchema = z.object({
+    id: z.string(),
+    accountId: z.string(),
+    providerId: z.string(),
+    userId: z.string(),
+    accessToken: z.string().nullable(),
+    refreshToken: z.string().nullable(),
+    idToken: z.string().nullable(),
+    accessTokenExpiresAt: z.date().nullable(),
+    refreshTokenExpiresAt: z.date().nullable(),
+    scope: z.string().nullable(),
+    password: z.string().nullable(),
+    createdAt: z.date(),
+    updatedAt: z.date()
+});
+
 export type CreateAccount = z.infer<typeof createAccountSchema>;
 export type Account = z.infer<typeof accountSchema>;
 
-export const createVerificationSchema = createInsertSchema(verifications);
-export const verificationSchema = createSelectSchema(verifications);
+export const createVerificationSchema = z.object({
+    id: z.string(),
+    identifier: z.string(),
+    value: z.string(),
+    expiresAt: z.date(),
+    createdAt: z.date().nullable(),
+    updatedAt: z.date().nullable()
+});
+
+export const verificationSchema = z.object({
+    id: z.string(),
+    identifier: z.string(),
+    value: z.string(),
+    expiresAt: z.date(),
+    createdAt: z.date().nullable(),
+    updatedAt: z.date().nullable()
+});
+
 export type CreateVerification = z.infer<typeof createVerificationSchema>;
 export type Verification = z.infer<typeof verificationSchema>;
 
-export const createPostSchema = createInsertSchema(postsTable);
-export const postSchema = createSelectSchema(postsTable);
+export const createPostSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    content: z.string(),
+    status: z.string(),
+    moderationReason: z.string().nullable(),
+    moderatedAt: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
+export const postSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    content: z.string(),
+    status: z.string(),
+    moderationReason: z.string().nullable(),
+    moderatedAt: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
 export type CreatePost = z.infer<typeof createPostSchema>;
 export type Post = z.infer<typeof postSchema>;
 
-export const createPostReactionSchema = createInsertSchema(postsReactionsTable);
-export const postReactionSchema = createSelectSchema(postsReactionsTable);
+export const createPostReactionSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    postId: z.number(),
+    createdAt: z.string()
+});
+
+export const postReactionSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    postId: z.number(),
+    createdAt: z.string()
+});
+
 export type CreatePostReaction = z.infer<typeof createPostReactionSchema>;
 export type PostReaction = z.infer<typeof postReactionSchema>;
 
-export const createCommentSchema = createInsertSchema(commentsTable);
-export const commentSchema = createSelectSchema(commentsTable);
+export const createCommentSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    postId: z.number(),
+    parentCommentId: z.number().nullable().optional(),
+    content: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
+export const commentSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    postId: z.number(),
+    parentCommentId: z.number().nullable(),
+    content: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
 export type CreateComment = z.infer<typeof createCommentSchema>;
 export type Comment = z.infer<typeof commentSchema>;
 
-export const createCommentReactionSchema = createInsertSchema(commentsReactionsTable);
-export const commentReactionSchema = createSelectSchema(commentsReactionsTable);
+export const createCommentReactionSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    commentId: z.number(),
+    createdAt: z.string()
+});
+
+export const commentReactionSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    commentId: z.number(),
+    createdAt: z.string()
+});
+
 export type CreateCommentReaction = z.infer<typeof createCommentReactionSchema>;
 export type CommentReaction = z.infer<typeof commentReactionSchema>;
 
-export const createMediaSchema = createInsertSchema(mediaTable);
-export const mediaSchema = createSelectSchema(mediaTable);
+export const createMediaSchema = z.object({
+    id: z.number(),
+    postId: z.number(),
+    type: z.enum(['image', 'video']),
+    key: z.string()
+});
+
+export const mediaSchema = z.object({
+    id: z.number(),
+    postId: z.number(),
+    type: z.enum(['image', 'video']),
+    key: z.string()
+});
+
 export type CreateMedia = z.infer<typeof createMediaSchema>;
 export type Media = z.infer<typeof mediaSchema>;
 
-export const createMusicGroupSchema = createInsertSchema(musicGroupsTable);
-export const musicGroupSchema = createSelectSchema(musicGroupsTable);
+export const createMusicGroupSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
+export const musicGroupSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
 export type CreateMusicGroup = z.infer<typeof createMusicGroupSchema>;
 export type MusicGroup = z.infer<typeof musicGroupSchema>;
 
-export const createMusicGroupMemberSchema = createInsertSchema(musicGroupMembersTable);
-export const musicGroupMemberSchema = createSelectSchema(musicGroupMembersTable);
+export const createMusicGroupMemberSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    musicGroupId: z.number(),
+    isAdmin: z.boolean().nullable()
+});
+
+export const musicGroupMemberSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    musicGroupId: z.number(),
+    isAdmin: z.boolean().nullable()
+});
+
 export type CreateMusicGroupMember = z.infer<typeof createMusicGroupMemberSchema>;
 export type MusicGroupMember = z.infer<typeof musicGroupMemberSchema>;
 
-export const createUserFollowerSchema = createInsertSchema(usersFollowersTable);
-export const userFollowerSchema = createSelectSchema(usersFollowersTable);
+export const createUserFollowerSchema = z.object({
+    id: z.number(),
+    followedUserId: z.string(),
+    userId: z.string(),
+    createdAt: z.string()
+});
+
+export const userFollowerSchema = z.object({
+    id: z.number(),
+    followedUserId: z.string(),
+    userId: z.string(),
+    createdAt: z.string()
+});
+
 export type CreateUserFollower = z.infer<typeof createUserFollowerSchema>;
 export type UserFollower = z.infer<typeof userFollowerSchema>;
 
-export const createMusicGroupFollowerSchema = createInsertSchema(musicGroupsFollowersTable);
-export const musicGroupFollowerSchema = createSelectSchema(musicGroupsFollowersTable);
+export const createMusicGroupFollowerSchema = z.object({
+    id: z.number(),
+    followerId: z.string(),
+    musicGroupId: z.number(),
+    createdAt: z.string()
+});
+
+export const musicGroupFollowerSchema = z.object({
+    id: z.number(),
+    followerId: z.string(),
+    musicGroupId: z.number(),
+    createdAt: z.string()
+});
+
 export type CreateMusicGroupFollower = z.infer<typeof createMusicGroupFollowerSchema>;
 export type MusicGroupFollower = z.infer<typeof musicGroupFollowerSchema>;
 
-export const createMessageSchema = createInsertSchema(messagesTable);
-export const messageSchema = createSelectSchema(messagesTable);
+export const createMessageSchema = z.object({
+    id: z.number(),
+    senderId: z.string(),
+    receiverId: z.string(),
+    content: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
+export const messageSchema = z.object({
+    id: z.number(),
+    senderId: z.string(),
+    receiverId: z.string(),
+    content: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
 export type CreateMessage = z.infer<typeof createMessageSchema>;
 export type Message = z.infer<typeof messageSchema>;

@@ -27,4 +27,3 @@ This is the backend part of the Sound Connect social media application for music
 - Use Cloudflare Workers for authentication and database access
 - Use Durable Objects for real-time communication between users
 - Accessing ID of the current user should be done with `c.get('user')` instead of sending the ID from frontend
-- Database column names MUST use snake_case (e.g., `created_at`, `user_id`, `post_id`)
