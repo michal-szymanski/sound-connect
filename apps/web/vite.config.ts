@@ -5,6 +5,7 @@ import viteReact from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import tsConfigPaths from 'vite-tsconfig-paths';
+import { ViteMcp } from 'vite-plugin-mcp';
 
 export default defineConfig({
     server: {
@@ -14,6 +15,10 @@ export default defineConfig({
         exclude: ['wrangler']
     },
     plugins: [
+        //@ts-expect-error - ViteMcp is not typed correctly
+        ViteMcp({
+            updateConfig: false
+        }),
         cloudflare({ viteEnvironment: { name: 'ssr' } }),
         tanstackStart(),
         viteReact(),
