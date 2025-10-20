@@ -36,5 +36,3 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 - **Shared**:
     - **[Common Package](packages/common/CLAUDE.md)**: `packages/common` - Shared utilities and types
     - **[Drizzle Package](packages/drizzle/CLAUDE.md)**: `packages/drizzle` - Drizzle ORM schema definitions and database migrations for D1
-- **Infrastructure**:
-    - **[Terraform](terraform/README.md)**: `terraform/` - Infrastructure as Code for Cloudflare resources (D1, R2, Queues, Workers)
