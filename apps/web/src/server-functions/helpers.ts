@@ -1,6 +1,5 @@
 import { APP_NAME_NORMALIZED } from '@sound-connect/common/constants';
-import { authErrorSchema, sessionSchema } from '@sound-connect/common/types/auth';
-import { userSchema } from '@sound-connect/common/types/models';
+import { authErrorSchema, userApiSchema, sessionApiSchema } from '@sound-connect/common/types/auth';
 import { getCookie, setResponseHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 
@@ -73,7 +72,16 @@ export const getSessionFromCookie = () => {
 
         const decodedValue = Buffer.from(cookieValue, 'base64').toString('utf-8');
         const json = JSON.parse(decodedValue);
-        const schema = z.object({ session: z.object({ session: sessionSchema, user: userSchema }), expiresAt: z.number(), signature: z.string() });
+
+        const schema = z.object({
+            session: z.object({
+                session: sessionApiSchema,
+                user: userApiSchema
+            }),
+            expiresAt: z.number(),
+            signature: z.string()
+        });
+
         const { session } = schema.parse(json);
         return session;
     } catch (_error) {

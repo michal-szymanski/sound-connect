@@ -101,7 +101,7 @@ export const mediaTable = sqliteTable('media', {
     postId: integer()
         .notNull()
         .references(() => postsTable.id),
-    type: text({ enum: mediaTypeEnum }),
+    type: text({ enum: mediaTypeEnum }).notNull(),
     key: text('key').notNull()
 });
 

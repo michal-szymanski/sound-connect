@@ -1,6 +1,5 @@
 import { env } from 'cloudflare:workers';
-import { sessionSchema } from '@sound-connect/common/types/auth';
-import { userSchema } from '@sound-connect/common/types/models';
+import { userApiSchema, sessionApiSchema } from '@sound-connect/common/types/auth';
 import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
@@ -28,7 +27,7 @@ export const getSession = createServerFn().handler(async () => {
         setSessionCookies(response);
 
         const json = await response.json();
-        const schema = z.object({ session: sessionSchema, user: userSchema });
+        const schema = z.object({ session: sessionApiSchema, user: userApiSchema });
 
         if (!json) {
             return { success: false, body: null } as const;
@@ -70,7 +69,7 @@ export const signIn = createServerFn({ method: 'POST' })
         try {
             const json = await response.json();
             const schema = z.object({
-                user: userSchema,
+                user: userApiSchema,
                 url: z.string(),
                 redirect: z.boolean(),
                 token: z.string()
@@ -154,7 +153,7 @@ export const signUp = createServerFn({
             const json = await response.json();
             const schema = z.object({
                 token: z.string(),
-                user: userSchema
+                user: userApiSchema
             });
 
             return { success: true, body: schema.parse(json) } as const;

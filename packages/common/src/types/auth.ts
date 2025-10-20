@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { userSchema, sessionSchema } from './drizzle';
 
 export const authErrorSchema = z.discriminatedUnion('code', [
     z.object({
@@ -97,15 +98,17 @@ export const authErrorSchema = z.discriminatedUnion('code', [
 
 export type AuthError = z.infer<typeof authErrorSchema>;
 
-export const sessionSchema = z.object({
-    id: z.string(),
-    expiresAt: z.string(),
-    token: z.string(),
+export const userApiSchema = userSchema.omit({ createdAt: true, updatedAt: true }).extend({
     createdAt: z.string(),
-    updatedAt: z.string(),
-    ipAddress: z.string(),
-    userAgent: z.string(),
-    userId: z.string()
+    updatedAt: z.string()
 });
 
-export type Session = z.infer<typeof sessionSchema>;
+export type UserApi = z.infer<typeof userApiSchema>;
+
+export const sessionApiSchema = sessionSchema.omit({ expiresAt: true, createdAt: true, updatedAt: true }).extend({
+    expiresAt: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string()
+});
+
+export type SessionApi = z.infer<typeof sessionApiSchema>;

@@ -1,6 +1,6 @@
 import { schema } from '@sound-connect/drizzle';
 import { db } from '../index';
-import { mediaSchema, mediaTypeSchema } from '@sound-connect/common/types/models';
+import { mediaSchema } from '@sound-connect/common/types/drizzle';
 import z from 'zod';
 
 const { mediaTable } = schema;
@@ -13,7 +13,7 @@ export const addMedia = async (postId: number, mediaKeys: string[]) => {
     const values = mediaKeys.map((mediaKey) => ({
         postId,
         key: mediaKey,
-        type: mediaTypeSchema.parse('image')
+        type: 'image' as const
     }));
 
     const results = await db.insert(mediaTable).values(values).returning();
