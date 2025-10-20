@@ -51,15 +51,6 @@ export async function signOut(page: Page): Promise<void> {
     await page.waitForURL('/sign-in');
 }
 
-export function generateTestUser(suffix: string): UserCredentials {
-    const timestamp = Date.now();
-    return {
-        name: `Test User ${suffix}`,
-        email: `testuser${suffix}_${timestamp}@example.com`,
-        password: 'TestPassword123!'
-    };
-}
-
 export const TEST_USERS = {
     USER_A: {
         email: 'pw1@test.test',
@@ -69,4 +60,4 @@ export const TEST_USERS = {
         email: 'pw2@test.test',
         password: 'Test123!'
     }
-};
+} as const;
