@@ -21,6 +21,9 @@ catalogs:
     drizzle-orm:
       specifier: ^0.44.6
       version: 0.44.6
+    eslint:
+      specifier: ^9.38.0
+      version: 9.38.0
     hono:
       specifier: ^4.10.1
       version: 4.10.1
@@ -379,6 +382,13 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 4.1.12
+    devDependencies:
+      eslint:
+        specifier: 'catalog:'
+        version: 9.38.0(jiti@2.6.1)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
 
   packages/drizzle:
     dependencies:
@@ -398,6 +408,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.8.1
+      eslint:
+        specifier: 'catalog:'
+        version: 9.38.0(jiti@2.6.1)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
