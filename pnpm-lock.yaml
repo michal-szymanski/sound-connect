@@ -376,9 +376,6 @@ importers:
       '@sound-connect/drizzle':
         specifier: workspace:*
         version: link:../drizzle
-      drizzle-zod:
-        specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@11.10.0)(kysely@0.28.8)(pg@8.16.3))(zod@4.1.12)
       zod:
         specifier: 'catalog:'
         version: 4.1.12
@@ -3916,12 +3913,6 @@ packages:
     peerDependenciesMeta:
       drizzle-orm:
         optional: true
-
-  drizzle-zod@0.8.3:
-    resolution: {integrity: sha512-66yVOuvGhKJnTdiqj1/Xaaz9/qzOdRJADpDa68enqS6g3t0kpNkwNYjUuaeXgZfO/UWuIM9HIhSlJ6C5ZraMww==}
-    peerDependencies:
-      drizzle-orm: '>=0.36.0'
-      zod: ^3.25.0 || ^4.0.0
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -10259,11 +10250,6 @@ snapshots:
       pure-rand: 6.1.0
     optionalDependencies:
       drizzle-orm: 0.44.6(@cloudflare/workers-types@4.20251011.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@11.10.0)(kysely@0.28.8)(pg@8.16.3)
-
-  drizzle-zod@0.8.3(drizzle-orm@0.44.6(@cloudflare/workers-types@4.20251011.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@11.10.0)(kysely@0.28.8)(pg@8.16.3))(zod@4.1.12):
-    dependencies:
-      drizzle-orm: 0.44.6(@cloudflare/workers-types@4.20251011.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@11.10.0)(kysely@0.28.8)(pg@8.16.3)
-      zod: 4.1.12
 
   dunder-proto@1.0.1:
     dependencies:

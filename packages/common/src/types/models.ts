@@ -1,14 +1,15 @@
 import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
 import z from 'zod';
 import {
-    userSchema,
+    userDTOSchema,
     postSchema,
     postReactionSchema,
     commentSchema,
     commentReactionSchema,
     mediaSchema,
     type Comment,
-    type CommentReaction
+    type CommentReaction,
+    type UserDTO
 } from '@sound-connect/common/types/drizzle';
 
 export const webSocketMessageTypes = z.enum(['chat', 'online-status', 'notification', 'subscribe', 'unsubscribe', 'user-joined', 'user-left']);
@@ -140,10 +141,6 @@ export type WebSocketMessage = z.infer<typeof webSocketMessageSchema>;
 export const postStatusSchema = z.enum(['pending', 'approved', 'rejected', 'flagged']);
 
 export type PostStatus = z.infer<typeof postStatusSchema>;
-
-export const userDTOSchema = userSchema.omit({ email: true, emailVerified: true, createdAt: true, updatedAt: true });
-
-export type UserDTO = z.infer<typeof userDTOSchema>;
 
 export const feedItemSchema = z.object({
     post: postSchema,
