@@ -1,5 +1,15 @@
 import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
 import z from 'zod';
+import {
+    userSchema,
+    postSchema,
+    postReactionSchema,
+    commentSchema,
+    commentReactionSchema,
+    mediaSchema,
+    type Comment,
+    type CommentReaction
+} from '@sound-connect/common/types/drizzle';
 
 export const webSocketMessageTypes = z.enum(['chat', 'online-status', 'notification', 'subscribe', 'unsubscribe', 'user-joined', 'user-left']);
 
@@ -131,56 +141,9 @@ export const postStatusSchema = z.enum(['pending', 'approved', 'rejected', 'flag
 
 export type PostStatus = z.infer<typeof postStatusSchema>;
 
-export const postSchema = z.object({
-    id: z.number(),
-    userId: z.string(),
-    content: z.string(),
-    status: postStatusSchema.default('pending'),
-    moderationReason: z.string().nullable(),
-    moderatedAt: z.string().nullable(),
-    createdAt: z.string(),
-    updatedAt: z.string().nullable()
-});
-
-export type Post = z.infer<typeof postSchema>;
-
-export const postReactionSchema = z.object({
-    id: z.number(),
-    userId: z.string(),
-    postId: z.number(),
-    createdAt: z.string()
-});
-
-export type PostReaction = z.infer<typeof postReactionSchema>;
-
-export const userSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    email: z.string().email(),
-    emailVerified: z.boolean(),
-    image: z.string().url().nullable(),
-    createdAt: z.string(),
-    updatedAt: z.string()
-});
-
-export type User = z.infer<typeof userSchema>;
-
 export const userDTOSchema = userSchema.omit({ email: true, emailVerified: true, createdAt: true, updatedAt: true });
 
 export type UserDTO = z.infer<typeof userDTOSchema>;
-
-export const mediaTypeSchema = z.enum(['image', 'video']);
-
-export type MediaType = z.infer<typeof mediaTypeSchema>;
-
-export const mediaSchema = z.object({
-    id: z.number(),
-    postId: z.number(),
-    type: mediaTypeSchema,
-    key: z.string()
-});
-
-export type Media = z.infer<typeof mediaSchema>;
 
 export const feedItemSchema = z.object({
     post: postSchema,
@@ -198,27 +161,6 @@ export const postLikeDataSchema = z.object({
 });
 
 export type PostLikeData = z.infer<typeof postLikeDataSchema>;
-
-export const commentSchema = z.object({
-    id: z.number(),
-    userId: z.string(),
-    postId: z.number(),
-    parentCommentId: z.number().nullable(),
-    content: z.string(),
-    createdAt: z.string(),
-    updatedAt: z.string().nullable()
-});
-
-export type Comment = z.infer<typeof commentSchema>;
-
-export const commentReactionSchema = z.object({
-    id: z.number(),
-    userId: z.string(),
-    commentId: z.number(),
-    createdAt: z.string()
-});
-
-export type CommentReaction = z.infer<typeof commentReactionSchema>;
 
 export type CommentWithUser = {
     comment: Comment;

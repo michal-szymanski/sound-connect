@@ -1,4 +1,5 @@
-import { User, UserDTO, FeedItem, PostReaction } from '@sound-connect/common/types/models';
+import { UserDTO, FeedItem } from '@sound-connect/common/types/models';
+import { type User, type PostReaction } from '@sound-connect/common/types/drizzle';
 import {
     QueryClient,
     queryOptions,

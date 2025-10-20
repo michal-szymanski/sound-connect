@@ -2,8 +2,6 @@ import { env } from 'cloudflare:workers';
 import { getRoomId } from '@sound-connect/common/helpers';
 import {
     userDTOSchema,
-    postReactionSchema,
-    postSchema,
     feedItemSchema,
     chatMessageSchema,
     postLikeDataSchema,
@@ -12,6 +10,7 @@ import {
     commentWithUserSchema,
     createCommentSchema
 } from '@sound-connect/common/types/models';
+import { postReactionSchema, postSchema } from '@sound-connect/common/types/drizzle';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { getSession } from '@/web/server-functions/auth';

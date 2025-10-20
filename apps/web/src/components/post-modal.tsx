@@ -8,7 +8,8 @@ import { Input } from '@/web/components/ui/input';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import { useUser, useLikeToggle, useComments, useCreateComment, useCommentLikeToggle } from '@/web/lib/react-query';
 import { useElapsedTime } from '@/web/lib/utils';
-import type { User, UserDTO } from '@sound-connect/common/types/models';
+import type { UserDTO } from '@sound-connect/common/types/models';
+import type { User } from '@sound-connect/common/types/drizzle';
 
 type PostModalProps = {
     open: boolean;
