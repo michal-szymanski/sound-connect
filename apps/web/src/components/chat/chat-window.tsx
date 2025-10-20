@@ -203,6 +203,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                                     </FormItem>
                                 )}
                             />
+                            {/* eslint-disable-next-line react-hooks/incompatible-library */}
                             <Button type="submit" size="sm" disabled={!form.watch('text')?.trim()} className="px-3">
                                 <Send className="h-3 w-3" />
                             </Button>

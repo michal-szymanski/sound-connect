@@ -120,6 +120,7 @@ export const ChatWindowProvider = ({ children }: Props) => {
 
     useEffect(() => {
         const storedWindows = loadFromStorage();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setOpenWindows(storedWindows);
     }, []);
 

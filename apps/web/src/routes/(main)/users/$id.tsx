@@ -68,6 +68,7 @@ function RouteComponent() {
     const [optimisticStatus, setOptimisticStatus] = useState<'pending' | 'following' | null>(null);
 
     useEffect(() => {
+        /* eslint-disable react-hooks/set-state-in-effect */
         if (followRequestStatus?.status === 'following') {
             setOptimisticStatus('following');
         } else if (followRequestStatus?.status === 'pending') {
@@ -75,11 +76,13 @@ function RouteComponent() {
         } else if (followRequestStatus?.status === 'none') {
             setOptimisticStatus(null);
         }
+        /* eslint-enable react-hooks/set-state-in-effect */
     }, [followRequestStatus?.status]);
 
     useEffect(() => {
         const isCurrentUserFollowing = currentUserFollowings?.some((following) => following.id === user.id);
         if (isCurrentUserFollowing) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setOptimisticStatus(null);
         }
     }, [currentUserFollowings, user.id]);

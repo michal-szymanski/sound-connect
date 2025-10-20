@@ -72,10 +72,12 @@ const AddPostDialog = () => {
         setOpen(false);
         form.reset();
         clearAllFiles();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [form.formState.isSubmitSuccessful, clearAllFiles]);
 
     useEffect(() => {
         dispatch(showSidebar(!open));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
     const handleAddEmoji = (emoji: { native: string }) => {

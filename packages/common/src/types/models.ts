@@ -12,6 +12,8 @@ import {
     type UserDTO
 } from '@sound-connect/common/types/drizzle';
 
+export { userDTOSchema, type UserDTO };
+
 export const webSocketMessageTypes = z.enum(['chat', 'online-status', 'notification', 'subscribe', 'unsubscribe', 'user-joined', 'user-left']);
 
 export type WebSocketMessageType = z.infer<typeof webSocketMessageTypes>;
