@@ -71,6 +71,7 @@ const useFileUpload = (options?: { accept?: string; multiple?: boolean }) => {
                 URL.revokeObjectURL(file.previewUrl);
             });
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const FileInput = () => (
