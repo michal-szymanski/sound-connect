@@ -24,14 +24,16 @@ This is the frontend part of the Sound Connect social media application for musi
 
 ## Test Users
 
-For Playwright e2e tests, the following test users are seeded in the database:
+The following test users are available for development and testing:
 
-| Email         | Password | Name              |
-| ------------- | -------- | ----------------- |
-| pw1@test.test | Test123! | Playwright User 1 |
-| pw2@test.test | Test123! | Playwright User 2 |
+| Email      | Password | Name |
+| ---------- | -------- | ---- |
+| t1@asd.asd | aaaaaaaa | t1   |
+| t2@asd.asd | aaaaaaaa | t2   |
 
-These users are defined in the migration: `packages/drizzle/src/migrations/0009_seed_playwright_users.sql`
+These users are defined in the migration: `packages/drizzle/src/migrations/0006_seed_users.sql`
+
+For Playwright e2e test users, see **[E2E Documentation](../../e2e/CLAUDE.md)**
 
 ## AI Rules
 
