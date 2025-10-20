@@ -5,6 +5,7 @@ This package contains shared components between the backend and frontend parts o
 📚 **[← Back to Main Documentation](../../CLAUDE.md)**
 
 ## Contents
+
 - Common types shared between backend and frontend
 - Constants used across the application
 - Utilities and helper functions
