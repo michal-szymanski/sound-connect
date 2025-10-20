@@ -7,9 +7,12 @@
     "./constants": "./src/constants.ts",
     "./helpers": "./src/helpers.ts",
     "./types/models": "./src/types/models.ts",
-    "./types/auth": "./src/types/auth.ts"
+    "./types/auth": "./src/types/auth.ts",
+    "./types/drizzle": "./src/types/drizzle.ts"
   },
   "dependencies": {
+    "@sound-connect/drizzle": "workspace:*",
+    "drizzle-zod": "^0.8.3",
     "zod": "catalog:"
   }
 }
