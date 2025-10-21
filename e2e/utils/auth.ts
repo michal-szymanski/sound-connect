@@ -9,9 +9,13 @@ type UserCredentials = {
 export async function signUp(page: Page, credentials: UserCredentials): Promise<void> {
     await page.goto('/sign-up');
 
-    await page.fill('input[name="name"]', credentials.name);
-    await page.fill('input[name="email"]', credentials.email);
-    await page.fill('input[name="password"]', credentials.password);
+    const nameInput = page.getByLabel('Name');
+    const emailInput = page.getByLabel('Email');
+    const passwordInput = page.getByLabel('Password');
+
+    await nameInput.fill(credentials.name);
+    await emailInput.fill(credentials.email);
+    await passwordInput.fill(credentials.password);
 
     await page.click('button[type="submit"]');
 
@@ -28,11 +32,21 @@ export async function signUp(page: Page, credentials: UserCredentials): Promise<
 
 export async function signIn(page: Page, credentials: Pick<UserCredentials, 'email' | 'password'>): Promise<void> {
     await page.goto('/sign-in');
+    await page.waitForLoadState('networkidle');
 
-    await page.fill('input[name="email"]', credentials.email);
-    await page.fill('input[name="password"]', credentials.password);
+    const emailInput = page.getByLabel('Email');
+    const passwordInput = page.getByLabel('Password');
 
-    await page.click('button[type="submit"]');
+    await emailInput.waitFor({ state: 'visible' });
+    await passwordInput.waitFor({ state: 'visible' });
+
+    await emailInput.clear();
+    await passwordInput.clear();
+
+    await emailInput.fill(credentials.email);
+    await passwordInput.fill(credentials.password);
+
+    await page.getByRole('button', { name: 'Sign in' }).click();
 
     try {
         await page.waitForURL('/', { timeout: 10000 });
