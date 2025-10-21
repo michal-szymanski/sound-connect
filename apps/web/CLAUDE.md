@@ -31,7 +31,7 @@ The following test users are available for development and testing:
 | t1@asd.asd | aaaaaaaa | t1   |
 | t2@asd.asd | aaaaaaaa | t2   |
 
-These users are defined in the migration: `packages/drizzle/src/migrations/0006_seed_users.sql`
+These users are defined in the migration: `packages/drizzle/migrations/0006_seed_users.sql`
 
 For Playwright e2e test users, see **[E2E Documentation](../../e2e/CLAUDE.md)**
 
