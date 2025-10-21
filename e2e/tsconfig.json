@@ -1,9 +1,5 @@
 {
     "extends": "../tsconfig.json",
-    "compilerOptions": {
-        "outDir": "./dist",
-        "rootDir": "."
-    },
     "include": ["**/*.ts"],
     "exclude": ["node_modules", "playwright-report", "test-results"]
 }
