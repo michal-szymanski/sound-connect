@@ -9,7 +9,7 @@ apps/web/src/routeTree.gen.ts
 apps/api/src/db/migrations
 
 # Drizzle
-packages/drizzle/src/migrations
+packages/drizzle/migrations
 
 # Generated files
 **/worker-configuration.d.ts

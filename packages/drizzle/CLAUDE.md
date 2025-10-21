@@ -7,7 +7,7 @@ This package contains the database schema definitions and migration files for th
 ## Contents
 
 - `src/schema.ts` - Database table definitions and relations
-- `src/migrations/` - SQL migration files managed by Drizzle Kit
+- `migrations/` - SQL migration files managed by Drizzle Kit
 
 ## Database Schema
 
@@ -39,7 +39,6 @@ When you modify `src/schema.ts`, you MUST:
 1. **Generate migration files**:
 
     ```bash
-    cd apps/api
     pnpm db:generate
     ```
 
@@ -51,8 +50,7 @@ When you modify `src/schema.ts`, you MUST:
 
 3. **Apply migrations locally**:
     ```bash
-    cd apps/api
-    pnpm db:migrate:local
+    pnpm --filter @sound-connect/api db:migrate:local
     ```
 
 ### Schema Definition Guidelines

@@ -113,9 +113,6 @@ importers:
       dotenv:
         specifier: 'catalog:'
         version: 17.2.3
-      drizzle-kit:
-        specifier: ^0.31.1
-        version: 0.31.5
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.44.6(@cloudflare/workers-types@4.20251011.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@11.10.0)(kysely@0.28.8)(pg@8.16.3)
@@ -417,6 +414,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.8.1
+      drizzle-kit:
+        specifier: ^0.31.1
+        version: 0.31.5
       eslint:
         specifier: 'catalog:'
         version: 9.38.0(jiti@2.6.1)
