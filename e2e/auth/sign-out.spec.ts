@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { signIn, TEST_USERS } from './utils/auth';
+import { signIn, TEST_USERS } from '../utils/auth';
 
 test.describe('User Sign Out', () => {
     test('should sign out successfully', async ({ page }) => {
