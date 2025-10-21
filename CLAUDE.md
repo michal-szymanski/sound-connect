@@ -23,6 +23,7 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 - Every payload MUST be validated with the same zod schema on frontend before sending and on backend after receiving it.
 - Code (functions, variables, etc.) can be exported ONLY if it's imported somewhere else, unless this is related to frameworks and libraries (e.g., React components, API route handlers, worker exports). Code used only internally within the same file should NOT be exported.
 - After making code changes to TypeScript/JavaScript files, ALWAYS run `pnpm code:check` from the root directory. This runs Prettier, ESLint, and TypeScript checks across all workspaces. Fix any errors immediately before proceeding.
+- ALWAYS use `pnpm` as the package manager. NEVER use `npm` or `npx`. Use `pnpm exec` to run executables from installed packages (e.g., `pnpm exec playwright test`, `pnpm exec eslint`). Use `pnpm dlx` for one-off command execution without installation.
 - Before making any edit, check if it violates these rules.
 - If a rule conflict arises, ask the user for clarification rather than breaking the rule.
 
