@@ -20,6 +20,7 @@ package.json
 pnpm-lock.yaml
 .gitignore
 .env*
+.claude
 
 # E2E
 e2e/playwright-report
