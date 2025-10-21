@@ -2,46 +2,55 @@
     "mcpServers": {
         "cloudflare-docs": {
             "type": "sse",
-            "url": "https://docs.mcp.cloudflare.com/sse"
+            "url": "https://docs.mcp.cloudflare.com/sse",
+            "roots": ["${SC_WORKSPACE_PATH}"]
         },
         "cloudflare-workers-bindings": {
             "type": "sse",
             "url": "https://bindings.mcp.cloudflare.com/sse",
             "headers": {
                 "Authorization": "Bearer ${CLOUDFLARE_API_TOKEN}"
-            }
+            },
+            "roots": ["${SC_WORKSPACE_PATH}"]
         },
         "cloudflare-workers-builds": {
             "type": "sse",
             "url": "https://builds.mcp.cloudflare.com/sse",
             "headers": {
                 "Authorization": "Bearer ${CLOUDFLARE_API_TOKEN}"
-            }
+            },
+            "roots": ["${SC_WORKSPACE_PATH}"]
         },
         "cloudflare-observability": {
             "type": "sse",
             "url": "https://observability.mcp.cloudflare.com/sse",
             "headers": {
                 "Authorization": "Bearer ${CLOUDFLARE_API_TOKEN}"
-            }
+            },
+            "roots": ["${SC_WORKSPACE_PATH}"]
         },
         "filesystem": {
             "type": "stdio",
             "command": "pnpm",
-            "args": ["dlx", "@modelcontextprotocol/server-filesystem", "${WORKSPACE_PATH}"]
+            "args": ["dlx", "@modelcontextprotocol/server-filesystem"],
+            "roots": ["${SC_WORKSPACE_PATH}"]
         },
         "chrome-devtools": {
             "type": "stdio",
             "command": "pnpm",
-            "args": ["dlx", "chrome-devtools-mcp", "--headless=true", "--isolated=true"]
+            "args": ["dlx", "chrome-devtools-mcp", "--headless=true", "--isolated=true"],
+            "roots": ["${SC_WORKSPACE_PATH}"]
         },
         "playwright": {
+            "type": "stdio",
             "command": "pnpm",
-            "args": ["dlx", "@playwright/mcp@latest"]
+            "args": ["dlx", "@playwright/mcp@latest"],
+            "roots": ["${SC_WORKSPACE_PATH}"]
         },
         "vite": {
             "type": "sse",
-            "url": "http://localhost:3000/__mcp/sse"
+            "url": "http://localhost:3000/__mcp/sse",
+            "roots": ["${SC_WORKSPACE_PATH}"]
         }
     }
 }
