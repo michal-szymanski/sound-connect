@@ -8,6 +8,7 @@
         "test:ui": "playwright test --ui",
         "test:debug": "playwright test --debug",
         "test:headed": "playwright test --headed",
+        "db:reset": "tsx scripts/reset-db.ts",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
         "tsc": "tsc --noEmit"

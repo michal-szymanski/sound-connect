@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { signIn, TEST_USERS } from '../utils/auth';
+import { test, expect } from '@/e2e/hooks';
+import { signIn, TEST_USERS } from '@/e2e/utils/auth';
 
 test.describe('User Sign Out', () => {
     test('should sign out successfully', async ({ page }) => {
