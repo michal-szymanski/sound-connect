@@ -8,16 +8,21 @@ type UserCredentials = {
 
 export async function signUp(page: Page, credentials: UserCredentials): Promise<void> {
     await page.goto('/sign-up');
+    await page.waitForLoadState('networkidle');
 
     const nameInput = page.getByLabel('Name');
     const emailInput = page.getByLabel('Email');
     const passwordInput = page.getByLabel('Password');
 
+    await nameInput.waitFor({ state: 'visible' });
+    await emailInput.waitFor({ state: 'visible' });
+    await passwordInput.waitFor({ state: 'visible' });
+
     await nameInput.fill(credentials.name);
     await emailInput.fill(credentials.email);
     await passwordInput.fill(credentials.password);
 
-    await page.click('button[type="submit"]');
+    await page.getByRole('button', { name: 'Sign up' }).click();
 
     try {
         await page.waitForURL('/', { timeout: 10000 });

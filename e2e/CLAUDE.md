@@ -63,6 +63,33 @@ test.describe('My Feature', () => {
 });
 ```
 
+### Test Data Guidelines
+
+**IMPORTANT: Tests must be deterministic and reproducible**
+
+❌ **DON'T** use timestamps, random values, or `Date.now()`:
+
+```typescript
+// Bad - Non-deterministic
+const email = `test-${Date.now()}@test.com`;
+const name = `User ${Math.random()}`;
+```
+
+✅ **DO** use fixed, predictable test data:
+
+```typescript
+// Good - Deterministic
+const email = 'testuser@playwright.test';
+const name = 'Test User';
+```
+
+**Why?**
+
+- Each test runs with a clean database (snapshot restored automatically)
+- No need for unique data - tests are isolated
+- Reproducible failures make debugging easier
+- Tests are easier to understand and maintain
+
 ## Learn More
 
 See the [complete E2E testing documentation](README.md) for:
