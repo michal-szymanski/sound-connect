@@ -1,5 +1,11 @@
 {
     "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/e2e/*": ["./*"]
+        }
+    },
     "include": ["**/*.ts"],
     "exclude": ["node_modules", "playwright-report", "test-results"]
 }
