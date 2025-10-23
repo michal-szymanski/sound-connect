@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { HonoContext } from 'types';
 import { db } from '@/api/db';
-import { schema } from '@sound-connect/drizzle';
+import { schema } from '@/drizzle';
 
 const { users } = schema;
 

@@ -1,4 +1,4 @@
-import { UserDTO } from '@sound-connect/common/types/models';
+import { UserDTO } from '@/common/types/models';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';

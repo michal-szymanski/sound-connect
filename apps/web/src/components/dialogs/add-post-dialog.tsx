@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DialogDescription } from '@radix-ui/react-dialog';
-import { POST_TEXT_MAX_LENGTH } from '@sound-connect/common/constants';
+import { POST_TEXT_MAX_LENGTH } from '@/common/constants';
 import { useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { X, ImagePlus } from 'lucide-react';

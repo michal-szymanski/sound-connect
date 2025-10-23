@@ -1,6 +1,6 @@
-import { schema } from '@sound-connect/drizzle';
+import { schema } from '@/drizzle';
 import { db } from '../index';
-import { mediaSchema } from '@sound-connect/common/types/drizzle';
+import { mediaSchema } from '@/common/types/drizzle';
 import z from 'zod';
 
 const { mediaTable } = schema;

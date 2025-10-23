@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { HonoContext } from 'types';
-import { createCommentSchema } from '@sound-connect/common/types/models';
+import { createCommentSchema } from '@/common/types/models';
 import { getCommentsByPostId, createComment, likeComment, unlikeComment, getCommentLikesData } from '@/api/db/queries/comments-queries';
 
 const commentsRoutes = new Hono<HonoContext>();

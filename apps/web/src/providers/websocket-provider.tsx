@@ -1,4 +1,4 @@
-import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
+import { ONLINE_STATUS_INTERVAL } from '@/common/constants';
 import {
     FollowRequestNotificationItem,
     FollowRequestAcceptedNotificationItem,
@@ -9,7 +9,7 @@ import {
     chatMessageSchema,
     subscribeMessageSchema,
     unsubscribeMessageSchema
-} from '@sound-connect/common/types/models';
+} from '@/common/types/models';
 import { useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import z from 'zod';

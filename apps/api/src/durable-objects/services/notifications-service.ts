@@ -4,7 +4,7 @@ import {
     followRequestAcceptedNotificationSchema,
     followRequestNotificationSchema,
     WebSocketMessage
-} from '@sound-connect/common/types/models';
+} from '@/common/types/models';
 
 const NOTIFICATIONS_KEY = 'notifications';
 

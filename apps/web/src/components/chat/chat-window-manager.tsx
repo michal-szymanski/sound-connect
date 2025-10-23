@@ -1,5 +1,5 @@
-import { APP_NAME_NORMALIZED } from '@sound-connect/common/constants';
-import { UserDTO } from '@sound-connect/common/types/models';
+import { APP_NAME_NORMALIZED } from '@/common/constants';
+import { UserDTO } from '@/common/types/models';
 import { useLocation } from '@tanstack/react-router';
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { ChatWindow } from './chat-window';

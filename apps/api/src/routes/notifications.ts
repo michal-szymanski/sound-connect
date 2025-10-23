@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { HonoContext } from 'types';
 import { getFollowedUsers, followUser } from '@/api/db/queries/users-queries';
-import { followRequestNotificationItemSchema, followRequestAcceptedNotificationItemSchema } from '@sound-connect/common/types/models';
+import { followRequestNotificationItemSchema, followRequestAcceptedNotificationItemSchema } from '@/common/types/models';
 import crypto from 'crypto';
 
 const notificationsRoutes = new Hono<HonoContext>();

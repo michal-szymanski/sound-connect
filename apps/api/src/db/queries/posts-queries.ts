@@ -1,6 +1,6 @@
-import { schema } from '@sound-connect/drizzle';
-import { feedItemSchema, userDTOSchema } from '@sound-connect/common/types/models';
-import { postReactionSchema, postSchema } from '@sound-connect/common/types/drizzle';
+import { schema } from '@/drizzle';
+import { feedItemSchema, userDTOSchema } from '@/common/types/models';
+import { postReactionSchema, postSchema } from '@/common/types/drizzle';
 import { desc, eq, inArray, and, count } from 'drizzle-orm';
 import z from 'zod';
 import { db } from '../index';

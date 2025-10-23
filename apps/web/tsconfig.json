@@ -3,7 +3,10 @@
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-            "@/web/*": ["src/*"]
+            "@/web/*": ["src/*"],
+            "@/common/*": ["../../packages/common/src/*"],
+            "@/drizzle": ["../../packages/drizzle/src"],
+            "@/drizzle/*": ["../../packages/drizzle/src/*"]
         },
         "lib": ["DOM"],
         "jsx": "react-jsx"

@@ -1,10 +1,10 @@
 import { betterAuth } from 'better-auth';
 import { openAPI } from 'better-auth/plugins';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { schema } from '@sound-connect/drizzle';
+import { schema } from '@/drizzle';
 import { env } from 'cloudflare:workers';
 import { db } from '@/api/db';
-import { APP_NAME_NORMALIZED } from '@sound-connect/common/constants';
+import { APP_NAME_NORMALIZED } from '@/common/constants';
 
 export const auth = betterAuth({
     baseURL: env.API_URL,

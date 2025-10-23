@@ -1,5 +1,5 @@
-import { APP_NAME_NORMALIZED } from '@sound-connect/common/constants';
-import { authErrorSchema, userApiSchema, sessionApiSchema } from '@sound-connect/common/types/auth';
+import { APP_NAME_NORMALIZED } from '@/common/constants';
+import { authErrorSchema, userApiSchema, sessionApiSchema } from '@/common/types/auth';
 import { getCookie, setResponseHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 

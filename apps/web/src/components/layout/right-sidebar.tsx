@@ -5,7 +5,7 @@ import UserAvatar from '@/web/components/small/user-avatar';
 import { Button } from '@/web/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/web/components/ui/sheet';
 import useContacts from '@/web/hooks/use-contacts';
-import type { UserDTO } from '@sound-connect/common/types/models';
+import type { UserDTO } from '@/common/types/models';
 
 const RightSidebar = () => {
     const [isOpen, setIsOpen] = useState(false);

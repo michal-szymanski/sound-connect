@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AuthError } from '@sound-connect/common/types/auth';
+import { AuthError } from '@/common/types/auth';
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';

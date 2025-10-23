@@ -1,4 +1,4 @@
-import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
+import { CHAT_MESSAGE_MAX_LENGTH } from '../constants';
 import z from 'zod';
 import {
     userDTOSchema,
@@ -10,7 +10,7 @@ import {
     type Comment,
     type CommentReaction,
     type UserDTO
-} from '@sound-connect/common/types/drizzle';
+} from './drizzle';
 
 export { userDTOSchema, type UserDTO };
 

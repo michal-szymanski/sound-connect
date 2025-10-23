@@ -1,5 +1,5 @@
-import { schema } from '@sound-connect/drizzle';
-import { userDTOSchema } from '@sound-connect/common/types/models';
+import { schema } from '@/drizzle';
+import { userDTOSchema } from '@/common/types/models';
 import { aliasedTable, eq, sql } from 'drizzle-orm';
 import { and } from 'drizzle-orm';
 import z from 'zod';
