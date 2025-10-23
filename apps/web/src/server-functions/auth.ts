@@ -1,5 +1,5 @@
 import { env } from 'cloudflare:workers';
-import { userApiSchema, sessionApiSchema } from '@sound-connect/common/types/auth';
+import { userApiSchema, sessionApiSchema } from '@/common/types/auth';
 import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';

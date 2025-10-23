@@ -1,4 +1,4 @@
-import { FollowRequestNotificationItem, FollowRequestAcceptedNotificationItem, UserDTO } from '@sound-connect/common/types/models';
+import { FollowRequestNotificationItem, FollowRequestAcceptedNotificationItem, UserDTO } from '@/common/types/models';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';

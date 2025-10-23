@@ -1,5 +1,5 @@
-import { PostStatus } from '@sound-connect/common/types/models';
-import { schema } from '@sound-connect/drizzle';
+import { PostStatus } from '@/common/types/models';
+import { schema } from '@/drizzle';
 import { eq } from 'drizzle-orm';
 import { db } from '../index';
 

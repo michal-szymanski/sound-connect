@@ -1,5 +1,5 @@
-import { UserDTO, userDTOSchema } from '@sound-connect/common/types/models';
-import { postSchema } from '@sound-connect/common/types/drizzle';
+import { UserDTO, userDTOSchema } from '@/common/types/models';
+import { postSchema } from '@/common/types/drizzle';
 import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';

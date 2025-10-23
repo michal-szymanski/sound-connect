@@ -1,4 +1,4 @@
-import { PostStatus } from '@sound-connect/common/types/models';
+import { PostStatus } from '@/common/types/models';
 import { PostQueueMessage, ModerationResult } from '../types';
 import { updatePostStatus } from '@/posts-queue-consumer/db/queries/posts-queries';
 

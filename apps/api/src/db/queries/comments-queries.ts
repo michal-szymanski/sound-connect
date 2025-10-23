@@ -1,5 +1,5 @@
 import { count, desc, eq, isNull, and, inArray } from 'drizzle-orm';
-import { schema } from '@sound-connect/drizzle';
+import { schema } from '@/drizzle';
 import { db } from '../index';
 
 const { commentsTable, commentsReactionsTable, users } = schema;

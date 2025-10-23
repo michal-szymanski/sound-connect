@@ -1,4 +1,4 @@
-import { postStatusSchema } from '@sound-connect/common/types/models';
+import { postStatusSchema } from '@/common/types/models';
 import { z } from 'zod';
 
 export type HonoContext = {

@@ -1,4 +1,4 @@
-import { userDTOSchema } from '@sound-connect/common/types/models';
+import { userDTOSchema } from '@/common/types/models';
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import AddPostDialog from '@/web/components/dialogs/add-post-dialog';

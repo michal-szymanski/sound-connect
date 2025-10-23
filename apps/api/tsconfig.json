@@ -3,7 +3,10 @@
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
-            "@/api/*": ["src/*"]
+            "@/api/*": ["src/*"],
+            "@/common/*": ["../../packages/common/src/*"],
+            "@/drizzle": ["../../packages/drizzle/src"],
+            "@/drizzle/*": ["../../packages/drizzle/src/*"]
         }
     },
     "types": ["@cloudflare/workers-types/2023-07-01"],

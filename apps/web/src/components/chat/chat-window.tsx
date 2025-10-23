@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CHAT_MESSAGE_MAX_LENGTH } from '@sound-connect/common/constants';
-import { getRoomId } from '@sound-connect/common/helpers';
-import { ChatMessage, UserDTO } from '@sound-connect/common/types/models';
+import { CHAT_MESSAGE_MAX_LENGTH } from '@/common/constants';
+import { getRoomId } from '@/common/helpers';
+import { ChatMessage, UserDTO } from '@/common/types/models';
 import clsx from 'clsx';
 import { X, Minus, Send } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';

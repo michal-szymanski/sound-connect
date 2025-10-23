@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { APP_NAME } from '@sound-connect/common/constants';
+import { APP_NAME } from '@/common/constants';
 import type { QueryClient } from '@tanstack/react-query';
 import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from '@tanstack/react-router';
 import { type ReactNode } from 'react';

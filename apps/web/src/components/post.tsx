@@ -1,4 +1,4 @@
-import { FeedItem } from '@sound-connect/common/types/models';
+import { FeedItem } from '@/common/types/models';
 import { Link } from '@tanstack/react-router';
 import { Heart, MoreHorizontal, MessageCircle, Share2 } from 'lucide-react';
 import { useState } from 'react';

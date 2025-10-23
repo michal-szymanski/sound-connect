@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
+import { ONLINE_STATUS_INTERVAL } from '@/common/constants';
 import {
     FollowRequestNotificationItem,
     FollowRequestAcceptedNotificationItem,
@@ -7,7 +7,7 @@ import {
     webSocketMessageSchema,
     onlineStatusMessageSchema,
     UserDTO
-} from '@sound-connect/common/types/models';
+} from '@/common/types/models';
 import { NotificationsService } from './services/notifications-service';
 import { ChatService } from './services/chat-service';
 import z from 'zod';
