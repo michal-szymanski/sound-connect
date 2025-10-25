@@ -339,6 +339,13 @@ jobs:
               env:
                   CLOUDFLARE_ENV: production
 
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: web-build
+                  path: apps/web/dist/
+                  retention-days: 1
+
     build-queue:
         name: Build Queue Consumer
         needs: [lint-queue, typecheck-queue]
@@ -457,18 +464,15 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 22.20.0
-                  cache: pnpm
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Build Web
-              run: pnpm --filter @sound-connect/web build
-              env:
-                  CLOUDFLARE_ENV: production
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: web-build
+                  path: apps/web/dist/
 
             - name: Deploy Web Worker
-              run: pnpm --filter @sound-connect/web run deploy
+              run: cd apps/web && pnpm dlx wrangler deploy --env=""
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
