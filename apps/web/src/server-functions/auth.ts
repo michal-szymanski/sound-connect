@@ -52,7 +52,8 @@ export const signIn = createServerFn({ method: 'POST' })
             },
             body: JSON.stringify({
                 ...data,
-                callbackURL: CLIENT_URL
+                callbackURL: CLIENT_URL,
+                origin: CLIENT_URL
             })
         });
 
@@ -136,7 +137,8 @@ export const signUp = createServerFn({
             },
             body: JSON.stringify({
                 ...data,
-                callbackURL: CLIENT_URL
+                callbackURL: CLIENT_URL,
+                origin: CLIENT_URL
             })
         });
 
