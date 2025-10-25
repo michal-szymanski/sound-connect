@@ -341,7 +341,10 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: web-build
-                  path: apps/web/.vinxi/
+                  path: |
+                      apps/web/.vinxi/
+                      apps/web/.output/
+                      apps/web/node_modules/
                   retention-days: 1
 
     build-queue:
@@ -452,25 +455,11 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
             - name: Download build artifacts
               uses: actions/download-artifact@v4
               with:
                   name: web-build
-                  path: apps/web/.vinxi/
+                  path: apps/web/
 
             - name: Deploy Web Worker
               run: pnpm --filter @sound-connect/web run deploy
