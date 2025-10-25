@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
+    "dev": "CLOUDFLARE_ENV=development vite dev",
     "dev:wrangler": "wrangler dev --port=3000",
-    "build": "vite build && tsc --noEmit",
+    "build": "CLOUDFLARE_ENV=production vite build && tsc --noEmit",
     "preview": "vite preview && tsc --noEmit",
     "deploy": "wrangler deploy --env production",
     "types": "wrangler types --env-interface CloudflareBindings",
