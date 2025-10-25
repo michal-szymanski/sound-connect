@@ -9,7 +9,7 @@
     "db:migrate:local": "wrangler d1 migrations apply sound-connect-db --local --config wrangler.jsonc",
     "db:seed": "tsx src/db/seed.ts",
     "dev": "pnpm db:migrate:local && wrangler dev --local --port 4000 -c wrangler.jsonc -c ../posts-queue-consumer/wrangler.jsonc --persist-to .wrangler/state",
-    "deploy": "wrangler deploy --minify src/server.ts --outdir dist --upload-source-maps --var SENTRY_RELEASE:$(sentry-cli releases propose-version)",
+    "deploy": "wrangler deploy --env production --minify src/server.ts --outdir dist --upload-source-maps --var SENTRY_RELEASE:$(sentry-cli releases propose-version)",
     "types": "wrangler types --env-interface CloudflareBindings",
     "tail": "wrangler tail",
     "tsc": "tsc --noEmit",
