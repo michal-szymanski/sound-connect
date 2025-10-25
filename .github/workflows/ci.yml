@@ -9,9 +9,13 @@ on:
             - master
     workflow_dispatch:
 
+env:
+    PNPM_VERSION: 10.18.3
+    NODE_VERSION: 22.20.0
+
 jobs:
-    prettier-api:
-        name: Format Check API
+    install:
+        name: Install Dependencies
         runs-on: ubuntu-latest
 
         steps:
@@ -21,23 +25,40 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 10.18.3
+                  version: ${{ env.PNPM_VERSION }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 22.20.0
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: pnpm
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
-            - name: Format Check API
-              run: pnpm --filter @sound-connect/api prettier
+            - name: Cache node_modules
+              uses: actions/cache/save@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
-    prettier-web:
-        name: Format Check Web
+    prettier:
+        name: Format Check - ${{ matrix.package }}
+        needs: install
         runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                package:
+                    - api
+                    - web
+                    - posts-queue-consumer
+                    - common
+                    - drizzle
+                    - e2e
 
         steps:
             - name: Checkout code
@@ -46,23 +67,39 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 10.18.3
+                  version: ${{ env.PNPM_VERSION }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 22.20.0
-                  cache: pnpm
+                  node-version: ${{ env.NODE_VERSION }}
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
 
-            - name: Format Check Web
-              run: pnpm --filter @sound-connect/web prettier
+            - name: Format Check
+              run: pnpm --filter @sound-connect/${{ matrix.package }} prettier
 
-    prettier-queue:
-        name: Format Check Queue Consumer
+    lint:
+        name: Lint - ${{ matrix.package }}
+        needs: install
         runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                package:
+                    - api
+                    - web
+                    - posts-queue-consumer
+                    - common
+                    - drizzle
 
         steps:
             - name: Checkout code
@@ -71,23 +108,39 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 10.18.3
+                  version: ${{ env.PNPM_VERSION }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 22.20.0
-                  cache: pnpm
+                  node-version: ${{ env.NODE_VERSION }}
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
 
-            - name: Format Check Queue Consumer
-              run: pnpm --filter @sound-connect/posts-queue-consumer prettier
+            - name: Lint
+              run: pnpm --filter @sound-connect/${{ matrix.package }} lint
 
-    prettier-common:
-        name: Format Check Common
+    typecheck:
+        name: TypeCheck - ${{ matrix.package }}
+        needs: install
         runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                package:
+                    - api
+                    - web
+                    - posts-queue-consumer
+                    - common
+                    - drizzle
 
         steps:
             - name: Checkout code
@@ -96,323 +149,30 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 10.18.3
+                  version: ${{ env.PNPM_VERSION }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 22.20.0
-                  cache: pnpm
+                  node-version: ${{ env.NODE_VERSION }}
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Format Check Common
-              run: pnpm --filter @sound-connect/common prettier
-
-    prettier-drizzle:
-        name: Format Check Drizzle
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
               with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Format Check Drizzle
-              run: pnpm --filter @sound-connect/drizzle prettier
-
-    prettier-e2e:
-        name: Format Check E2E
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Format Check E2E
-              run: pnpm --filter @sound-connect/e2e prettier
-
-    lint-api:
-        name: Lint API
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Lint API
-              run: pnpm --filter @sound-connect/api lint
-
-    lint-web:
-        name: Lint Web
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Lint Web
-              run: pnpm --filter @sound-connect/web lint
-
-    lint-queue:
-        name: Lint Queue Consumer
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Lint Queue Consumer
-              run: pnpm --filter @sound-connect/posts-queue-consumer lint
-
-    lint-common:
-        name: Lint Common
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Lint Common
-              run: pnpm --filter @sound-connect/common lint
-
-    lint-drizzle:
-        name: Lint Drizzle
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: Lint Drizzle
-              run: pnpm --filter @sound-connect/drizzle lint
-
-    typecheck-api:
-        name: TypeCheck API
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: TypeCheck API
-              run: pnpm --filter @sound-connect/api tsc
-
-    typecheck-web:
-        name: TypeCheck Web
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: TypeCheck Web
-              run: pnpm --filter @sound-connect/web tsc
-
-    typecheck-queue:
-        name: TypeCheck Queue Consumer
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: TypeCheck Queue Consumer
-              run: pnpm --filter @sound-connect/posts-queue-consumer tsc
-
-    typecheck-common:
-        name: TypeCheck Common
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: TypeCheck Common
-              run: pnpm --filter @sound-connect/common tsc
-
-    typecheck-drizzle:
-        name: TypeCheck Drizzle
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10.18.3
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 22.20.0
-                  cache: pnpm
-
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
-
-            - name: TypeCheck Drizzle
-              run: pnpm --filter @sound-connect/drizzle tsc
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
+
+            - name: TypeCheck
+              run: pnpm --filter @sound-connect/${{ matrix.package }} tsc
 
     build-api:
         name: Build API
-        needs: [prettier-api, lint-api, typecheck-api]
+        needs: [prettier, lint, typecheck]
         runs-on: ubuntu-latest
 
         steps:
@@ -422,23 +182,30 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 10.18.3
+                  version: ${{ env.PNPM_VERSION }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 22.20.0
-                  cache: pnpm
+                  node-version: ${{ env.NODE_VERSION }}
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
 
             - name: Build API
               run: pnpm --filter @sound-connect/api build
 
     build-web:
         name: Build Web
-        needs: [prettier-web, lint-web, typecheck-web]
+        needs: [prettier, lint, typecheck]
         runs-on: ubuntu-latest
 
         steps:
@@ -448,16 +215,23 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 10.18.3
+                  version: ${{ env.PNPM_VERSION }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 22.20.0
-                  cache: pnpm
+                  node-version: ${{ env.NODE_VERSION }}
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
 
             - name: Build Web
               run: pnpm --filter @sound-connect/web build
@@ -473,7 +247,7 @@ jobs:
 
     build-queue:
         name: Build Queue Consumer
-        needs: [prettier-queue, lint-queue, typecheck-queue]
+        needs: [prettier, lint, typecheck]
         runs-on: ubuntu-latest
 
         steps:
@@ -483,16 +257,23 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 10.18.3
+                  version: ${{ env.PNPM_VERSION }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 22.20.0
-                  cache: pnpm
+                  node-version: ${{ env.NODE_VERSION }}
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
 
             - name: Build Queue Consumer
               run: pnpm --filter @sound-connect/posts-queue-consumer build
@@ -500,31 +281,38 @@ jobs:
     # test:
     #     name: E2E Tests
     #     runs-on: ubuntu-latest
-
+    #
     #     steps:
     #         - name: Checkout code
     #           uses: actions/checkout@v4
-
+    #
     #         - name: Setup pnpm
     #           uses: pnpm/action-setup@v4
     #           with:
-    #               version: 10.18.3
-
+    #               version: ${{ env.PNPM_VERSION }}
+    #
     #         - name: Setup Node.js
     #           uses: actions/setup-node@v4
     #           with:
-    #               node-version: 22.20.0
-    #               cache: pnpm
-
-    #         - name: Install dependencies
-    #           run: pnpm install --frozen-lockfile
-
+    #               node-version: ${{ env.NODE_VERSION }}
+    #
+    #         - name: Restore node_modules
+    #           uses: actions/cache/restore@v4
+    #           with:
+    #               path: |
+    #                   node_modules
+    #                   apps/*/node_modules
+    #                   packages/*/node_modules
+    #                   e2e/node_modules
+    #               key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+    #               fail-on-cache-miss: true
+    #
     #         - name: Install Playwright browsers
     #           run: pnpm --filter @sound-connect/e2e exec playwright install --with-deps
-
+    #
     #         - name: Run E2E tests
     #           run: pnpm test
-
+    #
     #         - name: Upload test results
     #           if: always()
     #           uses: actions/upload-artifact@v4
@@ -549,16 +337,23 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 10.18.3
+                  version: ${{ env.PNPM_VERSION }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 22.20.0
-                  cache: pnpm
+                  node-version: ${{ env.NODE_VERSION }}
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
 
             - name: Deploy API Worker
               run: pnpm --filter @sound-connect/api run deploy
@@ -583,16 +378,23 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 10.18.3
+                  version: ${{ env.PNPM_VERSION }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 22.20.0
-                  cache: pnpm
+                  node-version: ${{ env.NODE_VERSION }}
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
 
             - name: Download build artifacts
               uses: actions/download-artifact@v4
@@ -622,16 +424,23 @@ jobs:
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
-                  version: 10.18.3
+                  version: ${{ env.PNPM_VERSION }}
 
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 22.20.0
-                  cache: pnpm
+                  node-version: ${{ env.NODE_VERSION }}
 
-            - name: Install dependencies
-              run: pnpm install --frozen-lockfile
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
 
             - name: Deploy Posts Queue Consumer Worker
               run: pnpm --filter @sound-connect/posts-queue-consumer run deploy
