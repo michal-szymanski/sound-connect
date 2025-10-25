@@ -3,5 +3,6 @@ routeTree.gen.ts
 src/components/ui
 src/lib/cloudflare-bindings.ts
 src/routeTree.gen.ts
+worker-configuration.d.ts
 .wrangler
 .cursor
