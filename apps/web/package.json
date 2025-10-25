@@ -7,7 +7,7 @@
     "dev:wrangler": "wrangler dev --port=3000",
     "build": "vite build && tsc --noEmit",
     "preview": "vite preview && tsc --noEmit",
-    "deploy": "wrangler deploy",
+    "deploy": "wrangler deploy --env production",
     "types": "wrangler types --env-interface CloudflareBindings",
     "tail": "wrangler tail",
     "tsc": "tsc --noEmit",

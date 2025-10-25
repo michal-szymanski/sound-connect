@@ -1,8 +1,12 @@
 {
+    "$schema": "node_modules/wrangler/config-schema.json",
     "name": "sound-connect-posts-queue-consumer",
     "main": "src/index.ts",
     "compatibility_date": "2025-10-01",
     "compatibility_flags": ["nodejs_compat"],
+    "observability": {
+        "enabled": true
+    },
     "queues": {
         "consumers": [
             {
