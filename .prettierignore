@@ -1,27 +1,6 @@
-# Web
-apps/web/dist
-apps/web/routeTree.gen.ts
-apps/web/src/components/ui
-apps/web/src/lib/cloudflare-bindings.ts
-apps/web/src/routeTree.gen.ts
-
-# Api
-apps/api/src/db/migrations
-
-# Drizzle
-packages/drizzle/migrations
-
-# Generated files
-**/worker-configuration.d.ts
-**/wrangler-env.d.ts
-
-# Common
+# Common files
 package.json
 pnpm-lock.yaml
 .gitignore
 .env*
 .claude
-
-# E2E
-e2e/playwright-report
-e2e/test-results
