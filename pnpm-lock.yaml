@@ -404,9 +404,6 @@ importers:
 
   packages/common:
     dependencies:
-      '@sound-connect/drizzle':
-        specifier: workspace:*
-        version: link:../drizzle
       zod:
         specifier: 'catalog:'
         version: 4.1.12
@@ -423,9 +420,6 @@ importers:
 
   packages/drizzle:
     dependencies:
-      '@sound-connect/common':
-        specifier: workspace:*
-        version: link:../common
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.44.7(@cloudflare/workers-types@4.20251014.0)(@opentelemetry/api@1.9.0)(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.4.1)(kysely@0.28.8)(pg@8.16.3)
