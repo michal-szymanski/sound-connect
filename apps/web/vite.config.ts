@@ -15,7 +15,6 @@ export default defineConfig({
         exclude: ['wrangler']
     },
     plugins: [
-        //@ts-expect-error - ViteMcp is not typed correctly
         ViteMcp({
             updateConfig: false
         }),

@@ -107,6 +107,8 @@ jobs:
 
             - name: Build all projects
               run: pnpm build
+              env:
+                  CLOUDFLARE_ENV: production
 
             - name: Deploy API Worker
               run: pnpm --filter @sound-connect/api run deploy
