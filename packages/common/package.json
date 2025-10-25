@@ -19,7 +19,6 @@
         "prettier:fix": "prettier . --write"
     },
     "dependencies": {
-        "@sound-connect/drizzle": "workspace:*",
         "zod": "catalog:"
     },
     "devDependencies": {
