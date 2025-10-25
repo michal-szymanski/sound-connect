@@ -10,8 +10,8 @@ on:
     workflow_dispatch:
 
 jobs:
-    lint-and-typecheck:
-        name: Lint and Type Check
+    prettier:
+        name: Format Check
         runs-on: ubuntu-latest
 
         steps:
@@ -35,11 +35,332 @@ jobs:
             - name: Run Prettier
               run: pnpm prettier
 
-            - name: Run ESLint
-              run: pnpm lint
+    lint-api:
+        name: Lint API
+        runs-on: ubuntu-latest
 
-            - name: Run TypeScript checks
-              run: pnpm tsc
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Lint API
+              run: pnpm --filter @sound-connect/api lint
+
+    lint-web:
+        name: Lint Web
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Lint Web
+              run: pnpm --filter @sound-connect/web lint
+
+    lint-queue:
+        name: Lint Queue Consumer
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Lint Queue Consumer
+              run: pnpm --filter @sound-connect/posts-queue-consumer lint
+
+    lint-common:
+        name: Lint Common
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Lint Common
+              run: pnpm --filter @sound-connect/common lint
+
+    lint-drizzle:
+        name: Lint Drizzle
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Lint Drizzle
+              run: pnpm --filter @sound-connect/drizzle lint
+
+    typecheck-api:
+        name: TypeCheck API
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: TypeCheck API
+              run: pnpm --filter @sound-connect/api tsc
+
+    typecheck-web:
+        name: TypeCheck Web
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: TypeCheck Web
+              run: pnpm --filter @sound-connect/web tsc
+
+    typecheck-queue:
+        name: TypeCheck Queue Consumer
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: TypeCheck Queue Consumer
+              run: pnpm --filter @sound-connect/posts-queue-consumer tsc
+
+    typecheck-common:
+        name: TypeCheck Common
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: TypeCheck Common
+              run: pnpm --filter @sound-connect/common tsc
+
+    typecheck-drizzle:
+        name: TypeCheck Drizzle
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: TypeCheck Drizzle
+              run: pnpm --filter @sound-connect/drizzle tsc
+
+    build-api:
+        name: Build API
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build API
+              run: pnpm --filter @sound-connect/api build
+
+    build-web:
+        name: Build Web
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build Web
+              run: pnpm --filter @sound-connect/web build
+              env:
+                  CLOUDFLARE_ENV: production
+
+    build-queue:
+        name: Build Queue Consumer
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build Queue Consumer
+              run: pnpm --filter @sound-connect/posts-queue-consumer build
 
     # test:
     #     name: E2E Tests
@@ -77,10 +398,9 @@ jobs:
     #               path: apps/e2e/playwright-report/
     #               retention-days: 30
 
-    deploy:
-        name: Deploy to Cloudflare
-        needs: [lint-and-typecheck]
-        #  needs: [lint-and-typecheck, test]
+    deploy-api:
+        name: Deploy API
+        needs: [prettier, lint-api, typecheck-api, build-api]
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
@@ -105,11 +425,6 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
-            - name: Build all projects
-              run: pnpm build
-              env:
-                  CLOUDFLARE_ENV: production
-
             - name: Deploy API Worker
               run: pnpm --filter @sound-connect/api run deploy
               env:
@@ -117,11 +432,65 @@ jobs:
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
                   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
 
+    deploy-web:
+        name: Deploy Web
+        needs: [prettier, lint-web, typecheck-web, build-web]
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            deployments: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
             - name: Deploy Web Worker
               run: pnpm --filter @sound-connect/web run deploy
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+    deploy-queue:
+        name: Deploy Queue Consumer
+        needs: [prettier, lint-queue, typecheck-queue, build-queue]
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            deployments: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
 
             - name: Deploy Posts Queue Consumer Worker
               run: pnpm --filter @sound-connect/posts-queue-consumer run deploy
