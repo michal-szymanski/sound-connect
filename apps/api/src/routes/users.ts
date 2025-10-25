@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 import { HonoContext } from 'types';
 import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getContacts } from '@/api/db/queries/users-queries';
@@ -8,15 +9,15 @@ const usersRoutes = new Hono<HonoContext>();
 
 usersRoutes.get('/users/:userId/followers', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
-    const followersResults = await getFollowedUsers(userId);
 
+    const followersResults = await getFollowedUsers(userId);
     return c.json(followersResults);
 });
 
 usersRoutes.get('/users/:userId/followings', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
-    const followingsResults = await getUserFollowers(userId);
 
+    const followingsResults = await getUserFollowers(userId);
     return c.json(followingsResults);
 });
 
@@ -27,7 +28,7 @@ usersRoutes.post('/users/:userId/follow', async (c) => {
 
     const targetUserFollowedUsers = await getFollowedUsers(userId);
     if (targetUserFollowedUsers.some((followed) => followed.id === user.id)) {
-        return c.json('Users already follow each other', 400);
+        throw new HTTPException(400, { message: 'Users already follow each other' });
     }
 
     const id = c.env.UserDO.idFromName(`user:${userId}`);
@@ -37,7 +38,7 @@ usersRoutes.post('/users/:userId/follow', async (c) => {
 
     const existingPendingNotification = notifications.find((n) => n.from === user.id && !n.accepted);
     if (existingPendingNotification) {
-        return c.json('User is already notified about follow request', 400);
+        throw new HTTPException(400, { message: 'User is already notified about follow request' });
     }
 
     const currentUserId = c.env.UserDO.idFromName(`user:${user.id}`);
@@ -74,8 +75,8 @@ usersRoutes.post('/users/:userId/unfollow', async (c) => {
 
 usersRoutes.get('/users/:userId/contacts', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
-    const usersResults = await getContacts(userId);
 
+    const usersResults = await getContacts(userId);
     return c.json(usersResults);
 });
 
@@ -105,13 +106,13 @@ usersRoutes.get('/users/:userId/follow-request-status', async (c) => {
 usersRoutes.get('/users/:userId', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
 
-    try {
-        const user = await getUserById(userId);
-        return c.json(user);
-    } catch (error) {
-        console.error(`Error fetching user with ID ${userId}:`, error);
-        return c.json(`User with ID ${userId} not found`, 404);
+    const user = await getUserById(userId);
+
+    if (!user) {
+        throw new HTTPException(404, { message: `User with ID ${userId} not found` });
     }
+
+    return c.json(user);
 });
 
 export { usersRoutes };

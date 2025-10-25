@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { HonoContext } from 'types';
 import { authMiddleware } from './middlewares';
 import { authRoutes } from './routes/auth';
@@ -17,8 +18,11 @@ const app = new Hono<HonoContext>();
 
 app.use('*', authMiddleware);
 
-app.onError(({ name, message, stack, cause }, c) => {
-    return c.json({ name, message, stack, cause }, 400);
+app.onError((error, c) => {
+    if (error instanceof HTTPException) {
+        return error.getResponse();
+    }
+    return c.text('Internal Server Error', 500);
 });
 
 app.notFound((c) => {
