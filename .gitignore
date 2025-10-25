@@ -15,6 +15,7 @@ node_modules
 .cursor
 .dev.vars
 .vscode
+.sentryclirc
 
 # Playwright
 playwright-report/

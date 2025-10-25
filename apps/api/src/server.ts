@@ -11,6 +11,7 @@ import { websocketRoutes } from './routes/websocket';
 import { debugRoutes } from './routes/debug';
 import { mediaRoutes } from '@/api/routes/media';
 import { commentsRoutes } from '@/api/routes/comments';
+import * as Sentry from '@sentry/cloudflare';
 
 const app = new Hono<HonoContext>();
 
@@ -42,4 +43,12 @@ app.route('/', commentsRoutes);
 export { ChatDurableObject } from '@/api/durable-objects/chat-durable-object';
 export { UserDurableObject } from '@/api/durable-objects/user-durable-object';
 
-export default app;
+export default Sentry.withSentry((env: CloudflareBindings) => {
+    const { id: versionId } = env.CF_VERSION_METADATA;
+
+    return {
+        dsn: 'https://7ddc81e82f0028a175fc97c2ab24f080@o4507454398136320.ingest.de.sentry.io/4507454476714064',
+        release: versionId,
+        sendDefaultPii: true
+    };
+}, app);
