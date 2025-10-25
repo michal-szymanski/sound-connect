@@ -85,7 +85,7 @@ export const signIn = createServerFn({ method: 'POST' })
 export const signOut = createServerFn({
     method: 'POST'
 }).handler(async () => {
-    const { API, API_URL } = env;
+    const { API, API_URL, CLIENT_URL } = env;
     const { headers } = getRequest();
     const cookie = headers.get('Cookie');
 
@@ -96,7 +96,8 @@ export const signOut = createServerFn({
     const response = await API.fetch(`${API_URL}/api/auth/sign-out`, {
         method: 'POST',
         headers: {
-            Cookie: cookie
+            Cookie: cookie,
+            Origin: CLIENT_URL
         },
         body: JSON.stringify({})
     });
