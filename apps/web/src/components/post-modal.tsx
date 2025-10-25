@@ -95,7 +95,7 @@ export function PostModal({ open, onOpenChange, postId, author, content, image, 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className={`!z-[100] flex h-[90vh] flex-row gap-0 overflow-hidden p-0 ${image ? 'w-[90vw] max-w-[1400px] sm:max-w-[1400px]' : 'w-[500px]'}`}
+                className={`z-[100]! flex h-[90vh] flex-row gap-0 overflow-hidden p-0 ${image ? 'w-[90vw] max-w-[1400px] sm:max-w-[1400px]' : 'w-[500px]'}`}
                 showCloseButton={true}
             >
                 {image && (
@@ -151,7 +151,7 @@ export function PostModal({ open, onOpenChange, postId, author, content, image, 
                                         <CommentItem commentData={commentData} currentUser={currentUser} postId={postId} onReply={handleReply} />
 
                                         {commentData.replies && commentData.replies.length > 0 && (
-                                            <div className="ml-10 mt-3">
+                                            <div className="mt-3 ml-10">
                                                 <button
                                                     onClick={() => toggleReplies(commentData.comment.id)}
                                                     className="text-muted-foreground hover:text-foreground mb-3 flex items-center gap-2 text-xs font-semibold"
