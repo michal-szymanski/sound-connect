@@ -287,6 +287,7 @@ jobs:
 
     build-api:
         name: Build API
+        needs: [lint-api, typecheck-api]
         runs-on: ubuntu-latest
 
         steps:
@@ -312,6 +313,7 @@ jobs:
 
     build-web:
         name: Build Web
+        needs: [lint-web, typecheck-web]
         runs-on: ubuntu-latest
 
         steps:
@@ -337,15 +339,9 @@ jobs:
               env:
                   CLOUDFLARE_ENV: production
 
-            - name: Upload build artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                  name: web-build
-                  path: apps/web/dist/
-                  retention-days: 1
-
     build-queue:
         name: Build Queue Consumer
+        needs: [lint-queue, typecheck-queue]
         runs-on: ubuntu-latest
 
         steps:
@@ -407,7 +403,7 @@ jobs:
 
     deploy-api:
         name: Deploy API
-        needs: [prettier, lint-api, typecheck-api, build-api]
+        needs: [prettier, build-api]
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
@@ -441,7 +437,7 @@ jobs:
 
     deploy-web:
         name: Deploy Web
-        needs: [prettier, lint-web, typecheck-web, build-web]
+        needs: [prettier, build-web]
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
@@ -461,22 +457,25 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 22.20.0
+                  cache: pnpm
 
-            - name: Download build artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  name: web-build
-                  path: apps/web/dist/
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+
+            - name: Build Web
+              run: pnpm --filter @sound-connect/web build
+              env:
+                  CLOUDFLARE_ENV: production
 
             - name: Deploy Web Worker
-              run: cd apps/web && pnpm dlx wrangler deploy --env=""
+              run: pnpm --filter @sound-connect/web run deploy
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
     deploy-queue:
         name: Deploy Queue Consumer
-        needs: [prettier, lint-queue, typecheck-queue, build-queue]
+        needs: [prettier, build-queue]
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
