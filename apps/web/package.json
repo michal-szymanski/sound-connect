@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "CLOUDFLARE_ENV=development vite dev",
+        "dev": "vite dev",
         "dev:wrangler": "wrangler dev --port=3000",
         "build": "CLOUDFLARE_ENV=production vite build && tsc --noEmit",
         "preview": "vite preview && tsc --noEmit",

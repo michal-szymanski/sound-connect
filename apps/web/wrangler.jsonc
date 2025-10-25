@@ -10,6 +10,16 @@
     "observability": {
         "enabled": true
     },
+    "vars": {
+        "API_URL": "http://localhost:4000",
+        "CLIENT_URL": "http://localhost:3000"
+    },
+    "services": [
+        {
+            "binding": "API",
+            "service": "sound-connect-api"
+        }
+    ],
     "env": {
         "production": {
             "vars": {
@@ -19,19 +29,7 @@
             "services": [
                 {
                     "binding": "API",
-                    "service": "sound-connect-api"
-                }
-            ]
-        },
-        "development": {
-            "vars": {
-                "API_URL": "http://localhost:4000",
-                "CLIENT_URL": "http://localhost:3000"
-            },
-            "services": [
-                {
-                    "binding": "API",
-                    "service": "sound-connect-api"
+                    "service": "sound-connect-api-production"
                 }
             ]
         }

@@ -7,9 +7,6 @@
     "observability": {
         "enabled": true
     },
-    "env": {
-        "production": {}
-    },
     "queues": {
         "consumers": [
             {
@@ -27,5 +24,8 @@
             "database_name": "sound-connect-db",
             "database_id": "ce66ac7f-5b4a-47e8-9db6-7143d996b13c"
         }
-    ]
+    ],
+    "env": {
+        "production": {}
+    }
 }
