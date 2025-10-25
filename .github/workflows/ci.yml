@@ -337,6 +337,13 @@ jobs:
               env:
                   CLOUDFLARE_ENV: production
 
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: web-build
+                  path: apps/web/.vinxi/
+                  retention-days: 1
+
     build-queue:
         name: Build Queue Consumer
         runs-on: ubuntu-latest
@@ -458,6 +465,12 @@ jobs:
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
+
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: web-build
+                  path: apps/web/.vinxi/
 
             - name: Deploy Web Worker
               run: pnpm --filter @sound-connect/web run deploy
