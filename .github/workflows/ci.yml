@@ -339,11 +339,13 @@ jobs:
               env:
                   CLOUDFLARE_ENV: production
 
-            - name: Cache node_modules
+            - name: Cache dependencies
               uses: actions/cache/save@v4
               with:
-                  path: node_modules
-                  key: node-modules-${{ github.sha }}
+                  path: |
+                      node_modules
+                      apps/web/node_modules
+                  key: pnpm-deps-${{ github.sha }}
 
             - name: Upload build artifacts
               uses: actions/upload-artifact@v4
@@ -471,11 +473,13 @@ jobs:
               with:
                   node-version: 22.20.0
 
-            - name: Restore node_modules cache
+            - name: Restore dependencies cache
               uses: actions/cache/restore@v4
               with:
-                  path: node_modules
-                  key: node-modules-${{ github.sha }}
+                  path: |
+                      node_modules
+                      apps/web/node_modules
+                  key: pnpm-deps-${{ github.sha }}
 
             - name: Download build artifacts
               uses: actions/download-artifact@v4
