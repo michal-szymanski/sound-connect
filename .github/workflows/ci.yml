@@ -476,7 +476,7 @@ jobs:
                   path: apps/web/dist/
 
             - name: Deploy Web Worker
-              run: pnpm --filter @sound-connect/web run deploy
+              run: cd apps/web/dist/server && pnpm dlx wrangler deploy
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
