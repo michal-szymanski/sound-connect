@@ -91,10 +91,10 @@ const AddPostDialog = () => {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger className="border-input dark:bg-input/30 text-muted-foreground shadow-xs dark:hover:bg-accent h-12 flex-1 rounded-md border bg-transparent px-3 py-1 text-left text-sm font-normal">
+            <DialogTrigger className="border-input dark:bg-input/30 text-muted-foreground dark:hover:bg-accent h-12 flex-1 rounded-md border bg-transparent px-3 py-1 text-left text-sm font-normal shadow-xs">
                 {text}
             </DialogTrigger>
-            <DialogContent ref={dialogContentRef} className="!z-[100] flex max-h-[90vh] w-full max-w-2xl flex-col p-6">
+            <DialogContent ref={dialogContentRef} className="z-[100]! flex max-h-[90vh] w-full max-w-2xl flex-col p-6">
                 <DialogHeader className="mb-4">
                     <DialogTitle>Create post</DialogTitle>
                     <VisuallyHidden.Root>
@@ -113,7 +113,7 @@ const AddPostDialog = () => {
                                             {...field}
                                             ref={textareaRef}
                                             maxLength={POST_TEXT_MAX_LENGTH}
-                                            className={clsx('wrap-anywhere min-h-50 w-full max-w-full resize-none overflow-y-auto md:text-xl', {
+                                            className={clsx('min-h-50 w-full max-w-full resize-none overflow-y-auto wrap-anywhere md:text-xl', {
                                                 'md:text-sm': form.getValues('content').length > 100
                                             })}
                                         />
@@ -137,7 +137,7 @@ const AddPostDialog = () => {
                                             type="button"
                                             variant="destructive"
                                             size="sm"
-                                            className="absolute -right-2 -top-2 h-6 w-6 rounded-full p-0 opacity-0 transition-opacity group-hover:opacity-100"
+                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 opacity-0 transition-opacity group-hover:opacity-100"
                                             onClick={() => removeFile(fileWithPreview.id)}
                                         >
                                             <X className="h-3 w-3" />

@@ -81,7 +81,7 @@ export function Post({ item }: Props) {
             </div>
             <div className="px-4 pb-3">
                 <div
-                    className="text-foreground whitespace-pre-wrap break-words text-sm leading-relaxed"
+                    className="text-foreground text-sm leading-relaxed wrap-break-word whitespace-pre-wrap"
                     dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
                 />
             </div>

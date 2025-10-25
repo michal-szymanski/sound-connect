@@ -110,7 +110,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                             e.stopPropagation();
                             onClose();
                         }}
-                        className="group/close absolute -right-1 -top-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-800 opacity-0 hover:bg-gray-200 group-hover:opacity-100"
+                        className="group/close absolute -top-1 -right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-800 opacity-0 group-hover:opacity-100 hover:bg-gray-200"
                         title="Close chat"
                     >
                         <X className="h-3 w-3 text-white group-hover/close:text-gray-800" />
@@ -122,10 +122,10 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
 
     return (
         <Card
-            className="fixed bottom-0 z-[55] flex h-96 w-80 flex-col border-b-0 border-l border-r border-t shadow-lg transition-all duration-200 ease-in-out"
+            className="fixed bottom-0 z-55 flex h-96 w-80 flex-col border-t border-r border-b-0 border-l shadow-lg transition-all duration-200 ease-in-out"
             style={{ right: `${rightOffset}px` }}
         >
-            <CardHeader className="flex-shrink-0 cursor-pointer border-b p-3" onClick={onToggleMinimize}>
+            <CardHeader className="shrink-0 cursor-pointer border-b p-3" onClick={onToggleMinimize}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <UserAvatar user={user} />
@@ -184,7 +184,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                 </div>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="flex-shrink-0 border-t p-3">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="shrink-0 border-t p-3">
                         <div className="flex gap-2">
                             <FormField
                                 control={form.control}

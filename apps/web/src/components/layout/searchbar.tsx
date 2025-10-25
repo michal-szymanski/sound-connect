@@ -33,7 +33,7 @@ const SearchBar = () => {
                     <div className="relative">
                         <CommandInput placeholder="Search..." autoFocus onValueChange={setQuery} inputMode="search" className="pr-5" />
                         {showLoader && (
-                            <figure className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <figure className="absolute top-1/2 right-3 -translate-y-1/2">
                                 <Loader />
                             </figure>
                         )}

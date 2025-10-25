@@ -56,7 +56,7 @@ const RightSidebar = () => {
                 onClick={handleToggleClick}
                 variant="outline"
                 size="sm"
-                className="fixed right-4 top-20 z-[70] h-12 w-12 rounded-full p-0 shadow-lg hover:shadow-xl"
+                className="fixed top-20 right-4 z-[70] h-12 w-12 rounded-full p-0 shadow-lg hover:shadow-xl"
                 title="Show contacts"
                 disabled={isAnimating}
             >

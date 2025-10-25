@@ -59,7 +59,7 @@ const LikesDialog = ({ isOpen, onClose, postId }: Props) => {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="!z-[100] max-w-md">
+            <DialogContent className="z-[100]! max-w-md">
                 <DialogHeader>
                     <DialogTitle>Likes</DialogTitle>
                 </DialogHeader>
