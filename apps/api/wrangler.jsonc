@@ -20,6 +20,43 @@
             "vars": {
                 "API_URL": "https://sound-connect-api.michal-szymanski92.workers.dev",
                 "CLIENT_URL": "https://sound-connect-web.michal-szymanski92.workers.dev"
+            },
+            "version_metadata": {
+                "binding": "CF_VERSION_METADATA"
+            },
+            "d1_databases": [
+                {
+                    "binding": "DB",
+                    "database_name": "sound-connect-db",
+                    "database_id": "ce66ac7f-5b4a-47e8-9db6-7143d996b13c",
+                    "migrations_dir": "../../packages/drizzle/migrations"
+                }
+            ],
+            "durable_objects": {
+                "bindings": [
+                    {
+                        "name": "ChatDO",
+                        "class_name": "ChatDurableObject"
+                    },
+                    {
+                        "name": "UserDO",
+                        "class_name": "UserDurableObject"
+                    }
+                ]
+            },
+            "r2_buckets": [
+                {
+                    "binding": "UsersBucket",
+                    "bucket_name": "users-bucket"
+                }
+            ],
+            "queues": {
+                "producers": [
+                    {
+                        "queue": "posts-queue",
+                        "binding": "PostsQueue"
+                    }
+                ]
             }
         }
     },
