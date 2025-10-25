@@ -7,6 +7,9 @@
     "observability": {
         "enabled": true
     },
+    "env": {
+        "production": {}
+    },
     "queues": {
         "consumers": [
             {

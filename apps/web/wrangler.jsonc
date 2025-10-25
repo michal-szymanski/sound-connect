@@ -13,8 +13,8 @@
     "env": {
         "production": {
             "vars": {
-                "API_URL": "https://sound-connect-api.michal-szymanski92.workers.dev",
-                "CLIENT_URL": "https://sound-connect-web.michal-szymanski92.workers.dev"
+                "API_URL": "https://sound-connect-api-production.michal-szymanski92.workers.dev",
+                "CLIENT_URL": "https://sound-connect-web-production.michal-szymanski92.workers.dev"
             },
             "services": [
                 {
