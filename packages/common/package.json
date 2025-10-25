@@ -1,26 +1,30 @@
 {
-  "name": "@sound-connect/common",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "./src",
-  "exports": {
-    ".": "./src",
-    "./constants": "./src/constants.ts",
-    "./helpers": "./src/helpers.ts",
-    "./types/models": "./src/types/models.ts",
-    "./types/auth": "./src/types/auth.ts",
-    "./types/drizzle": "./src/types/drizzle.ts"
-  },
-  "scripts": {
-    "tsc": "tsc --noEmit",
-    "lint": "eslint ."
-  },
-  "dependencies": {
-    "@sound-connect/drizzle": "workspace:*",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "eslint": "catalog:",
-    "typescript": "catalog:"
-  }
+    "name": "@sound-connect/common",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./src",
+    "exports": {
+        ".": "./src",
+        "./constants": "./src/constants.ts",
+        "./helpers": "./src/helpers.ts",
+        "./types/models": "./src/types/models.ts",
+        "./types/auth": "./src/types/auth.ts",
+        "./types/drizzle": "./src/types/drizzle.ts"
+    },
+    "scripts": {
+        "tsc": "tsc --noEmit",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "prettier": "prettier . --check",
+        "prettier:fix": "prettier . --write"
+    },
+    "dependencies": {
+        "@sound-connect/drizzle": "workspace:*",
+        "zod": "catalog:"
+    },
+    "devDependencies": {
+        "eslint": "catalog:",
+        "prettier": "catalog:",
+        "typescript": "catalog:"
+    }
 }

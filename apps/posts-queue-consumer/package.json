@@ -1,27 +1,30 @@
 {
-  "name": "@sound-connect/posts-queue-consumer",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "tsc --noEmit",
-    "deploy": "wrangler deploy",
-    "types": "wrangler types --env-interface CloudflareBindings",
-    "tsc": "tsc --noEmit",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
-  },
-  "dependencies": {
-    "@sound-connect/common": "workspace:*",
-    "@sound-connect/drizzle": "workspace:*",
-    "drizzle-orm": "catalog:",
-    "hono": "catalog:",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "catalog:",
-    "@types/node": "catalog:",
-    "typescript": "catalog:",
-    "wrangler": "catalog:"
-  }
+    "name": "@sound-connect/posts-queue-consumer",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsc --noEmit",
+        "deploy": "wrangler deploy",
+        "types": "wrangler types --env-interface CloudflareBindings",
+        "tsc": "tsc --noEmit",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "prettier": "prettier . --check",
+        "prettier:fix": "prettier . --write"
+    },
+    "dependencies": {
+        "@sound-connect/common": "workspace:*",
+        "@sound-connect/drizzle": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "hono": "catalog:",
+        "zod": "catalog:"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "catalog:",
+        "@types/node": "catalog:",
+        "prettier": "catalog:",
+        "typescript": "catalog:",
+        "wrangler": "catalog:"
+    }
 }

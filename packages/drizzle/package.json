@@ -1,28 +1,32 @@
 {
-  "name": "@sound-connect/drizzle",
-  "version": "1.0.0",
-  "type": "module",
-  "main": "./src",
-  "exports": {
-    ".": "./src/index.ts",
-    "./schema": "./src/schema.ts"
-  },
-  "scripts": {
-    "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio",
-    "tsc": "tsc --noEmit",
-    "lint": "eslint ."
-  },
-  "dependencies": {
-    "@sound-connect/common": "workspace:*",
-    "drizzle-orm": "catalog:",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@cloudflare/workers-types": "catalog:",
-    "@types/node": "catalog:",
-    "drizzle-kit": "^0.31.5",
-    "eslint": "catalog:",
-    "typescript": "catalog:"
-  }
+    "name": "@sound-connect/drizzle",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./src",
+    "exports": {
+        ".": "./src/index.ts",
+        "./schema": "./src/schema.ts"
+    },
+    "scripts": {
+        "db:generate": "drizzle-kit generate",
+        "db:studio": "drizzle-kit studio",
+        "tsc": "tsc --noEmit",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "prettier": "prettier . --check",
+        "prettier:fix": "prettier . --write"
+    },
+    "dependencies": {
+        "@sound-connect/common": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "zod": "catalog:"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "catalog:",
+        "@types/node": "catalog:",
+        "drizzle-kit": "^0.31.5",
+        "eslint": "catalog:",
+        "prettier": "catalog:",
+        "typescript": "catalog:"
+    }
 }

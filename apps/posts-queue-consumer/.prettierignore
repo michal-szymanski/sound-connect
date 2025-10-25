@@ -1,0 +1,4 @@
+worker-configuration.d.ts
+wrangler-env.d.ts
+.wrangler
+.cursor
