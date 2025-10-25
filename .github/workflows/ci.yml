@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
     pull_request:
@@ -75,3 +75,73 @@ jobs:
                   name: playwright-report
                   path: apps/e2e/playwright-report/
                   retention-days: 30
+
+    deploy:
+        name: Deploy to Cloudflare
+        needs: [lint-and-typecheck, test]
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            deployments: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 2
+
+            - name: Check changed files
+              id: changes
+              run: |
+                  echo "api=$(git diff --name-only HEAD^ HEAD | grep -qE '^(apps/api/|packages/|package\.json$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|tsconfig\.json$|eslint\.config\.js$)' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+                  echo "web=$(git diff --name-only HEAD^ HEAD | grep -qE '^(apps/web/|packages/|package\.json$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|tsconfig\.json$|eslint\.config\.js$)' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+                  echo "queue=$(git diff --name-only HEAD^ HEAD | grep -qE '^(apps/posts-queue-consumer/|packages/|package\.json$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|tsconfig\.json$|eslint\.config\.js$)' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+
+            - name: Setup pnpm
+              if: steps.changes.outputs.api == 'true' || steps.changes.outputs.web == 'true' || steps.changes.outputs.queue == 'true'
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10.18.3
+
+            - name: Setup Node.js
+              if: steps.changes.outputs.api == 'true' || steps.changes.outputs.web == 'true' || steps.changes.outputs.queue == 'true'
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22.20.0
+                  cache: pnpm
+
+            - name: Install dependencies
+              if: steps.changes.outputs.api == 'true' || steps.changes.outputs.web == 'true' || steps.changes.outputs.queue == 'true'
+              run: pnpm install --frozen-lockfile
+
+            - name: Build all projects
+              if: steps.changes.outputs.api == 'true' || steps.changes.outputs.web == 'true' || steps.changes.outputs.queue == 'true'
+              run: pnpm build
+
+            - name: Deploy API Worker
+              if: steps.changes.outputs.api == 'true'
+              uses: cloudflare/wrangler-action@v3
+              with:
+                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  workingDirectory: apps/api
+                  command: deploy
+
+            - name: Deploy Web Worker
+              if: steps.changes.outputs.web == 'true'
+              uses: cloudflare/wrangler-action@v3
+              with:
+                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  workingDirectory: apps/web
+                  command: deploy
+
+            - name: Deploy Posts Queue Consumer Worker
+              if: steps.changes.outputs.queue == 'true'
+              uses: cloudflare/wrangler-action@v3
+              with:
+                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  workingDirectory: apps/posts-queue-consumer
+                  command: deploy
