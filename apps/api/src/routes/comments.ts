@@ -9,62 +9,39 @@ const commentsRoutes = new Hono<HonoContext>();
 commentsRoutes.get('/posts/:postId/comments', async (c) => {
     const { postId } = z.object({ postId: z.coerce.number().positive() }).parse(c.req.param());
 
-    try {
-        const comments = await getCommentsByPostId(postId);
-        return c.json(comments);
-    } catch (error) {
-        console.error({ error });
-        return c.json({ error: 'Failed to get comments' }, 500);
-    }
+    const comments = await getCommentsByPostId(postId);
+    return c.json(comments);
 });
 
 commentsRoutes.post('/comments', async (c) => {
     const user = c.get('user');
 
-    try {
-        const body = await c.req.json();
-        const { postId, parentCommentId, content } = createCommentSchema.parse(body);
+    const body = await c.req.json();
+    const { postId, parentCommentId, content } = createCommentSchema.parse(body);
 
-        const comment = await createComment(user.id, postId, content, parentCommentId);
+    const comment = await createComment(user.id, postId, content, parentCommentId);
 
-        return c.json(comment);
-    } catch (error) {
-        if (error instanceof z.ZodError) {
-            return c.json({ error: 'Invalid request data', details: error.issues }, 400);
-        }
-        console.error({ error });
-        return c.json({ error: 'Failed to create comment' }, 500);
-    }
+    return c.json(comment);
 });
 
 commentsRoutes.post('/comments/:commentId/like', async (c) => {
     const user = c.get('user');
     const { commentId } = z.object({ commentId: z.coerce.number().positive() }).parse(c.req.param());
 
-    try {
-        await likeComment(user.id, commentId);
-        const likesData = await getCommentLikesData(user.id, commentId);
+    await likeComment(user.id, commentId);
+    const likesData = await getCommentLikesData(user.id, commentId);
 
-        return c.json({ success: true, ...likesData });
-    } catch (error) {
-        console.error({ error });
-        return c.json({ error: 'Failed to like comment' }, 500);
-    }
+    return c.json({ success: true, ...likesData });
 });
 
 commentsRoutes.delete('/comments/:commentId/like', async (c) => {
     const user = c.get('user');
     const { commentId } = z.object({ commentId: z.coerce.number().positive() }).parse(c.req.param());
 
-    try {
-        await unlikeComment(user.id, commentId);
-        const likesData = await getCommentLikesData(user.id, commentId);
+    await unlikeComment(user.id, commentId);
+    const likesData = await getCommentLikesData(user.id, commentId);
 
-        return c.json({ success: true, ...likesData });
-    } catch (error) {
-        console.error({ error });
-        return c.json({ error: 'Failed to unlike comment' }, 500);
-    }
+    return c.json({ success: true, ...likesData });
 });
 
 export { commentsRoutes };

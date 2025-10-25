@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { HonoContext } from 'types';
 
 const chatRoutes = new Hono<HonoContext>();
@@ -8,20 +9,15 @@ chatRoutes.get('/chat/:roomId/history', async (c) => {
     const user = c.get('user');
 
     if (!roomId.includes(user.id)) {
-        return c.json({ message: 'Forbidden: You are not part of this room' }, 403);
+        throw new HTTPException(403, { message: 'Forbidden: You are not part of this room' });
     }
 
-    try {
-        const id = c.env.ChatDO.idFromName(`room:${roomId}`);
-        const stub = c.env.ChatDO.get(id);
+    const id = c.env.ChatDO.idFromName(`room:${roomId}`);
+    const stub = c.env.ChatDO.get(id);
 
-        const history = await stub.getRoomHistory(roomId);
+    const history = await stub.getRoomHistory(roomId);
 
-        return c.json(history);
-    } catch (error) {
-        console.error(`[Server] Error getting room history for ${roomId}:`, error);
-        return c.json({ message: 'Internal Server Error' }, 500);
-    }
+    return c.json(history);
 });
 
 export { chatRoutes };

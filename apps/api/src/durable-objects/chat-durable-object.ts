@@ -112,8 +112,7 @@ export class ChatDurableObject extends DurableObject {
                 const id = this.env.UserDO.idFromName(`user:${participantId}`);
                 const stub = this.env.UserDO.get(id);
                 await stub.sendMessage(message);
-            } catch (error) {
-                console.error(`[ChatDO] Error notifying participant ${participantId}:`, error);
+            } catch (_error) {
                 this.participants.delete(participantId);
                 await this.saveParticipants();
             }
@@ -130,7 +129,6 @@ export class ChatDurableObject extends DurableObject {
 
             return storage;
         } catch (error) {
-            console.error(`[ChatDO] Error getting storage debug for room ${this.roomId}:`, error);
             throw new Error(`Failed to retrieve storage data: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }

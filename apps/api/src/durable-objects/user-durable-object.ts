@@ -87,7 +87,6 @@ export class UserDurableObject extends DurableObject {
 
             return storage;
         } catch (error) {
-            console.error(`[UserDO] Error getting storage debug for ${this.userId}:`, error);
             throw new Error(`Failed to retrieve storage data: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
@@ -198,28 +197,21 @@ export class UserDurableObject extends DurableObject {
         this.websocket = webSocket;
 
         webSocket.addEventListener('message', async (event) => {
-            try {
-                const rawData = z.string().parse(event.data);
-                const message = JSON.parse(rawData);
+            const rawData = z.string().parse(event.data);
+            const message = JSON.parse(rawData);
 
-                const parsedMessage = webSocketMessageSchema.parse(message);
+            const parsedMessage = webSocketMessageSchema.parse(message);
 
-                switch (parsedMessage.type) {
-                    case 'subscribe':
-                        await this.chatService.subscribeToRoom(parsedMessage);
-                        break;
-                    case 'unsubscribe':
-                        await this.chatService.unsubscribeFromRoom(parsedMessage);
-                        break;
-                    case 'chat':
-                        await this.chatService.handleChatMessage(parsedMessage);
-                        break;
-                    default:
-                        console.log(`[UserDO] Unhandled message type: ${parsedMessage.type}`);
-                        break;
-                }
-            } catch (error) {
-                console.error(`[UserDO] Error processing message from user ${this.userId}:`, error);
+            switch (parsedMessage.type) {
+                case 'subscribe':
+                    await this.chatService.subscribeToRoom(parsedMessage);
+                    break;
+                case 'unsubscribe':
+                    await this.chatService.unsubscribeFromRoom(parsedMessage);
+                    break;
+                case 'chat':
+                    await this.chatService.handleChatMessage(parsedMessage);
+                    break;
             }
         });
 

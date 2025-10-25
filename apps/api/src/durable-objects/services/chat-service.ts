@@ -37,14 +37,10 @@ export class ChatService {
         this.subscribedRooms.add(roomId);
         await this.setRooms(Array.from(this.subscribedRooms));
 
-        try {
-            const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
-            const chatStub = this.env.ChatDO.get(chatId);
+        const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
+        const chatStub = this.env.ChatDO.get(chatId);
 
-            await chatStub.subscribeUser(this.userId, roomId);
-        } catch (error) {
-            console.error(`[ChatService] Error subscribing to room ${roomId}:`, error);
-        }
+        await chatStub.subscribeUser(this.userId, roomId);
     }
 
     async unsubscribeFromRoom({ roomId }: UnsubscribeMessage) {
@@ -53,14 +49,10 @@ export class ChatService {
         this.subscribedRooms.delete(roomId);
         await this.setRooms(Array.from(this.subscribedRooms));
 
-        try {
-            const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
-            const chatStub = this.env.ChatDO.get(chatId);
+        const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
+        const chatStub = this.env.ChatDO.get(chatId);
 
-            await chatStub.unsubscribeUser(this.userId, roomId);
-        } catch (error) {
-            console.error(`[ChatService] Error unsubscribing from room ${roomId}:`, error);
-        }
+        await chatStub.unsubscribeUser(this.userId, roomId);
     }
 
     async handleChatMessage({ roomId, content }: NewChatMessage) {
@@ -68,15 +60,11 @@ export class ChatService {
             return;
         }
 
-        try {
-            const senderId = this.userId;
-            const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
-            const chatStub = this.env.ChatDO.get(chatId);
+        const senderId = this.userId;
+        const chatId = this.env.ChatDO.idFromName(`room:${roomId}`);
+        const chatStub = this.env.ChatDO.get(chatId);
 
-            await chatStub.sendMessage(senderId, roomId, content);
-        } catch (error) {
-            console.error(`[ChatService] Error sending message to room ${roomId}:`, error);
-        }
+        await chatStub.sendMessage(senderId, roomId, content);
     }
 
     async cleanup() {
