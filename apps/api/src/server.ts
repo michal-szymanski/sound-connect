@@ -51,7 +51,7 @@ export default Sentry.withSentry((env: CloudflareBindings) => {
     const { id: versionId } = env.CF_VERSION_METADATA;
 
     return {
-        dsn: 'https://7ddc81e82f0028a175fc97c2ab24f080@o4507454398136320.ingest.de.sentry.io/4507454476714064',
+        dsn: 'https://2075ba4aa31ed97ffb79114434378798@o4507454398136320.ingest.de.sentry.io/4510244218667088',
         release: versionId,
         sendDefaultPii: true,
         integrations: function (integrations) {
