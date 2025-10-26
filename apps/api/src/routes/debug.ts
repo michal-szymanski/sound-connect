@@ -55,4 +55,8 @@ debugRoutes.delete('/debug/clear-all-notifications', async (c) => {
     }
 });
 
+debugRoutes.get('/debug/test-sentry', async () => {
+    throw new Error('Test sentry error');
+});
+
 export { debugRoutes };
