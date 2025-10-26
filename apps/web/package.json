@@ -9,7 +9,7 @@
         "preview": "vite preview && tsc --noEmit",
         "deploy": "wrangler deploy --env=\"\"",
         "types": "wrangler types --env-interface CloudflareBindings",
-        "tail": "wrangler tail",
+        "tail": "wrangler tail --env production",
         "tsc": "tsc --noEmit",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",

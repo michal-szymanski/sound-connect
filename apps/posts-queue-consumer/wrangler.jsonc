@@ -26,6 +26,25 @@
         }
     ],
     "env": {
-        "production": {}
+        "production": {
+            "queues": {
+                "consumers": [
+                    {
+                        "queue": "posts-queue",
+                        "max_batch_size": 10,
+                        "max_batch_timeout": 1,
+                        "max_retries": 3,
+                        "dead_letter_queue": "posts-queue-dlq"
+                    }
+                ]
+            },
+            "d1_databases": [
+                {
+                    "binding": "DB",
+                    "database_name": "sound-connect-db",
+                    "database_id": "ce66ac7f-5b4a-47e8-9db6-7143d996b13c"
+                }
+            ]
+        }
     }
 }

@@ -11,7 +11,7 @@
         "dev": "pnpm db:migrate:local && wrangler dev --local --port 4000 -c wrangler.jsonc -c ../posts-queue-consumer/wrangler.jsonc --persist-to .wrangler/state",
         "deploy": "wrangler deploy --env production --minify src/server.ts --outdir dist --upload-source-maps --var SENTRY_RELEASE:$(sentry-cli releases propose-version)",
         "types": "wrangler types --env-interface CloudflareBindings",
-        "tail": "wrangler tail",
+        "tail": "wrangler tail --env production",
         "tsc": "tsc --noEmit",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
