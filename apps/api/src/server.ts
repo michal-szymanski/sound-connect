@@ -53,6 +53,11 @@ export default Sentry.withSentry((env: CloudflareBindings) => {
     return {
         dsn: 'https://7ddc81e82f0028a175fc97c2ab24f080@o4507454398136320.ingest.de.sentry.io/4507454476714064',
         release: versionId,
-        sendDefaultPii: true
+        sendDefaultPii: true,
+        integrations: function (integrations) {
+            return integrations.filter(function (integration) {
+                return integration.name !== 'Console';
+            });
+        }
     };
 }, app);

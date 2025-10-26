@@ -636,3 +636,19 @@ export const unlikeComment = createServerFn()
 
         return { success: true, body: null } as const;
     });
+
+export const testSentry = createServerFn().handler(async () => {
+    const { API, API_URL } = env;
+    const cookie = getSessionCookie();
+
+    const response = await API.fetch(`${API_URL}/debug/test-sentry`, {
+        headers: { Cookie: cookie ?? '' },
+        credentials: 'include'
+    });
+
+    if (!response.ok) {
+        return await errorHandler(response);
+    }
+
+    return { success: true, body: null } as const;
+});
