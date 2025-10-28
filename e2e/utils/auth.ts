@@ -66,7 +66,7 @@ export async function signIn(page: Page, credentials: Pick<UserCredentials, 'ema
 
 export async function signOut(page: Page): Promise<void> {
     await page.click('[data-testid="user-menu"]');
-    await page.click('button:has-text("Sign out")');
+    await page.click('[data-testid="sign-out-button"]');
     await page.waitForURL('/sign-in');
 }
 

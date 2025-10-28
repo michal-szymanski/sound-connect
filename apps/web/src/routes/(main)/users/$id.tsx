@@ -127,18 +127,26 @@ function RouteComponent() {
         const isCurrentUserFollowing = currentUserFollowings.some((following) => following.id === user.id);
 
         if (isCurrentUserFollowing || optimisticStatus === 'following') {
-            return <Button onClick={handleUnfollow}>Following</Button>;
+            return (
+                <Button onClick={handleUnfollow} data-testid="following-button">
+                    Following
+                </Button>
+            );
         }
 
         if (followRequestStatus?.status === 'pending' || optimisticStatus === 'pending') {
             return (
-                <Button disabled variant="outline">
+                <Button disabled variant="outline" data-testid="requested-button">
                     Requested
                 </Button>
             );
         }
 
-        return <Button onClick={handleFollow}>Follow</Button>;
+        return (
+            <Button onClick={handleFollow} data-testid="follow-button">
+                Follow
+            </Button>
+        );
     };
 
     return (

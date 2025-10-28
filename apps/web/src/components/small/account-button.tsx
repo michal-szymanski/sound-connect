@@ -20,6 +20,7 @@ export const AccountButton = ({ isCollapsed }: Props) => {
         <DropdownMenu modal={false}>
             <SidebarMenuButton asChild>
                 <DropdownMenuTrigger
+                    data-testid="user-menu"
                     className={`flex min-h-12 items-center overflow-hidden transition-all duration-300 ${
                         isCollapsed ? 'w-16 justify-center' : 'w-full justify-center px-3 xl:justify-start'
                     }`}

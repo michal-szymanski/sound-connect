@@ -23,7 +23,7 @@ const SearchBar = () => {
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline" role="combobox" aria-expanded={open} className="w-[350px] justify-between">
+                <Button variant="outline" role="combobox" aria-expanded={open} className="w-[350px] justify-between" data-testid="search-button">
                     Search...
                     <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -31,7 +31,14 @@ const SearchBar = () => {
             <PopoverContent className="w-[350px] p-0">
                 <Command shouldFilter={false}>
                     <div className="relative">
-                        <CommandInput placeholder="Search..." autoFocus onValueChange={setQuery} inputMode="search" className="pr-5" />
+                        <CommandInput
+                            placeholder="Search..."
+                            autoFocus
+                            onValueChange={setQuery}
+                            inputMode="search"
+                            className="pr-5"
+                            data-testid="search-input"
+                        />
                         {showLoader && (
                             <figure className="absolute top-1/2 right-3 -translate-y-1/2">
                                 <Loader />
@@ -47,6 +54,7 @@ const SearchBar = () => {
                                         key={user.id}
                                         value={user.id}
                                         className="h-10 cursor-pointer"
+                                        data-testid={`search-result-${user.id}`}
                                         onSelect={(_currentValue) => {
                                             setQuery('');
                                             router.navigate({ to: `/users/${user.id}` });
