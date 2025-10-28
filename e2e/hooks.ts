@@ -9,8 +9,8 @@ export const test = base.extend<DbResetFixture>({
     _dbReset: [
         // eslint-disable-next-line no-empty-pattern
         async ({}, use) => {
-            await use();
             restoreSnapshot();
+            await use();
         },
         { auto: true }
     ]

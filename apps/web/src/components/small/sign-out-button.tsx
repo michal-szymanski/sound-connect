@@ -23,7 +23,7 @@ const SignOutButton = () => {
     };
 
     return (
-        <DropdownMenuItem className="min-w-46 cursor-pointer" onClick={handleSignOut}>
+        <DropdownMenuItem data-testid="sign-out-button" className="min-w-46 cursor-pointer" onClick={handleSignOut}>
             <LogOut />
             Log Out
         </DropdownMenuItem>

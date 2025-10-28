@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -28,6 +29,29 @@ function getDbFiles(): DbFile[] {
             snapshot: path.join(WRANGLER_STATE_DIR, `${baseName}.sqlite.snapshot`)
         };
     });
+}
+
+export function cleanTestData(): void {
+    console.log('🧹 Cleaning test data from database...');
+
+    const dbFiles = getDbFiles();
+
+    for (const { original } of dbFiles) {
+        if (!fs.existsSync(original)) {
+            continue;
+        }
+
+        try {
+            execSync(`sqlite3 "${original}" "DELETE FROM users_followers; DELETE FROM notifications;"`, {
+                stdio: 'pipe'
+            });
+            console.log(`   ✓ Cleaned: ${path.basename(original)}`);
+        } catch (error) {
+            console.error(`   ✗ Failed to clean ${path.basename(original)}:`, error);
+        }
+    }
+
+    console.log('✅ Test data cleaned successfully\n');
 }
 
 export function createSnapshot(): void {
