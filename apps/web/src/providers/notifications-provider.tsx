@@ -1,10 +1,18 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useEnvs, useUser } from '@/web/lib/react-query';
+import type { Notification } from '@/common/types/drizzle';
+import { getNotifications } from '@/web/server-functions/models';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 
 type NotificationsContext = {
     notificationsStatus: WSStatus;
+    notifications: Notification[];
+    addNotification: (notification: Notification) => void;
+    removeNotification: (notificationId: number) => void;
+    markAsSeen: (notificationId: number) => void;
+    markAllAsSeen: () => void;
+    unreadCount: number;
 };
 
 const Context = createContext<NotificationsContext | undefined>(undefined);
@@ -17,6 +25,38 @@ export const NotificationsProvider = ({ children }: Props) => {
     const { data: user } = useUser();
 
     const [notificationsStatus, setNotificationsStatus] = useState<WSStatus>('connecting');
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+
+    const addNotification = useCallback((notification: Notification) => {
+        setNotifications((prev) => [notification, ...prev]);
+    }, []);
+
+    const removeNotification = useCallback((notificationId: number) => {
+        setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+    }, []);
+
+    const markAsSeen = useCallback((notificationId: number) => {
+        setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, seen: true } : n)));
+    }, []);
+
+    const markAllAsSeen = useCallback(() => {
+        setNotifications((prev) => prev.map((n) => ({ ...n, seen: true })));
+    }, []);
+
+    const unreadCount = notifications.filter((n) => !n.seen).length;
+
+    useEffect(() => {
+        if (!user) return;
+
+        const loadNotifications = async () => {
+            const result = await getNotifications();
+            if (result.success && result.body) {
+                setNotifications(result.body);
+            }
+        };
+
+        loadNotifications();
+    }, [user]);
 
     useEffect(() => {
         if (!envs || !user) return;
@@ -39,8 +79,23 @@ export const NotificationsProvider = ({ children }: Props) => {
 
         const handleMessage = (event: MessageEvent) => {
             try {
-                const json = JSON.parse(event.data);
-                console.log('[NotificationsWS] Received message:', json);
+                const message = JSON.parse(event.data);
+
+                if (message.type === 'notification') {
+                    const notificationData = message.data;
+                    const notification: Notification = {
+                        id: Date.now(),
+                        userId: notificationData.userId,
+                        type: notificationData.type,
+                        actorId: notificationData.actorId,
+                        entityId: null,
+                        entityType: null,
+                        content: notificationData.content,
+                        seen: false,
+                        createdAt: new Date().toISOString()
+                    };
+                    addNotification(notification);
+                }
             } catch (error) {
                 console.error('[NotificationsWS] Error parsing message:', error);
             }
@@ -61,10 +116,16 @@ export const NotificationsProvider = ({ children }: Props) => {
 
             notificationsWs.current.close();
         };
-    }, [envs, user]);
+    }, [envs, user, addNotification]);
 
     const contextValue: NotificationsContext = {
-        notificationsStatus
+        notificationsStatus,
+        notifications,
+        addNotification,
+        removeNotification,
+        markAsSeen,
+        markAllAsSeen,
+        unreadCount
     };
 
     return <Context.Provider value={contextValue}>{children}</Context.Provider>;

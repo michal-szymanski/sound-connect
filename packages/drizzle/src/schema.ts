@@ -154,6 +154,25 @@ export const messagesTable = sqliteTable('messages', {
     updatedAt: text('updated_at')
 });
 
+export const notificationTypeEnum = ['follow_request', 'follow_accepted', 'comment', 'reaction', 'mention'] as const;
+export const entityTypeEnum = ['post', 'comment', 'message', 'music_group'] as const;
+
+export const notificationsTable = sqliteTable('notifications', {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    userId: text('user_id')
+        .notNull()
+        .references(() => users.id, { onDelete: 'cascade' }),
+    type: text('type', { enum: notificationTypeEnum }).notNull(),
+    actorId: text('actor_id')
+        .notNull()
+        .references(() => users.id, { onDelete: 'cascade' }),
+    entityId: text('entity_id'),
+    entityType: text('entity_type', { enum: entityTypeEnum }),
+    content: text('content').notNull(),
+    seen: integer('seen', { mode: 'boolean' }).notNull().default(false),
+    createdAt: text('created_at').notNull()
+});
+
 export const postsRelations = relations(postsTable, ({ many }) => ({
     comments: many(commentsTable),
     reactions: many(postsReactionsTable),

@@ -11,6 +11,7 @@ import { websocketRoutes } from './routes/websocket';
 import { debugRoutes } from './routes/debug';
 import { mediaRoutes } from '@/api/routes/media';
 import { commentsRoutes } from '@/api/routes/comments';
+import { notificationsRoutes } from '@/api/routes/notifications';
 import * as Sentry from '@sentry/cloudflare';
 
 const app = new Hono<HonoContext>();
@@ -41,6 +42,7 @@ app.route('/', websocketRoutes);
 app.route('/', debugRoutes);
 app.route('/', mediaRoutes);
 app.route('/', commentsRoutes);
+app.route('/', notificationsRoutes);
 
 export { ChatDurableObject } from '@/api/durable-objects/chat-durable-object';
 export { UserDurableObject } from '@/api/durable-objects/user-durable-object';
