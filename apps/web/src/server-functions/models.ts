@@ -8,7 +8,8 @@ import {
     followRequestAcceptedNotificationItemSchema,
     followRequestNotificationItemSchema,
     commentWithUserSchema,
-    createCommentSchema
+    createCommentSchema,
+    sendTestNotificationSchema
 } from '@/common/types/models';
 import { postReactionSchema, postSchema } from '@/common/types/drizzle';
 import { createServerFn } from '@tanstack/react-start';
@@ -652,3 +653,26 @@ export const testSentry = createServerFn().handler(async () => {
 
     return { success: true, body: null } as const;
 });
+
+export const sendTestNotification = createServerFn()
+    .inputValidator(sendTestNotificationSchema)
+    .handler(async ({ data }) => {
+        const { API, API_URL } = env;
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/notifications/test`, {
+            method: 'POST',
+            headers: {
+                Cookie: cookie ?? '',
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
+    });

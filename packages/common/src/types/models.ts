@@ -14,7 +14,16 @@ import {
 
 export { userDTOSchema, type UserDTO };
 
-export const webSocketMessageTypes = z.enum(['chat', 'online-status', 'notification', 'subscribe', 'unsubscribe', 'user-joined', 'user-left']);
+export const webSocketMessageTypes = z.enum([
+    'chat',
+    'online-status',
+    'notification',
+    'subscribe',
+    'unsubscribe',
+    'user-joined',
+    'user-left',
+    'test-notification'
+]);
 
 export type WebSocketMessageType = z.infer<typeof webSocketMessageTypes>;
 
@@ -128,6 +137,22 @@ export const notificationMessageSchema = z.discriminatedUnion('kind', [
 
 export type NotificationMessage = z.infer<typeof notificationMessageSchema>;
 
+export const testNotificationMessageSchema = z.object({
+    type: z.literal(webSocketMessageTypes.enum['test-notification']),
+    from: z.string(),
+    to: z.string(),
+    message: z.string(),
+    timestamp: z.number()
+});
+
+export type TestNotificationMessage = z.infer<typeof testNotificationMessageSchema>;
+
+export const sendTestNotificationSchema = z.object({
+    targetUserId: z.string()
+});
+
+export type SendTestNotification = z.infer<typeof sendTestNotificationSchema>;
+
 export const webSocketMessageSchema = z.union([
     subscribeMessageSchema,
     unsubscribeMessageSchema,
@@ -135,7 +160,8 @@ export const webSocketMessageSchema = z.union([
     newChatMessageSchema,
     roomNotificationSchema,
     onlineStatusMessageSchema,
-    notificationMessageSchema
+    notificationMessageSchema,
+    testNotificationMessageSchema
 ]);
 
 export type WebSocketMessage = z.infer<typeof webSocketMessageSchema>;

@@ -46,12 +46,14 @@ app.route('/', commentsRoutes);
 
 export { ChatDurableObject } from '@/api/durable-objects/chat-durable-object';
 export { UserDurableObject } from '@/api/durable-objects/user-durable-object';
+export { NotificationsDurableObject } from '@/api/durable-objects/notifications-durable-object';
 
 export default Sentry.withSentry((env: CloudflareBindings) => {
     return {
         dsn: 'https://2075ba4aa31ed97ffb79114434378798@o4507454398136320.ingest.de.sentry.io/4510244218667088',
         release: env.SENTRY_RELEASE,
         sendDefaultPii: true,
+        spotlight: true,
         integrations: function (integrations) {
             return integrations.filter(function (integration) {
                 return integration.name !== 'Console';

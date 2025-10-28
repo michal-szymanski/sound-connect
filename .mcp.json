@@ -62,6 +62,12 @@
             "headers": {
                 "Authorization": "Bearer ${GITHUB_PAT}"
             }
+        },
+        "sentry-spotlight": {
+            "type": "stdio",
+            "command": "pnpm",
+            "args": ["dlx", "@spotlightjs/spotlight@latest", "--stdio-mcp"],
+            "env": {}
         }
     }
 }
