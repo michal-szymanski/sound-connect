@@ -7,6 +7,7 @@ import LeftSidebar from '@/web/components/layout/left-sidebar';
 import RightSidebar from '@/web/components/layout/right-sidebar';
 import { SidebarProvider } from '@/web/components/ui/sidebar';
 import { WebSocketProvider } from '@/web/providers/websocket-provider';
+import { NotificationsProvider } from '@/web/providers/notifications-provider';
 import { store } from '@/web/redux/store';
 import { RootState } from '@/web/redux/store';
 
@@ -30,30 +31,32 @@ function LayoutContent() {
 
     return (
         <WebSocketProvider>
-            <ChatWindowProvider>
-                <SidebarProvider>
-                    <LeftSidebar />
-                    <Header />
-                    {isMessagesPage ? (
-                        <>
-                            <main className="h-screen flex-1 pt-16">
-                                <Outlet />
-                            </main>
-                        </>
-                    ) : (
-                        <>
-                            <main className="w-full py-20">
-                                <div className="flex justify-center">
-                                    <div className="w-full max-w-2xl px-6">
-                                        <Outlet />
+            <NotificationsProvider>
+                <ChatWindowProvider>
+                    <SidebarProvider>
+                        <LeftSidebar />
+                        <Header />
+                        {isMessagesPage ? (
+                            <>
+                                <main className="h-screen flex-1 pt-16">
+                                    <Outlet />
+                                </main>
+                            </>
+                        ) : (
+                            <>
+                                <main className="w-full py-20">
+                                    <div className="flex justify-center">
+                                        <div className="w-full max-w-2xl px-6">
+                                            <Outlet />
+                                        </div>
                                     </div>
-                                </div>
-                            </main>
-                            <RightSidebar />
-                        </>
-                    )}
-                </SidebarProvider>
-            </ChatWindowProvider>
+                                </main>
+                                <RightSidebar />
+                            </>
+                        )}
+                    </SidebarProvider>
+                </ChatWindowProvider>
+            </NotificationsProvider>
         </WebSocketProvider>
     );
 }

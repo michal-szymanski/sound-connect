@@ -28,4 +28,25 @@ websocketRoutes.on(['GET', 'POST'], '/ws/user', async (c) => {
     return stub.fetch(modifiedRequest);
 });
 
+websocketRoutes.on(['GET', 'POST'], '/ws/notifications', async (c) => {
+    const upgradeHeader = c.req.header('Upgrade');
+
+    if (!upgradeHeader || upgradeHeader.toLowerCase() !== 'websocket') {
+        throw new HTTPException(426, { message: 'WebSocket Upgrade Required' });
+    }
+
+    const user = c.get('user');
+    const id = c.env.NotificationsDO.idFromName('notifications:global');
+    const stub = c.env.NotificationsDO.get(id);
+
+    const modifiedRequest = new Request(c.req.raw, {
+        headers: new Headers({
+            ...Object.fromEntries(c.req.raw.headers),
+            'X-User-Id': user.id
+        })
+    });
+
+    return stub.fetch(modifiedRequest);
+});
+
 export { websocketRoutes };

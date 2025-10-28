@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { HonoContext } from 'types';
 import { getFollowedUsers, followUser } from '@/api/db/queries/users-queries';
-import { followRequestNotificationItemSchema, followRequestAcceptedNotificationItemSchema } from '@/common/types/models';
+import { followRequestNotificationItemSchema, followRequestAcceptedNotificationItemSchema, sendTestNotificationSchema } from '@/common/types/models';
 import crypto from 'crypto';
 
 const notificationsRoutes = new Hono<HonoContext>();
@@ -101,6 +101,23 @@ notificationsRoutes.delete('/notifications/:notificationId', async (c) => {
     }
 
     return c.json('ok');
+});
+
+notificationsRoutes.post('/notifications/test', async (c) => {
+    const body = await c.req.json();
+    const { targetUserId } = sendTestNotificationSchema.parse(body);
+
+    const user = c.get('user');
+    const id = c.env.NotificationsDO.idFromName('notifications:global');
+    const stub = c.env.NotificationsDO.get(id);
+
+    const success = await stub.sendTestNotification(user.id, targetUserId);
+
+    if (!success) {
+        return c.json({ error: 'Target user not connected' }, 400);
+    }
+
+    return c.json({ success: true });
 });
 
 export { notificationsRoutes };
