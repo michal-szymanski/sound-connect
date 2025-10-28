@@ -4,7 +4,6 @@ import { HonoContext } from 'types';
 import { authMiddleware } from './middlewares';
 import { authRoutes } from './routes/auth';
 import { usersRoutes } from './routes/users';
-import { notificationsRoutes } from './routes/notifications';
 import { postsRoutes } from './routes/posts';
 import { searchRoutes } from './routes/search';
 import { chatRoutes } from './routes/chat';
@@ -35,7 +34,6 @@ app.get('/health', (c) => {
 
 app.route('/', authRoutes);
 app.route('/', usersRoutes);
-app.route('/', notificationsRoutes);
 app.route('/', postsRoutes);
 app.route('/', searchRoutes);
 app.route('/', chatRoutes);

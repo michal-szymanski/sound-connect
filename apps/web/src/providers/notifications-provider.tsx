@@ -1,11 +1,9 @@
-import { TestNotificationMessage, testNotificationMessageSchema } from '@/common/types/models';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useEnvs, useUser } from '@/web/lib/react-query';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 
 type NotificationsContext = {
-    testNotifications: TestNotificationMessage[];
     notificationsStatus: WSStatus;
 };
 
@@ -19,7 +17,6 @@ export const NotificationsProvider = ({ children }: Props) => {
     const { data: user } = useUser();
 
     const [notificationsStatus, setNotificationsStatus] = useState<WSStatus>('connecting');
-    const [testNotifications, setTestNotifications] = useState<TestNotificationMessage[]>([]);
 
     useEffect(() => {
         if (!envs || !user) return;
@@ -43,9 +40,7 @@ export const NotificationsProvider = ({ children }: Props) => {
         const handleMessage = (event: MessageEvent) => {
             try {
                 const json = JSON.parse(event.data);
-                const message = testNotificationMessageSchema.parse(json);
-
-                setTestNotifications((prev) => [...prev, message]);
+                console.log('[NotificationsWS] Received message:', json);
             } catch (error) {
                 console.error('[NotificationsWS] Error parsing message:', error);
             }
@@ -69,7 +64,6 @@ export const NotificationsProvider = ({ children }: Props) => {
     }, [envs, user]);
 
     const contextValue: NotificationsContext = {
-        testNotifications,
         notificationsStatus
     };
 

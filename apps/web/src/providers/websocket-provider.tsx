@@ -1,7 +1,5 @@
 import { ONLINE_STATUS_INTERVAL } from '@/common/constants';
 import {
-    FollowRequestNotificationItem,
-    FollowRequestAcceptedNotificationItem,
     OnlineStatus,
     webSocketMessageSchema,
     ChatMessage,
@@ -30,8 +28,6 @@ type WebSocketContext = {
     status: WSStatus;
 
     statuses: Map<string, OnlineStatus>;
-    followRequestNotifications: Map<string, FollowRequestNotificationItem>;
-    followRequestAcceptedNotifications: Map<string, FollowRequestAcceptedNotificationItem>;
 };
 
 const Context = createContext<WebSocketContext | undefined>(undefined);
@@ -48,8 +44,6 @@ export const WebSocketProvider = ({ children }: Props) => {
     const [roomMessages, setRoomMessages] = useState<Map<string, ChatMessage[]>>(new Map());
 
     const [statuses, setStatuses] = useState<Map<string, OnlineStatus>>(new Map());
-    const [followRequestNotifications, setFollowRequestNotifications] = useState<Map<string, FollowRequestNotificationItem>>(new Map());
-    const [followRequestAcceptedNotifications, setFollowRequestAcceptedNotifications] = useState<Map<string, FollowRequestAcceptedNotificationItem>>(new Map());
 
     const queryClient = useQueryClient();
     const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
@@ -185,35 +179,6 @@ export const WebSocketProvider = ({ children }: Props) => {
                         break;
                     }
 
-                    case 'notification': {
-                        if (message.kind === 'follow-request') {
-                            setFollowRequestNotifications(() => {
-                                const newNotifications = new Map();
-                                message.items.forEach((item) => {
-                                    newNotifications.set(item.id, item);
-                                });
-                                return newNotifications;
-                            });
-
-                            queryClient.invalidateQueries({ queryKey: ['followings', user.id] });
-                        }
-
-                        if (message.kind === 'follow-request-accepted') {
-                            setFollowRequestAcceptedNotifications(() => {
-                                const newNotifications = new Map();
-                                message.items.forEach((item) => {
-                                    newNotifications.set(item.id, item);
-                                });
-                                return newNotifications;
-                            });
-
-                            queryClient.invalidateQueries({ queryKey: ['followings', user.id] });
-                            queryClient.invalidateQueries({ queryKey: ['followers', user.id] });
-                            queryClient.invalidateQueries({ queryKey: ['follow-request-status'] });
-                        }
-                        break;
-                    }
-
                     case 'user-joined':
                     case 'user-left': {
                         break;
@@ -253,9 +218,7 @@ export const WebSocketProvider = ({ children }: Props) => {
         lastMessage,
         roomMessages,
         status,
-        statuses,
-        followRequestNotifications,
-        followRequestAcceptedNotifications
+        statuses
     };
 
     return <Context.Provider value={contextValue}>{children}</Context.Provider>;
