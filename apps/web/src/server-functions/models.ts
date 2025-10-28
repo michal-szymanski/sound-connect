@@ -1,7 +1,7 @@
 import { env } from 'cloudflare:workers';
 import { getRoomId } from '@/common/helpers';
 import { userDTOSchema, feedItemSchema, chatMessageSchema, postLikeDataSchema, commentWithUserSchema, createCommentSchema } from '@/common/types/models';
-import { postReactionSchema, postSchema } from '@/common/types/drizzle';
+import { postReactionSchema, postSchema, notificationSchema } from '@/common/types/drizzle';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { getSession } from '@/web/server-functions/auth';
@@ -602,3 +602,82 @@ export const testSentry = createServerFn().handler(async () => {
 
     return { success: true, body: null } as const;
 });
+
+export const getNotifications = createServerFn().handler(async () => {
+    const { API, API_URL } = env;
+    const cookie = getSessionCookie();
+
+    const response = await API.fetch(`${API_URL}/notifications`, {
+        headers: { Cookie: cookie ?? '' },
+        credentials: 'include'
+    });
+
+    if (!response.ok) {
+        return await errorHandler(response);
+    }
+
+    try {
+        const json = await response.json();
+        const schema = z.array(notificationSchema);
+
+        return { success: true, body: schema.parse(json) } as const;
+    } catch (error) {
+        console.error(error);
+        return { success: false, body: null } as const;
+    }
+});
+
+export const markNotificationAsSeen = createServerFn()
+    .inputValidator(z.object({ notificationId: z.number() }))
+    .handler(async ({ data }) => {
+        const { API, API_URL } = env;
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/notifications/${data.notificationId}/seen`, {
+            method: 'PATCH',
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
+    });
+
+export const markAllNotificationsAsSeen = createServerFn().handler(async () => {
+    const { API, API_URL } = env;
+    const cookie = getSessionCookie();
+
+    const response = await API.fetch(`${API_URL}/notifications/seen`, {
+        method: 'PATCH',
+        headers: { Cookie: cookie ?? '' },
+        credentials: 'include'
+    });
+
+    if (!response.ok) {
+        return await errorHandler(response);
+    }
+
+    return { success: true, body: null } as const;
+});
+
+export const deleteNotification = createServerFn()
+    .inputValidator(z.object({ notificationId: z.number() }))
+    .handler(async ({ data }) => {
+        const { API, API_URL } = env;
+        const cookie = getSessionCookie();
+
+        const response = await API.fetch(`${API_URL}/notifications/${data.notificationId}`, {
+            method: 'DELETE',
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
+    });

@@ -3,68 +3,27 @@ import { Button } from '@/web/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/web/components/ui/popover';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import { useState } from 'react';
-import { cn } from '@/web/lib/utils';
-
-type Notification = {
-    id: string;
-    type: 'follow' | 'general';
-    title: string;
-    message: string;
-    time: string;
-    read: boolean;
-};
+import { useNotifications } from '@/web/providers/notifications-provider';
+import { deleteNotification, markAllNotificationsAsSeen } from '@/web/server-functions/models';
+import { formatDistanceToNow } from 'date-fns';
 
 export function NotificationsButton() {
     const [open, setOpen] = useState(false);
-    const [notifications, setNotifications] = useState<Notification[]>([
-        {
-            id: '1',
-            type: 'follow',
-            title: 'New follower',
-            message: 'Alex Martinez started following you',
-            time: '2m ago',
-            read: false
-        },
-        {
-            id: '2',
-            type: 'follow',
-            title: 'Connection request',
-            message: 'Sarah Johnson wants to connect with your band',
-            time: '1h ago',
-            read: false
-        },
-        {
-            id: '3',
-            type: 'general',
-            title: 'New comment',
-            message: 'Someone commented on your post about jazz improvisation',
-            time: '3h ago',
-            read: false
-        },
-        {
-            id: '4',
-            type: 'general',
-            title: 'Post reaction',
-            message: 'Your latest track got 50 likes!',
-            time: '5h ago',
-            read: true
+    const { notifications, unreadCount, removeNotification, markAllAsSeen } = useNotifications();
+
+    const handleDelete = async (notificationId: number) => {
+        const result = await deleteNotification({ data: { notificationId } });
+        if (result.success) {
+            removeNotification(notificationId);
         }
-    ]);
-
-    const unreadCount = notifications.filter((n) => !n.read).length;
-
-    const handleFollow = (id: string) => {
-        console.log('[v0] Follow action for notification:', id);
-        // Handle follow logic here
     };
 
-    const handleDelete = (id: string) => {
-        setNotifications((prev) => prev.filter((n) => n.id !== id));
-    };
-
-    const handleOpenChange = (isOpen: boolean) => {
+    const handleOpenChange = async (isOpen: boolean) => {
         if (!isOpen && open && unreadCount > 0) {
-            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+            const result = await markAllNotificationsAsSeen();
+            if (result.success) {
+                markAllAsSeen();
+            }
         }
         setOpen(isOpen);
     };
@@ -103,29 +62,21 @@ export function NotificationsButton() {
                                 <div key={notification.id} className="hover:bg-accent/50 relative p-4 transition-colors">
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-foreground mb-1 text-sm font-medium">{notification.title}</p>
-                                            <p className="text-muted-foreground line-clamp-2 text-sm">{notification.message}</p>
-                                            <p className="text-muted-foreground mt-1 text-xs">{notification.time}</p>
+                                            <p className="text-foreground mb-1 text-sm font-medium">
+                                                {notification.type === 'follow_request' ? 'New follower' : 'Notification'}
+                                            </p>
+                                            <p className="text-muted-foreground line-clamp-2 text-sm">{notification.content}</p>
+                                            <p className="text-muted-foreground mt-1 text-xs">
+                                                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                                            </p>
                                         </div>
-                                        {!notification.read && <div className="bg-destructive mt-1 h-2 w-2 shrink-0 rounded-full" />}
+                                        {!notification.seen && <div className="bg-destructive mt-1 h-2 w-2 shrink-0 rounded-full" />}
                                     </div>
                                     <div className="mt-3 flex gap-2">
-                                        {notification.type === 'follow' && (
-                                            <Button
-                                                size="sm"
-                                                className="flex-1"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleFollow(notification.id);
-                                                }}
-                                            >
-                                                Follow
-                                            </Button>
-                                        )}
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            className={cn(notification.type === 'follow' ? 'flex-1' : 'w-full')}
+                                            className="w-full"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleDelete(notification.id);

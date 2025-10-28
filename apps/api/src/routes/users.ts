@@ -2,7 +2,8 @@ import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 import { HonoContext } from 'types';
-import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getContacts } from '@/api/db/queries/users-queries';
+import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getContacts, followUser } from '@/api/db/queries/users-queries';
+import { createNotification } from '@/api/db/queries/notifications-queries';
 
 const usersRoutes = new Hono<HonoContext>();
 
@@ -25,12 +26,35 @@ usersRoutes.post('/users/:userId/follow', async (c) => {
 
     const user = c.get('user');
 
-    const targetUserFollowedUsers = await getFollowedUsers(userId);
-    if (targetUserFollowedUsers.some((followed) => followed.id === user.id)) {
-        throw new HTTPException(400, { message: 'Users already follow each other' });
+    const currentUserFollowedUsers = await getFollowedUsers(user.id);
+    if (currentUserFollowedUsers.some((followed) => followed.id === userId)) {
+        throw new HTTPException(400, { message: 'Already following this user' });
     }
 
-    return c.json('ok');
+    await followUser(user.id, userId);
+
+    const currentUserData = await getUserById(user.id);
+
+    await createNotification({
+        userId: userId,
+        type: 'follow_request',
+        actorId: user.id,
+        content: `${currentUserData.name} started following you`
+    });
+
+    const notificationsDO = c.env.NotificationsDO.get(c.env.NotificationsDO.idFromName(userId));
+    await notificationsDO.fetch('https://notifications/send-notification', {
+        method: 'POST',
+        body: JSON.stringify({
+            userId: userId,
+            type: 'follow_request',
+            actorId: user.id,
+            actorName: currentUserData.name,
+            content: `${currentUserData.name} started following you`
+        })
+    });
+
+    return c.json({ success: true });
 });
 
 usersRoutes.post('/users/:userId/unfollow', async (c) => {

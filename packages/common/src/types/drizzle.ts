@@ -294,3 +294,35 @@ export const messageSchema = z.object({
 
 export type CreateMessage = z.infer<typeof createMessageSchema>;
 export type Message = z.infer<typeof messageSchema>;
+
+export const notificationTypeEnum = z.enum(['follow_request', 'follow_accepted', 'comment', 'reaction', 'mention']);
+export const entityTypeEnum = z.enum(['post', 'comment', 'message', 'music_group']);
+
+export const createNotificationSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    type: notificationTypeEnum,
+    actorId: z.string(),
+    entityId: z.string().nullable(),
+    entityType: entityTypeEnum.nullable(),
+    content: z.string(),
+    seen: z.boolean(),
+    createdAt: z.string()
+});
+
+export const notificationSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    type: notificationTypeEnum,
+    actorId: z.string(),
+    entityId: z.string().nullable(),
+    entityType: entityTypeEnum.nullable(),
+    content: z.string(),
+    seen: z.boolean(),
+    createdAt: z.string()
+});
+
+export type CreateNotification = z.infer<typeof createNotificationSchema>;
+export type Notification = z.infer<typeof notificationSchema>;
+export type NotificationType = z.infer<typeof notificationTypeEnum>;
+export type EntityType = z.infer<typeof entityTypeEnum>;

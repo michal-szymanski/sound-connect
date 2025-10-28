@@ -13,8 +13,21 @@ export class NotificationsDurableObject extends DurableObject {
     }
 
     override async fetch(request: Request): Promise<Response> {
+        const url = new URL(request.url);
         const upgradeHeader = request.headers.get('Upgrade');
         const userId = request.headers.get('X-User-Id');
+
+        if (url.pathname === '/send-notification' && request.method === 'POST') {
+            const notification = (await request.json()) as {
+                userId: string;
+                type: string;
+                actorId: string;
+                actorName: string;
+                content: string;
+            };
+            this.sendNotificationToUser(notification.userId, notification);
+            return new Response('OK', { status: 200 });
+        }
 
         if (!userId) {
             return new Response('Unauthorized: Missing user ID', { status: 401 });
@@ -44,5 +57,17 @@ export class NotificationsDurableObject extends DurableObject {
         webSocket.addEventListener('error', () => {
             this.connections.delete(userId);
         });
+    }
+
+    private sendNotificationToUser(userId: string, notification: unknown) {
+        const connection = this.connections.get(userId);
+        if (connection) {
+            connection.send(
+                JSON.stringify({
+                    type: 'notification',
+                    data: notification
+                })
+            );
+        }
     }
 }
