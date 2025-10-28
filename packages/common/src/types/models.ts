@@ -14,16 +14,7 @@ import {
 
 export { userDTOSchema, type UserDTO };
 
-export const webSocketMessageTypes = z.enum([
-    'chat',
-    'online-status',
-    'notification',
-    'subscribe',
-    'unsubscribe',
-    'user-joined',
-    'user-left',
-    'test-notification'
-]);
+export const webSocketMessageTypes = z.enum(['chat', 'online-status', 'subscribe', 'unsubscribe', 'user-joined', 'user-left']);
 
 export type WebSocketMessageType = z.infer<typeof webSocketMessageTypes>;
 
@@ -76,92 +67,13 @@ export const unsubscribeMessageSchema = z.object({
 
 export type UnsubscribeMessage = z.infer<typeof unsubscribeMessageSchema>;
 
-export const notificationKind = z.enum(['follow-request', 'follow-request-accepted', 'reaction']);
-
-export type NotificationKind = z.infer<typeof notificationKind>;
-
-export const followRequestNotificationItemSchema = z.object({
-    id: z.string().uuid(),
-    date: z.string(),
-    seen: z.boolean(),
-    accepted: z.boolean(),
-    from: z.string(),
-    to: z.string()
-});
-
-export type FollowRequestNotificationItem = z.infer<typeof followRequestNotificationItemSchema>;
-
-export const followRequestAcceptedNotificationItemSchema = z.object({
-    id: z.string().uuid(),
-    date: z.string(),
-    seen: z.boolean(),
-    from: z.string(),
-    to: z.string()
-});
-
-export type FollowRequestAcceptedNotificationItem = z.infer<typeof followRequestAcceptedNotificationItemSchema>;
-
-export const followRequestNotificationSchema = z.object({
-    type: z.literal(webSocketMessageTypes.enum.notification),
-    kind: z.literal(notificationKind.enum['follow-request']),
-    items: z.array(followRequestNotificationItemSchema)
-});
-
-export type FollowRequestNotification = z.infer<typeof followRequestNotificationSchema>;
-
-export const followRequestAcceptedNotificationSchema = z.object({
-    type: z.literal(webSocketMessageTypes.enum.notification),
-    kind: z.literal(notificationKind.enum['follow-request-accepted']),
-    items: z.array(followRequestAcceptedNotificationItemSchema)
-});
-
-export type FollowRequestAcceptedNotification = z.infer<typeof followRequestAcceptedNotificationSchema>;
-
-export const reactionNotificationItem = z.object({ id: z.string().uuid(), date: z.string(), seen: z.boolean(), userId: z.string(), postId: z.string() });
-
-export type ReactionNotificationItem = z.infer<typeof reactionNotificationItem>;
-
-export const reactionNotification = z.object({
-    type: z.literal(webSocketMessageTypes.enum.notification),
-    kind: z.literal(notificationKind.enum['reaction']),
-    items: z.array(reactionNotificationItem)
-});
-
-export type ReactionNotification = z.infer<typeof reactionNotification>;
-
-export const notificationMessageSchema = z.discriminatedUnion('kind', [
-    followRequestNotificationSchema,
-    followRequestAcceptedNotificationSchema,
-    reactionNotification
-]);
-
-export type NotificationMessage = z.infer<typeof notificationMessageSchema>;
-
-export const testNotificationMessageSchema = z.object({
-    type: z.literal(webSocketMessageTypes.enum['test-notification']),
-    from: z.string(),
-    to: z.string(),
-    message: z.string(),
-    timestamp: z.number()
-});
-
-export type TestNotificationMessage = z.infer<typeof testNotificationMessageSchema>;
-
-export const sendTestNotificationSchema = z.object({
-    targetUserId: z.string()
-});
-
-export type SendTestNotification = z.infer<typeof sendTestNotificationSchema>;
-
 export const webSocketMessageSchema = z.union([
     subscribeMessageSchema,
     unsubscribeMessageSchema,
     chatMessageSchema,
     newChatMessageSchema,
     roomNotificationSchema,
-    onlineStatusMessageSchema,
-    notificationMessageSchema,
-    testNotificationMessageSchema
+    onlineStatusMessageSchema
 ]);
 
 export type WebSocketMessage = z.infer<typeof webSocketMessageSchema>;

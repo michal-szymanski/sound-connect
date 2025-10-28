@@ -1,12 +1,9 @@
 import { Link, useLocation } from '@tanstack/react-router';
-import { Bell, Cog, House, LucideIcon, Mail, UserRound } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Cog, House, LucideIcon, Mail, UserRound } from 'lucide-react';
+import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import NotificationsSheet from '@/web/components/layout/notifications-sheet';
 import AccountButton from '@/web/components/small/account-button';
-import { Badge } from '@/web/components/ui/badge';
 import { useUser } from '@/web/lib/react-query';
-import { useWebSocket } from '@/web/providers/websocket-provider';
 import { collapseSidebar } from '@/web/redux/slices/ui-slice';
 import { RootState } from '@/web/redux/store';
 import {
@@ -29,8 +26,6 @@ type Item = {
 
 const LeftSidebar = () => {
     const { data: user } = useUser();
-    const [showNotifications, setShowNotification] = useState(false);
-    const { followRequestNotifications, followRequestAcceptedNotifications } = useWebSocket();
     const { isSidebarVisible, isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
     const dispatch = useDispatch();
     const location = useLocation();
@@ -45,15 +40,6 @@ const LeftSidebar = () => {
                 title: 'Home',
                 url: '/',
                 icon: House
-            },
-            {
-                title: 'Notifications',
-                onClick: () => {
-                    if (!showNotifications) {
-                        setShowNotification(true);
-                    }
-                },
-                icon: Bell
             },
             {
                 title: 'Messages',
@@ -73,38 +59,8 @@ const LeftSidebar = () => {
         ];
     };
 
-    const unseenFollowRequestNotifications = Array.from(followRequestNotifications.values()).filter((n) => !n.seen);
-    const unseenFollowRequestAcceptedNotifications = Array.from(followRequestAcceptedNotifications.values()).filter((n) => !n.seen);
-    const totalUnseenNotifications = unseenFollowRequestNotifications.length + unseenFollowRequestAcceptedNotifications.length;
-
     const renderMenuButton = (item: Item) => {
         const isActive = item.url ? location.pathname === item.url : false;
-        const isNotificationsButton = item.title === 'Notifications';
-
-        if (item.onClick) {
-            return (
-                <SidebarMenuButton
-                    onClick={isNotificationsButton && showNotifications ? undefined : item.onClick}
-                    className={`relative flex min-h-12 items-center transition-all duration-300 [&>svg]:size-6 ${
-                        isSidebarCollapsed ? 'w-16 justify-center' : 'w-full justify-center px-3 xl:justify-start'
-                    } ${isActive ? 'bg-primary/10 text-primary' : ''} ${isNotificationsButton && showNotifications ? 'pointer-events-none' : ''}`}
-                >
-                    <item.icon className="flex-shrink-0" />
-                    <span
-                        className={`truncate transition-all duration-300 ${
-                            isSidebarCollapsed ? 'w-0 overflow-hidden opacity-0' : 'ml-2 hidden w-auto opacity-100 xl:block'
-                        }`}
-                    >
-                        {item.title}
-                    </span>
-                    {totalUnseenNotifications > 0 && item.title === 'Notifications' && !isSidebarCollapsed && (
-                        <Badge variant="destructive" className="absolute right-2 flex-shrink-0 transition-opacity duration-300">
-                            {totalUnseenNotifications}
-                        </Badge>
-                    )}
-                </SidebarMenuButton>
-            );
-        }
 
         return (
             <SidebarMenuButton asChild>
@@ -129,9 +85,9 @@ const LeftSidebar = () => {
     };
 
     useEffect(() => {
-        const shouldCollapse = showNotifications || isMessagesPage;
+        const shouldCollapse = isMessagesPage;
         dispatch(collapseSidebar(shouldCollapse));
-    }, [showNotifications, isMessagesPage, dispatch]);
+    }, [isMessagesPage, dispatch]);
 
     return (
         <div className="relative flex">
@@ -163,7 +119,6 @@ const LeftSidebar = () => {
                     </SidebarMenu>
                 </SidebarFooter>
             </Sidebar>
-            <NotificationsSheet open={showNotifications} setOpen={setShowNotification} />
         </div>
     );
 };

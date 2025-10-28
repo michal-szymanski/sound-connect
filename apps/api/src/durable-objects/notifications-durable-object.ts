@@ -1,5 +1,4 @@
 import { DurableObject } from 'cloudflare:workers';
-import { TestNotificationMessage, testNotificationMessageSchema } from '@/common/types/models';
 
 export class NotificationsDurableObject extends DurableObject {
     private connections: Map<string, WebSocket> = new Map();
@@ -32,25 +31,6 @@ export class NotificationsDurableObject extends DurableObject {
         }
 
         return new Response('Not Found', { status: 404 });
-    }
-
-    async sendTestNotification(fromUserId: string, toUserId: string): Promise<boolean> {
-        const targetConnection = this.connections.get(toUserId);
-
-        if (!targetConnection || targetConnection.readyState !== WebSocket.OPEN) {
-            return false;
-        }
-
-        const message: TestNotificationMessage = testNotificationMessageSchema.parse({
-            type: 'test-notification',
-            from: fromUserId,
-            to: toUserId,
-            message: `Test notification from ${fromUserId}`,
-            timestamp: Date.now()
-        });
-
-        targetConnection.send(JSON.stringify(message));
-        return true;
     }
 
     private async handleConnection(webSocket: WebSocket, userId: string) {

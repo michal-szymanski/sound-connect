@@ -3,7 +3,6 @@ import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 import { HonoContext } from 'types';
 import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getContacts } from '@/api/db/queries/users-queries';
-import crypto from 'crypto';
 
 const usersRoutes = new Hono<HonoContext>();
 
@@ -30,36 +29,6 @@ usersRoutes.post('/users/:userId/follow', async (c) => {
     if (targetUserFollowedUsers.some((followed) => followed.id === user.id)) {
         throw new HTTPException(400, { message: 'Users already follow each other' });
     }
-
-    const id = c.env.UserDO.idFromName(`user:${userId}`);
-    const stub = c.env.UserDO.get(id);
-
-    const notifications = await stub.getFollowRequestNotifications();
-
-    const existingPendingNotification = notifications.find((n) => n.from === user.id && !n.accepted);
-    if (existingPendingNotification) {
-        throw new HTTPException(400, { message: 'User is already notified about follow request' });
-    }
-
-    const currentUserId = c.env.UserDO.idFromName(`user:${user.id}`);
-    const currentUserStub = c.env.UserDO.get(currentUserId);
-
-    const currentUserNotifications = await currentUserStub.getFollowRequestNotifications();
-
-    const acceptedNotificationFromTarget = currentUserNotifications.find((n) => n.from === userId && n.accepted);
-
-    if (acceptedNotificationFromTarget) {
-        await currentUserStub.deleteNotification(acceptedNotificationFromTarget.id);
-    }
-
-    await stub.sendFollowRequestNotification({
-        id: crypto.randomUUID(),
-        date: new Date().toISOString(),
-        seen: false,
-        accepted: false,
-        from: user.id,
-        to: userId
-    });
 
     return c.json('ok');
 });
@@ -88,16 +57,6 @@ usersRoutes.get('/users/:userId/follow-request-status', async (c) => {
     const followedUsers = await getFollowedUsers(user.id);
     if (followedUsers.some((followed) => followed.id === userId)) {
         return c.json({ status: 'following' });
-    }
-
-    const id = c.env.UserDO.idFromName(`user:${userId}`);
-    const stub = c.env.UserDO.get(id);
-    const notifications = await stub.getFollowRequestNotifications();
-
-    const pendingRequest = notifications.find((n) => n.from === user.id && !n.accepted);
-
-    if (pendingRequest) {
-        return c.json({ status: 'pending' });
     }
 
     return c.json({ status: 'none' });

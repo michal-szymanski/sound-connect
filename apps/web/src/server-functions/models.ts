@@ -1,16 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { getRoomId } from '@/common/helpers';
-import {
-    userDTOSchema,
-    feedItemSchema,
-    chatMessageSchema,
-    postLikeDataSchema,
-    followRequestAcceptedNotificationItemSchema,
-    followRequestNotificationItemSchema,
-    commentWithUserSchema,
-    createCommentSchema,
-    sendTestNotificationSchema
-} from '@/common/types/models';
+import { userDTOSchema, feedItemSchema, chatMessageSchema, postLikeDataSchema, commentWithUserSchema, createCommentSchema } from '@/common/types/models';
 import { postReactionSchema, postSchema } from '@/common/types/drizzle';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
@@ -219,25 +209,6 @@ export const sendFollowRequest = createServerFn({ method: 'POST' })
         return { success: true, body: null } as const;
     });
 
-export const deleteNotification = createServerFn()
-    .inputValidator(z.object({ notificationId: z.string() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
-        const cookie = getSessionCookie();
-
-        const response = await API.fetch(`${API_URL}/notifications/${data.notificationId}`, {
-            method: 'DELETE',
-            headers: { Cookie: cookie ?? '' },
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            return await errorHandler(response);
-        }
-
-        return { success: true, body: null } as const;
-    });
-
 export const followUser = createServerFn({ method: 'POST' })
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data }) => {
@@ -400,28 +371,6 @@ export const getFollowRequestStatus = createServerFn({ method: 'GET' })
 
         const result = (await response.json()) as { status: 'following' | 'pending' | 'none' };
         return { success: true, body: result } as const;
-    });
-
-export const updateNotification = createServerFn()
-    .inputValidator(
-        z.object({ notificationId: z.string(), notification: z.union([followRequestNotificationItemSchema, followRequestAcceptedNotificationItemSchema]) })
-    )
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
-        const cookie = getSessionCookie();
-
-        const response = await API.fetch(`${API_URL}/notifications/${data.notificationId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
-            body: JSON.stringify(data.notification),
-            credentials: 'include'
-        });
-
-        if (!response.ok) {
-            return await errorHandler(response);
-        }
-
-        return { success: true, body: null } as const;
     });
 
 export const likePost = createServerFn({ method: 'POST' })
@@ -653,26 +602,3 @@ export const testSentry = createServerFn().handler(async () => {
 
     return { success: true, body: null } as const;
 });
-
-export const sendTestNotification = createServerFn()
-    .inputValidator(sendTestNotificationSchema)
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
-        const cookie = getSessionCookie();
-
-        const response = await API.fetch(`${API_URL}/notifications/test`, {
-            method: 'POST',
-            headers: {
-                Cookie: cookie ?? '',
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify(data)
-        });
-
-        if (!response.ok) {
-            return await errorHandler(response);
-        }
-
-        return { success: true, body: null } as const;
-    });

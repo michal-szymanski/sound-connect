@@ -1,14 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 import { ONLINE_STATUS_INTERVAL } from '@/common/constants';
-import {
-    FollowRequestNotificationItem,
-    FollowRequestAcceptedNotificationItem,
-    WebSocketMessage,
-    webSocketMessageSchema,
-    onlineStatusMessageSchema,
-    UserDTO
-} from '@/common/types/models';
-import { NotificationsService } from './services/notifications-service';
+import { WebSocketMessage, webSocketMessageSchema, onlineStatusMessageSchema, UserDTO } from '@/common/types/models';
 import { ChatService } from './services/chat-service';
 import z from 'zod';
 
@@ -17,7 +9,6 @@ export class UserDurableObject extends DurableObject {
     private storage: DurableObjectStorage;
     private subscribers: Set<string> = new Set();
     private userId: string | null = null;
-    private notificationsService: NotificationsService;
     private chatService: ChatService;
 
     constructor(
@@ -26,7 +17,6 @@ export class UserDurableObject extends DurableObject {
     ) {
         super(ctx, env);
         this.storage = ctx.storage;
-        this.notificationsService = new NotificationsService(this.storage, this.sendMessage.bind(this));
         this.chatService = new ChatService(this.storage, this.env, this.userId);
     }
 
@@ -114,39 +104,6 @@ export class UserDurableObject extends DurableObject {
         return true;
     }
 
-    async sendFollowRequestNotification(newNotification: FollowRequestNotificationItem) {
-        return this.notificationsService.sendFollowRequestNotification(newNotification);
-    }
-
-    async sendFollowRequestAcceptedNotification(newNotification: FollowRequestAcceptedNotificationItem) {
-        return this.notificationsService.sendFollowRequestAcceptedNotification(newNotification);
-    }
-
-    async getFollowRequestNotifications() {
-        return this.notificationsService.getFollowRequestNotifications();
-    }
-
-    async getFollowRequestAcceptedNotifications() {
-        return this.notificationsService.getFollowRequestAcceptedNotifications();
-    }
-
-    async updateNotification(notificationId: string, updatedNotification: FollowRequestNotificationItem | FollowRequestAcceptedNotificationItem) {
-        return this.notificationsService.updateNotification(notificationId, updatedNotification);
-    }
-
-    async deleteNotification(notificationId: string) {
-        return this.notificationsService.deleteNotification(notificationId);
-    }
-
-    async getNotification(notificationId: string) {
-        return this.notificationsService.getNotification(notificationId);
-    }
-
-    async clearAllNotifications() {
-        await this.storage.delete('notifications');
-        return true;
-    }
-
     async clearAllSubscribers() {
         this.subscribers.clear();
         return true;
@@ -158,7 +115,6 @@ export class UserDurableObject extends DurableObject {
     }
 
     async resetUserState() {
-        await this.storage.delete('notifications');
         await this.storage.delete('chat-rooms');
         this.subscribers.clear();
         return true;
@@ -188,10 +144,6 @@ export class UserDurableObject extends DurableObject {
         this.subscribers.delete(userId);
     }
 
-    private async broadcastNotifications() {
-        await this.notificationsService.broadcastNotifications();
-    }
-
     private async handleConnection(webSocket: WebSocket) {
         webSocket.accept();
         this.websocket = webSocket;
@@ -219,7 +171,5 @@ export class UserDurableObject extends DurableObject {
             this.websocket = null;
             this.chatService.cleanup();
         });
-
-        await this.broadcastNotifications();
     }
 }
