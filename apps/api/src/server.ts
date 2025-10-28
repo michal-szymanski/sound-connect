@@ -19,6 +19,7 @@ const app = new Hono<HonoContext>();
 app.use('*', authMiddleware);
 
 app.onError((error, c) => {
+    console.error(error);
     if (error instanceof HTTPException) {
         return error.getResponse();
     }
