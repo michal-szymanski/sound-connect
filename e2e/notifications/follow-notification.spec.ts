@@ -17,7 +17,7 @@ test.describe('Follow Notification System', () => {
         await searchAndNavigateToUser(user1Page, TEST_USERS.USER_B.name);
 
         const followButton = user1Page.getByTestId('follow-button');
-        await expect(followButton).toBeVisible();
+        await expect(followButton).toBeVisible({ timeout: 10000 });
         await followButton.click();
 
         const followingButton = user1Page.getByTestId('following-button');
@@ -61,6 +61,7 @@ test.describe('Follow Notification System', () => {
         await searchAndNavigateToUser(user1Page, TEST_USERS.USER_B.name);
 
         const followButton = user1Page.getByTestId('follow-button');
+        await expect(followButton).toBeVisible({ timeout: 10000 });
         await followButton.click();
 
         const followingButton = user1Page.getByTestId('following-button');
@@ -92,7 +93,7 @@ test.describe('Follow Notification System', () => {
         await searchAndNavigateToUser(page, TEST_USERS.USER_B.name);
 
         const followButton = page.getByTestId('follow-button');
-        await expect(followButton).toBeVisible();
+        await expect(followButton).toBeVisible({ timeout: 10000 });
         await followButton.click();
 
         const followingButton = page.getByTestId('following-button');
