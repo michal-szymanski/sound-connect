@@ -80,20 +80,22 @@ test.describe('My Feature', () => {
 
 **IMPORTANT: Tests must be deterministic and reproducible**
 
-❌ **DON'T** use timestamps, random values, or `Date.now()`:
+❌ **DON'T** use timestamps, random values, or `Date.now()` to generate test values:
 
 ```typescript
-// Bad - Non-deterministic
+// Bad - Non-deterministic test data generation
 const email = `test-${Date.now()}@test.com`;
 const name = `User ${Math.random()}`;
+const postContent = `Post ${Math.random()}`;
 ```
 
 ✅ **DO** use fixed, predictable test data:
 
 ```typescript
-// Good - Deterministic
+// Good - Deterministic test data
 const email = 'testuser@playwright.test';
 const name = 'Test User';
+const postContent = 'Test post content';
 ```
 
 **Why?**
@@ -102,6 +104,9 @@ const name = 'Test User';
 - No need for unique data - tests are isolated
 - Reproducible failures make debugging easier
 - Tests are easier to understand and maintain
+
+**Note on `waitForTimeout()`:**
+Using `waitForTimeout()` for waiting on UI updates or animations is acceptable when necessary, but prefer Playwright's built-in waiting mechanisms (e.g., `waitForLoadState()`, element visibility checks, network idle state) when possible for more reliable tests.
 
 ### Element Selection Guidelines
 
