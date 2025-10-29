@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 
-export async function searchAndNavigateToUser(page: Page, userName: string, userId: string): Promise<void> {
+export async function searchAndNavigateToUser(page: Page, userName: string): Promise<void> {
     const searchButton = page.getByTestId('search-button');
     await searchButton.click();
 
@@ -9,7 +9,7 @@ export async function searchAndNavigateToUser(page: Page, userName: string, user
 
     await page.waitForTimeout(600);
 
-    const userResult = page.getByTestId(`search-result-${userId}`);
+    const userResult = page.getByRole('option', { name: userName });
     await userResult.click();
 
     await page.waitForURL(/\/users\/.+/);

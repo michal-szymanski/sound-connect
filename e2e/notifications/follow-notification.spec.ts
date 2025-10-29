@@ -2,11 +2,6 @@ import { test, expect } from '@/e2e/hooks';
 import { signIn, signOut, TEST_USERS } from '@/e2e/utils/auth';
 import { searchAndNavigateToUser } from '@/e2e/utils/navigation';
 
-const USER_IDS = {
-    USER_A: 'xIaZhdYzGgdUCArgtU0QdLOBWGHB08Mz',
-    USER_B: 'mstMlnzefkISg3BtHbz6ZmJ6HAokd6xz'
-} as const;
-
 test.describe('Follow Notification System', () => {
     test('should send notification when user follows another user', async ({ page, browser }) => {
         const user1Page = page;
@@ -19,7 +14,7 @@ test.describe('Follow Notification System', () => {
         await user1Page.waitForLoadState('networkidle');
         await user2Page.waitForLoadState('networkidle');
 
-        await searchAndNavigateToUser(user1Page, 'Playwright User 2', USER_IDS.USER_B);
+        await searchAndNavigateToUser(user1Page, TEST_USERS.USER_B.name);
 
         const followButton = user1Page.getByTestId('follow-button');
         await expect(followButton).toBeVisible();
@@ -41,7 +36,7 @@ test.describe('Follow Notification System', () => {
         await notificationsButton.click();
 
         const notificationContent = user2Page.getByTestId('notification-content').first();
-        await expect(notificationContent).toContainText('Playwright User 1 started following you');
+        await expect(notificationContent).toContainText(`${TEST_USERS.USER_A.name} started following you`);
 
         const notificationType = user2Page.getByTestId('notification-type').first();
         await expect(notificationType).toHaveText('New follower');
@@ -63,7 +58,7 @@ test.describe('Follow Notification System', () => {
         await signIn(user1Page, TEST_USERS.USER_A);
         await user1Page.waitForLoadState('networkidle');
 
-        await searchAndNavigateToUser(user1Page, 'Playwright User 2', USER_IDS.USER_B);
+        await searchAndNavigateToUser(user1Page, TEST_USERS.USER_B.name);
 
         const followButton = user1Page.getByTestId('follow-button');
         await followButton.click();
@@ -82,7 +77,7 @@ test.describe('Follow Notification System', () => {
         await notificationsButton.click();
 
         const notificationContent = user1Page.getByTestId('notification-content').first();
-        await expect(notificationContent).toContainText('Playwright User 1 started following you');
+        await expect(notificationContent).toContainText(`${TEST_USERS.USER_A.name} started following you`);
 
         const deleteButton = user1Page.getByTestId('notification-delete-button').first();
         await deleteButton.click();
@@ -94,7 +89,7 @@ test.describe('Follow Notification System', () => {
         await signIn(page, TEST_USERS.USER_A);
         await page.waitForLoadState('networkidle');
 
-        await searchAndNavigateToUser(page, 'Playwright User 2', USER_IDS.USER_B);
+        await searchAndNavigateToUser(page, TEST_USERS.USER_B.name);
 
         const followButton = page.getByTestId('follow-button');
         await expect(followButton).toBeVisible();

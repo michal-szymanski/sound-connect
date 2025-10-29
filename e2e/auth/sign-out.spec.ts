@@ -7,10 +7,10 @@ test.describe('User Sign Out', () => {
 
         await expect(page).toHaveURL('/');
 
-        const accountButton = page.locator('button:has-text("Playwright User 1")');
+        const accountButton = page.getByTestId('user-menu');
         await accountButton.click();
 
-        const logOutMenuItem = page.getByRole('menuitem', { name: 'Log Out' });
+        const logOutMenuItem = page.getByTestId('sign-out-button');
         await logOutMenuItem.click();
 
         await expect(page).toHaveURL('/sign-in');

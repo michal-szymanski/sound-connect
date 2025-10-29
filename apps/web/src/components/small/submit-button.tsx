@@ -11,7 +11,7 @@ type Props = React.PropsWithChildren<{
 
 const SubmitButton = ({ isSpinner, children, className }: Props) => {
     return (
-        <Button type="submit" aria-busy={isSpinner} disabled={isSpinner} className={cn('relative', className)}>
+        <Button type="submit" aria-busy={isSpinner} disabled={isSpinner} className={cn('relative', className)} data-testid="submit-button">
             <div
                 role="status"
                 aria-live="polite"
