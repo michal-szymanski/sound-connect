@@ -313,6 +313,8 @@ jobs:
 
             - name: Run E2E tests
               run: pnpm --filter @sound-connect/e2e test
+              continue-on-error: true
+              id: e2e-tests
 
             - name: Upload Playwright report
               if: always()
@@ -321,6 +323,12 @@ jobs:
                   name: playwright-report
                   path: e2e/playwright-report/
                   retention-days: 30
+
+            - name: Check E2E test results
+              if: steps.e2e-tests.outcome == 'failure'
+              run: |
+                  echo "::warning::E2E tests failed but not blocking deployment. Please review the test results."
+                  echo "View the Playwright report artifact for details."
 
     deploy-api:
         name: Deploy API

@@ -7,7 +7,7 @@ import z from 'zod';
 import UserAvatar from '@/web/components/small/user-avatar';
 import { Button } from '@/web/components/ui/button';
 import { Card } from '@/web/components/ui/card';
-import { useFollowers, useFollowings, useFollowRequestStatus } from '@/web/lib/react-query';
+import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, followersQuery, followRequestStatusQuery } from '@/web/lib/react-query';
 import { sendFollowRequest, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
 
 const loaderSchema = z.object({
@@ -52,6 +52,13 @@ export const Route = createFileRoute('/(main)/users/$id')({
 
         const postsResult = await getPosts({ data: { userId } });
         const posts = postsResult.success ? postsResult.body : [];
+
+        await Promise.all([
+            context.queryClient.ensureQueryData(followingsQuery(currentUser)),
+            context.queryClient.ensureQueryData(followersQuery(user)),
+            context.queryClient.ensureQueryData(followingsQuery(user)),
+            context.queryClient.ensureQueryData(followRequestStatusQuery(user.id))
+        ]);
 
         return loaderSchema.parse({ currentUser, user, posts });
     }
@@ -122,9 +129,9 @@ function RouteComponent() {
     };
 
     const renderFollowButton = () => {
-        if (currentUser.id === user.id || !currentUserFollowings) return null;
+        if (currentUser.id === user.id) return null;
 
-        const isCurrentUserFollowing = currentUserFollowings.some((following) => following.id === user.id);
+        const isCurrentUserFollowing = currentUserFollowings?.some((following) => following.id === user.id) ?? false;
 
         if (isCurrentUserFollowing || optimisticStatus === 'following') {
             return (
