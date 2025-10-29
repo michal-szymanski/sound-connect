@@ -27,12 +27,6 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 - Before making any edit, check if it violates these rules.
 - If a rule conflict arises, ask the user for clarification rather than breaking the rule.
 
-### E2E Testing Rules
-
-- **Tests MUST be deterministic**: Never use timestamps (`Date.now()`), random values (`Math.random()`), or any non-deterministic data in tests.
-- **Use fixed test data**: Each test runs with a clean database (snapshot restored automatically), so unique values are unnecessary.
-- **Why deterministic?**: Tests must be reproducible for debugging, CI/CD reliability, and code maintainability.
-
 ## Monorepo Structure
 
 - **Frontend**:

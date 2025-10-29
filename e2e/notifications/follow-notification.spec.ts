@@ -1,4 +1,4 @@
-import { test, expect } from '@/e2e/hooks';
+import { test, expect, setupPageErrorLogging } from '@/e2e/hooks';
 import { signIn, signOut, TEST_USERS } from '@/e2e/utils/auth';
 import { searchAndNavigateToUser } from '@/e2e/utils/navigation';
 
@@ -7,6 +7,8 @@ test.describe('Follow Notification System', () => {
         const user1Page = page;
         const user2Context = await browser.newContext();
         const user2Page = await user2Context.newPage();
+
+        setupPageErrorLogging(user2Page, 'user2');
 
         await signIn(user1Page, TEST_USERS.USER_A);
         await signIn(user2Page, TEST_USERS.USER_B);
@@ -44,8 +46,6 @@ test.describe('Follow Notification System', () => {
         const notificationsHeading = user2Page.getByTestId('notifications-heading');
         await notificationsHeading.click();
 
-        await user2Page.waitForTimeout(500);
-
         await expect(unreadBadge).not.toBeVisible();
 
         await user2Page.close();
@@ -55,34 +55,10 @@ test.describe('Follow Notification System', () => {
     test('should allow deleting notifications', async ({ page }) => {
         const user1Page = page;
 
-        const failedRequests: Array<{ url: string; status: number }> = [];
-        user1Page.on('response', (response) => {
-            if (!response.ok() && response.url().includes('/api/')) {
-                failedRequests.push({ url: response.url(), status: response.status() });
-                console.error(`[DEBUG] API call failed: ${response.url()} - Status: ${response.status()}`);
-            }
-        });
-
-        user1Page.on('console', (msg) => {
-            if (msg.type() === 'error') {
-                console.error(`[DEBUG] Browser console error: ${msg.text()}`);
-            }
-        });
-
         await signIn(user1Page, TEST_USERS.USER_A);
         await user1Page.waitForLoadState('networkidle');
 
         await searchAndNavigateToUser(user1Page, TEST_USERS.USER_B.name);
-
-        await user1Page.waitForTimeout(2000);
-
-        console.log(`[DEBUG] Current URL after navigation: ${user1Page.url()}`);
-        console.log(`[DEBUG] Failed API requests: ${JSON.stringify(failedRequests)}`);
-
-        const followButtonCount = await user1Page.getByTestId('follow-button').count();
-        const followingButtonCount = await user1Page.getByTestId('following-button').count();
-        const requestedButtonCount = await user1Page.getByTestId('requested-button').count();
-        console.log(`[DEBUG] Button counts - follow: ${followButtonCount}, following: ${followingButtonCount}, requested: ${requestedButtonCount}`);
 
         const followButton = user1Page.getByTestId('follow-button');
         await expect(followButton).toBeVisible({ timeout: 10000 });
@@ -95,8 +71,6 @@ test.describe('Follow Notification System', () => {
 
         await signIn(user1Page, TEST_USERS.USER_B);
         await user1Page.waitForLoadState('networkidle');
-
-        await user1Page.waitForTimeout(1000);
 
         const notificationsButton = user1Page.getByTestId('notifications-button');
         await notificationsButton.click();
@@ -111,34 +85,10 @@ test.describe('Follow Notification System', () => {
     });
 
     test('should show correct follow status on user page', async ({ page }) => {
-        const failedRequests: Array<{ url: string; status: number }> = [];
-        page.on('response', (response) => {
-            if (!response.ok() && response.url().includes('/api/')) {
-                failedRequests.push({ url: response.url(), status: response.status() });
-                console.error(`[DEBUG] API call failed: ${response.url()} - Status: ${response.status()}`);
-            }
-        });
-
-        page.on('console', (msg) => {
-            if (msg.type() === 'error') {
-                console.error(`[DEBUG] Browser console error: ${msg.text()}`);
-            }
-        });
-
         await signIn(page, TEST_USERS.USER_A);
         await page.waitForLoadState('networkidle');
 
         await searchAndNavigateToUser(page, TEST_USERS.USER_B.name);
-
-        await page.waitForTimeout(2000);
-
-        console.log(`[DEBUG] Current URL after navigation: ${page.url()}`);
-        console.log(`[DEBUG] Failed API requests: ${JSON.stringify(failedRequests)}`);
-
-        const followButtonCount = await page.getByTestId('follow-button').count();
-        const followingButtonCount = await page.getByTestId('following-button').count();
-        const requestedButtonCount = await page.getByTestId('requested-button').count();
-        console.log(`[DEBUG] Button counts - follow: ${followButtonCount}, following: ${followingButtonCount}, requested: ${requestedButtonCount}`);
 
         const followButton = page.getByTestId('follow-button');
         await expect(followButton).toBeVisible({ timeout: 10000 });
@@ -154,8 +104,6 @@ test.describe('Follow Notification System', () => {
         await expect(followingButtonAfterReload).toBeVisible();
 
         await followingButtonAfterReload.click();
-
-        await page.waitForTimeout(500);
 
         const followButtonAfterUnfollow = page.getByTestId('follow-button');
         await expect(followButtonAfterUnfollow).toBeVisible();
