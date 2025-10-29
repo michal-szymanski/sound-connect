@@ -33,6 +33,7 @@ function getDbFiles(): DbFile[] {
 }
 
 export function cleanTestData(): void {
+    const startTime = Date.now();
     console.log('🧹 Cleaning test data from database...');
 
     const testUserIds = Object.values(TEST_USERS).map((u) => u.id);
@@ -79,10 +80,12 @@ export function cleanTestData(): void {
         }
     }
 
-    console.log('✅ Test data cleaned successfully\n');
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.log(`✅ Test data cleaned successfully in ${duration}s\n`);
 }
 
 export function createSnapshot(): void {
+    const startTime = Date.now();
     console.log('📸 Creating database snapshot...');
 
     const dbFiles = getDbFiles();
@@ -111,10 +114,12 @@ export function createSnapshot(): void {
         }
     }
 
-    console.log('✅ Database snapshot created successfully\n');
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.log(`✅ Database snapshot created successfully in ${duration}s\n`);
 }
 
 export function restoreSnapshot(): void {
+    const startTime = Date.now();
     console.log('🔄 Restoring database from snapshot...');
 
     const dbFiles = getDbFiles();
@@ -143,7 +148,8 @@ export function restoreSnapshot(): void {
         }
     }
 
-    console.log('✅ Database restored successfully\n');
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.log(`✅ Database restored successfully in ${duration}s\n`);
 }
 
 export function snapshotExists(): boolean {
@@ -156,6 +162,7 @@ export function snapshotExists(): boolean {
 }
 
 export function cleanupSnapshots(): void {
+    const startTime = Date.now();
     console.log('🧹 Cleaning up database snapshots...');
 
     if (!fs.existsSync(WRANGLER_STATE_DIR)) {
@@ -172,5 +179,11 @@ export function cleanupSnapshots(): void {
         console.log(`   ✓ Deleted: ${file}`);
     }
 
-    console.log(snapshotFiles.length > 0 ? '✅ Snapshots cleaned up successfully\n' : '   ℹ️  No snapshots found to clean up\n');
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+
+    if (snapshotFiles.length > 0) {
+        console.log(`✅ Snapshots cleaned up successfully in ${duration}s\n`);
+    } else {
+        console.log('   ℹ️  No snapshots found to clean up\n');
+    }
 }
