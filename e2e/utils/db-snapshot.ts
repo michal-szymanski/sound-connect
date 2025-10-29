@@ -1,6 +1,7 @@
-import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
+import { TEST_USERS } from './auth';
 
 const API_DIR = path.join(process.cwd(), '..', 'apps', 'api');
 const WRANGLER_STATE_DIR = path.join(API_DIR, '.wrangler', 'state', 'v3', 'd1', 'miniflare-D1DatabaseObject');
@@ -34,20 +35,47 @@ function getDbFiles(): DbFile[] {
 export function cleanTestData(): void {
     console.log('🧹 Cleaning test data from database...');
 
+    const testUserIds = Object.values(TEST_USERS).map((u) => u.id);
+    const userIdList = testUserIds.map((id) => `'${id}'`).join(',');
+
     const dbFiles = getDbFiles();
+    const dbFile = dbFiles[0];
 
-    for (const { original } of dbFiles) {
-        if (!fs.existsSync(original)) {
-            continue;
-        }
+    if (!dbFile) {
+        throw new Error('No database files found');
+    }
 
+    const dbPath = dbFile.original;
+
+    const queries = [
+        `DELETE FROM notifications;`,
+        `DELETE FROM users_followers;`,
+        `DELETE FROM posts_reactions;`,
+        `DELETE FROM comments_reactions;`,
+        `DELETE FROM comments;`,
+        `DELETE FROM media;`,
+        `DELETE FROM posts;`,
+        `DELETE FROM messages;`,
+        `DELETE FROM music_groups_followers;`,
+        `DELETE FROM music_groups_members;`,
+        `DELETE FROM music_groups;`,
+        `DELETE FROM sessions WHERE user_id NOT IN (${userIdList});`,
+        `DELETE FROM accounts WHERE user_id NOT IN (${userIdList});`,
+        `DELETE FROM verifications WHERE identifier NOT IN (${userIdList});`,
+        `DROP TABLE IF EXISTS users_fts;`,
+        `DELETE FROM users WHERE id NOT IN (${userIdList});`,
+        `CREATE VIRTUAL TABLE IF NOT EXISTS users_fts USING fts5(name, email, content=users, content_rowid=rowid);`,
+        `INSERT INTO users_fts(rowid, name, email) SELECT rowid, name, email FROM users;`
+    ];
+
+    for (const query of queries) {
         try {
-            execSync(`sqlite3 "${original}" "DELETE FROM users_followers; DELETE FROM notifications;"`, {
+            execSync(`sqlite3 "${dbPath}" "${query}"`, {
+                cwd: API_DIR,
                 stdio: 'pipe'
             });
-            console.log(`   ✓ Cleaned: ${path.basename(original)}`);
-        } catch (error) {
-            console.error(`   ✗ Failed to clean ${path.basename(original)}:`, error);
+        } catch {
+            console.error(`   ⚠️  Warning executing query: ${query.substring(0, 50)}...`);
         }
     }
 
