@@ -8,9 +8,22 @@ This folder contains end-to-end tests for the Sound Connect application using Pl
 
 Tests use **database snapshots** to ensure complete isolation:
 
-- **Before tests:** Clean database snapshot is created
-- **After each test:** Database automatically restores to clean state
+- **Before tests:** Cleanup queries remove all dynamic test data while preserving test users, then a clean database snapshot is created
+- **After each test:** Database automatically restores to clean state from snapshot
 - **No manual cleanup needed!**
+
+### How Database Cleanup Works
+
+1. **Global setup** (`e2e/global-setup.ts`):
+   - Waits for database to be ready
+   - Executes `cleanTestData()` to remove dynamic data (posts, comments, notifications, followers, etc.)
+   - Preserves test users (pw1 and pw2) and their authentication data
+   - Creates a snapshot of the clean database
+
+2. **Test execution** (`e2e/hooks.ts`):
+   - Before each test: Restores database from snapshot
+   - Test runs with isolated, predictable state
+   - After test: Snapshot restoration ensures clean state for next test
 
 This ensures tests never interfere with each other and always start with a clean slate.
 
@@ -89,6 +102,40 @@ const name = 'Test User';
 - No need for unique data - tests are isolated
 - Reproducible failures make debugging easier
 - Tests are easier to understand and maintain
+
+### Element Selection Guidelines
+
+**IMPORTANT: Prioritize `data-testid` attributes for reliable element selection**
+
+When writing tests, follow this priority order for selecting elements:
+
+1. **First priority: `data-testid`** - Most reliable and resilient to UI changes
+
+```typescript
+// Best - Using data-testid
+await page.getByTestId('user-menu').click();
+await page.getByTestId('sign-out-button').click();
+```
+
+2. **Second priority: Semantic roles** - Use when data-testid is not available
+
+```typescript
+// Good - Using semantic roles
+await page.getByRole('button', { name: 'Sign in' }).click();
+await page.getByLabel('Email').fill('test@example.com');
+```
+
+3. **Last resort: CSS selectors** - Only when the above options are not feasible
+
+```typescript
+// Avoid when possible - Brittle
+await page.locator('.user-menu-button').click();
+```
+
+**When implementing new features:**
+- Add `data-testid` attributes to interactive elements during development
+- Use descriptive, kebab-case names (e.g., `data-testid="submit-post-button"`)
+- Coordinate with developers to ensure testable components
 
 ## Learn More
 
