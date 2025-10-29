@@ -86,7 +86,7 @@ function RouteComponent() {
                                         <FormItem>
                                             <FormLabel>Name</FormLabel>
                                             <FormControl>
-                                                <Input {...field} />
+                                                <Input {...field} data-testid="sign-up-name" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -99,7 +99,7 @@ function RouteComponent() {
                                         <FormItem>
                                             <FormLabel>Email</FormLabel>
                                             <FormControl>
-                                                <Input {...field} />
+                                                <Input {...field} data-testid="sign-up-email" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -112,7 +112,7 @@ function RouteComponent() {
                                         <FormItem>
                                             <FormLabel>Password</FormLabel>
                                             <FormControl>
-                                                <Input {...field} type="password" />
+                                                <Input {...field} type="password" data-testid="sign-up-password" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

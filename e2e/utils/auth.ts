@@ -10,9 +10,9 @@ export async function signUp(page: Page, credentials: UserCredentials): Promise<
     await page.goto('/sign-up');
     await page.waitForLoadState('networkidle');
 
-    const nameInput = page.getByLabel('Name');
-    const emailInput = page.getByLabel('Email');
-    const passwordInput = page.getByLabel('Password');
+    const nameInput = page.getByTestId('sign-up-name');
+    const emailInput = page.getByTestId('sign-up-email');
+    const passwordInput = page.getByTestId('sign-up-password');
 
     await nameInput.waitFor({ state: 'visible' });
     await emailInput.waitFor({ state: 'visible' });
@@ -22,7 +22,7 @@ export async function signUp(page: Page, credentials: UserCredentials): Promise<
     await emailInput.fill(credentials.email);
     await passwordInput.fill(credentials.password);
 
-    await page.getByRole('button', { name: 'Sign up' }).click();
+    await page.getByTestId('submit-button').click();
 
     try {
         await page.waitForURL('/', { timeout: 10000 });
@@ -39,8 +39,8 @@ export async function signIn(page: Page, credentials: Pick<UserCredentials, 'ema
     await page.goto('/sign-in');
     await page.waitForLoadState('networkidle');
 
-    const emailInput = page.getByLabel('Email');
-    const passwordInput = page.getByLabel('Password');
+    const emailInput = page.getByTestId('sign-in-email');
+    const passwordInput = page.getByTestId('sign-in-password');
 
     await emailInput.waitFor({ state: 'visible' });
     await passwordInput.waitFor({ state: 'visible' });
@@ -51,7 +51,7 @@ export async function signIn(page: Page, credentials: Pick<UserCredentials, 'ema
     await emailInput.fill(credentials.email);
     await passwordInput.fill(credentials.password);
 
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    await page.getByTestId('submit-button').click();
 
     try {
         await page.waitForURL('/', { timeout: 10000 });
@@ -73,11 +73,13 @@ export async function signOut(page: Page): Promise<void> {
 export const TEST_USERS = {
     USER_A: {
         id: 'xIaZhdYzGgdUCArgtU0QdLOBWGHB08Mz',
+        name: 'Playwright User 1',
         email: 'pw1@test.test',
         password: 'Test123!'
     },
     USER_B: {
         id: 'mstMlnzefkISg3BtHbz6ZmJ6HAokd6xz',
+        name: 'Playwright User 2',
         email: 'pw2@test.test',
         password: 'Test123!'
     }

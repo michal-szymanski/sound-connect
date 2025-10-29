@@ -7,10 +7,11 @@ test.describe('User Sign In', () => {
 
         await expect(page).toHaveURL('/');
 
-        const accountButton = page.locator('button:has-text("Playwright User 1")');
+        const accountButton = page.getByTestId('user-menu');
         await expect(accountButton).toBeVisible();
+        await expect(accountButton).toContainText(TEST_USERS.USER_A.name);
 
         await accountButton.click();
-        await expect(page.getByRole('menuitem', { name: 'Log Out' })).toBeVisible();
+        await expect(page.getByTestId('sign-out-button')).toBeVisible();
     });
 });

@@ -15,15 +15,15 @@ Tests use **database snapshots** to ensure complete isolation:
 ### How Database Cleanup Works
 
 1. **Global setup** (`e2e/global-setup.ts`):
-   - Waits for database to be ready
-   - Executes `cleanTestData()` to remove dynamic data (posts, comments, notifications, followers, etc.)
-   - Preserves test users (pw1 and pw2) and their authentication data
-   - Creates a snapshot of the clean database
+    - Waits for database to be ready
+    - Executes `cleanTestData()` to remove dynamic data (posts, comments, notifications, followers, etc.)
+    - Preserves test users (pw1 and pw2) and their authentication data
+    - Creates a snapshot of the clean database
 
 2. **Test execution** (`e2e/hooks.ts`):
-   - Before each test: Restores database from snapshot
-   - Test runs with isolated, predictable state
-   - After test: Snapshot restoration ensures clean state for next test
+    - Before each test: Restores database from snapshot
+    - Test runs with isolated, predictable state
+    - After test: Snapshot restoration ensures clean state for next test
 
 This ensures tests never interfere with each other and always start with a clean slate.
 
@@ -133,6 +133,7 @@ await page.locator('.user-menu-button').click();
 ```
 
 **When implementing new features:**
+
 - Add `data-testid` attributes to interactive elements during development
 - Use descriptive, kebab-case names (e.g., `data-testid="submit-post-button"`)
 - Coordinate with developers to ensure testable components

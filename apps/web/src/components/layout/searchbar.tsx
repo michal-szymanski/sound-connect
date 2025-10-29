@@ -54,7 +54,6 @@ const SearchBar = () => {
                                         key={user.id}
                                         value={user.id}
                                         className="h-10 cursor-pointer"
-                                        data-testid={`search-result-${user.id}`}
                                         onSelect={(_currentValue) => {
                                             setQuery('');
                                             router.navigate({ to: `/users/${user.id}` });
