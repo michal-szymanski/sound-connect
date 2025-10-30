@@ -44,8 +44,13 @@ export const authMiddleware = createMiddleware()
             throw new Error('Unauthorized: No valid session found');
         }
 
+        const json = await response.json();
+
+        if (json === null) {
+            throw new Error('Unauthorized: No valid session found');
+        }
+
         try {
-            const json = await response.json();
             const schema = z.object({ session: sessionApiSchema, user: userApiSchema });
             const data = schema.parse(json);
             const cookie = getSessionCookie();
