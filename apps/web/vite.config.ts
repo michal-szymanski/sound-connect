@@ -12,7 +12,9 @@ export default defineConfig({
         port: 3000
     },
     optimizeDeps: {
-        exclude: ['wrangler']
+        exclude: ['wrangler'],
+        include: ['lucide-react', 'sonner', 'next-themes'],
+        force: process.env['CI'] === 'true'
     },
     plugins: [
         ViteMcp({

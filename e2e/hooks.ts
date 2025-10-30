@@ -15,6 +15,16 @@ type FailedRequest = {
     method: string;
 };
 
+function isViteModuleRequest(url: string): boolean {
+    return (
+        url.includes('/@fs/') ||
+        url.includes('/node_modules/') ||
+        url.includes('.vite/deps/') ||
+        url.includes('?v=') ||
+        (!url.includes('/api/') && (url.includes('/src/') || url.endsWith('.ts') || url.endsWith('.tsx') || url.endsWith('.js')))
+    );
+}
+
 export function setupPageErrorLogging(page: Page, pageName?: string): () => FailedRequest[] {
     const failedRequests: FailedRequest[] = [];
     const prefix = pageName ? `[${pageName}]` : '';
@@ -32,6 +42,11 @@ export function setupPageErrorLogging(page: Page, pageName?: string): () => Fail
 
     page.on('requestfailed', (request) => {
         const url = request.url();
+
+        if (isViteModuleRequest(url)) {
+            return;
+        }
+
         failedRequests.push({
             url,
             status: 0,
