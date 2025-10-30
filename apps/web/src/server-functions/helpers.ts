@@ -96,9 +96,9 @@ export const getSessionDataFromCookie = (): SessionData | null => {
 
 export const getSessionData = async (env: Cloudflare.Env): Promise<SessionData | null> => {
     try {
-        let sessionDataFromCookie = getSessionDataFromCookie();
+        let sessionData = getSessionDataFromCookie();
 
-        if (!sessionDataFromCookie) {
+        if (!sessionData) {
             const { headers } = getRequest();
             const response = await env.API.fetch(`${env.API_URL}/api/auth/get-session`, {
                 headers
@@ -109,12 +109,12 @@ export const getSessionData = async (env: Cloudflare.Env): Promise<SessionData |
 
                 if (json !== null) {
                     const schema = z.object({ session: sessionApiSchema, user: userApiSchema });
-                    sessionDataFromCookie = schema.parse(json);
+                    sessionData = schema.parse(json);
                 }
             }
         }
 
-        return sessionDataFromCookie;
+        return sessionData;
     } catch {
         return null;
     }
