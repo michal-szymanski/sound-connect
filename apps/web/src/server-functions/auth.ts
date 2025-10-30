@@ -1,42 +1,41 @@
-import { userApiSchema, sessionApiSchema } from '@/common/types/auth';
 import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
-import { deleteSessionCookies, errorHandler, getSessionFromCookie, setSessionCookies } from '@/web/server-functions/helpers';
+import { userApiSchema, sessionApiSchema } from '@/common/types/auth';
+import { deleteSessionCookies, errorHandler, setSessionCookies, getSessionFromCookie } from '@/web/server-functions/helpers';
 import { envMiddleware } from '@/web/server-functions/middlewares';
 
 export const getSession = createServerFn()
     .middleware([envMiddleware])
     .handler(async ({ context: { env } }) => {
-        const session = getSessionFromCookie();
+        const sessionFromCookie = getSessionFromCookie();
 
-        if (session) {
-            return { success: true, body: session.user } as const;
+        if (sessionFromCookie) {
+            return { success: true, body: sessionFromCookie.user } as const;
         }
 
         const { headers } = getRequest();
-
         const response = await env.API.fetch(`${env.API_URL}/api/auth/get-session`, {
             headers
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return { success: false, body: null } as const;
         }
 
         try {
-            setSessionCookies(response);
-
             const json = await response.json();
-            const schema = z.object({ session: sessionApiSchema, user: userApiSchema });
 
-            if (!json) {
+            if (json === null) {
                 return { success: false, body: null } as const;
             }
 
-            return { success: true, body: schema.parse(json).user } as const;
+            const schema = z.object({ session: sessionApiSchema, user: userApiSchema });
+            const data = schema.parse(json);
+
+            return { success: true, body: data.user } as const;
         } catch (error) {
-            console.error(error);
+            console.error('[getSession] Failed to parse session:', error);
             return { success: false, body: null } as const;
         }
     });
