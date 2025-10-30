@@ -6,6 +6,11 @@ import { TEST_USERS } from './auth';
 const API_DIR = path.join(process.cwd(), '..', 'apps', 'api');
 const WRANGLER_STATE_DIR = path.join(API_DIR, '.wrangler', 'state', 'v3', 'd1', 'miniflare-D1DatabaseObject');
 
+const MIGRATION_SEEDED_USER_IDS = {
+    T1: 'xGvICj1532ArhGacyObqzE1bkEounP0y',
+    T2: 'keUzTIdaFlWWWgiG61OC5nLza3cbIyWN'
+};
+
 type DbFile = {
     original: string;
     snapshot: string;
@@ -37,7 +42,9 @@ export function cleanTestData(): void {
     console.log('🧹 Cleaning test data from database...');
 
     const testUserIds = Object.values(TEST_USERS).map((u) => u.id);
-    const userIdList = testUserIds.map((id) => `'${id}'`).join(',');
+    const migrationUserIds = Object.values(MIGRATION_SEEDED_USER_IDS);
+    const preservedUserIds = [...testUserIds, ...migrationUserIds];
+    const userIdList = preservedUserIds.map((id) => `'${id}'`).join(',');
 
     const dbFiles = getDbFiles();
     const dbFile = dbFiles[0];
@@ -130,7 +137,6 @@ export function restoreSnapshot(): void {
         }
 
         fs.copyFileSync(snapshot, original);
-        console.log(`   ✓ Restored: ${path.basename(original)}`);
 
         const shmFile = original.replace('.sqlite', '.sqlite-shm');
         const walFile = original.replace('.sqlite', '.sqlite-wal');
@@ -139,12 +145,10 @@ export function restoreSnapshot(): void {
 
         if (fs.existsSync(shmSnapshot)) {
             fs.copyFileSync(shmSnapshot, shmFile);
-            console.log(`   ✓ Restored: ${path.basename(shmFile)}`);
         }
 
         if (fs.existsSync(walSnapshot)) {
             fs.copyFileSync(walSnapshot, walFile);
-            console.log(`   ✓ Restored: ${path.basename(walFile)}`);
         }
     }
 
