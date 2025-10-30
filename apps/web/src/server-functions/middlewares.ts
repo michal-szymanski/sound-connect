@@ -6,24 +6,19 @@ import { getRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
 
 export const envMiddleware = createMiddleware().server(async ({ next }) => {
-    try {
-        if (!env || !env.API || !env.API_URL) {
-            console.error('[Server Functions Middleware] Cloudflare env missing required properties. API:', !!env?.API, 'API_URL:', !!env?.API_URL);
-            throw new Error('Cloudflare environment not properly configured');
-        }
-
-        return await next({
-            context: { env }
-        });
-    } catch (error) {
-        console.error('[Server Functions Middleware] Failed to access Cloudflare environment:', error);
-        throw new Error('Cloudflare environment not available');
+    if (!env || !env.API || !env.API_URL) {
+        console.error('[Env Middleware] Cloudflare env missing required properties. API:', !!env?.API, 'API_URL:', !!env?.API_URL);
+        throw new Error('Cloudflare environment not properly configured');
     }
+
+    return await next({
+        context: { env }
+    });
 });
 
 export const authMiddleware = createMiddleware()
     .middleware([envMiddleware])
-    .server(async ({ next, context: { env } }) => {
+    .server(async ({ next, context: { env }, request }) => {
         const sessionFromCookie = getSessionFromCookie();
 
         if (sessionFromCookie) {
@@ -65,7 +60,12 @@ export const authMiddleware = createMiddleware()
                 context: { env, auth }
             });
         } catch (error) {
-            console.error('[Auth Middleware] Failed to parse session:', error);
+            const isAuthRoute = [`${env.CLIENT_URL}/sign-in`, `${env.CLIENT_URL}/sign-up`].includes(request.url);
+
+            if (!isAuthRoute) {
+                console.error('[Auth Middleware] Failed to parse session:', error);
+            }
+
             throw new Error('Unauthorized: Invalid session data');
         }
     });
