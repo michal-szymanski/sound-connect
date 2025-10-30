@@ -30,6 +30,16 @@ export function setupPageErrorLogging(page: Page, pageName?: string): () => Fail
         }
     });
 
+    page.on('requestfailed', (request) => {
+        const url = request.url();
+        failedRequests.push({
+            url,
+            status: 0,
+            method: request.method()
+        });
+        console.error(`[E2E ERROR]${prefix} Network request failed: ${request.method()} ${url} - ${request.failure()?.errorText || 'Unknown error'}`);
+    });
+
     page.on('console', (msg) => {
         if (msg.type() === 'error') {
             console.error(`[E2E ERROR]${prefix} Browser console: ${msg.text()}`);
