@@ -1,43 +1,14 @@
 import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
-import { userApiSchema, sessionApiSchema } from '@/common/types/auth';
-import { deleteSessionCookies, errorHandler, setSessionCookies, getSessionFromCookie } from '@/web/server-functions/helpers';
-import { envMiddleware } from '@/web/server-functions/middlewares';
+import { userApiSchema } from '@/common/types/auth';
+import { deleteSessionCookies, errorHandler, setSessionCookies } from '@/web/server-functions/helpers';
+import { authMiddleware, envMiddleware } from '@/web/server-functions/middlewares';
 
-export const getSession = createServerFn()
-    .middleware([envMiddleware])
-    .handler(async ({ context: { env } }) => {
-        const sessionFromCookie = getSessionFromCookie();
-
-        if (sessionFromCookie) {
-            return { success: true, body: sessionFromCookie.user } as const;
-        }
-
-        const { headers } = getRequest();
-        const response = await env.API.fetch(`${env.API_URL}/api/auth/get-session`, {
-            headers
-        });
-
-        if (!response.ok) {
-            return { success: false, body: null } as const;
-        }
-
-        try {
-            const json = await response.json();
-
-            if (json === null) {
-                return { success: false, body: null } as const;
-            }
-
-            const schema = z.object({ session: sessionApiSchema, user: userApiSchema });
-            const data = schema.parse(json);
-
-            return { success: true, body: data.user } as const;
-        } catch (error) {
-            console.error('[getSession] Failed to parse session:', error);
-            return { success: false, body: null } as const;
-        }
+export const getUser = createServerFn()
+    .middleware([authMiddleware])
+    .handler(async ({ context: { auth } }) => {
+        return { success: true, body: auth.user } as const;
     });
 
 export const signIn = createServerFn({ method: 'POST' })
