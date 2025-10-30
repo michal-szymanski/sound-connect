@@ -52,6 +52,8 @@ export const NotificationsProvider = ({ children }: Props) => {
             const result = await getNotifications();
             if (result.success && result.body) {
                 setNotifications(result.body);
+            } else {
+                setNotifications([]);
             }
         };
 
