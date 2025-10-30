@@ -4,7 +4,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from '@tanstack/react-router';
 import { type ReactNode } from 'react';
 import { Toaster } from '@/web/components/ui/sonner';
-import { getSession } from '@/web/server-functions/auth';
+import { getUser } from '@/web/server-functions/auth';
 import globalsCss from '@/web/styles/globals.css?url';
 
 export const Route = createRootRouteWithContext<{
@@ -32,13 +32,17 @@ export const Route = createRootRouteWithContext<{
     }),
     component: RootComponent,
     beforeLoad: async () => {
-        const result = await getSession();
+        try {
+            const result = await getUser();
 
-        if (result.success) {
-            return { user: result.body };
+            if (result.success) {
+                return { user: result.body };
+            }
+
+            return { user: null };
+        } catch (_error) {
+            return { user: null };
         }
-
-        return { user: null };
     }
 });
 

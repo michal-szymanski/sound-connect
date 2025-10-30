@@ -11,7 +11,7 @@ import {
     useQueryClient
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { getSession } from '@/web/server-functions/auth';
+import { getUser } from '@/web/server-functions/auth';
 import {
     getFeedPaginated,
     getFollowers,
@@ -74,7 +74,7 @@ export const userQuery = (user?: User | UserDTO | null) =>
                 return user;
             }
 
-            const result = await getSession();
+            const result = await getUser();
 
             if (result.success) {
                 return result.body;
