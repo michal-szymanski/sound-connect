@@ -1,6 +1,6 @@
 import { APP_NAME_NORMALIZED } from '@/common/constants';
-import { authErrorSchema, userApiSchema, sessionApiSchema } from '@/common/types/auth';
-import { getCookie, setResponseHeader } from '@tanstack/react-start/server';
+import { authErrorSchema, userApiSchema, sessionApiSchema, SessionApi, UserApi } from '@/common/types/auth';
+import { getCookie, getRequest, setResponseHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 
 const SECURE_PREFIX = '__Secure-';
@@ -8,6 +8,11 @@ const SESSION_TOKEN_COOKIE_NAME = `${APP_NAME_NORMALIZED}.session_token`;
 const SECURE_SESSION_TOKEN_COOKIE_NAME = `${SECURE_PREFIX}${SESSION_TOKEN_COOKIE_NAME}`;
 const SESSION_DATA_COOKIE_NAME = `${APP_NAME_NORMALIZED}.session_data`;
 const SECURE_SESSION_DATA_COOKIE_NAME = `${SECURE_PREFIX}${SESSION_DATA_COOKIE_NAME}`;
+
+type SessionData = {
+    session: SessionApi;
+    user: UserApi;
+};
 
 export const errorHandler = async (response: Response) => {
     try {
@@ -64,7 +69,7 @@ export const getSessionCookie = () => {
     return null;
 };
 
-export const getSessionFromCookie = () => {
+export const getSessionDataFromCookie = (): SessionData | null => {
     try {
         const cookieValue = getCookie(SECURE_SESSION_DATA_COOKIE_NAME) ?? getCookie(SESSION_DATA_COOKIE_NAME);
 
@@ -84,7 +89,33 @@ export const getSessionFromCookie = () => {
 
         const { session } = schema.parse(json);
         return session;
-    } catch (_error) {
+    } catch {
+        return null;
+    }
+};
+
+export const getSessionData = async (env: Cloudflare.Env): Promise<SessionData | null> => {
+    try {
+        let sessionFromCookie = getSessionDataFromCookie();
+
+        if (!sessionFromCookie) {
+            const { headers } = getRequest();
+            const response = await env.API.fetch(`${env.API_URL}/api/auth/get-session`, {
+                headers
+            });
+
+            if (response.ok) {
+                const json = await response.json();
+
+                if (json !== null) {
+                    const schema = z.object({ session: sessionApiSchema, user: userApiSchema });
+                    sessionFromCookie = schema.parse(json);
+                }
+            }
+        }
+
+        return sessionFromCookie;
+    } catch {
         return null;
     }
 };

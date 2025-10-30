@@ -18,7 +18,7 @@ debugRoutes.get('/debug/user-do/:userId', async (c) => {
 
         const data = await stub.getStorageForDebug();
         return c.json(data);
-    } catch (_error) {
+    } catch {
         throw new HTTPException(500, { message: 'Internal server error' });
     }
 });
@@ -32,7 +32,7 @@ debugRoutes.get('/debug/chat-do/:roomId', async (c) => {
 
         const data = await stub.getStorageForDebug();
         return c.json(data);
-    } catch (_error) {
+    } catch {
         throw new HTTPException(500, { message: 'Internal server error' });
     }
 });
@@ -50,7 +50,7 @@ debugRoutes.delete('/debug/clear-all-notifications', async (c) => {
         }
 
         return c.json({ success: true, clearedCount, message: `Reset state for ${clearedCount} users (notifications, subscribers, chat rooms)` });
-    } catch (_error) {
+    } catch {
         throw new HTTPException(500, { message: 'Internal server error' });
     }
 });

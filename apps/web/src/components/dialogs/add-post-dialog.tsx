@@ -59,7 +59,7 @@ const AddPostDialog = () => {
             if (result.success) {
                 queryClient.invalidateQueries({ queryKey: ['feed'] });
             }
-        } catch (_error) {
+        } catch {
             toast.error('Could not publish the post', {
                 description: 'Unknown error occurred'
             });

@@ -112,7 +112,7 @@ export class ChatDurableObject extends DurableObject {
                 const id = this.env.UserDO.idFromName(`user:${participantId}`);
                 const stub = this.env.UserDO.get(id);
                 await stub.sendMessage(message);
-            } catch (_error) {
+            } catch {
                 this.participants.delete(participantId);
                 await this.saveParticipants();
             }

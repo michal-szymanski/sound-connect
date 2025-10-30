@@ -59,7 +59,7 @@ function RouteComponent() {
             } else if (result.body) {
                 handleServerError(result.body);
             }
-        } catch (_error) {
+        } catch {
             toast.error('Could not sign up', {
                 description: 'Unknown error occurred'
             });
