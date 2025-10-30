@@ -14,7 +14,7 @@ const SignOutButton = () => {
 
         if (result.success) {
             queryClient.clear();
-            router.navigate({ to: '/sign-in' });
+            await router.invalidate();
         } else if (result.body) {
             toast.error('Could not sign out', {
                 description: result.body.message

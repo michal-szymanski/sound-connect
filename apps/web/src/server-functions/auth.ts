@@ -1,14 +1,40 @@
 import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
-import { userApiSchema } from '@/common/types/auth';
-import { deleteSessionCookies, errorHandler, setSessionCookies } from '@/web/server-functions/helpers';
-import { authMiddleware, envMiddleware } from '@/web/server-functions/middlewares';
+import { userApiSchema, sessionApiSchema } from '@/common/types/auth';
+import { deleteSessionCookies, errorHandler, getSessionFromCookie, setSessionCookies } from '@/web/server-functions/helpers';
+import { envMiddleware } from '@/web/server-functions/middlewares';
 
 export const getUser = createServerFn()
-    .middleware([authMiddleware])
-    .handler(async ({ context: { auth } }) => {
-        return { success: true, body: auth.user } as const;
+    .middleware([envMiddleware])
+    .handler(async ({ context: { env } }) => {
+        try {
+            let sessionFromCookie = getSessionFromCookie();
+
+            if (!sessionFromCookie) {
+                const { headers } = getRequest();
+                const response = await env.API.fetch(`${env.API_URL}/api/auth/get-session`, {
+                    headers
+                });
+
+                if (response.ok) {
+                    const json = await response.json();
+
+                    if (json !== null) {
+                        const schema = z.object({ session: sessionApiSchema, user: userApiSchema });
+                        sessionFromCookie = schema.parse(json);
+                    }
+                }
+            }
+
+            if (!sessionFromCookie) {
+                return { success: true, body: null } as const;
+            }
+
+            return { success: true, body: sessionFromCookie.user } as const;
+        } catch {
+            return { success: true, body: null } as const;
+        }
     });
 
 export const signIn = createServerFn({ method: 'POST' })
