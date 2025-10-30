@@ -107,7 +107,7 @@ function RouteComponent() {
 
             queryClient.invalidateQueries({ queryKey: ['follow-request-status', user.id] });
             router.invalidate();
-        } catch (_error) {
+        } catch {
             setOptimisticStatus(null);
         }
     };

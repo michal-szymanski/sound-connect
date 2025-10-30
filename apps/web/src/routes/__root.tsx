@@ -40,7 +40,7 @@ export const Route = createRootRouteWithContext<{
             }
 
             return { user: null };
-        } catch (_error) {
+        } catch {
             return { user: null };
         }
     }

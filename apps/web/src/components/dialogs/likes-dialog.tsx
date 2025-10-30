@@ -39,7 +39,7 @@ const LikesDialog = ({ isOpen, onClose, postId }: Props) => {
             await followUser({ data: { userId } });
             await queryClient.invalidateQueries({ queryKey: ['followings'] });
             toast.success('User followed successfully');
-        } catch (_error) {
+        } catch {
             setFollowingUsers((prev) => {
                 const newSet = new Set(prev);
                 newSet.delete(userId);
