@@ -1,4 +1,3 @@
-import { env } from 'cloudflare:workers';
 import { getRoomId } from '@/common/helpers';
 import { userDTOSchema, feedItemSchema, chatMessageSchema, postLikeDataSchema, commentWithUserSchema, createCommentSchema } from '@/common/types/models';
 import { postReactionSchema, postSchema, notificationSchema } from '@/common/types/drizzle';
@@ -6,42 +5,44 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { getSession } from '@/web/server-functions/auth';
 import { errorHandler, getSessionCookie } from '@/web/server-functions/helpers';
+import { envMiddleware } from '@/web/server-functions/middlewares';
 
-export const getFeed = createServerFn().handler(async () => {
-    const { API, API_URL } = env;
-    const cookie = getSessionCookie();
+export const getFeed = createServerFn()
+    .middleware([envMiddleware])
+    .handler(async ({ context: { env } }) => {
+        const cookie = getSessionCookie();
 
-    const response = await API.fetch(`${API_URL}/feed`, {
-        headers: { Cookie: cookie ?? '' },
-        credentials: 'include'
+        const response = await env.API.fetch(`${env.API_URL}/feed`, {
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = z.array(feedItemSchema);
+
+            return { success: true, body: schema.parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: null } as const;
+        }
     });
 
-    if (!response.ok) {
-        return await errorHandler(response);
-    }
-
-    try {
-        const json = await response.json();
-        const schema = z.array(feedItemSchema);
-
-        return { success: true, body: schema.parse(json) } as const;
-    } catch (error) {
-        console.error(error);
-        return { success: false, body: null } as const;
-    }
-});
-
 export const getFeedPaginated = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ limit: z.number().optional(), offset: z.number().optional() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
         const searchParams = new URLSearchParams();
         if (data.limit) searchParams.set('limit', data.limit.toString());
         if (data.offset) searchParams.set('offset', data.offset.toString());
 
-        const response = await API.fetch(`${API_URL}/feed?${searchParams.toString()}`, {
+        const response = await env.API.fetch(`${env.API_URL}/feed?${searchParams.toString()}`, {
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -62,12 +63,12 @@ export const getFeedPaginated = createServerFn()
     });
 
 export const getPosts = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/${data.userId}/posts`, {
+        const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/posts`, {
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -88,12 +89,12 @@ export const getPosts = createServerFn()
     });
 
 export const getReactions = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/posts/${data.postId}/reactions`, {
+        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/reactions`, {
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -114,12 +115,12 @@ export const getReactions = createServerFn()
     });
 
 export const getFollowers = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/${data.userId}/followers`, {
+        const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/followers`, {
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -140,12 +141,12 @@ export const getFollowers = createServerFn()
     });
 
 export const getFollowings = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/${data.userId}/followings`, {
+        const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/followings`, {
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -166,12 +167,12 @@ export const getFollowings = createServerFn()
     });
 
 export const getUser = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/${data.userId}`, {
+        const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}`, {
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -191,12 +192,12 @@ export const getUser = createServerFn()
     });
 
 export const sendFollowRequest = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/${data.userId}/follow`, {
+        const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/follow`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             credentials: 'include'
@@ -210,12 +211,12 @@ export const sendFollowRequest = createServerFn({ method: 'POST' })
     });
 
 export const followUser = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/${data.userId}/follow`, {
+        const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/follow`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             credentials: 'include'
@@ -229,12 +230,12 @@ export const followUser = createServerFn({ method: 'POST' })
     });
 
 export const unfollowUser = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/${data.userId}/unfollow`, {
+        const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/unfollow`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             credentials: 'include'
@@ -248,12 +249,12 @@ export const unfollowUser = createServerFn({ method: 'POST' })
     });
 
 export const getMutualFollowers = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/${data.userId}/contacts`, {
+        const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/contacts`, {
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -274,9 +275,9 @@ export const getMutualFollowers = createServerFn()
     });
 
 export const getChatHistory = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ peerId: z.string() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
         const result = await getSession();
@@ -287,7 +288,7 @@ export const getChatHistory = createServerFn()
 
         const user = result.body;
         const roomId = getRoomId(user.id, data.peerId);
-        const response = await API.fetch(`${API_URL}/chat/${roomId}/history`, {
+        const response = await env.API.fetch(`${env.API_URL}/chat/${roomId}/history`, {
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -308,12 +309,12 @@ export const getChatHistory = createServerFn()
     });
 
 export const addPost = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
     .inputValidator(z.instanceof(FormData))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/posts`, {
+        const response = await env.API.fetch(`${env.API_URL}/posts`, {
             method: 'POST',
             headers: { Cookie: cookie ?? '' },
             body: data,
@@ -328,12 +329,12 @@ export const addPost = createServerFn({ method: 'POST' })
     });
 
 export const search = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ query: z.string() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/search?query=${data.query}`, {
+        const response = await env.API.fetch(`${env.API_URL}/search?query=${data.query}`, {
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -354,12 +355,12 @@ export const search = createServerFn()
     });
 
 export const getFollowRequestStatus = createServerFn({ method: 'GET' })
+    .middleware([envMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/users/${data.userId}/follow-request-status`, {
+        const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/follow-request-status`, {
             method: 'GET',
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
@@ -374,12 +375,12 @@ export const getFollowRequestStatus = createServerFn({ method: 'GET' })
     });
 
 export const likePost = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/posts/${data.postId}/like`, {
+        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/like`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             credentials: 'include'
@@ -401,12 +402,12 @@ export const likePost = createServerFn({ method: 'POST' })
     });
 
 export const unlikePost = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/posts/${data.postId}/like`, {
+        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/like`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             credentials: 'include'
@@ -428,12 +429,12 @@ export const unlikePost = createServerFn({ method: 'POST' })
     });
 
 export const getPostLikesUsers = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/posts/${data.postId}/likes/users`, {
+        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/likes/users`, {
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -454,12 +455,12 @@ export const getPostLikesUsers = createServerFn()
     });
 
 export const getPostLikes = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/posts/${data.postId}/likes`, {
+        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/likes`, {
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -480,12 +481,12 @@ export const getPostLikes = createServerFn()
     });
 
 export const getPost = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/posts/${data.postId}`, {
+        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}`, {
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -505,12 +506,12 @@ export const getPost = createServerFn()
     });
 
 export const getComments = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/posts/${data.postId}/comments`, {
+        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/comments`, {
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
         });
@@ -530,12 +531,12 @@ export const getComments = createServerFn()
     });
 
 export const createComment = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
     .inputValidator(createCommentSchema)
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/comments`, {
+        const response = await env.API.fetch(`${env.API_URL}/comments`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Cookie: cookie ?? '' },
             credentials: 'include',
@@ -550,12 +551,12 @@ export const createComment = createServerFn({ method: 'POST' })
     });
 
 export const likeComment = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
     .inputValidator(z.object({ commentId: z.number() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/comments/${data.commentId}/like`, {
+        const response = await env.API.fetch(`${env.API_URL}/comments/${data.commentId}/like`, {
             method: 'POST',
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
@@ -569,12 +570,12 @@ export const likeComment = createServerFn({ method: 'POST' })
     });
 
 export const unlikeComment = createServerFn()
+    .middleware([envMiddleware])
     .inputValidator(z.object({ commentId: z.number() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+    .handler(async ({ data, context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/comments/${data.commentId}/like`, {
+        const response = await env.API.fetch(`${env.API_URL}/comments/${data.commentId}/like`, {
             method: 'DELETE',
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
@@ -587,53 +588,55 @@ export const unlikeComment = createServerFn()
         return { success: true, body: null } as const;
     });
 
-export const testSentry = createServerFn().handler(async () => {
-    const { API, API_URL } = env;
-    const cookie = getSessionCookie();
-
-    const response = await API.fetch(`${API_URL}/debug/test-sentry`, {
-        headers: { Cookie: cookie ?? '' },
-        credentials: 'include'
-    });
-
-    if (!response.ok) {
-        return await errorHandler(response);
-    }
-
-    return { success: true, body: null } as const;
-});
-
-export const getNotifications = createServerFn().handler(async () => {
-    const { API, API_URL } = env;
-    const cookie = getSessionCookie();
-
-    const response = await API.fetch(`${API_URL}/notifications`, {
-        headers: { Cookie: cookie ?? '' },
-        credentials: 'include'
-    });
-
-    if (!response.ok) {
-        return await errorHandler(response);
-    }
-
-    try {
-        const json = await response.json();
-        const schema = z.array(notificationSchema);
-
-        return { success: true, body: schema.parse(json) } as const;
-    } catch (error) {
-        console.error(error);
-        return { success: false, body: null } as const;
-    }
-});
-
-export const markNotificationAsSeen = createServerFn()
-    .inputValidator(z.object({ notificationId: z.number() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+export const testSentry = createServerFn()
+    .middleware([envMiddleware])
+    .handler(async ({ context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/notifications/${data.notificationId}/seen`, {
+        const response = await env.API.fetch(`${env.API_URL}/debug/test-sentry`, {
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
+    });
+
+export const getNotifications = createServerFn()
+    .middleware([envMiddleware])
+    .handler(async ({ context: { env } }) => {
+        const cookie = getSessionCookie();
+
+        const response = await env.API.fetch(`${env.API_URL}/notifications`, {
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = z.array(notificationSchema);
+
+            return { success: true, body: schema.parse(json) } as const;
+        } catch (error) {
+            console.error(error);
+            return { success: false, body: null } as const;
+        }
+    });
+
+export const markNotificationAsSeen = createServerFn()
+    .middleware([envMiddleware])
+    .inputValidator(z.object({ notificationId: z.number() }))
+    .handler(async ({ data, context: { env } }) => {
+        const cookie = getSessionCookie();
+
+        const response = await env.API.fetch(`${env.API_URL}/notifications/${data.notificationId}/seen`, {
             method: 'PATCH',
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
@@ -646,30 +649,31 @@ export const markNotificationAsSeen = createServerFn()
         return { success: true, body: null } as const;
     });
 
-export const markAllNotificationsAsSeen = createServerFn().handler(async () => {
-    const { API, API_URL } = env;
-    const cookie = getSessionCookie();
-
-    const response = await API.fetch(`${API_URL}/notifications/seen`, {
-        method: 'PATCH',
-        headers: { Cookie: cookie ?? '' },
-        credentials: 'include'
-    });
-
-    if (!response.ok) {
-        return await errorHandler(response);
-    }
-
-    return { success: true, body: null } as const;
-});
-
-export const deleteNotification = createServerFn()
-    .inputValidator(z.object({ notificationId: z.number() }))
-    .handler(async ({ data }) => {
-        const { API, API_URL } = env;
+export const markAllNotificationsAsSeen = createServerFn()
+    .middleware([envMiddleware])
+    .handler(async ({ context: { env } }) => {
         const cookie = getSessionCookie();
 
-        const response = await API.fetch(`${API_URL}/notifications/${data.notificationId}`, {
+        const response = await env.API.fetch(`${env.API_URL}/notifications/seen`, {
+            method: 'PATCH',
+            headers: { Cookie: cookie ?? '' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await errorHandler(response);
+        }
+
+        return { success: true, body: null } as const;
+    });
+
+export const deleteNotification = createServerFn()
+    .middleware([envMiddleware])
+    .inputValidator(z.object({ notificationId: z.number() }))
+    .handler(async ({ data, context: { env } }) => {
+        const cookie = getSessionCookie();
+
+        const response = await env.API.fetch(`${env.API_URL}/notifications/${data.notificationId}`, {
             method: 'DELETE',
             headers: { Cookie: cookie ?? '' },
             credentials: 'include'
