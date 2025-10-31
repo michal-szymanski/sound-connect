@@ -1,7 +1,7 @@
 import { userDTOSchema } from '@/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
-import { apiErrorHandler } from '@/web/server-functions/helpers';
+import { apiErrorHandler, failure, success } from '@/web/server-functions/helpers';
 import { authMiddleware } from '@/web/server-functions/middlewares';
 
 export const getFollowers = createServerFn()
@@ -21,10 +21,10 @@ export const getFollowers = createServerFn()
             const json = await response.json();
             const schema = z.array(userDTOSchema);
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -45,10 +45,10 @@ export const getFollowings = createServerFn()
             const json = await response.json();
             const schema = z.array(userDTOSchema);
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -68,10 +68,10 @@ export const getUser = createServerFn()
         try {
             const json = await response.json();
 
-            return { success: true, body: userDTOSchema.parse(json) } as const;
+            return success(userDTOSchema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -89,7 +89,7 @@ export const followUser = createServerFn({ method: 'POST' })
             return await apiErrorHandler(response);
         }
 
-        return { success: true, body: null } as const;
+        return success(null);
     });
 
 export const unfollowUser = createServerFn({ method: 'POST' })
@@ -106,7 +106,7 @@ export const unfollowUser = createServerFn({ method: 'POST' })
             return await apiErrorHandler(response);
         }
 
-        return { success: true, body: null } as const;
+        return success(null);
     });
 
 export const getMutualFollowers = createServerFn()
@@ -126,10 +126,10 @@ export const getMutualFollowers = createServerFn()
             const json = await response.json();
             const schema = z.array(userDTOSchema);
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -150,10 +150,10 @@ export const search = createServerFn()
             const json = await response.json();
             const schema = z.array(userDTOSchema);
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -177,9 +177,9 @@ export const getFollowRequestStatus = createServerFn({ method: 'GET' })
                 status: z.enum(['following', 'pending', 'none'])
             });
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });

@@ -1,7 +1,7 @@
 import { commentWithUserSchema, createCommentSchema } from '@/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
-import { apiErrorHandler } from '@/web/server-functions/helpers';
+import { apiErrorHandler, failure, success } from '@/web/server-functions/helpers';
 import { authMiddleware } from '@/web/server-functions/middlewares';
 
 export const getComments = createServerFn()
@@ -20,10 +20,10 @@ export const getComments = createServerFn()
         try {
             const json = await response.json();
 
-            return { success: true, body: z.array(commentWithUserSchema).parse(json) } as const;
+            return success(z.array(commentWithUserSchema).parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -42,7 +42,7 @@ export const createComment = createServerFn({ method: 'POST' })
             return await apiErrorHandler(response);
         }
 
-        return { success: true, body: null } as const;
+        return success(null);
     });
 
 export const likeComment = createServerFn({ method: 'POST' })
@@ -59,7 +59,7 @@ export const likeComment = createServerFn({ method: 'POST' })
             return await apiErrorHandler(response);
         }
 
-        return { success: true, body: null } as const;
+        return success(null);
     });
 
 export const unlikeComment = createServerFn()
@@ -76,5 +76,5 @@ export const unlikeComment = createServerFn()
             return await apiErrorHandler(response);
         }
 
-        return { success: true, body: null } as const;
+        return success(null);
     });
