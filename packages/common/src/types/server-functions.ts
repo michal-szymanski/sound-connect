@@ -7,5 +7,3 @@ export type ServerFunctionError<E = null> = {
     success: false;
     body: E;
 };
-
-export type ServerFunctionResult<TSuccess, TError = null> = ServerFunctionSuccess<TSuccess> | ServerFunctionError<TError>;
