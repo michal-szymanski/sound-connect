@@ -12,21 +12,9 @@ import {
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { getUser } from '@/web/server-functions/auth';
-import {
-    getFeedPaginated,
-    getFollowers,
-    getFollowings,
-    getReactions,
-    search,
-    getFollowRequestStatus,
-    getPost,
-    likePost,
-    unlikePost,
-    getComments,
-    createComment,
-    likeComment,
-    unlikeComment
-} from '@/web/server-functions/models';
+import { getFeedPaginated, getReactions, getPost, likePost, unlikePost } from '@/web/server-functions/posts';
+import { getFollowers, getFollowings, search, getFollowRequestStatus } from '@/web/server-functions/users';
+import { getComments, createComment, likeComment, unlikeComment } from '@/web/server-functions/comments';
 import { getEnvs } from '@/web/server-functions/utils';
 
 export const useReactions = ({ postId }: { postId: number }) =>

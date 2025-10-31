@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useEnvs, useUser } from '@/web/lib/react-query';
 import type { Notification } from '@/common/types/drizzle';
-import { getNotifications } from '@/web/server-functions/models';
+import { getNotifications } from '@/web/server-functions/notifications';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 

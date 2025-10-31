@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/web/components/ui/pop
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import { useState } from 'react';
 import { useNotifications } from '@/web/providers/notifications-provider';
-import { deleteNotification, markAllNotificationsAsSeen } from '@/web/server-functions/models';
+import { deleteNotification, markAllNotificationsAsSeen } from '@/web/server-functions/notifications';
 import { formatDistanceToNow } from 'date-fns';
 
 export function NotificationsButton() {
