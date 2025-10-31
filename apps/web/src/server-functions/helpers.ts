@@ -1,6 +1,7 @@
 import { APP_NAME_NORMALIZED } from '@/common/constants';
 import { authErrorSchema, userApiSchema, sessionApiSchema, SessionApi, UserApi } from '@/common/types/auth';
 import { apiErrorSchema } from '@/common/types/api';
+import type { ServerFunctionResult } from '@/common/types/server-functions';
 import { getCookie, getRequest, setResponseHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 
@@ -15,6 +16,14 @@ type SessionData = {
     user: UserApi;
 };
 
+export const success = <T>(body: T): ServerFunctionResult<T, never> => {
+    return { success: true, body } as const;
+};
+
+export const failure = <E = null>(body: E): ServerFunctionResult<never, E> => {
+    return { success: false, body } as const;
+};
+
 export const authErrorHandler = async (response: Response) => {
     try {
         const status = response.status;
@@ -25,12 +34,9 @@ export const authErrorHandler = async (response: Response) => {
         const json = JSON.parse(errorBody);
         const authError = authErrorSchema.parse(json);
 
-        return {
-            success: false,
-            body: { ...authError, status }
-        } as const;
-    } catch (_e) {
-        return { success: false, body: null } as const;
+        return failure({ ...authError, status });
+    } catch {
+        return failure(null);
     }
 };
 
@@ -51,12 +57,9 @@ export const apiErrorHandler = async (response: Response) => {
             message = errorBody;
         }
 
-        return {
-            success: false,
-            body: { status, message }
-        } as const;
-    } catch (_e) {
-        return { success: false, body: null } as const;
+        return failure({ status, message });
+    } catch {
+        return failure(null);
     }
 };
 

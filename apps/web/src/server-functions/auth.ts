@@ -2,7 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
 import { userApiSchema } from '@/common/types/auth';
-import { authErrorHandler, deleteSessionCookies, getSessionData, setSessionCookies } from '@/web/server-functions/helpers';
+import { authErrorHandler, deleteSessionCookies, failure, getSessionData, setSessionCookies, success } from '@/web/server-functions/helpers';
 import { envMiddleware } from '@/web/server-functions/middlewares';
 
 export const getUser = createServerFn()
@@ -11,10 +11,10 @@ export const getUser = createServerFn()
         const sessionData = await getSessionData(env);
 
         if (!sessionData) {
-            return { success: false, body: null } as const;
+            return failure(null);
         }
 
-        return { success: true, body: sessionData.user } as const;
+        return success(sessionData.user);
     });
 
 export const signIn = createServerFn({ method: 'POST' })
@@ -40,7 +40,7 @@ export const signIn = createServerFn({ method: 'POST' })
         const isSessionCreated = setSessionCookies(response);
 
         if (!isSessionCreated) {
-            return { success: false, body: null } as const;
+            return failure(null);
         }
 
         try {
@@ -52,10 +52,10 @@ export const signIn = createServerFn({ method: 'POST' })
                 token: z.string()
             });
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -68,7 +68,7 @@ export const signOut = createServerFn({
         const cookie = headers.get('Cookie');
 
         if (!cookie) {
-            return { success: false, body: null } as const;
+            return failure(null);
         }
 
         const response = await env.API.fetch(`${env.API_URL}/api/auth/sign-out`, {
@@ -93,10 +93,10 @@ export const signOut = createServerFn({
                 deleteSessionCookies();
             }
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -125,7 +125,7 @@ export const signUp = createServerFn({
         const isSessionCreated = setSessionCookies(response);
 
         if (!isSessionCreated) {
-            return { success: false, body: null } as const;
+            return failure(null);
         }
 
         try {
@@ -135,9 +135,9 @@ export const signUp = createServerFn({
                 user: userApiSchema
             });
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });

@@ -2,7 +2,7 @@ import { feedItemSchema, postLikeDataSchema, userDTOSchema } from '@/common/type
 import { postReactionSchema, postSchema } from '@/common/types/drizzle';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
-import { apiErrorHandler } from '@/web/server-functions/helpers';
+import { apiErrorHandler, failure, success } from '@/web/server-functions/helpers';
 import { authMiddleware } from '@/web/server-functions/middlewares';
 
 export const getFeed = createServerFn()
@@ -21,10 +21,10 @@ export const getFeed = createServerFn()
             const json = await response.json();
             const schema = z.array(feedItemSchema);
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -49,10 +49,10 @@ export const getFeedPaginated = createServerFn()
             const json = await response.json();
             const schema = z.array(feedItemSchema);
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -73,10 +73,10 @@ export const getPosts = createServerFn()
             const json = await response.json();
             const schema = z.array(postSchema);
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -97,10 +97,10 @@ export const getReactions = createServerFn()
             const json = await response.json();
             const schema = z.array(postReactionSchema);
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -119,7 +119,7 @@ export const addPost = createServerFn({ method: 'POST' })
             return await apiErrorHandler(response);
         }
 
-        return { success: true, body: null } as const;
+        return success(null);
     });
 
 export const likePost = createServerFn({ method: 'POST' })
@@ -140,10 +140,10 @@ export const likePost = createServerFn({ method: 'POST' })
             const json = await response.json();
             const schema = postLikeDataSchema;
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -165,10 +165,10 @@ export const unlikePost = createServerFn({ method: 'POST' })
             const json = await response.json();
             const schema = postLikeDataSchema;
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -189,10 +189,10 @@ export const getPostLikesUsers = createServerFn()
             const json = await response.json();
             const schema = z.array(userDTOSchema);
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -213,10 +213,10 @@ export const getPostLikes = createServerFn()
             const json = await response.json();
             const schema = postLikeDataSchema;
 
-            return { success: true, body: schema.parse(json) } as const;
+            return success(schema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });
 
@@ -236,9 +236,9 @@ export const getPost = createServerFn()
         try {
             const json = await response.json();
 
-            return { success: true, body: feedItemSchema.parse(json) } as const;
+            return success(feedItemSchema.parse(json));
         } catch (error) {
             console.error(error);
-            return { success: false, body: null } as const;
+            return failure(null);
         }
     });

@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
-import { apiErrorHandler } from '@/web/server-functions/helpers';
+import { apiErrorHandler, success } from '@/web/server-functions/helpers';
 import { authMiddleware } from '@/web/server-functions/middlewares';
 
 export const testSentry = createServerFn()
@@ -14,5 +14,5 @@ export const testSentry = createServerFn()
             return await apiErrorHandler(response);
         }
 
-        return { success: true, body: null } as const;
+        return success(null);
     });
