@@ -1,7 +1,7 @@
 import { commentWithUserSchema, createCommentSchema } from '@/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
-import { errorHandler } from '@/web/server-functions/helpers';
+import { apiErrorHandler } from '@/web/server-functions/helpers';
 import { authMiddleware } from '@/web/server-functions/middlewares';
 
 export const getComments = createServerFn()
@@ -18,7 +18,7 @@ export const getComments = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -47,7 +47,7 @@ export const createComment = createServerFn({ method: 'POST' })
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         return { success: true, body: null } as const;
@@ -68,7 +68,7 @@ export const likeComment = createServerFn({ method: 'POST' })
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         return { success: true, body: null } as const;
@@ -89,7 +89,7 @@ export const unlikeComment = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         return { success: true, body: null } as const;

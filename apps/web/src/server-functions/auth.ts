@@ -2,7 +2,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
 import { userApiSchema } from '@/common/types/auth';
-import { deleteSessionCookies, errorHandler, getSessionData, setSessionCookies } from '@/web/server-functions/helpers';
+import { authErrorHandler, deleteSessionCookies, getSessionData, setSessionCookies } from '@/web/server-functions/helpers';
 import { envMiddleware } from '@/web/server-functions/middlewares';
 
 export const getUser = createServerFn()
@@ -34,7 +34,7 @@ export const signIn = createServerFn({ method: 'POST' })
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await authErrorHandler(response);
         }
 
         const isSessionCreated = setSessionCookies(response);
@@ -81,7 +81,7 @@ export const signOut = createServerFn({
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await authErrorHandler(response);
         }
 
         try {
@@ -119,7 +119,7 @@ export const signUp = createServerFn({
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await authErrorHandler(response);
         }
 
         const isSessionCreated = setSessionCookies(response);

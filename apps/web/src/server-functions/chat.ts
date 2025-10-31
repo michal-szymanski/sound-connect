@@ -2,7 +2,7 @@ import { getRoomId } from '@/common/helpers';
 import { chatMessageSchema } from '@/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
-import { errorHandler } from '@/web/server-functions/helpers';
+import { apiErrorHandler } from '@/web/server-functions/helpers';
 import { authMiddleware } from '@/web/server-functions/middlewares';
 
 export const getChatHistory = createServerFn()
@@ -20,7 +20,7 @@ export const getChatHistory = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {

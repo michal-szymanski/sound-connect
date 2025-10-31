@@ -1,7 +1,7 @@
 import { userDTOSchema } from '@/common/types/models';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
-import { errorHandler } from '@/web/server-functions/helpers';
+import { apiErrorHandler } from '@/web/server-functions/helpers';
 import { authMiddleware } from '@/web/server-functions/middlewares';
 
 export const getFollowers = createServerFn()
@@ -18,7 +18,7 @@ export const getFollowers = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -46,7 +46,7 @@ export const getFollowings = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -74,7 +74,7 @@ export const getUser = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -102,7 +102,7 @@ export const followUser = createServerFn({ method: 'POST' })
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         return { success: true, body: null } as const;
@@ -123,7 +123,7 @@ export const unfollowUser = createServerFn({ method: 'POST' })
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         return { success: true, body: null } as const;
@@ -143,7 +143,7 @@ export const getMutualFollowers = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -171,7 +171,7 @@ export const search = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -200,7 +200,7 @@ export const getFollowRequestStatus = createServerFn({ method: 'GET' })
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         const result = (await response.json()) as { status: 'following' | 'pending' | 'none' };

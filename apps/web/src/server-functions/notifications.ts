@@ -1,7 +1,7 @@
 import { notificationSchema } from '@/common/types/drizzle';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
-import { errorHandler } from '@/web/server-functions/helpers';
+import { apiErrorHandler } from '@/web/server-functions/helpers';
 import { authMiddleware } from '@/web/server-functions/middlewares';
 
 export const getNotifications = createServerFn()
@@ -17,7 +17,7 @@ export const getNotifications = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -46,7 +46,7 @@ export const markNotificationAsSeen = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         return { success: true, body: null } as const;
@@ -66,7 +66,7 @@ export const markAllNotificationsAsSeen = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         return { success: true, body: null } as const;
@@ -87,7 +87,7 @@ export const deleteNotification = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         return { success: true, body: null } as const;
