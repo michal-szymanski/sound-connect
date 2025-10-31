@@ -35,7 +35,8 @@ export const authErrorHandler = async (response: Response) => {
         const authError = authErrorSchema.parse(json);
 
         return failure({ ...authError, status });
-    } catch {
+    } catch (error) {
+        console.error(error);
         return failure(null);
     }
 };
@@ -58,7 +59,8 @@ export const apiErrorHandler = async (response: Response) => {
         }
 
         return failure({ status, message });
-    } catch {
+    } catch (error) {
+        console.error(error);
         return failure(null);
     }
 };
