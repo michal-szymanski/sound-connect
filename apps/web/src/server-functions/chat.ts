@@ -9,10 +9,6 @@ export const getChatHistory = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ peerId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) {
-            return { success: false, body: null } as const;
-        }
-
         const roomId = getRoomId(auth.user.id, data.peerId);
         const response = await env.API.fetch(`${env.API_URL}/chat/${roomId}/history`, {
             headers: { Cookie: auth.cookie },

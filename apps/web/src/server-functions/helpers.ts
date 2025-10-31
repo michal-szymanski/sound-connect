@@ -17,15 +17,17 @@ type SessionData = {
 
 export const authErrorHandler = async (response: Response) => {
     try {
+        const status = response.status;
         const errorBody = await response.text();
 
         console.error(errorBody);
 
         const json = JSON.parse(errorBody);
+        const authError = authErrorSchema.parse(json);
 
         return {
             success: false,
-            body: authErrorSchema.parse(json)
+            body: { ...authError, status }
         } as const;
     } catch (_e) {
         return { success: false, body: null } as const;
