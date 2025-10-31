@@ -8,7 +8,8 @@ import UserAvatar from '@/web/components/small/user-avatar';
 import { Button } from '@/web/components/ui/button';
 import { Card } from '@/web/components/ui/card';
 import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, followersQuery, followRequestStatusQuery } from '@/web/lib/react-query';
-import { sendFollowRequest, getPosts, getUser, unfollowUser } from '@/web/server-functions/models';
+import { getPosts } from '@/web/server-functions/posts';
+import { getUser, followUser, unfollowUser } from '@/web/server-functions/users';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
@@ -98,7 +99,7 @@ function RouteComponent() {
         setOptimisticStatus('pending');
 
         try {
-            const result = await sendFollowRequest({ data: { userId: user.id } });
+            const result = await followUser({ data: { userId: user.id } });
 
             if (!result.success) {
                 setOptimisticStatus(null);

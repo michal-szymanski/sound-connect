@@ -12,7 +12,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import z from 'zod';
 import { useEnvs, useUser } from '@/web/lib/react-query';
-import { getChatHistory } from '@/web/server-functions/models';
+import { getChatHistory } from '@/web/server-functions/chat';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 

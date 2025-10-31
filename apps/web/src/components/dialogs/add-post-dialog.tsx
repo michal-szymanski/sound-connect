@@ -19,7 +19,7 @@ import { ScrollArea } from '@/web/components/ui/scroll-area';
 import { Textarea } from '@/web/components/ui/textarea';
 import useFileUpload from '@/web/hooks/use-file-upload';
 import { showSidebar } from '@/web/redux/slices/ui-slice';
-import { addPost } from '@/web/server-functions/models';
+import { addPost } from '@/web/server-functions/posts';
 
 const AddPostDialog = () => {
     const text = `What's on your mind?`;
