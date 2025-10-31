@@ -7,10 +7,6 @@ import { authMiddleware } from '@/web/server-functions/middlewares';
 export const getNotifications = createServerFn()
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
-        if (!auth) {
-            return { success: false, body: null } as const;
-        }
-
         const response = await env.API.fetch(`${env.API_URL}/notifications`, {
             headers: { Cookie: auth.cookie },
             credentials: 'include'
@@ -35,10 +31,6 @@ export const markNotificationAsSeen = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ notificationId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) {
-            return { success: false, body: null } as const;
-        }
-
         const response = await env.API.fetch(`${env.API_URL}/notifications/${data.notificationId}/seen`, {
             method: 'PATCH',
             headers: { Cookie: auth.cookie },
@@ -55,10 +47,6 @@ export const markNotificationAsSeen = createServerFn()
 export const markAllNotificationsAsSeen = createServerFn()
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
-        if (!auth) {
-            return { success: false, body: null } as const;
-        }
-
         const response = await env.API.fetch(`${env.API_URL}/notifications/seen`, {
             method: 'PATCH',
             headers: { Cookie: auth.cookie },
@@ -76,10 +64,6 @@ export const deleteNotification = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ notificationId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) {
-            return { success: false, body: null } as const;
-        }
-
         const response = await env.API.fetch(`${env.API_URL}/notifications/${data.notificationId}`, {
             method: 'DELETE',
             headers: { Cookie: auth.cookie },
