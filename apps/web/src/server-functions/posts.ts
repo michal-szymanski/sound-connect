@@ -2,7 +2,7 @@ import { feedItemSchema, postLikeDataSchema, userDTOSchema } from '@/common/type
 import { postReactionSchema, postSchema } from '@/common/types/drizzle';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
-import { errorHandler } from '@/web/server-functions/helpers';
+import { apiErrorHandler } from '@/web/server-functions/helpers';
 import { authMiddleware } from '@/web/server-functions/middlewares';
 
 export const getFeed = createServerFn()
@@ -18,7 +18,7 @@ export const getFeed = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -50,7 +50,7 @@ export const getFeedPaginated = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -78,7 +78,7 @@ export const getPosts = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -106,7 +106,7 @@ export const getReactions = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -136,7 +136,7 @@ export const addPost = createServerFn({ method: 'POST' })
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         return { success: true, body: null } as const;
@@ -157,7 +157,7 @@ export const likePost = createServerFn({ method: 'POST' })
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -186,7 +186,7 @@ export const unlikePost = createServerFn({ method: 'POST' })
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -214,7 +214,7 @@ export const getPostLikesUsers = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -242,7 +242,7 @@ export const getPostLikes = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {
@@ -270,7 +270,7 @@ export const getPost = createServerFn()
         });
 
         if (!response.ok) {
-            return await errorHandler(response);
+            return await apiErrorHandler(response);
         }
 
         try {

@@ -1,5 +1,6 @@
 import { APP_NAME_NORMALIZED } from '@/common/constants';
 import { authErrorSchema, userApiSchema, sessionApiSchema, SessionApi, UserApi } from '@/common/types/auth';
+import { apiErrorSchema } from '@/common/types/api';
 import { getCookie, getRequest, setResponseHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 
@@ -14,7 +15,7 @@ type SessionData = {
     user: UserApi;
 };
 
-export const errorHandler = async (response: Response) => {
+export const authErrorHandler = async (response: Response) => {
     try {
         const errorBody = await response.text();
 
@@ -25,6 +26,32 @@ export const errorHandler = async (response: Response) => {
         return {
             success: false,
             body: authErrorSchema.parse(json)
+        } as const;
+    } catch (_e) {
+        return { success: false, body: null } as const;
+    }
+};
+
+export const apiErrorHandler = async (response: Response) => {
+    try {
+        const status = response.status;
+        const errorBody = await response.text();
+
+        console.error(errorBody);
+
+        let message: string;
+
+        try {
+            const json = JSON.parse(errorBody);
+            const parsed = apiErrorSchema.parse(json);
+            message = parsed.message;
+        } catch {
+            message = errorBody;
+        }
+
+        return {
+            success: false,
+            body: { status, message }
         } as const;
     } catch (_e) {
         return { success: false, body: null } as const;
