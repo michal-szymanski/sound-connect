@@ -16,8 +16,8 @@ export const userSchema = z.object({
     email: z.string().email(),
     emailVerified: z.boolean(),
     image: z.string().nullable(),
-    createdAt: z.date(),
-    updatedAt: z.date()
+    createdAt: z.string(),
+    updatedAt: z.string()
 });
 
 export type CreateUser = z.infer<typeof createUserSchema>;
@@ -39,10 +39,10 @@ export const createSessionSchema = z.object({
 
 export const sessionSchema = z.object({
     id: z.string(),
-    expiresAt: z.date(),
+    expiresAt: z.string(),
     token: z.string(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
     ipAddress: z.string().nullable(),
     userAgent: z.string().nullable(),
     userId: z.string()

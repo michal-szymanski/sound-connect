@@ -8,7 +8,7 @@ import { getPostLikesUsers } from '@/web/server-functions/posts';
 import { followUser } from '@/web/server-functions/users';
 import { Button } from 'src/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from 'src/components/ui/dialog';
-import { useFollowings, useUser } from 'src/lib/react-query';
+import { useFollowings, useAuth } from 'src/lib/react-query';
 
 type Props = {
     isOpen: boolean;
@@ -17,8 +17,8 @@ type Props = {
 };
 
 const LikesDialog = ({ isOpen, onClose, postId }: Props) => {
-    const { data: currentUser } = useUser();
-    const { data: followings } = useFollowings(currentUser);
+    const { data: auth } = useAuth();
+    const { data: followings } = useFollowings(auth?.user ?? null);
     const queryClient = useQueryClient();
     const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
 
@@ -32,7 +32,7 @@ const LikesDialog = ({ isOpen, onClose, postId }: Props) => {
     });
 
     const handleFollow = async (userId: string) => {
-        if (!currentUser || followingUsers.has(userId)) return;
+        if (!auth?.user || followingUsers.has(userId)) return;
 
         setFollowingUsers((prev) => new Set(prev).add(userId));
 
@@ -55,7 +55,7 @@ const LikesDialog = ({ isOpen, onClose, postId }: Props) => {
     };
 
     const canFollow = (userId: string) => {
-        return currentUser?.id !== userId && !isFollowing(userId);
+        return auth?.user?.id !== userId && !isFollowing(userId);
     };
 
     return (

@@ -11,7 +11,9 @@ export const getChatHistory = createServerFn()
     .handler(async ({ data, context: { env, auth } }) => {
         const roomId = getRoomId(auth.user.id, data.peerId);
         const response = await env.API.fetch(`${env.API_URL}/chat/${roomId}/history`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 

@@ -1,12 +1,14 @@
 import { createMiddleware } from '@tanstack/react-start';
 import { env } from 'cloudflare:workers';
 import { getSessionData, getSessionCookie } from '@/web/server-functions/helpers';
-import { SessionApi, UserApi } from '@/common/types/auth';
+import { redirect } from '@tanstack/react-router';
+import { Session, User } from '@/common/types/drizzle';
 
 type Auth = {
-    session: SessionApi;
-    user: UserApi;
-    cookie: string;
+    session: Session;
+    user: User;
+    cookie: string | undefined;
+    accessToken: string | undefined;
 };
 
 export const envMiddleware = createMiddleware().server(async ({ next }) => {
@@ -26,14 +28,16 @@ export const authMiddleware = createMiddleware()
         const sessionData = await getSessionData(env);
 
         if (!sessionData) {
-            throw new Error('Unauthorized: No valid session found');
+            console.error('[Auth Middleware] Unauthorized: No valid session found');
+            throw redirect({ to: '/sign-in' });
         }
 
         const cookie = getSessionCookie();
         const auth: Auth = {
             session: sessionData.session,
             user: sessionData.user,
-            cookie: cookie ?? ''
+            cookie,
+            accessToken: sessionData.accessToken
         };
 
         return await next({

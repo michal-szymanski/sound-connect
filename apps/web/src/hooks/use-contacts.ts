@@ -1,12 +1,12 @@
 import { UserDTO } from '@/common/types/models';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useFollowers, useFollowings, useUser } from '@/web/lib/react-query';
+import { useFollowers, useFollowings, useAuth } from '@/web/lib/react-query';
 
 const useContacts = () => {
-    const { data: user } = useUser();
-    const { data: followings } = useFollowings(user);
-    const { data: followers } = useFollowers(user);
+    const { data: auth } = useAuth();
+    const { data: followings } = useFollowings(auth?.user ?? null);
+    const { data: followers } = useFollowers(auth?.user ?? null);
     const queryClient = useQueryClient();
     const [users, setUsers] = useState<UserDTO[]>([]);
 

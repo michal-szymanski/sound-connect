@@ -9,7 +9,9 @@ export const getFollowers = createServerFn()
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/followers`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -33,7 +35,9 @@ export const getFollowings = createServerFn()
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/followings`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -57,7 +61,9 @@ export const getUser = createServerFn()
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -81,7 +87,10 @@ export const followUser = createServerFn({ method: 'POST' })
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/follow`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Cookie: auth.cookie },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -98,7 +107,10 @@ export const unfollowUser = createServerFn({ method: 'POST' })
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/unfollow`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Cookie: auth.cookie },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -114,7 +126,9 @@ export const getMutualFollowers = createServerFn()
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/contacts`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -138,7 +152,10 @@ export const search = createServerFn()
     .inputValidator(z.object({ query: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/search?query=${data.query}`, {
-            headers: { 'Content-Type': 'application/json', Cookie: auth.cookie },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -163,7 +180,9 @@ export const getFollowRequestStatus = createServerFn({ method: 'GET' })
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/follow-request-status`, {
             method: 'GET',
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 

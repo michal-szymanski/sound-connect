@@ -8,7 +8,9 @@ export const getNotifications = createServerFn()
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/notifications`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -33,7 +35,9 @@ export const markNotificationAsSeen = createServerFn()
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/notifications/${data.notificationId}/seen`, {
             method: 'PATCH',
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -49,7 +53,9 @@ export const markAllNotificationsAsSeen = createServerFn()
     .handler(async ({ context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/notifications/seen`, {
             method: 'PATCH',
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -66,7 +72,9 @@ export const deleteNotification = createServerFn()
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/notifications/${data.notificationId}`, {
             method: 'DELETE',
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 

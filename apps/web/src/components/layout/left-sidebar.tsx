@@ -3,7 +3,7 @@ import { Cog, House, LucideIcon, Mail, UserRound } from 'lucide-react';
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import AccountButton from '@/web/components/small/account-button';
-import { useUser } from '@/web/lib/react-query';
+import { useAuth } from '@/web/lib/react-query';
 import { collapseSidebar } from '@/web/redux/slices/ui-slice';
 import { RootState } from '@/web/redux/store';
 import {
@@ -25,7 +25,7 @@ type Item = {
 };
 
 const LeftSidebar = () => {
-    const { data: user } = useUser();
+    const { data: auth } = useAuth();
     const { isSidebarVisible, isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
     const dispatch = useDispatch();
     const location = useLocation();
@@ -33,7 +33,7 @@ const LeftSidebar = () => {
     const isMessagesPage = location.pathname === '/messages';
 
     const getItems = (): Item[] => {
-        if (!user) return [];
+        if (!auth?.user) return [];
 
         return [
             {
@@ -48,7 +48,7 @@ const LeftSidebar = () => {
             },
             {
                 title: 'Profile',
-                url: `/users/${user.id}`,
+                url: `/users/${auth.user.id}`,
                 icon: UserRound
             },
             {

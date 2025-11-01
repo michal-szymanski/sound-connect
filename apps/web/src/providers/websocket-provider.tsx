@@ -11,7 +11,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import z from 'zod';
-import { useEnvs, useUser } from '@/web/lib/react-query';
+import { useEnvs, useAuth, useAccessToken } from '@/web/lib/react-query';
 import { getChatHistory } from '@/web/server-functions/chat';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
@@ -37,7 +37,8 @@ type Props = React.PropsWithChildren;
 export const WebSocketProvider = ({ children }: Props) => {
     const ws = useRef<WebSocket | null>(null);
     const { data: envs } = useEnvs();
-    const { data: user } = useUser();
+    const { data: auth } = useAuth();
+    const { data: accessToken } = useAccessToken();
 
     const [status, setStatus] = useState<WSStatus>('connecting');
     const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
@@ -78,13 +79,15 @@ export const WebSocketProvider = ({ children }: Props) => {
 
     const loadRoomHistory = useCallback(
         async (roomId: string) => {
-            if (!user) {
+            if (!auth?.user) {
                 return;
             }
 
+            const currentUserId = auth.user.id;
+
             try {
                 const roomParticipants = roomId.split(':');
-                const peerId = roomParticipants.find((id) => id !== user.id);
+                const peerId = roomParticipants.find((id) => id !== currentUserId);
 
                 if (!peerId) {
                     console.error(`[UnifiedWS] Could not determine peer ID from room ${roomId}`);
@@ -109,14 +112,14 @@ export const WebSocketProvider = ({ children }: Props) => {
                 console.error(`[UnifiedWS] Error loading room history for ${roomId}:`, error);
             }
         },
-        [user]
+        [auth]
     );
 
     useEffect(() => {
-        if (!envs || !user) return;
+        if (!envs || !auth?.user || !accessToken) return;
 
         const { API_URL } = envs;
-        ws.current = new WebSocket(`${API_URL}/ws/user`);
+        ws.current = new WebSocket(`${API_URL}/ws/user?token=${accessToken}`);
 
         const handleOpen = () => {
             setStatus('open');
@@ -208,7 +211,7 @@ export const WebSocketProvider = ({ children }: Props) => {
             ws.current.close();
             clearTimeouts();
         };
-    }, [envs, user, clearTimeouts, queryClient]);
+    }, [envs, auth, accessToken, clearTimeouts, queryClient]);
 
     const contextValue: WebSocketContext = {
         subscribeToRoom,

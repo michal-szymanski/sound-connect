@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
-import { useEnvs, useUser } from '@/web/lib/react-query';
+import { useEnvs, useAuth, useAccessToken } from '@/web/lib/react-query';
 import type { Notification } from '@/common/types/drizzle';
 import { getNotifications } from '@/web/server-functions/notifications';
 
@@ -22,7 +22,8 @@ type Props = React.PropsWithChildren;
 export const NotificationsProvider = ({ children }: Props) => {
     const notificationsWs = useRef<WebSocket | null>(null);
     const { data: envs } = useEnvs();
-    const { data: user } = useUser();
+    const { data: auth } = useAuth();
+    const { data: accessToken } = useAccessToken();
 
     const [notificationsStatus, setNotificationsStatus] = useState<WSStatus>('connecting');
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -46,7 +47,7 @@ export const NotificationsProvider = ({ children }: Props) => {
     const unreadCount = notifications.filter((n) => !n.seen).length;
 
     useEffect(() => {
-        if (!user) return;
+        if (!auth?.user) return;
 
         const loadNotifications = async () => {
             const result = await getNotifications();
@@ -58,13 +59,13 @@ export const NotificationsProvider = ({ children }: Props) => {
         };
 
         loadNotifications();
-    }, [user]);
+    }, [auth]);
 
     useEffect(() => {
-        if (!envs || !user) return;
+        if (!envs || !auth?.user || !accessToken) return;
 
         const { API_URL } = envs;
-        notificationsWs.current = new WebSocket(`${API_URL}/ws/notifications`);
+        notificationsWs.current = new WebSocket(`${API_URL}/ws/notifications?token=${accessToken}`);
 
         const handleOpen = () => {
             setNotificationsStatus('open');
@@ -118,7 +119,7 @@ export const NotificationsProvider = ({ children }: Props) => {
 
             notificationsWs.current.close();
         };
-    }, [envs, user, addNotification]);
+    }, [envs, auth, accessToken, addNotification]);
 
     const contextValue: NotificationsContext = {
         notificationsStatus,

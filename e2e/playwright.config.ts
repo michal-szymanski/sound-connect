@@ -6,7 +6,7 @@ export default defineConfig({
     forbidOnly: !!process.env['CI'],
     retries: process.env['CI'] ? 2 : 0,
     workers: 1,
-    reporter: process.env['CI'] ? [['github'], ['html']] : [['list'], ['html']],
+    reporter: process.env['CI'] ? [['github'], ['html']] : [['list']],
     globalSetup: './global-setup.ts',
     globalTeardown: './global-teardown.ts',
     use: {

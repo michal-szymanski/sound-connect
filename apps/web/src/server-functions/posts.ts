@@ -9,7 +9,9 @@ export const getFeed = createServerFn()
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/feed`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -37,7 +39,9 @@ export const getFeedPaginated = createServerFn()
         if (data.offset) searchParams.set('offset', data.offset.toString());
 
         const response = await env.API.fetch(`${env.API_URL}/feed?${searchParams.toString()}`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -61,7 +65,9 @@ export const getPosts = createServerFn()
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/posts`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -85,7 +91,9 @@ export const getReactions = createServerFn()
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/reactions`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -110,7 +118,9 @@ export const addPost = createServerFn({ method: 'POST' })
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/posts`, {
             method: 'POST',
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             body: data,
             credentials: 'include'
         });
@@ -128,7 +138,10 @@ export const likePost = createServerFn({ method: 'POST' })
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/like`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Cookie: auth.cookie },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -153,7 +166,10 @@ export const unlikePost = createServerFn({ method: 'POST' })
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/like`, {
             method: 'DELETE',
-            headers: { 'Content-Type': 'application/json', Cookie: auth.cookie },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -177,7 +193,10 @@ export const getPostLikesUsers = createServerFn()
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/likes/users`, {
-            headers: { 'Content-Type': 'application/json', Cookie: auth.cookie },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -201,7 +220,9 @@ export const getPostLikes = createServerFn()
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/likes`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -225,7 +246,9 @@ export const getPost = createServerFn()
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 

@@ -6,7 +6,7 @@ import { Button } from '@/web/components/ui/button';
 import { Dialog, DialogContent } from '@/web/components/ui/dialog';
 import { Input } from '@/web/components/ui/input';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
-import { useUser, useLikeToggle, useComments, useCreateComment, useCommentLikeToggle } from '@/web/lib/react-query';
+import { useAuth, useLikeToggle, useComments, useCreateComment, useCommentLikeToggle } from '@/web/lib/react-query';
 import { useElapsedTime } from '@/web/lib/utils';
 import type { UserDTO } from '@/common/types/models';
 import type { User } from '@/common/types/drizzle';
@@ -34,13 +34,13 @@ export function PostModal({ open, onOpenChange, postId, author, content, image, 
     const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
     const [replyingTo, setReplyingTo] = useState<number | null>(null);
     const commentInputRef = useRef<HTMLInputElement>(null);
-    const { data: currentUser } = useUser();
-    const likeMutation = useLikeToggle(postId, currentUser);
+    const { data: auth } = useAuth();
+    const likeMutation = useLikeToggle(postId, auth?.user ?? null);
     const { data: comments = [], isLoading } = useComments(postId, open);
     const createCommentMutation = useCreateComment(postId);
 
     const handleLikeToggle = () => {
-        if (!currentUser || likeMutation.isPending) return;
+        if (!auth?.user || likeMutation.isPending) return;
         likeMutation.mutate(isLiked);
     };
 
@@ -148,7 +148,7 @@ export function PostModal({ open, onOpenChange, postId, author, content, image, 
                             ) : (
                                 comments.map((commentData) => (
                                     <div key={commentData.comment.id}>
-                                        <CommentItem commentData={commentData} currentUser={currentUser} postId={postId} onReply={handleReply} />
+                                        <CommentItem commentData={commentData} currentUser={auth?.user ?? null} postId={postId} onReply={handleReply} />
 
                                         {commentData.replies && commentData.replies.length > 0 && (
                                             <div className="mt-3 ml-10">
@@ -168,7 +168,7 @@ export function PostModal({ open, onOpenChange, postId, author, content, image, 
                                                             <CommentItem
                                                                 key={replyData.comment.id}
                                                                 commentData={replyData}
-                                                                currentUser={currentUser}
+                                                                currentUser={auth?.user ?? null}
                                                                 postId={postId}
                                                                 onReply={handleReply}
                                                                 isReply

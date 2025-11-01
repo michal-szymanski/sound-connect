@@ -1,19 +1,24 @@
 import { APP_NAME_NORMALIZED } from '@/common/constants';
-import { authErrorSchema, userApiSchema, sessionApiSchema, SessionApi, UserApi } from '@/common/types/auth';
+import { authErrorSchema } from '@/common/types/auth';
 import { apiErrorSchema } from '@/common/types/api';
 import type { ServerFunctionError, ServerFunctionSuccess } from '@/common/types/server-functions';
 import { getCookie, getRequest, setResponseHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
+import { Session, sessionSchema, User, userSchema } from '@/common/types/drizzle';
 
 const SECURE_PREFIX = '__Secure-';
 const SESSION_TOKEN_COOKIE_NAME = `${APP_NAME_NORMALIZED}.session_token`;
 const SECURE_SESSION_TOKEN_COOKIE_NAME = `${SECURE_PREFIX}${SESSION_TOKEN_COOKIE_NAME}`;
 const SESSION_DATA_COOKIE_NAME = `${APP_NAME_NORMALIZED}.session_data`;
 const SECURE_SESSION_DATA_COOKIE_NAME = `${SECURE_PREFIX}${SESSION_DATA_COOKIE_NAME}`;
+const ACCESS_TOKEN_COOKIE_NAME = `${APP_NAME_NORMALIZED}.access_token`;
+const SECURE_ACCESS_TOKEN_COOKIE_NAME = `${SECURE_PREFIX}${ACCESS_TOKEN_COOKIE_NAME}`;
+const ACCESS_TOKEN_MAX_AGE = 900;
 
 type SessionData = {
-    session: SessionApi;
-    user: UserApi;
+    session: Session;
+    user: User;
+    accessToken: string | undefined;
 };
 
 export const success = <T>(body: T): ServerFunctionSuccess<T> => {
@@ -65,7 +70,7 @@ export const apiErrorHandler = async (response: Response) => {
     }
 };
 
-export const setSessionCookies = (response: Response) => {
+export const setAuthCookies = (response: Response) => {
     const sessionTokenCookie = response.headers
         .getSetCookie()
         .find((cookie) => cookie.startsWith(SESSION_TOKEN_COOKIE_NAME) || cookie.startsWith(SECURE_SESSION_TOKEN_COOKIE_NAME));
@@ -74,20 +79,32 @@ export const setSessionCookies = (response: Response) => {
         .getSetCookie()
         .find((cookie) => cookie.startsWith(SESSION_DATA_COOKIE_NAME) || cookie.startsWith(SECURE_SESSION_DATA_COOKIE_NAME));
 
-    setResponseHeader('Set-Cookie', [sessionTokenCookie, sessionDataCookie].filter(Boolean) as string[]);
-    return true;
+    const accessToken = response.headers.get('set-auth-token');
+
+    const cookies = [sessionTokenCookie, sessionDataCookie].filter(Boolean) as string[];
+
+    if (accessToken) {
+        cookies.push(
+            `${SECURE_ACCESS_TOKEN_COOKIE_NAME}=${accessToken}; Max-Age=${ACCESS_TOKEN_MAX_AGE}; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`
+        );
+    }
+
+    setResponseHeader('Set-Cookie', cookies);
+    return cookies;
 };
 
-export const deleteSessionCookies = () => {
+export const deleteAuthCookies = () => {
     setResponseHeader('Set-Cookie', [
         `${SESSION_TOKEN_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
         `${SECURE_SESSION_TOKEN_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
         `${SESSION_DATA_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
-        `${SECURE_SESSION_DATA_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`
+        `${SECURE_SESSION_DATA_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
+        `${ACCESS_TOKEN_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`,
+        `${SECURE_ACCESS_TOKEN_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`
     ]);
 };
 
-export const getSessionCookie = () => {
+export const getSessionCookie = (): string | undefined => {
     const secureSessionTokenCookie = getCookie(SECURE_SESSION_TOKEN_COOKIE_NAME);
 
     if (secureSessionTokenCookie) {
@@ -100,7 +117,23 @@ export const getSessionCookie = () => {
         return `${SESSION_TOKEN_COOKIE_NAME}=${sessionTokenCookie}`;
     }
 
-    return null;
+    return undefined;
+};
+
+export const getAccessToken = (): string | undefined => {
+    const secureAccessToken = getCookie(SECURE_ACCESS_TOKEN_COOKIE_NAME);
+
+    if (secureAccessToken) {
+        return secureAccessToken;
+    }
+
+    const accessToken = getCookie(ACCESS_TOKEN_COOKIE_NAME);
+
+    if (accessToken) {
+        return accessToken;
+    }
+
+    return undefined;
 };
 
 export const getSessionDataFromCookie = (): SessionData | null => {
@@ -114,16 +147,18 @@ export const getSessionDataFromCookie = (): SessionData | null => {
 
         const schema = z.object({
             session: z.object({
-                session: sessionApiSchema,
-                user: userApiSchema
+                session: sessionSchema,
+                user: userSchema
             }),
             expiresAt: z.number(),
             signature: z.string()
         });
 
         const { session } = schema.parse(json);
-        return session;
-    } catch {
+        const accessToken = getAccessToken();
+        return { ...session, accessToken };
+    } catch (error) {
+        console.error('Error getting session data from cookie', error);
         return null;
     }
 };
@@ -142,8 +177,10 @@ export const getSessionData = async (env: Cloudflare.Env): Promise<SessionData |
                 const json = await response.json();
 
                 if (json !== null) {
-                    const schema = z.object({ session: sessionApiSchema, user: userApiSchema });
-                    sessionData = schema.parse(json);
+                    const schema = z.object({ session: sessionSchema, user: userSchema });
+                    const data = schema.parse(json);
+                    const accessToken = response.headers.get('set-auth-token') ?? undefined;
+                    sessionData = { ...data, accessToken };
                 }
             }
         }
