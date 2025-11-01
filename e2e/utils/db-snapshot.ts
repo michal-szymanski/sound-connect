@@ -70,10 +70,14 @@ export function cleanTestData(): void {
         `DELETE FROM sessions WHERE user_id NOT IN (${userIdList});`,
         `DELETE FROM accounts WHERE user_id NOT IN (${userIdList});`,
         `DELETE FROM verifications WHERE identifier NOT IN (${userIdList});`,
-        `DROP TABLE IF EXISTS users_fts;`,
+        `DROP TRIGGER IF EXISTS users_ai;`,
+        `DROP TRIGGER IF EXISTS users_ad;`,
+        `DROP TRIGGER IF EXISTS users_au;`,
         `DELETE FROM users WHERE id NOT IN (${userIdList});`,
-        `CREATE VIRTUAL TABLE IF NOT EXISTS users_fts USING fts5(name, email, content=users, content_rowid=rowid);`,
-        `INSERT INTO users_fts(rowid, name, email) SELECT rowid, name, email FROM users;`
+        `DELETE FROM users_fts WHERE rowid NOT IN (SELECT rowid FROM users);`,
+        `CREATE TRIGGER users_ai AFTER INSERT ON users BEGIN INSERT INTO users_fts(rowid, name) VALUES (new.rowid, new.name); END;`,
+        `CREATE TRIGGER users_ad AFTER DELETE ON users BEGIN INSERT INTO users_fts(users_fts, rowid) VALUES('delete', old.rowid); END;`,
+        `CREATE TRIGGER users_au AFTER UPDATE ON users BEGIN INSERT INTO users_fts(users_fts, rowid) VALUES('delete', old.rowid); INSERT INTO users_fts(rowid, name) VALUES(new.rowid, new.name); END;`
     ];
 
     for (const query of queries) {
@@ -82,8 +86,9 @@ export function cleanTestData(): void {
                 cwd: API_DIR,
                 stdio: 'pipe'
             });
-        } catch {
+        } catch (error) {
             console.error(`   ⚠️  Warning executing query: ${query.substring(0, 50)}...`);
+            console.error(`   Error: ${error instanceof Error ? error.message : String(error)}`);
         }
     }
 
@@ -123,37 +128,6 @@ export function createSnapshot(): void {
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
     console.log(`✅ Database snapshot created successfully in ${duration}s\n`);
-}
-
-export function restoreSnapshot(): void {
-    const startTime = Date.now();
-    console.log('🔄 Restoring database from snapshot...');
-
-    const dbFiles = getDbFiles();
-
-    for (const { original, snapshot } of dbFiles) {
-        if (!fs.existsSync(snapshot)) {
-            throw new Error(`Snapshot file not found: ${snapshot}. Run createSnapshot() first.`);
-        }
-
-        fs.copyFileSync(snapshot, original);
-
-        const shmFile = original.replace('.sqlite', '.sqlite-shm');
-        const walFile = original.replace('.sqlite', '.sqlite-wal');
-        const shmSnapshot = snapshot.replace('.sqlite.snapshot', '.sqlite-shm.snapshot');
-        const walSnapshot = snapshot.replace('.sqlite.snapshot', '.sqlite-wal.snapshot');
-
-        if (fs.existsSync(shmSnapshot)) {
-            fs.copyFileSync(shmSnapshot, shmFile);
-        }
-
-        if (fs.existsSync(walSnapshot)) {
-            fs.copyFileSync(walSnapshot, walFile);
-        }
-    }
-
-    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    console.log(`✅ Database restored successfully in ${duration}s\n`);
 }
 
 export function snapshotExists(): boolean {

@@ -41,6 +41,7 @@ function RouteComponent() {
             case 'USER_ALREADY_EXISTS':
             case 'INVALID_EMAIL':
             case 'FAILED_TO_CREATE_USER':
+            case 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL':
                 form.setError('email', { message: error });
                 break;
             case 'PASSWORD_TOO_SHORT':
@@ -48,7 +49,7 @@ function RouteComponent() {
                 form.setError('password', { message: error });
                 break;
             default:
-                toast.error('Could not sign out', {
+                toast.error('Could not sign up', {
                     description: error
                 });
                 break;

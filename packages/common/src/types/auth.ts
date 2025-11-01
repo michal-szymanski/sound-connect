@@ -92,6 +92,10 @@ export const authErrorSchema = z.discriminatedUnion('code', [
     z.object({
         code: z.literal('ACCOUNT_NOT_FOUND'),
         message: z.literal('Account not found')
+    }),
+    z.object({
+        code: z.literal('USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL'),
+        message: z.literal('User already exists. Use another email.')
     })
 ]);
 

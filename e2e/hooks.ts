@@ -1,5 +1,5 @@
 import { test as base, type Page } from '@playwright/test';
-import { restoreSnapshot } from '@/e2e/utils/db-snapshot';
+import { cleanTestData } from '@/e2e/utils/db-snapshot';
 
 type DbResetFixture = {
     _dbReset: void;
@@ -7,6 +7,10 @@ type DbResetFixture = {
 
 type ErrorLoggingFixture = {
     _errorLogging: void;
+};
+
+type DebugTabFixture = {
+    _debugTab: void;
 };
 
 type FailedRequest = {
@@ -73,7 +77,7 @@ export const test = base
         _dbReset: [
             // eslint-disable-next-line no-empty-pattern
             async ({}, use) => {
-                restoreSnapshot();
+                cleanTestData();
                 await use();
             },
             { auto: true }
@@ -90,6 +94,18 @@ export const test = base
                 if (failedRequests.length > 0) {
                     console.error(`[E2E SUMMARY] Test completed with ${failedRequests.length} failed API request(s):`, JSON.stringify(failedRequests, null, 2));
                 }
+            },
+            { auto: true }
+        ]
+    })
+    .extend<DebugTabFixture>({
+        _debugTab: [
+            async ({ context }, use) => {
+                if (process.env['PWDEBUG']) {
+                    const debugPage = await context.newPage();
+                    await debugPage.goto('http://localhost:3000/__debug');
+                }
+                await use();
             },
             { auto: true }
         ]

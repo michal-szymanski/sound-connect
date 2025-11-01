@@ -32,16 +32,28 @@ export const failure = <E = null>(body: E): ServerFunctionError<E> => {
 export const authErrorHandler = async (response: Response) => {
     try {
         const status = response.status;
-        const errorBody = await response.text();
+        const text = await response.text();
 
-        console.error(errorBody);
+        if (!text) {
+            console.error('Empty response body from auth endpoint');
+            return failure(null);
+        }
 
-        const json = JSON.parse(errorBody);
+        let json;
+        try {
+            json = JSON.parse(text);
+        } catch {
+            console.error('Failed to parse auth error response as JSON:', text);
+            return failure(null);
+        }
+
+        console.error('Auth error:', json);
+
         const authError = authErrorSchema.parse(json);
 
         return failure({ ...authError, status });
     } catch (error) {
-        console.error(error);
+        console.error('Unexpected error in authErrorHandler:', error);
         return failure(null);
     }
 };
