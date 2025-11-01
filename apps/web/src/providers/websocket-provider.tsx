@@ -11,7 +11,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import z from 'zod';
-import { useEnvs, useAuth, useAccessToken } from '@/web/lib/react-query';
+import { useEnvs, useAuth } from '@/web/lib/react-query';
 import { getChatHistory } from '@/web/server-functions/chat';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
@@ -38,7 +38,6 @@ export const WebSocketProvider = ({ children }: Props) => {
     const ws = useRef<WebSocket | null>(null);
     const { data: envs } = useEnvs();
     const { data: auth } = useAuth();
-    const { data: accessToken } = useAccessToken();
 
     const [status, setStatus] = useState<WSStatus>('connecting');
     const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
@@ -116,10 +115,10 @@ export const WebSocketProvider = ({ children }: Props) => {
     );
 
     useEffect(() => {
-        if (!envs || !auth?.user || !accessToken) return;
+        if (!envs || !auth?.accessToken) return;
 
         const { API_URL } = envs;
-        ws.current = new WebSocket(`${API_URL}/ws/user?token=${accessToken}`);
+        ws.current = new WebSocket(`${API_URL}/ws/user`, ['access_token', auth.accessToken]);
 
         const handleOpen = () => {
             setStatus('open');
@@ -211,7 +210,7 @@ export const WebSocketProvider = ({ children }: Props) => {
             ws.current.close();
             clearTimeouts();
         };
-    }, [envs, auth, accessToken, clearTimeouts, queryClient]);
+    }, [envs, auth, clearTimeouts, queryClient]);
 
     const contextValue: WebSocketContext = {
         subscribeToRoom,
