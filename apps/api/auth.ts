@@ -8,6 +8,7 @@ import { APP_NAME_NORMALIZED } from '@/common/constants';
 
 export const auth = betterAuth({
     baseURL: env.API_URL,
+    secret: env.BETTER_AUTH_SECRET,
     database: drizzleAdapter(db, {
         provider: 'sqlite',
         schema,
