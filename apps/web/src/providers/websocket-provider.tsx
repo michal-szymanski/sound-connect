@@ -115,23 +115,32 @@ export const WebSocketProvider = ({ children }: Props) => {
     );
 
     useEffect(() => {
-        if (!envs || !auth?.accessToken) return;
+        console.log('[WS Provider] useEffect running', { hasEnvs: !!envs, hasAccessToken: !!auth?.accessToken });
+
+        if (!envs || !auth?.accessToken) {
+            console.log('[WS Provider] Missing dependencies, skipping WebSocket setup');
+            return;
+        }
 
         const { API_URL } = envs;
-        ws.current = new WebSocket(`${API_URL}/ws/user`, ['access_token', encodeURIComponent(auth.accessToken)]);
+        const wsUrl = `${API_URL}/ws/user`;
+        console.log('[WS Provider] Creating WebSocket connection to:', wsUrl);
+
+        ws.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(auth.accessToken)]);
 
         const handleOpen = () => {
             console.log('[WS Provider] Connection opened');
             setStatus('open');
         };
 
-        const handleError = () => {
+        const handleError = (event: Event) => {
             setStatus('error');
-            console.error('[UnifiedWS] Connection error');
+            console.error('[WS Provider] Connection error', event);
         };
 
-        const handleClose = () => {
+        const handleClose = (event: CloseEvent) => {
             setStatus('closed');
+            console.log('[WS Provider] Connection closed', { code: event.code, reason: event.reason });
             clearTimeouts();
         };
 
@@ -211,7 +220,7 @@ export const WebSocketProvider = ({ children }: Props) => {
             ws.current.close();
             clearTimeouts();
         };
-    }, [envs, auth, clearTimeouts, queryClient]);
+    }, [envs, auth?.accessToken, clearTimeouts, queryClient]);
 
     const contextValue: WebSocketContext = {
         subscribeToRoom,
