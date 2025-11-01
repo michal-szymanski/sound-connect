@@ -22,7 +22,7 @@
         {
             "binding": "DB",
             "database_name": "sound-connect-db",
-            "database_id": "ce66ac7f-5b4a-47e8-9db6-7143d996b13c"
+            "database_id": "4d13c143-e7a0-4eca-b214-25bf2ef6129a"
         }
     ],
     "env": {
@@ -42,7 +42,7 @@
                 {
                     "binding": "DB",
                     "database_name": "sound-connect-db",
-                    "database_id": "ce66ac7f-5b4a-47e8-9db6-7143d996b13c"
+                    "database_id": "4d13c143-e7a0-4eca-b214-25bf2ef6129a"
                 }
             ]
         }
