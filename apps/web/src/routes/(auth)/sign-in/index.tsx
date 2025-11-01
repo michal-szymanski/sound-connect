@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AuthError } from '@/common/types/auth';
+import { AuthError } from '@/web/types';
 import { createFileRoute, Link, redirect, useRouter } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -34,16 +34,16 @@ function RouteComponent() {
 
     const router = useRouter();
 
-    const handleServerError = ({ code, message: error }: AuthError) => {
+    const handleServerError = ({ code, message }: AuthError) => {
         switch (code) {
             case 'INVALID_EMAIL_OR_PASSWORD':
-                form.setError('email', { message: error });
-                form.setError('password', { message: error });
+                form.setError('email', { message });
+                form.setError('password', { message });
                 break;
             case 'INVALID_EMAIL':
             case 'USER_EMAIL_NOT_FOUND':
             case 'EMAIL_NOT_VERIFIED':
-                form.setError('email', { message: error });
+                form.setError('email', { message });
                 break;
             case 'PROVIDER_NOT_FOUND':
             case 'ID_TOKEN_NOT_SUPPORTED':
@@ -51,7 +51,7 @@ function RouteComponent() {
                 break;
             default:
                 toast.error('Could not sign in', {
-                    description: error
+                    description: message
                 });
                 break;
         }
