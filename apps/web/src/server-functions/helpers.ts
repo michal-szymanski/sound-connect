@@ -1,10 +1,10 @@
 import { APP_NAME_NORMALIZED } from '@/common/constants';
-import { authErrorSchema } from '@/common/types/auth';
 import { apiErrorSchema } from '@/common/types/api';
 import type { ServerFunctionError, ServerFunctionSuccess } from '@/common/types/server-functions';
 import { getCookie, getRequest, setResponseHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 import { Session, sessionSchema, User, userSchema } from '@/common/types/drizzle';
+import { AuthError } from '@/web/types';
 
 const SECURE_PREFIX = '__Secure-';
 const SESSION_TOKEN_COOKIE_NAME = `${APP_NAME_NORMALIZED}.session_token`;
@@ -47,9 +47,9 @@ export const authErrorHandler = async (response: Response) => {
             return failure(null);
         }
 
-        console.error('Auth error:', json);
+        const authError = json as AuthError;
 
-        const authError = authErrorSchema.parse(json);
+        console.error('Auth error:', json);
 
         return failure({ ...authError, status });
     } catch (error) {
