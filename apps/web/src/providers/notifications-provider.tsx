@@ -64,9 +64,10 @@ export const NotificationsProvider = ({ children }: Props) => {
         if (!envs || !auth?.accessToken) return;
 
         const { API_URL } = envs;
-        notificationsWs.current = new WebSocket(`${API_URL}/ws/notifications`, ['access_token', auth.accessToken]);
+        notificationsWs.current = new WebSocket(`${API_URL}/ws/notifications`, ['access_token', encodeURIComponent(auth.accessToken)]);
 
         const handleOpen = () => {
+            console.log('[NotificationsWS] Connection opened');
             setNotificationsStatus('open');
         };
 

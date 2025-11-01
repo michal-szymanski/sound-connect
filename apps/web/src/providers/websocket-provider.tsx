@@ -118,9 +118,10 @@ export const WebSocketProvider = ({ children }: Props) => {
         if (!envs || !auth?.accessToken) return;
 
         const { API_URL } = envs;
-        ws.current = new WebSocket(`${API_URL}/ws/user`, ['access_token', auth.accessToken]);
+        ws.current = new WebSocket(`${API_URL}/ws/user`, ['access_token', encodeURIComponent(auth.accessToken)]);
 
         const handleOpen = () => {
+            console.log('[WS Provider] Connection opened');
             setStatus('open');
         };
 
