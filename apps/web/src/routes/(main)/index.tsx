@@ -5,19 +5,16 @@ import AddPostDialog from '@/web/components/dialogs/add-post-dialog';
 import { Post } from '@/web/components/post';
 import UserAvatar from '@/web/components/small/user-avatar';
 import { Card, CardContent } from '@/web/components/ui/card';
-import { accessTokenQuery, envsQuery, feedQuery, followersQuery, followingsQuery, useFeed, authQuery, useAuth } from '@/web/lib/react-query';
+import { envsQuery, feedQuery, followersQuery, followingsQuery, useFeed, authQuery, useAuth } from '@/web/lib/react-query';
 
 export const Route = createFileRoute('/(main)/')({
     component: RouteComponent,
-    loader: async ({ context }) => {
-        const accessToken = (context as typeof context & { accessToken?: string })?.accessToken;
-
-        await context.queryClient.ensureQueryData(envsQuery());
-        await context.queryClient.ensureInfiniteQueryData(feedQuery());
-        await context.queryClient.ensureQueryData(authQuery({ user: context.user, accessToken }));
-        await context.queryClient.ensureQueryData(followersQuery(context.user));
-        await context.queryClient.ensureQueryData(followingsQuery(context.user));
-        await context.queryClient.ensureQueryData(accessTokenQuery(accessToken));
+    loader: async ({ context: { queryClient, user, accessToken } }) => {
+        await queryClient.ensureQueryData(envsQuery());
+        await queryClient.ensureInfiniteQueryData(feedQuery());
+        await queryClient.ensureQueryData(authQuery({ user, accessToken }));
+        await queryClient.ensureQueryData(followersQuery(user));
+        await queryClient.ensureQueryData(followingsQuery(user));
     }
 });
 

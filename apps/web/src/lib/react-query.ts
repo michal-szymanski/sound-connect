@@ -90,16 +90,6 @@ export const envsQuery = () =>
 
 export const useEnvs = () => useSuspenseQuery(envsQuery());
 
-export const accessTokenQuery = (accessToken?: string | undefined) =>
-    queryOptions({
-        queryKey: ['access-token'],
-        queryFn: async () => {
-            return accessToken ?? undefined;
-        }
-    });
-
-export const useAccessToken = () => useSuspenseQuery(accessTokenQuery());
-
 export const followingsQuery = (user?: User | UserDTO | null) =>
     queryOptions({
         queryKey: ['followings', user?.id],

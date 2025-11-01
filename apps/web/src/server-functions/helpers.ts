@@ -31,7 +31,6 @@ export const failure = <E = null>(body: E): ServerFunctionError<E> => {
 
 export const authErrorHandler = async (response: Response) => {
     try {
-        const status = response.status;
         const text = await response.text();
 
         if (!text) {
@@ -49,9 +48,9 @@ export const authErrorHandler = async (response: Response) => {
 
         const authError = json as AuthError;
 
-        console.error('Auth error:', json);
+        console.error('Auth error:', authError);
 
-        return failure({ ...authError, status });
+        return failure(authError);
     } catch (error) {
         console.error('Unexpected error in authErrorHandler:', error);
         return failure(null);

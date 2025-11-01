@@ -19,9 +19,7 @@ const loaderSchema = z.object({
 
 export const Route = createFileRoute('/(main)/users/$id')({
     component: RouteComponent,
-    loader: async ({ context, params }) => {
-        const currentUser = context.user;
-
+    loader: async ({ context: { queryClient, user: currentUser }, params }) => {
         if (!currentUser) {
             const path = '/sign-in';
 
@@ -34,7 +32,7 @@ export const Route = createFileRoute('/(main)/users/$id')({
 
         let user: UserDTO;
 
-        const queryDataUser = context.queryClient.getQueryData<UserDTO>(['user', userId]);
+        const queryDataUser = queryClient.getQueryData<UserDTO>(['user', userId]);
 
         if (queryDataUser) {
             user = userDTOSchema.parse(queryDataUser);
@@ -48,17 +46,17 @@ export const Route = createFileRoute('/(main)/users/$id')({
             }
 
             user = result.body;
-            context.queryClient.setQueryData(['user', user.id], user);
+            queryClient.setQueryData(['user', user.id], user);
         }
 
         const postsResult = await getPosts({ data: { userId } });
         const posts = postsResult.success ? postsResult.body : [];
 
         await Promise.all([
-            context.queryClient.ensureQueryData(followingsQuery(currentUser)),
-            context.queryClient.ensureQueryData(followersQuery(user)),
-            context.queryClient.ensureQueryData(followingsQuery(user)),
-            context.queryClient.ensureQueryData(followRequestStatusQuery(user.id))
+            queryClient.ensureQueryData(followingsQuery(currentUser)),
+            queryClient.ensureQueryData(followersQuery(user)),
+            queryClient.ensureQueryData(followingsQuery(user)),
+            queryClient.ensureQueryData(followRequestStatusQuery(user.id))
         ]);
 
         return loaderSchema.parse({ currentUser, user, posts });
