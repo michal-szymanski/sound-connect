@@ -5,21 +5,24 @@ import AddPostDialog from '@/web/components/dialogs/add-post-dialog';
 import { Post } from '@/web/components/post';
 import UserAvatar from '@/web/components/small/user-avatar';
 import { Card, CardContent } from '@/web/components/ui/card';
-import { envsQuery, feedQuery, followersQuery, followingsQuery, useFeed, userQuery, useUser } from '@/web/lib/react-query';
+import { accessTokenQuery, envsQuery, feedQuery, followersQuery, followingsQuery, useFeed, authQuery, useAuth } from '@/web/lib/react-query';
 
 export const Route = createFileRoute('/(main)/')({
     component: RouteComponent,
     loader: async ({ context }) => {
+        const accessToken = (context as typeof context & { accessToken?: string })?.accessToken;
+
         await context.queryClient.ensureQueryData(envsQuery());
         await context.queryClient.ensureInfiniteQueryData(feedQuery());
-        await context.queryClient.ensureQueryData(userQuery(context.user));
+        await context.queryClient.ensureQueryData(authQuery({ user: context.user, accessToken }));
         await context.queryClient.ensureQueryData(followersQuery(context.user));
         await context.queryClient.ensureQueryData(followingsQuery(context.user));
+        await context.queryClient.ensureQueryData(accessTokenQuery(accessToken));
     }
 });
 
 function RouteComponent() {
-    const { data: user } = useUser();
+    const { data: auth } = useAuth();
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useFeed();
 
     const feed = data?.pages.flat() ?? [];
@@ -47,7 +50,7 @@ function RouteComponent() {
             <Card className="w-[500px]">
                 <CardContent className="w-full">
                     <div className="inline-flex w-full items-center justify-center gap-5">
-                        <UserAvatar user={userDTOSchema.parse(user)} />
+                        <UserAvatar user={userDTOSchema.parse(auth?.user)} />
                         <AddPostDialog />
                     </div>
                 </CardContent>

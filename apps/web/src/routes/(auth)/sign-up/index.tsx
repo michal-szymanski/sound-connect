@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AuthError } from '@/common/types/auth';
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router';
+import { createFileRoute, Link, redirect, useRouter } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -10,7 +10,12 @@ import { Input } from '@/web/components/ui/input';
 import { signUp } from '@/web/server-functions/auth';
 
 export const Route = createFileRoute('/(auth)/sign-up/')({
-    component: RouteComponent
+    component: RouteComponent,
+    loader: async ({ context: { user } }) => {
+        if (user) {
+            throw redirect({ to: '/' });
+        }
+    }
 });
 
 function RouteComponent() {
@@ -55,7 +60,7 @@ function RouteComponent() {
             const result = await signUp({ data: values });
 
             if (result.success) {
-                router.navigate({ to: '/' });
+                await router.invalidate();
             } else if (result.body) {
                 handleServerError(result.body);
             }

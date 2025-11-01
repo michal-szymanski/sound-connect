@@ -1,5 +1,5 @@
 import { betterAuth } from 'better-auth';
-import { openAPI } from 'better-auth/plugins';
+import { bearer, openAPI } from 'better-auth/plugins';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { schema } from '@/drizzle';
 import { env } from 'cloudflare:workers';
@@ -31,5 +31,5 @@ export const auth = betterAuth({
             maxAge: 5 * 60 // Cache duration in seconds
         }
     },
-    plugins: [openAPI()]
+    plugins: [openAPI(), bearer()]
 });

@@ -6,7 +6,9 @@ export const testSentry = createServerFn()
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/debug/test-sentry`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 

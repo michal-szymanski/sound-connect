@@ -11,7 +11,7 @@ import {
     useQueryClient
 } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { getUser } from '@/web/server-functions/auth';
+import { getAuth } from '@/web/server-functions/auth';
 import { getFeedPaginated, getReactions, getPost, likePost, unlikePost } from '@/web/server-functions/posts';
 import { getFollowers, getFollowings, search, getFollowRequestStatus } from '@/web/server-functions/users';
 import { getComments, createComment, likeComment, unlikeComment } from '@/web/server-functions/comments';
@@ -54,15 +54,15 @@ export const feedQuery = () =>
 
 export const useFeed = () => useInfiniteQuery(feedQuery());
 
-export const userQuery = (user?: User | UserDTO | null) =>
+export const authQuery = (data?: { user: User | null; accessToken: string | undefined }) =>
     queryOptions({
         queryKey: ['user'],
         queryFn: async () => {
-            if (user) {
-                return user;
+            if (data) {
+                return data;
             }
 
-            const result = await getUser();
+            const result = await getAuth();
 
             if (result.success) {
                 return result.body;
@@ -72,7 +72,7 @@ export const userQuery = (user?: User | UserDTO | null) =>
         }
     });
 
-export const useUser = () => useSuspenseQuery(userQuery());
+export const useAuth = () => useSuspenseQuery(authQuery());
 
 export const envsQuery = () =>
     queryOptions({
@@ -89,6 +89,16 @@ export const envsQuery = () =>
     });
 
 export const useEnvs = () => useSuspenseQuery(envsQuery());
+
+export const accessTokenQuery = (accessToken?: string | undefined) =>
+    queryOptions({
+        queryKey: ['access-token'],
+        queryFn: async () => {
+            return accessToken ?? undefined;
+        }
+    });
+
+export const useAccessToken = () => useSuspenseQuery(accessTokenQuery());
 
 export const followingsQuery = (user?: User | UserDTO | null) =>
     queryOptions({

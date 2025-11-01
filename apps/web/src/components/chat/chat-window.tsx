@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader } from '@/web/components/ui/card';
 import { Form, FormControl, FormField, FormItem } from '@/web/components/ui/form';
 import { Input } from '@/web/components/ui/input';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
-import { useUser } from '@/web/lib/react-query';
+import { useAuth } from '@/web/lib/react-query';
 import { useWebSocket } from '@/web/providers/websocket-provider';
 
 type Props = {
@@ -25,7 +25,7 @@ type Props = {
 };
 
 export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, position }: Props) => {
-    const { data: currentUser } = useUser();
+    const { data: auth } = useAuth();
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useWebSocket();
 
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -48,8 +48,8 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const bottomOffset = 20 + position * 60;
 
     useEffect(() => {
-        if (currentUser && user) {
-            const newRoomId = getRoomId(currentUser.id, user.id);
+        if (auth?.user && user) {
+            const newRoomId = getRoomId(auth.user.id, user.id);
             setRoomId(newRoomId);
 
             const initializeRoom = async () => {
@@ -68,7 +68,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                 unsubscribeFromRoom(newRoomId);
             };
         }
-    }, [currentUser, user, subscribeToRoom, unsubscribeFromRoom, loadRoomHistory]);
+    }, [auth, user, subscribeToRoom, unsubscribeFromRoom, loadRoomHistory]);
 
     useEffect(() => {
         if (roomId) {
@@ -82,14 +82,16 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     }, [messages]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!values.text.trim() || !roomId || !currentUser) return;
+        if (!values.text.trim() || !roomId || !auth?.user) return;
 
         sendMessage(roomId, values.text.trim());
 
         form.reset();
     };
 
-    if (!currentUser) return null;
+    if (!auth?.user) return null;
+
+    const currentUser = auth.user;
 
     if (isMinimized) {
         return (

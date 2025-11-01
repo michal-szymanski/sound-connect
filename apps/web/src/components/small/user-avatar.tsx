@@ -1,6 +1,6 @@
 import OnlineStatusIcon from '@/web/components/small/online-status-icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/web/components/ui/avatar';
-import { useUser } from '@/web/lib/react-query';
+import { useAuth } from '@/web/lib/react-query';
 import { cn } from '@/web/lib/utils';
 import { useWebSocket } from '@/web/providers/websocket-provider';
 
@@ -16,8 +16,8 @@ type Props = {
 
 const UserAvatar = ({ user, className, fallbackClassName }: Props) => {
     const { statuses } = useWebSocket();
-    const { data: currentUser } = useUser();
-    const isCurrentUser = currentUser?.id === user.id;
+    const { data: auth } = useAuth();
+    const isCurrentUser = auth?.user?.id === user.id;
 
     return (
         <div className="relative">

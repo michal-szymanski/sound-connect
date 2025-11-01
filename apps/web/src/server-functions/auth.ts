@@ -1,11 +1,11 @@
 import { createServerFn } from '@tanstack/react-start';
 import { getRequest } from '@tanstack/react-start/server';
 import { z } from 'zod';
-import { userApiSchema } from '@/common/types/auth';
-import { authErrorHandler, deleteSessionCookies, failure, getSessionData, setSessionCookies, success } from '@/web/server-functions/helpers';
+import { authErrorHandler, deleteAuthCookies, failure, getSessionData, setAuthCookies, success } from '@/web/server-functions/helpers';
 import { envMiddleware } from '@/web/server-functions/middlewares';
+import { userSchema } from '@/common/types/drizzle';
 
-export const getUser = createServerFn()
+export const getAuth = createServerFn()
     .middleware([envMiddleware])
     .handler(async ({ context: { env } }) => {
         const sessionData = await getSessionData(env);
@@ -14,7 +14,7 @@ export const getUser = createServerFn()
             return failure(null);
         }
 
-        return success(sessionData.user);
+        return success({ user: sessionData.user, accessToken: sessionData.accessToken });
     });
 
 export const signIn = createServerFn({ method: 'POST' })
@@ -37,16 +37,16 @@ export const signIn = createServerFn({ method: 'POST' })
             return await authErrorHandler(response);
         }
 
-        const isSessionCreated = setSessionCookies(response);
+        const authCookies = setAuthCookies(response);
 
-        if (!isSessionCreated) {
+        if (authCookies.length !== 3) {
             return failure(null);
         }
 
         try {
             const json = await response.json();
             const schema = z.object({
-                user: userApiSchema,
+                user: userSchema,
                 url: z.string(),
                 redirect: z.boolean(),
                 token: z.string()
@@ -90,7 +90,7 @@ export const signOut = createServerFn({
             const result = schema.parse(json);
 
             if (result.success) {
-                deleteSessionCookies();
+                deleteAuthCookies();
             }
 
             return success(schema.parse(json));
@@ -122,9 +122,9 @@ export const signUp = createServerFn({
             return await authErrorHandler(response);
         }
 
-        const isSessionCreated = setSessionCookies(response);
+        const authCookies = setAuthCookies(response);
 
-        if (!isSessionCreated) {
+        if (authCookies.length !== 3) {
             return failure(null);
         }
 
@@ -132,7 +132,7 @@ export const signUp = createServerFn({
             const json = await response.json();
             const schema = z.object({
                 token: z.string(),
-                user: userApiSchema
+                user: userSchema
             });
 
             return success(schema.parse(json));

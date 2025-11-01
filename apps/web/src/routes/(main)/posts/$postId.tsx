@@ -1,13 +1,15 @@
 import { createFileRoute, notFound } from '@tanstack/react-router';
 import { z } from 'zod';
 import { Post } from '@/web/components/post';
-import { envsQuery, followersQuery, followingsQuery, userQuery, postQuery } from '@/web/lib/react-query';
+import { envsQuery, followersQuery, followingsQuery, authQuery, postQuery } from '@/web/lib/react-query';
 
 export const Route = createFileRoute('/(main)/posts/$postId')({
     component: RouteComponent,
     loader: async ({ context, params }) => {
+        const accessToken = (context as typeof context & { accessToken?: string })?.accessToken;
+
         await context.queryClient.ensureQueryData(envsQuery());
-        await context.queryClient.ensureQueryData(userQuery(context.user));
+        await context.queryClient.ensureQueryData(authQuery({ user: context.user, accessToken }));
         await context.queryClient.ensureQueryData(followersQuery(context.user));
         await context.queryClient.ensureQueryData(followingsQuery(context.user));
 

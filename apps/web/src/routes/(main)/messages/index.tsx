@@ -15,7 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from '@/web/compone
 import { Input } from '@/web/components/ui/input';
 import { ScrollArea } from '@/web/components/ui/scroll-area';
 import useContacts from '@/web/hooks/use-contacts';
-import { useUser } from '@/web/lib/react-query';
+import { useAuth } from '@/web/lib/react-query';
 import { useWebSocket } from '@/web/providers/websocket-provider';
 import { RootState } from '@/web/redux/store';
 
@@ -25,7 +25,7 @@ export const Route = createFileRoute('/(main)/messages/')({
 
 function RouteComponent() {
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, status, roomMessages } = useWebSocket();
-    const { data: user } = useUser();
+    const { data: auth } = useAuth();
     const { users } = useContacts();
     const { isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
 
@@ -61,7 +61,7 @@ function RouteComponent() {
     }, [isSidebarCollapsed]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!selectedPeer || !user || !values.text || !currentRoomId) return;
+        if (!selectedPeer || !auth?.user || !values.text || !currentRoomId) return;
 
         sendMessage(currentRoomId, values.text);
 
@@ -69,8 +69,8 @@ function RouteComponent() {
     };
 
     useEffect(() => {
-        if (selectedPeer && user) {
-            const roomId = getRoomId(user.id, selectedPeer.id);
+        if (selectedPeer && auth?.user) {
+            const roomId = getRoomId(auth.user.id, selectedPeer.id);
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setCurrentRoomId(roomId);
 
@@ -90,7 +90,7 @@ function RouteComponent() {
                 unsubscribeFromRoom(roomId);
             };
         }
-    }, [selectedPeer, user, subscribeToRoom, unsubscribeFromRoom, loadRoomHistory]);
+    }, [selectedPeer, auth, subscribeToRoom, unsubscribeFromRoom, loadRoomHistory]);
 
     useEffect(() => {
         if (currentRoomId) {
@@ -141,18 +141,20 @@ function RouteComponent() {
     };
 
     const renderMessages = () => {
-        if (!user) return null;
+        if (!auth?.user) return null;
+
+        const currentUserId = auth.user.id;
 
         return messages.map((msg, index) => (
             <div
                 key={msg.id || `${msg.timestamp}-${index}`}
                 className={clsx('flex justify-end', {
-                    'justify-start': msg.senderId !== user.id
+                    'justify-start': msg.senderId !== currentUserId
                 })}
             >
                 <Card
                     className={clsx(`bg-primary text-primary-foreground max-w-xs px-4 py-2`, {
-                        'bg-muted text-card-foreground': msg.senderId !== user.id
+                        'bg-muted text-card-foreground': msg.senderId !== currentUserId
                     })}
                 >
                     {msg.content}

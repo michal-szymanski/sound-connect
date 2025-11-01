@@ -9,7 +9,9 @@ export const getComments = createServerFn()
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/comments`, {
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -33,7 +35,10 @@ export const createComment = createServerFn({ method: 'POST' })
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/comments`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Cookie: auth.cookie },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include',
             body: JSON.stringify(data)
         });
@@ -51,7 +56,9 @@ export const likeComment = createServerFn({ method: 'POST' })
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/comments/${data.commentId}/like`, {
             method: 'POST',
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 
@@ -68,7 +75,9 @@ export const unlikeComment = createServerFn()
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/comments/${data.commentId}/like`, {
             method: 'DELETE',
-            headers: { Cookie: auth.cookie },
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
             credentials: 'include'
         });
 

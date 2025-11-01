@@ -8,7 +8,7 @@ import UserAvatar from '@/web/components/small/user-avatar';
 import { Button } from '@/web/components/ui/button';
 import { Card, CardFooter } from '@/web/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/web/components/ui/dropdown-menu';
-import { useFollowings, useUser, useLikeToggle } from '@/web/lib/react-query';
+import { useFollowings, useAuth, useLikeToggle } from '@/web/lib/react-query';
 import { useElapsedTime } from '@/web/lib/utils';
 
 type Props = {
@@ -26,20 +26,20 @@ const formatContent = (content: string) => {
 
 export function Post({ item }: Props) {
     const { post, user, media, reactions, commentsCount } = item;
-    const { data: currentUser } = useUser();
-    const { data: followings } = useFollowings(currentUser);
+    const { data: auth } = useAuth();
+    const { data: followings } = useFollowings(auth?.user ?? null);
     const [isLikesDialogOpen, setIsLikesDialogOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const elapsedTime = useElapsedTime(post.createdAt);
 
-    const canFollow = currentUser?.id !== post.userId && !followings.some((following) => following.id === post.userId);
+    const canFollow = auth?.user?.id !== post.userId && !followings.some((following) => following.id === post.userId);
 
-    const isLiked = reactions.some((reaction) => reaction.userId === currentUser?.id);
+    const isLiked = reactions.some((reaction) => reaction.userId === auth?.user?.id);
 
-    const likeMutation = useLikeToggle(post.id, currentUser);
+    const likeMutation = useLikeToggle(post.id, auth?.user ?? null);
 
     const handleLikeToggle = () => {
-        if (!currentUser || likeMutation.isPending) return;
+        if (!auth?.user || likeMutation.isPending) return;
         likeMutation.mutate(isLiked);
     };
 
