@@ -58,26 +58,35 @@ export const NotificationsProvider = ({ children }: Props) => {
         };
 
         loadNotifications();
-    }, [auth]);
+    }, [auth?.user]);
 
     useEffect(() => {
-        if (!envs || !auth?.accessToken) return;
+        console.log('[NotificationsWS] useEffect running', { hasEnvs: !!envs, hasAccessToken: !!auth?.accessToken });
+
+        if (!envs || !auth?.accessToken) {
+            console.log('[NotificationsWS] Missing dependencies, skipping WebSocket setup');
+            return;
+        }
 
         const { API_URL } = envs;
-        notificationsWs.current = new WebSocket(`${API_URL}/ws/notifications`, ['access_token', encodeURIComponent(auth.accessToken)]);
+        const wsUrl = `${API_URL}/ws/notifications`;
+        console.log('[NotificationsWS] Creating WebSocket connection to:', wsUrl);
+
+        notificationsWs.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(auth.accessToken)]);
 
         const handleOpen = () => {
             console.log('[NotificationsWS] Connection opened');
             setNotificationsStatus('open');
         };
 
-        const handleError = () => {
+        const handleError = (event: Event) => {
             setNotificationsStatus('error');
-            console.error('[NotificationsWS] Connection error');
+            console.error('[NotificationsWS] Connection error', event);
         };
 
-        const handleClose = () => {
+        const handleClose = (event: CloseEvent) => {
             setNotificationsStatus('closed');
+            console.log('[NotificationsWS] Connection closed', { code: event.code, reason: event.reason });
         };
 
         const handleMessage = (event: MessageEvent) => {
@@ -119,7 +128,7 @@ export const NotificationsProvider = ({ children }: Props) => {
 
             notificationsWs.current.close();
         };
-    }, [envs, auth, addNotification]);
+    }, [envs, auth?.accessToken, addNotification]);
 
     const contextValue: NotificationsContext = {
         notificationsStatus,
