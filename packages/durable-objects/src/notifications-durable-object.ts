@@ -1,5 +1,11 @@
 import { DurableObject } from 'cloudflare:workers';
-import { getUserNotifications } from '@/api/db/queries/notifications-queries';
+import { drizzle } from 'drizzle-orm/d1';
+import { schema } from '@sound-connect/drizzle';
+import { notificationSchema } from '@sound-connect/common/types/drizzle';
+import { desc, eq } from 'drizzle-orm';
+import z from 'zod';
+
+const { notificationsTable } = schema;
 
 export class NotificationsDurableObject extends DurableObject {
     private connections: Map<string, WebSocket> = new Map();
@@ -64,7 +70,7 @@ export class NotificationsDurableObject extends DurableObject {
         webSocket.accept();
         this.connections.set(userId, webSocket);
 
-        const notifications = await getUserNotifications(userId, 50);
+        const notifications = await this.getUserNotifications(userId, 50);
 
         webSocket.send(
             JSON.stringify({
@@ -93,5 +99,30 @@ export class NotificationsDurableObject extends DurableObject {
                 })
             );
         }
+    }
+
+    private async getUserNotifications(userId: string, limit?: number) {
+        const db = drizzle(this.env.DB, { schema });
+
+        const baseQuery = db
+            .select({
+                id: notificationsTable.id,
+                userId: notificationsTable.userId,
+                type: notificationsTable.type,
+                actorId: notificationsTable.actorId,
+                entityId: notificationsTable.entityId,
+                entityType: notificationsTable.entityType,
+                content: notificationsTable.content,
+                seen: notificationsTable.seen,
+                createdAt: notificationsTable.createdAt
+            })
+            .from(notificationsTable)
+            .where(eq(notificationsTable.userId, userId))
+            .orderBy(desc(notificationsTable.createdAt));
+
+        const results = limit !== undefined ? await baseQuery.limit(limit) : await baseQuery;
+
+        const arraySchema = z.array(notificationSchema);
+        return arraySchema.parse(results);
     }
 }

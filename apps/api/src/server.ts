@@ -45,9 +45,7 @@ app.route('/', mediaRoutes);
 app.route('/', commentsRoutes);
 app.route('/', notificationsRoutes);
 
-export { ChatDurableObject } from '@/api/durable-objects/chat-durable-object';
-export { UserDurableObject } from '@/api/durable-objects/user-durable-object';
-export { NotificationsDurableObject } from '@/api/durable-objects/notifications-durable-object';
+export { ChatDurableObject, UserDurableObject, NotificationsDurableObject } from '@sound-connect/durable-objects';
 
 export default Sentry.withSentry((env: CloudflareBindings) => {
     return {

@@ -1,0 +1,32 @@
+{
+    "name": "@sound-connect/durable-objects",
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./src",
+    "exports": {
+        ".": "./src/index.ts",
+        "./chat": "./src/chat-durable-object.ts",
+        "./user": "./src/user-durable-object.ts",
+        "./notifications": "./src/notifications-durable-object.ts"
+    },
+    "scripts": {
+        "tsc": "tsc --noEmit",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "prettier": "prettier . --check",
+        "prettier:fix": "prettier . --write"
+    },
+    "dependencies": {
+        "@sound-connect/common": "workspace:*",
+        "@sound-connect/drizzle": "workspace:*",
+        "drizzle-orm": "catalog:",
+        "zod": "catalog:"
+    },
+    "devDependencies": {
+        "@cloudflare/workers-types": "catalog:",
+        "@types/node": "catalog:",
+        "eslint": "catalog:",
+        "prettier": "catalog:",
+        "typescript": "catalog:"
+    }
+}

@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
-import { ONLINE_STATUS_INTERVAL } from '@/common/constants';
-import { WebSocketMessage, webSocketMessageSchema, onlineStatusMessageSchema, UserDTO } from '@/common/types/models';
+import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
+import { WebSocketMessage, webSocketMessageSchema, onlineStatusMessageSchema, UserDTO } from '@sound-connect/common/types/models';
 import { ChatService } from './services/chat-service';
 import z from 'zod';
 
