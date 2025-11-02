@@ -1,13 +1,6 @@
 import { HonoContext } from 'types';
-import { auth, initAuth } from 'auth';
+import { auth } from 'auth';
 import { Context, Next } from 'hono';
-import { initDb } from '@/api/db';
-
-export const initMiddleware = async (c: Context<HonoContext>, next: Next) => {
-    const db = initDb(c.env.DB);
-    initAuth(db, c.env.BETTER_AUTH_URL, c.env.BETTER_AUTH_SECRET);
-    return next();
-};
 
 export const authMiddleware = async (c: Context<HonoContext>, next: Next) => {
     if (c.req.path.startsWith('/api/auth/') || c.req.path.startsWith('/debug') || c.req.path === '/health') {
