@@ -8,7 +8,22 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 - **Backend**:
     - `apps/api` - REST API built with Cloudflare Workers, Durable Objects for real-time communication, Drizzle.js ORM with D1 database
     - `apps/posts-queue-consumer` - Queue consumer worker for content moderation, using Cloudflare Queues
+    - `apps/notifications-queue-consumer` - Queue consumer worker for processing and delivering notifications, using Cloudflare Queues
 - **Common**: `packages/common` - Shared types, constants, and utilities between frontend and backend
+
+## Quick Reference
+
+### Development Servers
+- **Frontend**: `http://localhost:3000`
+- **Backend API**: `http://localhost:4000` (includes posts-queue-consumer)
+
+### Test Users
+| Email      | Password | Name |
+|------------|----------|------|
+| t1@asd.asd | aaaaaaaa | t1   |
+| t2@asd.asd | aaaaaaaa | t2   |
+
+Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
 
 ## Development Rules
 
@@ -28,13 +43,46 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 - Before making any edit, check if it violates these rules.
 - If a rule conflict arises, ask the user for clarification rather than breaking the rule.
 
+### App-Specific Rules
+
+#### Frontend (`apps/web`)
+- NEVER modify files in `src/components/ui/` - these are ShadCN auto-generated components
+
+#### Backend API (`apps/api`)
+- ALWAYS access current user ID with `c.get('user')` - NEVER trust user IDs from frontend requests
+
+#### Database (`packages/drizzle`)
+- Column names MUST use snake_case (e.g., `created_at`, `user_id`, `post_id`)
+- All columns MUST have explicit column names specified in the schema definition
+- **Date field types**:
+  - **Authentication tables** (users, sessions, accounts, verifications): Use `integer({ mode: 'timestamp' })` for date fields (better-auth expects Date objects)
+  - **Application tables** (posts, comments, messages, etc.): Use `text()` for date fields (stores ISO 8601 strings for JSON serialization)
+- **After schema changes**, run these commands IN ORDER:
+  1. `pnpm db:generate` - Generate migration files
+  2. Manually update Zod schemas in `packages/common/src/types/drizzle.ts` to match the database schema
+  3. `pnpm --filter @sound-connect/api db:migrate:local` - Apply migrations locally
+- Always specify explicit column names for all fields
+- Use proper foreign key references with `onDelete` actions
+- Mark all required fields with `.notNull()`
+- Define relations separately from table definitions
+- Use TypeScript `as const` for enum definitions before using them in schemas
+
+#### Queue Consumers (`apps/posts-queue-consumer` and `apps/notifications-queue-consumer`)
+- Always handle errors gracefully to prevent message loss
+- Log all processing decisions for audit purposes
+- Use structured logging for better observability
+- Validate all queue messages with Zod schemas before processing
+
 ## Monorepo Structure
 
 - **Frontend**:
-    - **[Web Application](apps/web/CLAUDE.md)**: `apps/web` - Web application
+    - `apps/web` - Web application
 - **Backend**:
-    - **[REST API](apps/api/CLAUDE.md)**: `apps/api` - API server
-    - **[Posts Queue Consumer](apps/posts-queue-consumer/CLAUDE.md)**: `apps/posts-queue-consumer` - Queue consumer for post moderation
+    - `apps/api` - API server
+    - `apps/posts-queue-consumer` - Queue consumer for post moderation
+    - `apps/notifications-queue-consumer` - Queue consumer for notifications processing
+- **Testing**:
+    - **[E2E Tests](e2e/CLAUDE.md)**: `e2e` - Playwright end-to-end tests with database snapshots
 - **Shared**:
-    - **[Common Package](packages/common/CLAUDE.md)**: `packages/common` - Shared utilities and types
-    - **[Drizzle Package](packages/drizzle/CLAUDE.md)**: `packages/drizzle` - Drizzle ORM schema definitions and database migrations for D1
+    - `packages/common` - Shared utilities and types
+    - `packages/drizzle` - Drizzle ORM schema definitions and database migrations for D1
