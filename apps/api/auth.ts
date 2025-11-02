@@ -1,5 +1,5 @@
 import { betterAuth } from 'better-auth';
-import { bearer, openAPI } from 'better-auth/plugins';
+import { jwt, openAPI } from 'better-auth/plugins';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { schema } from '@/drizzle';
 import { APP_NAME_NORMALIZED } from '@/common/constants';
@@ -32,5 +32,5 @@ export const auth = betterAuth({
             maxAge: 5 * 60
         }
     },
-    plugins: [openAPI(), bearer()]
+    plugins: [openAPI(), jwt()]
 });
