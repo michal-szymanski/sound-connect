@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useEnvs, useAuth } from '@/web/lib/react-query';
 import type { Notification } from '@/common/types/drizzle';
-import { getNotifications } from '@/web/server-functions/notifications';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 
@@ -46,21 +45,6 @@ export const NotificationsProvider = ({ children }: Props) => {
     const unreadCount = notifications.filter((n) => !n.seen).length;
 
     useEffect(() => {
-        if (!auth?.user) return;
-
-        const loadNotifications = async () => {
-            const result = await getNotifications();
-            if (result.success && result.body) {
-                setNotifications(result.body);
-            } else {
-                setNotifications([]);
-            }
-        };
-
-        loadNotifications();
-    }, [auth?.user]);
-
-    useEffect(() => {
         console.log('[NotificationsWS] useEffect running', { hasEnvs: !!envs, hasAccessToken: !!auth?.accessToken });
 
         if (!envs || !auth?.accessToken) {
@@ -93,20 +77,12 @@ export const NotificationsProvider = ({ children }: Props) => {
             try {
                 const message = JSON.parse(event.data);
 
-                if (message.type === 'notification') {
-                    const notificationData = message.data;
-                    const notification: Notification = {
-                        id: Date.now(),
-                        userId: notificationData.userId,
-                        type: notificationData.type,
-                        actorId: notificationData.actorId,
-                        entityId: null,
-                        entityType: null,
-                        content: notificationData.content,
-                        seen: false,
-                        createdAt: new Date().toISOString()
-                    };
-                    addNotification(notification);
+                if (message.type === 'initial') {
+                    console.log('[NotificationsWS] Received initial notifications:', message.data.length);
+                    setNotifications(message.data);
+                } else if (message.type === 'notification') {
+                    console.log('[NotificationsWS] Received new notification:', message.data);
+                    addNotification(message.data);
                 }
             } catch (error) {
                 console.error('[NotificationsWS] Error parsing message:', error);

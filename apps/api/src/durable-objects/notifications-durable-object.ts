@@ -1,4 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
+import { getUserNotifications } from '@/api/db/queries/notifications-queries';
 
 export class NotificationsDurableObject extends DurableObject {
     private connections: Map<string, WebSocket> = new Map();
@@ -17,15 +18,12 @@ export class NotificationsDurableObject extends DurableObject {
         const upgradeHeader = request.headers.get('Upgrade');
         const userId = request.headers.get('X-User-Id');
 
-        if (url.pathname === '/send-notification' && request.method === 'POST') {
-            const notification = (await request.json()) as {
+        if (url.pathname === '/send-notification-realtime' && request.method === 'POST') {
+            const body = (await request.json()) as {
                 userId: string;
-                type: string;
-                actorId: string;
-                actorName: string;
-                content: string;
+                notification: unknown;
             };
-            this.sendNotificationToUser(notification.userId, notification);
+            this.sendNotificationToUser(body.userId, body.notification);
             return new Response('OK', { status: 200 });
         }
 
@@ -65,6 +63,15 @@ export class NotificationsDurableObject extends DurableObject {
     private async handleConnection(webSocket: WebSocket, userId: string) {
         webSocket.accept();
         this.connections.set(userId, webSocket);
+
+        const notifications = await getUserNotifications(userId, 50);
+
+        webSocket.send(
+            JSON.stringify({
+                type: 'initial',
+                data: notifications
+            })
+        );
 
         webSocket.addEventListener('close', () => {
             this.connections.delete(userId);

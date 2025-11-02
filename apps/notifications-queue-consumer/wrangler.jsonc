@@ -1,0 +1,36 @@
+{
+    "name": "notifications-queue-consumer",
+    "main": "src/index.ts",
+    "compatibility_date": "2024-11-01",
+    "compatibility_flags": ["nodejs_compat"],
+    "observability": {
+        "enabled": true
+    },
+    "queues": {
+        "consumers": [
+            {
+                "queue": "notifications-queue",
+                "max_batch_size": 10,
+                "max_batch_timeout": 1,
+                "max_retries": 3,
+                "dead_letter_queue": "notifications-queue-dlq"
+            }
+        ]
+    },
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "sound-connect-db",
+            "database_id": "4d13c143-e7a0-4eca-b214-25bf2ef6129a"
+        }
+    ],
+    "durable_objects": {
+        "bindings": [
+            {
+                "name": "NotificationsDO",
+                "class_name": "NotificationsDurableObject",
+                "script_name": "api"
+            }
+        ]
+    }
+}
