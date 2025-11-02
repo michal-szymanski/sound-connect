@@ -5,58 +5,23 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1741893163893,
-      "tag": "0000_small_lady_mastermind",
+      "when": 1762085772968,
+      "tag": "0000_mature_mercury",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "6",
-      "when": 1741907071110,
-      "tag": "0001_happy_nekra",
-      "breakpoints": true
+      "when": 1762085772969,
+      "tag": "0001_seed_users",
+      "breakpoints": false
     },
     {
       "idx": 2,
       "version": "6",
-      "when": 1747661190237,
-      "tag": "0002_bent_shotgun",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1747841418115,
-      "tag": "0003_needy_living_tribunal",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1747856997751,
-      "tag": "0004_lucky_captain_marvel",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1758444274243,
-      "tag": "0005_wooden_pixie",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1759341898580,
-      "tag": "0006_peaceful_shotgun",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "6",
-      "when": 1760803365005,
-      "tag": "0007_supreme_the_enforcers",
-      "breakpoints": true
+      "when": 1762085772970,
+      "tag": "0002_seed_playwright_users",
+      "breakpoints": false
     }
   ]
 }

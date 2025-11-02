@@ -36,7 +36,7 @@ For Playwright e2e tests, the following test users are seeded in the database:
 | pw1@test.test | Test123! | Playwright User 1 |
 | pw2@test.test | Test123! | Playwright User 2 |
 
-These users are defined in the migration: `packages/drizzle/migrations/0009_seed_playwright_users.sql`
+These users are defined in the migration: `packages/drizzle/migrations/0002_seed_playwright_users.sql`
 
 ## Running Tests
 

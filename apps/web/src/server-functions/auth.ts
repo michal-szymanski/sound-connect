@@ -39,7 +39,7 @@ export const signIn = createServerFn({ method: 'POST' })
 
         const authCookies = setAuthCookies(response);
 
-        if (authCookies.length !== 3) {
+        if (authCookies.length !== 2) {
             return failure(null);
         }
 
