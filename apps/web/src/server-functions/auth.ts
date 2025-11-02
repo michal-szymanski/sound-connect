@@ -124,7 +124,7 @@ export const signUp = createServerFn({
 
         const authCookies = setAuthCookies(response);
 
-        if (authCookies.length !== 3) {
+        if (authCookies.length !== 2) {
             return failure(null);
         }
 
