@@ -75,9 +75,10 @@ export function cleanTestData(): void {
         `DROP TRIGGER IF EXISTS users_au;`,
         `DELETE FROM users WHERE id NOT IN (${userIdList});`,
         `DELETE FROM users_fts WHERE rowid NOT IN (SELECT rowid FROM users);`,
-        `CREATE TRIGGER users_ai AFTER INSERT ON users BEGIN INSERT INTO users_fts(rowid, name) VALUES (new.rowid, new.name); END;`,
-        `CREATE TRIGGER users_ad AFTER DELETE ON users BEGIN INSERT INTO users_fts(users_fts, rowid) VALUES('delete', old.rowid); END;`,
-        `CREATE TRIGGER users_au AFTER UPDATE ON users BEGIN INSERT INTO users_fts(users_fts, rowid) VALUES('delete', old.rowid); INSERT INTO users_fts(rowid, name) VALUES(new.rowid, new.name); END;`
+        `INSERT INTO users_fts(users_fts) VALUES('rebuild');`,
+        `CREATE TRIGGER IF NOT EXISTS users_ai AFTER INSERT ON users BEGIN INSERT INTO users_fts(rowid, name) VALUES (new.rowid, new.name); END;`,
+        `CREATE TRIGGER IF NOT EXISTS users_ad AFTER DELETE ON users BEGIN INSERT INTO users_fts(users_fts, rowid) VALUES('delete', old.rowid); END;`,
+        `CREATE TRIGGER IF NOT EXISTS users_au AFTER UPDATE ON users BEGIN INSERT INTO users_fts(users_fts, rowid) VALUES('delete', old.rowid); INSERT INTO users_fts(rowid, name) VALUES(new.rowid, new.name); END;`
     ];
 
     for (const query of queries) {
