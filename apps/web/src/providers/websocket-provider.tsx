@@ -123,7 +123,7 @@ export const WebSocketProvider = ({ children }: Props) => {
         }
 
         const { API_URL } = envs;
-        const wsUrl = `${API_URL}/ws/user`;
+        const wsUrl = `${API_URL.replace(/^http/, 'ws')}/ws/user`;
         console.log('[WS Provider] Creating WebSocket connection to:', wsUrl);
 
         ws.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(auth.accessToken)]);

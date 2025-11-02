@@ -69,7 +69,7 @@ export const NotificationsProvider = ({ children }: Props) => {
         }
 
         const { API_URL } = envs;
-        const wsUrl = `${API_URL}/ws/notifications`;
+        const wsUrl = `${API_URL.replace(/^http/, 'ws')}/ws/notifications`;
         console.log('[NotificationsWS] Creating WebSocket connection to:', wsUrl);
 
         notificationsWs.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(auth.accessToken)]);
