@@ -6,15 +6,6 @@ export type HonoContext = {
     Variables: Record<string, unknown>;
 };
 
-export const postQueueMessageSchema = z.object({
-    postId: z.number(),
-    userId: z.string(),
-    content: z.string(),
-    mediaKeys: z.array(z.string()).optional()
-});
-
-export type PostQueueMessage = z.infer<typeof postQueueMessageSchema>;
-
 export const moderationResultSchema = z.object({
     status: postStatusSchema,
     reason: z.string().optional(),

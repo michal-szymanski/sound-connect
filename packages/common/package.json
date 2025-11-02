@@ -12,7 +12,8 @@
         "./types/drizzle": "./src/types/drizzle.ts",
         "./types/api": "./src/types/api.ts",
         "./types/server-functions": "./src/types/server-functions.ts",
-        "./types/notifications": "./src/types/notifications.ts"
+        "./types/notifications": "./src/types/notifications.ts",
+        "./types/posts": "./src/types/posts.ts"
     },
     "scripts": {
         "tsc": "tsc --noEmit",

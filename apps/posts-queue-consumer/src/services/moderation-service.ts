@@ -1,6 +1,7 @@
 import { PostStatus } from '@/common/types/models';
-import { PostQueueMessage, ModerationResult } from '../types';
+import { ModerationResult } from '../types';
 import { updatePostStatus } from '@/posts-queue-consumer/db/queries/posts-queries';
+import type { PostQueueMessage } from '@sound-connect/common/types/posts';
 
 export async function processPost(postData: PostQueueMessage, _env: CloudflareBindings): Promise<void> {
     console.log(`Processing post ${postData.postId} by user ${postData.userId}`);
