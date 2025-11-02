@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { HonoContext } from 'types';
-import { authMiddleware, initMiddleware } from './middlewares';
+import { authMiddleware } from './middlewares';
 import { authRoutes } from './routes/auth';
 import { usersRoutes } from './routes/users';
 import { postsRoutes } from './routes/posts';
@@ -16,7 +16,6 @@ import * as Sentry from '@sentry/cloudflare';
 
 const app = new Hono<HonoContext>();
 
-app.use('*', initMiddleware);
 app.use('*', authMiddleware);
 
 app.onError((error, c) => {
