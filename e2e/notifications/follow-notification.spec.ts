@@ -1,9 +1,19 @@
 import { test, expect, setupPageErrorLogging } from '@/e2e/hooks';
 import { signIn, signOut, TEST_USERS } from '@/e2e/utils/auth';
 import { searchAndNavigateToUser } from '@/e2e/utils/navigation';
+import { followUser } from '@/e2e/utils/follow';
+import {
+    openNotifications,
+    waitForNotificationCount,
+    expectNotificationContent,
+    expectNotificationType,
+    deleteFirstNotification,
+    getNotificationContent,
+    markNotificationsAsRead
+} from '@/e2e/utils/notifications';
 
-test.describe('Follow Notification System', () => {
-    test('should send notification when user follows another user', async ({ page, browser }) => {
+test.describe('Follow Notifications', () => {
+    test('should receive notification when followed by another user', async ({ page, browser }) => {
         const user1Page = page;
         const user2Context = await browser.newContext();
         const user2Page = await user2Context.newPage();
@@ -17,95 +27,93 @@ test.describe('Follow Notification System', () => {
         await user2Page.waitForLoadState('networkidle');
 
         await searchAndNavigateToUser(user1Page, TEST_USERS.USER_B.name);
-
-        const followButton = user1Page.getByTestId('follow-button');
-        await expect(followButton).toBeVisible({ timeout: 10000 });
-        await followButton.click();
-
-        const followingButton = user1Page.getByTestId('following-button');
-        await expect(followingButton).toBeVisible();
+        await followUser(user1Page);
 
         await user2Page.reload();
         await user2Page.waitForLoadState('networkidle');
 
-        const notificationsButton = user2Page.getByTestId('notifications-button');
-        await expect(notificationsButton).toBeVisible();
-
-        const unreadBadge = user2Page.getByTestId('notification-unread-badge');
-        await expect(unreadBadge).toBeVisible();
-        await expect(unreadBadge).toHaveText('1');
-
-        await notificationsButton.click();
-
-        const notificationContent = user2Page.getByTestId('notification-content').first();
-        await expect(notificationContent).toContainText(`${TEST_USERS.USER_A.name} started following you`);
-
-        const notificationType = user2Page.getByTestId('notification-type').first();
-        await expect(notificationType).toHaveText('New follower');
-
-        const notificationsHeading = user2Page.getByTestId('notifications-heading');
-        await notificationsHeading.click();
-
-        await expect(unreadBadge).not.toBeVisible();
+        await waitForNotificationCount(user2Page, 1);
 
         await user2Page.close();
         await user2Context.close();
     });
 
-    test('should allow deleting notifications', async ({ page }) => {
+    test('should show correct notification content and type', async ({ page, browser }) => {
         const user1Page = page;
+        const user2Context = await browser.newContext();
+        const user2Page = await user2Context.newPage();
+
+        setupPageErrorLogging(user2Page, 'user2');
 
         await signIn(user1Page, TEST_USERS.USER_A);
+        await signIn(user2Page, TEST_USERS.USER_B);
+
         await user1Page.waitForLoadState('networkidle');
+        await user2Page.waitForLoadState('networkidle');
 
         await searchAndNavigateToUser(user1Page, TEST_USERS.USER_B.name);
+        await followUser(user1Page);
 
-        const followButton = user1Page.getByTestId('follow-button');
-        await expect(followButton).toBeVisible({ timeout: 10000 });
-        await followButton.click();
+        await user2Page.reload();
+        await user2Page.waitForLoadState('networkidle');
 
-        const followingButton = user1Page.getByTestId('following-button');
-        await expect(followingButton).toBeVisible();
+        await openNotifications(user2Page);
 
-        await signOut(user1Page);
+        await expectNotificationContent(user2Page, `${TEST_USERS.USER_A.name} started following you`);
+        await expectNotificationType(user2Page, 'New follower');
 
-        await signIn(user1Page, TEST_USERS.USER_B);
-        await user1Page.waitForLoadState('networkidle');
-
-        const notificationsButton = user1Page.getByTestId('notifications-button');
-        await notificationsButton.click();
-
-        const notificationContent = user1Page.getByTestId('notification-content').first();
-        await expect(notificationContent).toContainText(`${TEST_USERS.USER_A.name} started following you`);
-
-        const deleteButton = user1Page.getByTestId('notification-delete-button').first();
-        await deleteButton.click();
-
-        await expect(notificationContent).not.toBeVisible();
+        await user2Page.close();
+        await user2Context.close();
     });
 
-    test('should show correct follow status on user page', async ({ page }) => {
+    test('should mark notifications as read when heading is clicked', async ({ page, browser }) => {
+        const user1Page = page;
+        const user2Context = await browser.newContext();
+        const user2Page = await user2Context.newPage();
+
+        setupPageErrorLogging(user2Page, 'user2');
+
+        await signIn(user1Page, TEST_USERS.USER_A);
+        await signIn(user2Page, TEST_USERS.USER_B);
+
+        await user1Page.waitForLoadState('networkidle');
+        await user2Page.waitForLoadState('networkidle');
+
+        await searchAndNavigateToUser(user1Page, TEST_USERS.USER_B.name);
+        await followUser(user1Page);
+
+        await user2Page.reload();
+        await user2Page.waitForLoadState('networkidle');
+
+        await waitForNotificationCount(user2Page, 1);
+        await openNotifications(user2Page);
+        await markNotificationsAsRead(user2Page);
+
+        await waitForNotificationCount(user2Page, 0);
+
+        await user2Page.close();
+        await user2Context.close();
+    });
+
+    test('should delete notification when delete button is clicked', async ({ page }) => {
         await signIn(page, TEST_USERS.USER_A);
         await page.waitForLoadState('networkidle');
 
         await searchAndNavigateToUser(page, TEST_USERS.USER_B.name);
+        await followUser(page);
 
-        const followButton = page.getByTestId('follow-button');
-        await expect(followButton).toBeVisible({ timeout: 10000 });
-        await followButton.click();
+        await signOut(page);
 
-        const followingButton = page.getByTestId('following-button');
-        await expect(followingButton).toBeVisible();
-
-        await page.reload();
+        await signIn(page, TEST_USERS.USER_B);
         await page.waitForLoadState('networkidle');
 
-        const followingButtonAfterReload = page.getByTestId('following-button');
-        await expect(followingButtonAfterReload).toBeVisible();
+        await openNotifications(page);
 
-        await followingButtonAfterReload.click();
+        const notificationContent = await getNotificationContent(page, 0);
+        await expect(notificationContent).toContainText(`${TEST_USERS.USER_A.name} started following you`);
 
-        const followButtonAfterUnfollow = page.getByTestId('follow-button');
-        await expect(followButtonAfterUnfollow).toBeVisible();
+        await deleteFirstNotification(page);
+
+        await expect(notificationContent).not.toBeVisible();
     });
 });
