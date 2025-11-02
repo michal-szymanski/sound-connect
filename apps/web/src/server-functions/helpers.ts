@@ -1,7 +1,7 @@
 import { APP_NAME_NORMALIZED } from '@/common/constants';
 import { apiErrorSchema } from '@/common/types/api';
 import type { ServerFunctionError, ServerFunctionSuccess } from '@/common/types/server-functions';
-import { getCookie, getRequest, setResponseHeader } from '@tanstack/react-start/server';
+import { getCookie, getRequest, setCookie, setResponseHeader } from '@tanstack/react-start/server';
 import { z } from 'zod';
 import { Session, sessionSchema, User, userSchema } from '@/common/types/drizzle';
 import { AuthError } from '@/web/types';
@@ -90,15 +90,7 @@ export const setAuthCookies = (response: Response) => {
         .getSetCookie()
         .find((cookie) => cookie.startsWith(SESSION_DATA_COOKIE_NAME) || cookie.startsWith(SECURE_SESSION_DATA_COOKIE_NAME));
 
-    const accessToken = response.headers.get('set-auth-jwt');
-
     const cookies = [sessionTokenCookie, sessionDataCookie].filter(Boolean) as string[];
-
-    if (accessToken) {
-        cookies.push(
-            `${SECURE_ACCESS_TOKEN_COOKIE_NAME}=${accessToken}; Max-Age=${ACCESS_TOKEN_MAX_AGE}; Path=/; HttpOnly; Secure; SameSite=None; Partitioned`
-        );
-    }
 
     setResponseHeader('Set-Cookie', cookies);
     return cookies;
@@ -147,6 +139,21 @@ export const getAccessToken = (): string | undefined => {
     return undefined;
 };
 
+const setAccessTokenCookie = (accessToken?: string) => {
+    if (!accessToken) {
+        throw new Error('Could not set access token cookie');
+    }
+
+    setCookie(SECURE_ACCESS_TOKEN_COOKIE_NAME, accessToken, {
+        maxAge: ACCESS_TOKEN_MAX_AGE,
+        path: '/',
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        partitioned: true
+    });
+};
+
 export const getSessionDataFromCookie = (): SessionData | null => {
     try {
         const cookieValue = getCookie(SECURE_SESSION_DATA_COOKIE_NAME) ?? getCookie(SESSION_DATA_COOKIE_NAME);
@@ -178,7 +185,7 @@ export const getSessionData = async (env: Cloudflare.Env): Promise<SessionData |
     try {
         let sessionData = getSessionDataFromCookie();
 
-        if (!sessionData) {
+        if (!sessionData || !sessionData.accessToken) {
             const { headers } = getRequest();
             const response = await env.API.fetch(`${env.API_URL}/api/auth/get-session`, {
                 headers
@@ -191,7 +198,10 @@ export const getSessionData = async (env: Cloudflare.Env): Promise<SessionData |
                     const schema = z.object({ session: sessionSchema, user: userSchema });
                     const data = schema.parse(json);
                     const accessToken = response.headers.get('set-auth-jwt') ?? undefined;
-                    sessionData = { ...data, accessToken };
+
+                    setAccessTokenCookie(accessToken);
+
+                    sessionData = { ...data, accessToken: accessToken };
                 }
             }
         }

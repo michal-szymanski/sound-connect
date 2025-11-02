@@ -15,6 +15,7 @@ export const authMiddleware = async (c: Context<HonoContext>, next: Next) => {
 
         if (protocols) {
             const protocolList = protocols.split(',').map((p) => p.trim());
+
             if (protocolList[0] === 'access_token' && protocolList[1]) {
                 const token = decodeURIComponent(protocolList[1]);
 
