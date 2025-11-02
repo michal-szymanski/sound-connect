@@ -1,4 +1,4 @@
-import { NewChatMessage, SubscribeMessage, UnsubscribeMessage } from '@/common/types/models';
+import { NewChatMessage, SubscribeMessage, UnsubscribeMessage } from '@sound-connect/common/types/models';
 
 const CHAT_ROOMS_KEY = 'chat-rooms';
 

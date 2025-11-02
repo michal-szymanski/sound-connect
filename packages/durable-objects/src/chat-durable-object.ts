@@ -1,4 +1,4 @@
-import { ChatMessage, chatMessageSchema, WebSocketMessage } from '@/common/types/models';
+import { ChatMessage, chatMessageSchema, WebSocketMessage } from '@sound-connect/common/types/models';
 import { DurableObject } from 'cloudflare:workers';
 
 const MESSAGES_KEY = 'messages';

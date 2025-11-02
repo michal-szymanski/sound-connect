@@ -25,6 +25,7 @@
         "@sentry/cloudflare": "^10.22.0",
         "@sound-connect/common": "workspace:*",
         "@sound-connect/drizzle": "workspace:*",
+        "@sound-connect/durable-objects": "workspace:*",
         "@types/better-sqlite3": "^7.6.13",
         "@types/node": "catalog:",
         "@types/pg": "^8.15.5",

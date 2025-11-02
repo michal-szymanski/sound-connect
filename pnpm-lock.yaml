@@ -98,6 +98,9 @@ importers:
       '@sound-connect/drizzle':
         specifier: workspace:*
         version: link:../../packages/drizzle
+      '@sound-connect/durable-objects':
+        specifier: workspace:*
+        version: link:../../packages/durable-objects
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
@@ -473,6 +476,37 @@ importers:
       drizzle-kit:
         specifier: ^0.31.5
         version: 0.31.5
+      eslint:
+        specifier: 'catalog:'
+        version: 9.38.0(jiti@2.6.1)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/durable-objects:
+    dependencies:
+      '@sound-connect/common':
+        specifier: workspace:*
+        version: link:../common
+      '@sound-connect/drizzle':
+        specifier: workspace:*
+        version: link:../drizzle
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.44.7(@cloudflare/workers-types@4.20251014.0)(@opentelemetry/api@1.9.0)(@prisma/client@5.22.0(prisma@5.22.0))(@types/better-sqlite3@7.6.13)(@types/pg@8.15.5)(better-sqlite3@12.4.1)(kysely@0.28.8)(pg@8.16.3)(prisma@5.22.0)
+      zod:
+        specifier: 'catalog:'
+        version: 4.1.12
+    devDependencies:
+      '@cloudflare/workers-types':
+        specifier: 'catalog:'
+        version: 4.20251014.0
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.9.1
       eslint:
         specifier: 'catalog:'
         version: 9.38.0(jiti@2.6.1)
