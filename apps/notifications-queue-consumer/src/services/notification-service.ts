@@ -1,5 +1,5 @@
 import { notificationsTable } from '@/drizzle/schema';
-import type { NotificationQueueMessage } from '../types';
+import type { NotificationQueueMessage } from '@sound-connect/common/types/notifications';
 import { db } from '../db';
 
 export const processNotification = async (message: NotificationQueueMessage, env: CloudflareBindings): Promise<void> => {

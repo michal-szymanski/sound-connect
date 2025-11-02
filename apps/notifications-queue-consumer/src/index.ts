@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { processNotification } from './services/notification-service';
-import { notificationQueueMessageSchema, type NotificationQueueMessage } from './types';
+import { notificationQueueMessageSchema, type NotificationQueueMessage } from '@sound-connect/common/types/notifications';
 
 const app = new Hono();
 

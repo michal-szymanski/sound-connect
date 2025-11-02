@@ -3,6 +3,7 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { apiErrorHandler, failure, success } from '@/web/server-functions/helpers';
 import { authMiddleware } from '@/web/server-functions/middlewares';
+import { markNotificationsAsReadSchema } from '@/common/types/notifications';
 
 export const getNotifications = createServerFn()
     .middleware([authMiddleware])
@@ -68,7 +69,7 @@ export const markAllNotificationsAsSeen = createServerFn()
 
 export const markNotificationsAsRead = createServerFn()
     .middleware([authMiddleware])
-    .inputValidator(z.object({ notificationIds: z.union([z.array(z.number()), z.literal('all')]) }))
+    .inputValidator(markNotificationsAsReadSchema)
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/notifications/mark-read`, {
             method: 'POST',

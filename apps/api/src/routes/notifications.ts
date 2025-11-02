@@ -8,6 +8,7 @@ import {
     markAllNotificationsAsSeen,
     deleteNotification
 } from '@/api/db/queries/notifications-queries';
+import { markNotificationsAsReadSchema } from '@/common/types/notifications';
 
 const notificationsRoutes = new Hono<HonoContext>();
 
@@ -36,11 +37,7 @@ notificationsRoutes.post('/notifications/mark-read', async (c) => {
     const user = c.get('user');
 
     const body = await c.req.json();
-    const { notificationIds } = z
-        .object({
-            notificationIds: z.union([z.array(z.number()), z.literal('all')])
-        })
-        .parse(body);
+    const { notificationIds } = markNotificationsAsReadSchema.parse(body);
 
     if (notificationIds === 'all') {
         await markAllNotificationsAsSeen(user.id);

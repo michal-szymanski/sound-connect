@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useEnvs, useAuth } from '@/web/lib/react-query';
 import type { Notification } from '@/common/types/drizzle';
+import { wsNotificationInboundMessageSchema } from '@/common/types/notifications';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 
@@ -75,7 +76,8 @@ export const NotificationsProvider = ({ children }: Props) => {
 
         const handleMessage = (event: MessageEvent) => {
             try {
-                const message = JSON.parse(event.data);
+                const parsedData = JSON.parse(event.data);
+                const message = wsNotificationInboundMessageSchema.parse(parsedData);
 
                 if (message.type === 'initial') {
                     console.log('[NotificationsWS] Received initial notifications:', message.data.length);
@@ -85,7 +87,7 @@ export const NotificationsProvider = ({ children }: Props) => {
                     addNotification(message.data);
                 }
             } catch (error) {
-                console.error('[NotificationsWS] Error parsing message:', error);
+                console.error('[NotificationsWS] Invalid message received:', error);
             }
         };
 

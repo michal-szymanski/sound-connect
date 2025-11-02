@@ -3,6 +3,7 @@ import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 import { HonoContext } from 'types';
 import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getContacts, followUser } from '@/api/db/queries/users-queries';
+import { notificationQueueMessageSchema } from '@/common/types/notifications';
 
 const usersRoutes = new Hono<HonoContext>();
 
@@ -34,13 +35,15 @@ usersRoutes.post('/users/:userId/follow', async (c) => {
 
     const currentUserData = await getUserById(user.id);
 
-    await c.env.NotificationsQueue.send({
+    const queueMessage = notificationQueueMessageSchema.parse({
         userId: userId,
         type: 'follow_request',
         actorId: user.id,
         actorName: currentUserData.name,
         content: `${currentUserData.name} started following you`
     });
+
+    await c.env.NotificationsQueue.send(queueMessage);
 
     return c.json({ success: true });
 });
