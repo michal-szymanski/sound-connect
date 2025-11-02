@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
-import { PostQueueMessage, HonoContext } from './types';
+import { HonoContext } from './types';
 import { processPost } from './services/moderation-service';
+import { postQueueMessageSchema, type PostQueueMessage } from '@sound-connect/common/types/posts';
 
 const app = new Hono<HonoContext>();
 
@@ -23,7 +24,8 @@ export default {
 
         for (const message of batch.messages) {
             try {
-                await processPost(message.body, env);
+                const validatedMessage = postQueueMessageSchema.parse(message.body);
+                await processPost(validatedMessage, env);
                 message.ack();
                 console.log(`Successfully processed post with ID: ${message.body.postId}`);
             } catch (error) {
