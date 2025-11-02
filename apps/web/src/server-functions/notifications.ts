@@ -66,6 +66,27 @@ export const markAllNotificationsAsSeen = createServerFn()
         return success(null);
     });
 
+export const markNotificationsAsRead = createServerFn()
+    .middleware([authMiddleware])
+    .inputValidator(z.object({ notificationIds: z.union([z.array(z.number()), z.literal('all')]) }))
+    .handler(async ({ data, context: { env, auth } }) => {
+        const response = await env.API.fetch(`${env.API_URL}/notifications/mark-read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
+            body: JSON.stringify({ notificationIds: data.notificationIds }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await apiErrorHandler(response);
+        }
+
+        return success(null);
+    });
+
 export const deleteNotification = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ notificationId: z.number() }))

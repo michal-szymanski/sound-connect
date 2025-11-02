@@ -1,7 +1,13 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { HonoContext } from 'types';
-import { getUserNotifications, markNotificationAsSeen, markAllNotificationsAsSeen, deleteNotification } from '@/api/db/queries/notifications-queries';
+import {
+    getUserNotifications,
+    markNotificationAsSeen,
+    markNotificationsAsSeen,
+    markAllNotificationsAsSeen,
+    deleteNotification
+} from '@/api/db/queries/notifications-queries';
 
 const notificationsRoutes = new Hono<HonoContext>();
 
@@ -23,6 +29,25 @@ notificationsRoutes.patch('/notifications/seen', async (c) => {
     const user = c.get('user');
 
     await markAllNotificationsAsSeen(user.id);
+    return c.json({ success: true });
+});
+
+notificationsRoutes.post('/notifications/mark-read', async (c) => {
+    const user = c.get('user');
+
+    const body = await c.req.json();
+    const { notificationIds } = z
+        .object({
+            notificationIds: z.union([z.array(z.number()), z.literal('all')])
+        })
+        .parse(body);
+
+    if (notificationIds === 'all') {
+        await markAllNotificationsAsSeen(user.id);
+    } else {
+        await markNotificationsAsSeen(notificationIds, user.id);
+    }
+
     return c.json({ success: true });
 });
 

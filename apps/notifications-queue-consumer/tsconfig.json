@@ -1,0 +1,15 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/notifications-queue-consumer/*": ["src/*"],
+            "@/common/*": ["../../packages/common/src/*"],
+            "@/drizzle": ["../../packages/drizzle/src"],
+            "@/drizzle/*": ["../../packages/drizzle/src/*"]
+        }
+    },
+    "types": ["@cloudflare/workers-types"],
+    "include": ["src/**/*", "worker-configuration.d.ts"],
+    "exclude": ["node_modules"]
+}
