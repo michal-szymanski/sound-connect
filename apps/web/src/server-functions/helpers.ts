@@ -90,7 +90,7 @@ export const setAuthCookies = (response: Response) => {
         .getSetCookie()
         .find((cookie) => cookie.startsWith(SESSION_DATA_COOKIE_NAME) || cookie.startsWith(SECURE_SESSION_DATA_COOKIE_NAME));
 
-    const accessToken = response.headers.get('set-auth-token');
+    const accessToken = response.headers.get('set-auth-jwt');
 
     const cookies = [sessionTokenCookie, sessionDataCookie].filter(Boolean) as string[];
 
@@ -190,7 +190,7 @@ export const getSessionData = async (env: Cloudflare.Env): Promise<SessionData |
                 if (json !== null) {
                     const schema = z.object({ session: sessionSchema, user: userSchema });
                     const data = schema.parse(json);
-                    const accessToken = response.headers.get('set-auth-token') ?? undefined;
+                    const accessToken = response.headers.get('set-auth-jwt') ?? undefined;
                     sessionData = { ...data, accessToken };
                 }
             }
