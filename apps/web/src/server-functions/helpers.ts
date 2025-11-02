@@ -1,4 +1,4 @@
-import { APP_NAME_NORMALIZED } from '@/common/constants';
+import { APP_NAME_NORMALIZED, JWT_EXPIRATION_TIME_IN_SECONDS } from '@/common/constants';
 import { apiErrorSchema } from '@/common/types/api';
 import type { ServerFunctionError, ServerFunctionSuccess } from '@/common/types/server-functions';
 import { getCookie, getRequest, setCookie, setResponseHeader } from '@tanstack/react-start/server';
@@ -13,7 +13,6 @@ const SESSION_DATA_COOKIE_NAME = `${APP_NAME_NORMALIZED}.session_data`;
 const SECURE_SESSION_DATA_COOKIE_NAME = `${SECURE_PREFIX}${SESSION_DATA_COOKIE_NAME}`;
 const ACCESS_TOKEN_COOKIE_NAME = `${APP_NAME_NORMALIZED}.access_token`;
 const SECURE_ACCESS_TOKEN_COOKIE_NAME = `${SECURE_PREFIX}${ACCESS_TOKEN_COOKIE_NAME}`;
-const ACCESS_TOKEN_MAX_AGE = 900;
 
 type SessionData = {
     session: Session;
@@ -145,11 +144,11 @@ const setAccessTokenCookie = (accessToken?: string) => {
     }
 
     setCookie(SECURE_ACCESS_TOKEN_COOKIE_NAME, accessToken, {
-        maxAge: ACCESS_TOKEN_MAX_AGE,
+        maxAge: JWT_EXPIRATION_TIME_IN_SECONDS - 1,
         path: '/',
         httpOnly: true,
         secure: true,
-        sameSite: 'none',
+        sameSite: true,
         partitioned: true
     });
 };
