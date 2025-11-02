@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 import { jwt, openAPI } from 'better-auth/plugins';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { schema } from '@/drizzle';
-import { APP_NAME_NORMALIZED } from '@/common/constants';
+import { APP_NAME_NORMALIZED, JWT_EXPIRATION_TIME_IN_SECONDS } from '@/common/constants';
 import { db } from '@/api/db';
 import { env } from 'cloudflare:workers';
 
@@ -32,5 +32,12 @@ export const auth = betterAuth({
             maxAge: 5 * 60
         }
     },
-    plugins: [openAPI(), jwt()]
+    plugins: [
+        openAPI(),
+        jwt({
+            jwt: {
+                expirationTime: `${JWT_EXPIRATION_TIME_IN_SECONDS}s`
+            }
+        })
+    ]
 });
