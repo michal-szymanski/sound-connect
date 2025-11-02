@@ -201,7 +201,7 @@ export const getSessionData = async (env: Cloudflare.Env): Promise<SessionData |
 
                     setAccessTokenCookie(accessToken);
 
-                    sessionData = { ...data, accessToken: accessToken };
+                    sessionData = { ...data, accessToken };
                 }
             }
         }
