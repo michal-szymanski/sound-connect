@@ -30,6 +30,7 @@ export class NotificationsDurableObject extends DurableObject {
         }
 
         if (!userId) {
+            console.error('[NotificationsDO] Missing user ID');
             return new Response('Unauthorized: Missing user ID', { status: 401 });
         }
 
@@ -40,9 +41,24 @@ export class NotificationsDurableObject extends DurableObject {
 
             await this.handleConnection(server, userId);
 
-            return new Response(null, { status: 101, webSocket: client });
+            const responseHeaders = new Headers();
+            const protocol = request.headers.get('sec-websocket-protocol');
+            if (protocol) {
+                const protocols = protocol.split(',').map((p) => p.trim());
+                const selectedProtocol = protocols[0];
+                if (selectedProtocol) {
+                    responseHeaders.set('Sec-WebSocket-Protocol', selectedProtocol);
+                }
+            }
+
+            return new Response(null, {
+                status: 101,
+                webSocket: client,
+                headers: responseHeaders
+            });
         }
 
+        console.error('[NotificationsDO] Invalid request');
         return new Response('Not Found', { status: 404 });
     }
 
@@ -54,7 +70,8 @@ export class NotificationsDurableObject extends DurableObject {
             this.connections.delete(userId);
         });
 
-        webSocket.addEventListener('error', () => {
+        webSocket.addEventListener('error', (error) => {
+            console.error('[NotificationsDO] WebSocket error for user:', userId, error);
             this.connections.delete(userId);
         });
     }

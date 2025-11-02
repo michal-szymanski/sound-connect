@@ -51,7 +51,10 @@ export const authMiddleware = async (c: Context<HonoContext>, next: Next) => {
 
                     return next();
                 } catch (error) {
-                    console.error('JWT verification failed:', error);
+                    console.error('[Auth Middleware] JWT verification failed:', error);
+                    if (error instanceof z.ZodError) {
+                        console.error('[Auth Middleware] Zod validation errors:', z.treeifyError(error));
+                    }
                     return c.json({ message: 'Unauthorized' }, 401);
                 }
             }

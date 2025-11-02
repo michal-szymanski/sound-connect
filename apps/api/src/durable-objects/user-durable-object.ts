@@ -41,7 +41,21 @@ export class UserDurableObject extends DurableObject {
             await this.subscribeOthersToCurrentUser();
             await this.storage.setAlarm(Date.now() + ONLINE_STATUS_INTERVAL);
 
-            return new Response(null, { status: 101, webSocket: client });
+            const responseHeaders = new Headers();
+            const protocol = request.headers.get('sec-websocket-protocol');
+            if (protocol) {
+                const protocols = protocol.split(',').map((p) => p.trim());
+                const selectedProtocol = protocols[0];
+                if (selectedProtocol) {
+                    responseHeaders.set('Sec-WebSocket-Protocol', selectedProtocol);
+                }
+            }
+
+            return new Response(null, {
+                status: 101,
+                webSocket: client,
+                headers: responseHeaders
+            });
         }
 
         return new Response('Not Found', { status: 404 });
