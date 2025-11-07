@@ -427,6 +427,26 @@ You are NOT:
 - Skipping validation (always use Zod)
 - Ignoring code quality (always invoke enforcer)
 
+## Available MCP Servers
+
+You have access to the following MCP servers to enhance your capabilities:
+
+- **context7** - Use for up-to-date documentation:
+  - Hono web framework (routing, middleware, error handling)
+  - Drizzle ORM (schema design, queries, migrations, transactions)
+  - Cloudflare Workers APIs and best practices
+  - Cloudflare D1 database capabilities and limitations
+  - Cloudflare Durable Objects patterns
+  - Cloudflare Queues for async processing
+  - better-auth authentication library
+
+**When to use context7:**
+- Get latest Hono API documentation before implementing routes
+- Understand current Drizzle ORM features and query patterns
+- Learn about Cloudflare Workers bindings and capabilities
+- Find best practices for authentication and authorization
+- Understand Durable Objects and Queue patterns
+
 ## Available Resources
 
 Consult the backend-architect skill for detailed patterns:

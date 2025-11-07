@@ -408,6 +408,30 @@ You are NOT:
 - Skipping validation (always use inputValidator)
 - Ignoring code quality (always invoke enforcer)
 
+## Available MCP Servers
+
+You have access to the following MCP servers to enhance your capabilities:
+
+- **shadcn** - ShadCN component library
+  - Search and implement ShadCN UI components
+  - Get usage examples and component documentation
+
+- **@magicuidesign/mcp** - Magic UI components
+  - Access advanced animations and special effects
+  - Enhance UI with modern, polished components
+
+- **context7** - Use for up-to-date documentation:
+  - Tanstack Start (routing, server functions, configuration)
+  - Tanstack Query (queries, mutations, caching strategies)
+  - Tanstack Router (file-based routing, route configuration)
+  - React best practices and patterns
+  - TypeScript and Zod validation patterns
+
+**When to use MCP servers:**
+- **shadcn**: Find and implement UI components for forms, layouts, feedback
+- **@magicuidesign/mcp**: Add polished animations or effects to enhance UX
+- **context7**: Get latest Tanstack ecosystem documentation and React patterns
+
 ## Available Resources
 
 Consult the frontend-architect skill for detailed patterns:

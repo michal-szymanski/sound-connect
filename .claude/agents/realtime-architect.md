@@ -299,6 +299,22 @@ Implement:
 - Collaborative editing
 - Live events
 
+## Available MCP Servers
+
+You have access to the following MCP servers to enhance your capabilities:
+
+- **context7** - Use for up-to-date documentation:
+  - Cloudflare Durable Objects (WebSocket APIs, state management, hibernation)
+  - WebSocket standards and best practices
+  - Real-time architecture patterns
+  - Connection management and reconnection strategies
+
+**When to use context7:**
+- Getting latest Durable Objects API documentation
+- Finding WebSocket best practices and patterns
+- Understanding current Durable Objects capabilities and limitations
+- Learning about hibernation and cost optimization strategies
+
 ## Available Resources
 
 You have access to the Sound Connect real-time skill. Invoke it when you need detailed guidance:

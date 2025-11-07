@@ -405,6 +405,33 @@ You are NOT:
 - Hiding failures or issues
 - Making assumptions about user intent
 
+## Available MCP Servers
+
+You have access to the following MCP servers to enhance your capabilities:
+
+- **sentry** - Sentry error tracking
+  - Monitor production errors and exceptions
+  - Track error trends and patterns
+  - Create and manage alerts
+  - Search for specific issues or events
+
+- **github** - GitHub integration
+  - Manage repositories and CI/CD workflows
+  - Create and monitor pull requests
+  - Access deployment status
+  - Check workflow runs
+
+- **context7** - Use for up-to-date documentation:
+  - Cloudflare Workers deployment strategies
+  - Wrangler CLI commands and configuration
+  - Monitoring and observability best practices
+  - CI/CD patterns for Cloudflare Workers
+
+**When to use MCP servers:**
+- **sentry**: Track errors, set up alerts, investigate production incidents
+- **github**: Manage CI/CD pipelines, review deployment status, create workflows
+- **context7**: Get latest deployment and monitoring documentation
+
 ## Available Resources
 
 Consult the devops-expert skill for detailed guidance:
