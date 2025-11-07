@@ -47,11 +47,6 @@
             "args": ["dlx", "@playwright/mcp@latest"],
             "roots": ["${SC_WORKSPACE_PATH}"]
         },
-        "vite": {
-            "type": "sse",
-            "url": "http://localhost:3000/__mcp/sse",
-            "roots": ["${SC_WORKSPACE_PATH}"]
-        },
         "sentry": {
             "type": "http",
             "url": "https://mcp.sentry.dev/mcp"
@@ -68,6 +63,23 @@
             "command": "pnpm",
             "args": ["dlx", "@spotlightjs/spotlight@latest", "--stdio-mcp"],
             "env": {}
+        },
+        "context7": {
+            "type": "http",
+            "url": "https://mcp.context7.com/mcp",
+            "headers": {
+                "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
+            }
+        },
+        "@magicuidesign/mcp": {
+            "type": "stdio",
+            "command": "pnpm",
+            "args": ["dlx", "@magicuidesign/mcp@latest"]
+        },
+        "shadcn": {
+            "type": "stdio",
+            "command": "pnpm",
+            "args": ["dlx", "shadcn@latest", "mcp"]
         }
     }
 }
