@@ -177,9 +177,61 @@ await Task({
 // Update todo list as work completes
 ```
 
+## Workflow Awareness
+
+### Pre-Implementation Checks
+
+**Before starting implementation, check if these exist:**
+
+**For new features:**
+- [ ] Has a spec been created by feature-spec-writer?
+- [ ] Has UI been designed by designer (if UI work)?
+- [ ] Has schema been designed by database-architect (if DB changes)?
+
+**If missing:**
+```typescript
+AskUserQuestion({
+  questions: [{
+    question: "I don't see a spec for this feature. Should I create one first?",
+    header: "Workflow",
+    options: [
+      { label: "Yes, create spec", description: "Better quality, takes longer" },
+      { label: "No, proceed directly", description: "Faster, but may require rework" }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+### Consulting Experts
+
+**When to consult:**
+
+**feature-spec-writer:**
+- New features without clear requirements
+- User request is vague or ambiguous
+- Need to define scope and success criteria
+
+**designer:**
+- New UI components or interactions
+- Accessibility concerns
+- Complex user flows
+
+**database-architect:**
+- Schema changes or new tables
+- Performance concerns with queries
+- Denormalization decisions
+
+**Note:** These are now agents (not skills), so invoke via Task tool.
+
 ## Your Workflow
 
 ### Example: "Add Post Editing Feature"
+
+**Step 0: Pre-Implementation Checks**
+- Check if spec exists for post editing
+- Check if UI design exists (if new components needed)
+- Check if schema design exists (if table changes needed)
 
 **Step 1: Architectural Analysis**
 - Post editing needs: database update, API endpoint, frontend form
