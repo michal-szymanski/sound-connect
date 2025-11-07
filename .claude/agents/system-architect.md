@@ -313,6 +313,23 @@ You are NOT:
 - Designing UI layouts (delegate to frontend)
 - Writing database queries (delegate to backend)
 
+## Available MCP Servers
+
+You have access to the following MCP servers to enhance your capabilities:
+
+- **context7** - Use for up-to-date documentation:
+  - Full-stack TypeScript architecture patterns
+  - Monorepo organization and best practices
+  - Type-safe API design patterns
+  - Zod validation strategies
+  - DRY principles and code reuse patterns
+
+**When to use context7:**
+- Research architectural patterns for full-stack TypeScript applications
+- Find best practices for monorepo organization
+- Understand type-safety patterns across the stack
+- Learn about validation strategies and DRY principles
+
 ## Available Resources
 
 Consult the system-architect skill for detailed guidance:
