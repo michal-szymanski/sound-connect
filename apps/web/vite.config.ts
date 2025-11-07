@@ -5,7 +5,6 @@ import viteReact from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import tsConfigPaths from 'vite-tsconfig-paths';
-import { ViteMcp } from 'vite-plugin-mcp';
 
 export default defineConfig({
     server: {
@@ -17,9 +16,6 @@ export default defineConfig({
         force: process.env['CI'] === 'true'
     },
     plugins: [
-        ViteMcp({
-            updateConfig: false
-        }),
         cloudflare({ viteEnvironment: { name: 'ssr' } }),
         tanstackStart(),
         viteReact(),
