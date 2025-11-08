@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1762085772968,
-      "tag": "0000_mature_mercury",
+      "when": 1762595249112,
+      "tag": "0000_adorable_karnak",
       "breakpoints": true
     },
     {
-      "idx": 1,
+      "idx": 3,
       "version": "6",
-      "when": 1762085772969,
-      "tag": "0001_seed_users",
-      "breakpoints": false
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1762085772970,
-      "tag": "0002_seed_playwright_users",
+      "when": 1762595249113,
+      "tag": "0003_create_users_fts",
       "breakpoints": false
     }
   ]

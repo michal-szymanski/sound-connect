@@ -12,6 +12,7 @@ import { debugRoutes } from './routes/debug';
 import { mediaRoutes } from '@/api/routes/media';
 import { commentsRoutes } from '@/api/routes/comments';
 import { notificationsRoutes } from '@/api/routes/notifications';
+import { profileRoutes } from '@/api/routes/profile';
 import * as Sentry from '@sentry/cloudflare';
 
 const app = new Hono<HonoContext>();
@@ -44,6 +45,7 @@ app.route('/', debugRoutes);
 app.route('/', mediaRoutes);
 app.route('/', commentsRoutes);
 app.route('/', notificationsRoutes);
+app.route('/', profileRoutes);
 
 export { ChatDurableObject, UserDurableObject, NotificationsDurableObject } from '@sound-connect/durable-objects';
 
