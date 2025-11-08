@@ -15,7 +15,21 @@ const jwtPayloadSchema = z.object({
 });
 
 export const authMiddleware = async (c: Context<HonoContext>, next: Next) => {
-    if (c.req.path.startsWith('/api/auth/') || c.req.path.startsWith('/debug') || c.req.path === '/health') {
+    if (
+        c.req.path.startsWith('/api/auth/') ||
+        c.req.path.startsWith('/debug') ||
+        c.req.path === '/health' ||
+        (c.req.path.match(/^\/bands\/\d+$/) && c.req.method === 'GET') ||
+        (c.req.path.match(/^\/users\/[^/]+\/bands$/) && c.req.method === 'GET')
+    ) {
+        const session = await auth.api.getSession({
+            headers: c.req.raw.headers
+        });
+
+        if (session) {
+            c.set('user', session.user);
+        }
+
         return next();
     }
 
@@ -46,7 +60,8 @@ export const authMiddleware = async (c: Context<HonoContext>, next: Next) => {
                         emailVerified: parsedPayload.emailVerified,
                         image: parsedPayload.image,
                         createdAt: parsedPayload.createdAt,
-                        updatedAt: parsedPayload.updatedAt
+                        updatedAt: parsedPayload.updatedAt,
+                        lastActiveAt: new Date().toISOString()
                     });
 
                     return next();

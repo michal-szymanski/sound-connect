@@ -1,5 +1,5 @@
 import { Link, useLocation } from '@tanstack/react-router';
-import { House, LucideIcon, Mail, Users } from 'lucide-react';
+import { House, LucideIcon, Mail, Users, Music } from 'lucide-react';
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import AccountButton from '@/web/components/small/account-button';
@@ -43,6 +43,11 @@ const getItems = (userId: string | undefined): Item[] => {
             title: 'Messages',
             url: '/messages',
             icon: Mail
+        },
+        {
+            title: 'My Bands',
+            url: '/bands',
+            icon: Music
         }
     ];
 };

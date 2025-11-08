@@ -17,6 +17,7 @@
         "./types/profile-enums": "./src/types/profile-enums.ts",
         "./types/profile": "./src/types/profile.ts",
         "./types/profile-search": "./src/types/profile-search.ts",
+        "./types/bands": "./src/types/bands.ts",
         "./utils/profile-completion": "./src/utils/profile-completion.ts",
         "./utils/geo": "./src/utils/geo.ts",
         "./utils/availability": "./src/utils/availability.ts"

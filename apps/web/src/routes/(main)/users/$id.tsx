@@ -19,6 +19,7 @@ import { ExperienceSection } from '@/web/components/profile/experience-section';
 import { LogisticsSection } from '@/web/components/profile/logistics-section';
 import { LookingForSection } from '@/web/components/profile/looking-for-section';
 import { BioSection } from '@/web/components/profile/bio-section';
+import { UserBandsSection } from '@/web/components/band/user-bands-section';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
@@ -236,6 +237,8 @@ function RouteComponent() {
                     <BioSection data={profile.bio} canEdit={isOwnProfile} />
                 </>
             ) : null}
+
+            <UserBandsSection userId={user.id} isOwnProfile={isOwnProfile} />
         </div>
     );
 }

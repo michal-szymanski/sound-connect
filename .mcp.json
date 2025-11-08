@@ -29,24 +29,6 @@
             },
             "roots": ["${SC_WORKSPACE_PATH}"]
         },
-        "filesystem": {
-            "type": "stdio",
-            "command": "pnpm",
-            "args": ["dlx", "@modelcontextprotocol/server-filesystem"],
-            "roots": ["${SC_WORKSPACE_PATH}"]
-        },
-        "chrome-devtools": {
-            "type": "stdio",
-            "command": "pnpm",
-            "args": ["dlx", "chrome-devtools-mcp", "--headless=true", "--isolated=true"],
-            "roots": ["${SC_WORKSPACE_PATH}"]
-        },
-        "playwright": {
-            "type": "stdio",
-            "command": "pnpm",
-            "args": ["dlx", "@playwright/mcp@latest"],
-            "roots": ["${SC_WORKSPACE_PATH}"]
-        },
         "sentry": {
             "type": "http",
             "url": "https://mcp.sentry.dev/mcp"
