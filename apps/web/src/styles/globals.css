@@ -129,6 +129,7 @@
         margin-right: 0 !important;
     }
 
+    a,
     button,
     [role='button'] {
         @apply cursor-pointer;

@@ -15,17 +15,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from '@/web/components/ui/dropdown-menu';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger
-} from '@/web/components/ui/alert-dialog';
 
 export function UserQuickInfoCard() {
     const { data: auth } = useAuth();
@@ -73,24 +62,10 @@ export function UserQuickInfoCard() {
                             </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive cursor-pointer">
-                                    <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
-                                    Log Out
-                                </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Log out of Sound Connect?</AlertDialogTitle>
-                                    <AlertDialogDescription>You can always log back in at any time.</AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleLogout}>Log Out</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive cursor-pointer">
+                            <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
+                            Log Out
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <Link to="/users/$id" params={{ id: auth.user.id }} className="group block">

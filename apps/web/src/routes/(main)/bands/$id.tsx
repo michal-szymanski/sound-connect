@@ -176,7 +176,7 @@ function RouteComponent() {
                                         <BandMemberCard
                                             key={member.userId}
                                             member={member}
-                                            canRemove={isUserAdmin && band.members.filter((m) => m.isAdmin).length > 1}
+                                            canRemove={isUserAdmin && (!member.isAdmin || band.members.filter((m) => m.isAdmin).length > 1)}
                                             onRemove={(userId) => handleRemoveMember(userId, member.name)}
                                             isRemoving={removeMember.isPending}
                                         />
