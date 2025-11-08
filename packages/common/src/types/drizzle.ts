@@ -212,6 +212,15 @@ export type Media = z.infer<typeof mediaSchema>;
 export const createMusicGroupSchema = z.object({
     id: z.number(),
     name: z.string(),
+    description: z.string().nullable(),
+    primaryGenre: z.string().nullable(),
+    city: z.string().nullable(),
+    state: z.string().nullable(),
+    country: z.string().nullable(),
+    latitude: z.number().nullable(),
+    longitude: z.number().nullable(),
+    lookingFor: z.string().nullable(),
+    profileImageUrl: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string().nullable()
 });
@@ -219,6 +228,15 @@ export const createMusicGroupSchema = z.object({
 export const musicGroupSchema = z.object({
     id: z.number(),
     name: z.string(),
+    description: z.string().nullable(),
+    primaryGenre: z.string().nullable(),
+    city: z.string().nullable(),
+    state: z.string().nullable(),
+    country: z.string().nullable(),
+    latitude: z.number().nullable(),
+    longitude: z.number().nullable(),
+    lookingFor: z.string().nullable(),
+    profileImageUrl: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string().nullable()
 });
@@ -230,14 +248,16 @@ export const createMusicGroupMemberSchema = z.object({
     id: z.number(),
     userId: z.string(),
     musicGroupId: z.number(),
-    isAdmin: z.boolean().nullable()
+    isAdmin: z.boolean(),
+    joinedAt: z.string()
 });
 
 export const musicGroupMemberSchema = z.object({
     id: z.number(),
     userId: z.string(),
     musicGroupId: z.number(),
-    isAdmin: z.boolean().nullable()
+    isAdmin: z.boolean(),
+    joinedAt: z.string()
 });
 
 export type CreateMusicGroupMember = z.infer<typeof createMusicGroupMemberSchema>;

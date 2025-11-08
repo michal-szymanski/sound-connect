@@ -16,10 +16,13 @@ import { Route as MediaKeyRouteImport } from './routes/media/$key'
 import { Route as mainMusiciansRouteImport } from './routes/(main)/musicians'
 import { Route as mainSettingsIndexRouteImport } from './routes/(main)/settings/index'
 import { Route as mainMessagesIndexRouteImport } from './routes/(main)/messages/index'
+import { Route as mainBandsIndexRouteImport } from './routes/(main)/bands/index'
 import { Route as authSignUpIndexRouteImport } from './routes/(auth)/sign-up/index'
 import { Route as authSignInIndexRouteImport } from './routes/(auth)/sign-in/index'
 import { Route as mainUsersIdRouteImport } from './routes/(main)/users/$id'
 import { Route as mainPostsPostIdRouteImport } from './routes/(main)/posts/$postId'
+import { Route as mainBandsNewRouteImport } from './routes/(main)/bands/new'
+import { Route as mainBandsIdRouteImport } from './routes/(main)/bands/$id'
 
 const mainRouteRoute = mainRouteRouteImport.update({
   id: '/(main)',
@@ -54,6 +57,11 @@ const mainMessagesIndexRoute = mainMessagesIndexRouteImport.update({
   path: '/messages/',
   getParentRoute: () => mainRouteRoute,
 } as any)
+const mainBandsIndexRoute = mainBandsIndexRouteImport.update({
+  id: '/bands/',
+  path: '/bands/',
+  getParentRoute: () => mainRouteRoute,
+} as any)
 const authSignUpIndexRoute = authSignUpIndexRouteImport.update({
   id: '/sign-up/',
   path: '/sign-up/',
@@ -74,15 +82,28 @@ const mainPostsPostIdRoute = mainPostsPostIdRouteImport.update({
   path: '/posts/$postId',
   getParentRoute: () => mainRouteRoute,
 } as any)
+const mainBandsNewRoute = mainBandsNewRouteImport.update({
+  id: '/bands/new',
+  path: '/bands/new',
+  getParentRoute: () => mainRouteRoute,
+} as any)
+const mainBandsIdRoute = mainBandsIdRouteImport.update({
+  id: '/bands/$id',
+  path: '/bands/$id',
+  getParentRoute: () => mainRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/musicians': typeof mainMusiciansRoute
   '/media/$key': typeof MediaKeyRoute
   '/': typeof mainIndexRoute
+  '/bands/$id': typeof mainBandsIdRoute
+  '/bands/new': typeof mainBandsNewRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
   '/users/$id': typeof mainUsersIdRoute
   '/sign-in': typeof authSignInIndexRoute
   '/sign-up': typeof authSignUpIndexRoute
+  '/bands': typeof mainBandsIndexRoute
   '/messages': typeof mainMessagesIndexRoute
   '/settings': typeof mainSettingsIndexRoute
 }
@@ -90,10 +111,13 @@ export interface FileRoutesByTo {
   '/musicians': typeof mainMusiciansRoute
   '/media/$key': typeof MediaKeyRoute
   '/': typeof mainIndexRoute
+  '/bands/$id': typeof mainBandsIdRoute
+  '/bands/new': typeof mainBandsNewRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
   '/users/$id': typeof mainUsersIdRoute
   '/sign-in': typeof authSignInIndexRoute
   '/sign-up': typeof authSignUpIndexRoute
+  '/bands': typeof mainBandsIndexRoute
   '/messages': typeof mainMessagesIndexRoute
   '/settings': typeof mainSettingsIndexRoute
 }
@@ -104,10 +128,13 @@ export interface FileRoutesById {
   '/(main)/musicians': typeof mainMusiciansRoute
   '/media/$key': typeof MediaKeyRoute
   '/(main)/': typeof mainIndexRoute
+  '/(main)/bands/$id': typeof mainBandsIdRoute
+  '/(main)/bands/new': typeof mainBandsNewRoute
   '/(main)/posts/$postId': typeof mainPostsPostIdRoute
   '/(main)/users/$id': typeof mainUsersIdRoute
   '/(auth)/sign-in/': typeof authSignInIndexRoute
   '/(auth)/sign-up/': typeof authSignUpIndexRoute
+  '/(main)/bands/': typeof mainBandsIndexRoute
   '/(main)/messages/': typeof mainMessagesIndexRoute
   '/(main)/settings/': typeof mainSettingsIndexRoute
 }
@@ -117,10 +144,13 @@ export interface FileRouteTypes {
     | '/musicians'
     | '/media/$key'
     | '/'
+    | '/bands/$id'
+    | '/bands/new'
     | '/posts/$postId'
     | '/users/$id'
     | '/sign-in'
     | '/sign-up'
+    | '/bands'
     | '/messages'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
@@ -128,10 +158,13 @@ export interface FileRouteTypes {
     | '/musicians'
     | '/media/$key'
     | '/'
+    | '/bands/$id'
+    | '/bands/new'
     | '/posts/$postId'
     | '/users/$id'
     | '/sign-in'
     | '/sign-up'
+    | '/bands'
     | '/messages'
     | '/settings'
   id:
@@ -141,10 +174,13 @@ export interface FileRouteTypes {
     | '/(main)/musicians'
     | '/media/$key'
     | '/(main)/'
+    | '/(main)/bands/$id'
+    | '/(main)/bands/new'
     | '/(main)/posts/$postId'
     | '/(main)/users/$id'
     | '/(auth)/sign-in/'
     | '/(auth)/sign-up/'
+    | '/(main)/bands/'
     | '/(main)/messages/'
     | '/(main)/settings/'
   fileRoutesById: FileRoutesById
@@ -206,6 +242,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof mainMessagesIndexRouteImport
       parentRoute: typeof mainRouteRoute
     }
+    '/(main)/bands/': {
+      id: '/(main)/bands/'
+      path: '/bands'
+      fullPath: '/bands'
+      preLoaderRoute: typeof mainBandsIndexRouteImport
+      parentRoute: typeof mainRouteRoute
+    }
     '/(auth)/sign-up/': {
       id: '/(auth)/sign-up/'
       path: '/sign-up'
@@ -234,6 +277,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof mainPostsPostIdRouteImport
       parentRoute: typeof mainRouteRoute
     }
+    '/(main)/bands/new': {
+      id: '/(main)/bands/new'
+      path: '/bands/new'
+      fullPath: '/bands/new'
+      preLoaderRoute: typeof mainBandsNewRouteImport
+      parentRoute: typeof mainRouteRoute
+    }
+    '/(main)/bands/$id': {
+      id: '/(main)/bands/$id'
+      path: '/bands/$id'
+      fullPath: '/bands/$id'
+      preLoaderRoute: typeof mainBandsIdRouteImport
+      parentRoute: typeof mainRouteRoute
+    }
   }
 }
 
@@ -254,8 +311,11 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 interface mainRouteRouteChildren {
   mainMusiciansRoute: typeof mainMusiciansRoute
   mainIndexRoute: typeof mainIndexRoute
+  mainBandsIdRoute: typeof mainBandsIdRoute
+  mainBandsNewRoute: typeof mainBandsNewRoute
   mainPostsPostIdRoute: typeof mainPostsPostIdRoute
   mainUsersIdRoute: typeof mainUsersIdRoute
+  mainBandsIndexRoute: typeof mainBandsIndexRoute
   mainMessagesIndexRoute: typeof mainMessagesIndexRoute
   mainSettingsIndexRoute: typeof mainSettingsIndexRoute
 }
@@ -263,8 +323,11 @@ interface mainRouteRouteChildren {
 const mainRouteRouteChildren: mainRouteRouteChildren = {
   mainMusiciansRoute: mainMusiciansRoute,
   mainIndexRoute: mainIndexRoute,
+  mainBandsIdRoute: mainBandsIdRoute,
+  mainBandsNewRoute: mainBandsNewRoute,
   mainPostsPostIdRoute: mainPostsPostIdRoute,
   mainUsersIdRoute: mainUsersIdRoute,
+  mainBandsIndexRoute: mainBandsIndexRoute,
   mainMessagesIndexRoute: mainMessagesIndexRoute,
   mainSettingsIndexRoute: mainSettingsIndexRoute,
 }

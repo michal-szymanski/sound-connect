@@ -67,21 +67,45 @@ export const mediaTable = sqliteTable('media', {
     key: text('key').notNull()
 });
 
-export const musicGroupsTable = sqliteTable('music_groups', {
-    id: integer('id').primaryKey(),
-    name: text('name').notNull(),
-    createdAt: text('created_at').notNull(),
-    updatedAt: text('updated_at')
-});
+export const musicGroupsTable = sqliteTable(
+    'music_groups',
+    {
+        id: integer('id').primaryKey(),
+        name: text('name').notNull(),
+        description: text('description'),
+        primaryGenre: text('primary_genre', { enum: GenreEnum }),
+        city: text('city'),
+        state: text('state'),
+        country: text('country'),
+        latitude: integer('latitude', { mode: 'number' }),
+        longitude: integer('longitude', { mode: 'number' }),
+        lookingFor: text('looking_for'),
+        profileImageUrl: text('profile_image_url'),
+        createdAt: text('created_at').notNull(),
+        updatedAt: text('updated_at')
+    },
+    (table) => ({
+        primaryGenreIdx: index('idx_music_groups_primary_genre').on(table.primaryGenre),
+        locationIdx: index('idx_music_groups_location').on(table.latitude, table.longitude),
+        cityIdx: index('idx_music_groups_city').on(table.city)
+    })
+);
 
-export const musicGroupMembersTable = sqliteTable('music_groups_members', {
-    id: integer('id').primaryKey(),
-    userId: text('user_id').notNull(),
-    musicGroupId: integer('music_group_id')
-        .notNull()
-        .references(() => musicGroupsTable.id),
-    isAdmin: integer('is_admin', { mode: 'boolean' })
-});
+export const musicGroupMembersTable = sqliteTable(
+    'music_groups_members',
+    {
+        id: integer('id').primaryKey(),
+        userId: text('user_id').notNull(),
+        musicGroupId: integer('music_group_id')
+            .notNull()
+            .references(() => musicGroupsTable.id, { onDelete: 'cascade' }),
+        isAdmin: integer('is_admin', { mode: 'boolean' }).notNull(),
+        joinedAt: text('joined_at').notNull()
+    },
+    (table) => ({
+        userBandsIdx: index('idx_music_groups_members_user_bands').on(table.userId, table.isAdmin, table.joinedAt)
+    })
+);
 
 export const usersFollowersTable = sqliteTable('users_followers', {
     id: integer('id').primaryKey(),
