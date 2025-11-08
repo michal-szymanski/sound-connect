@@ -22,6 +22,7 @@
     },
     "dependencies": {
         "@cloudflare/workers-types": "catalog:",
+        "@hono/zod-validator": "^0.7.4",
         "@sentry/cloudflare": "^10.22.0",
         "@sound-connect/common": "workspace:*",
         "@sound-connect/drizzle": "workspace:*",

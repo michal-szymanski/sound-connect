@@ -16,7 +16,10 @@
         "./types/posts": "./src/types/posts.ts",
         "./types/profile-enums": "./src/types/profile-enums.ts",
         "./types/profile": "./src/types/profile.ts",
-        "./utils/profile-completion": "./src/utils/profile-completion.ts"
+        "./types/profile-search": "./src/types/profile-search.ts",
+        "./utils/profile-completion": "./src/utils/profile-completion.ts",
+        "./utils/geo": "./src/utils/geo.ts",
+        "./utils/availability": "./src/utils/availability.ts"
     },
     "scripts": {
         "tsc": "tsc --noEmit",

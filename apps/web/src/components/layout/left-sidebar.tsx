@@ -1,5 +1,5 @@
 import { Link, useLocation } from '@tanstack/react-router';
-import { Cog, House, LucideIcon, Mail, UserRound } from 'lucide-react';
+import { Cog, House, LucideIcon, Mail, UserRound, Users } from 'lucide-react';
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import AccountButton from '@/web/components/small/account-button';
@@ -40,6 +40,11 @@ const LeftSidebar = () => {
                 title: 'Home',
                 url: '/',
                 icon: House
+            },
+            {
+                title: 'Find Musicians',
+                url: '/musicians',
+                icon: Users
             },
             {
                 title: 'Messages',

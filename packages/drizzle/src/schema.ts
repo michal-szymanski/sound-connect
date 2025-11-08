@@ -196,6 +196,8 @@ export const userProfilesTable = sqliteTable(
         city: text('city'),
         state: text('state'),
         country: text('country'),
+        latitude: integer('latitude', { mode: 'number' }),
+        longitude: integer('longitude', { mode: 'number' }),
         travelRadius: integer('travel_radius'),
         hasRehearsalSpace: integer('has_rehearsal_space', { mode: 'boolean' }),
         hasTransportation: integer('has_transportation', { mode: 'boolean' }),
@@ -214,7 +216,8 @@ export const userProfilesTable = sqliteTable(
         userIdIdx: index('idx_user_profiles_user_id').on(table.userId),
         statusIdx: index('idx_user_profiles_status').on(table.status),
         primaryGenreIdx: index('idx_user_profiles_primary_genre').on(table.primaryGenre),
-        cityIdx: index('idx_user_profiles_city').on(table.city)
+        cityIdx: index('idx_user_profiles_city').on(table.city),
+        locationIdx: index('idx_user_profiles_location').on(table.latitude, table.longitude)
     })
 );
 
@@ -247,3 +250,21 @@ export const userAdditionalInstrumentsRelations = relations(userAdditionalInstru
 export const usersRelations = relations(users, ({ one }) => ({
     profile: one(userProfilesTable, { fields: [users.id], references: [userProfilesTable.userId] })
 }));
+
+export const geocodingCacheTable = sqliteTable(
+    'geocoding_cache',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        city: text('city').notNull(),
+        state: text('state'),
+        country: text('country'),
+        latitude: integer('latitude', { mode: 'number' }).notNull(),
+        longitude: integer('longitude', { mode: 'number' }).notNull(),
+        createdAt: text('created_at').notNull(),
+        updatedAt: text('updated_at').notNull()
+    },
+    (table) => ({
+        locationIdx: index('idx_geocoding_cache_location').on(table.city, table.state, table.country),
+        createdAtIdx: index('idx_geocoding_cache_created_at').on(table.createdAt)
+    })
+);
