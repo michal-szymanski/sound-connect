@@ -85,8 +85,7 @@ function MusiciansPage() {
         if (filters.page !== 1 && hasSearched) {
             handleSearch();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filters.page]);
+    }, [filters.page, hasSearched, handleSearch]);
 
     const activeFilterCount = [
         filters.instruments && filters.instruments.length > 0,

@@ -72,13 +72,11 @@ const AddPostDialog = () => {
         setOpen(false);
         form.reset();
         clearAllFiles();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [form.formState.isSubmitSuccessful, clearAllFiles]);
 
     useEffect(() => {
         dispatch(showSidebar(!open));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open]);
+    }, [open, dispatch]);
 
     const handleAddEmoji = (emoji: { native: string }) => {
         if (form.getValues('content').length >= POST_TEXT_MAX_LENGTH) return;
