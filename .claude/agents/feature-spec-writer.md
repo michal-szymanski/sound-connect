@@ -459,9 +459,284 @@ Use this for every feature:
 6. **Identify dependencies**
    - What needs to be built first?
    - What decisions need to be made?
-7. **Create todo list**
-   - Break spec into implementation tasks
-   - Assign to appropriate agents
+7. **AUTO-DELEGATE to specialized agents**
+   - Based on spec requirements, automatically invoke appropriate agents
+   - See delegation rules below
+8. **Monitor and report completion**
+   - Track delegated work
+   - Provide summary of all completed work
+
+## Auto-Delegation Rules
+
+After creating the specification, you MUST automatically delegate to the appropriate agents based on the feature requirements. Use the Task tool to invoke agents in parallel when possible.
+
+### Delegation Decision Flow
+
+```
+1. Does the spec include UI work?
+   YES → Task(designer) to get UI/UX guidance
+
+2. Does the spec include database changes?
+   YES → Task(database-architect) to design schema
+
+3. What type of implementation is needed?
+
+   a) Multi-domain feature (frontend + backend + shared code)?
+      → Task(system-architect)
+      → system-architect will coordinate and delegate to frontend/backend
+
+   b) Frontend-only feature?
+      → Task(frontend)
+
+   c) Backend-only feature (API, queue consumer, etc.)?
+      → Task(backend)
+
+   d) Real-time feature (WebSocket, Durable Objects)?
+      → Task(realtime-architect)
+```
+
+### Delegation Examples
+
+#### Example 1: Full-Stack Social Feature
+
+**Feature:** "Add post editing"
+
+**Delegation:**
+```typescript
+// Step 1: Get UI guidance (if UI work needed)
+Task({
+  subagent_type: 'designer',
+  description: 'Design post editing UI',
+  model: 'opus',
+  prompt: `Review the post editing feature spec at /specs/post-editing.md
+
+Please provide:
+1. UI/UX guidance for the edit form
+2. Component recommendations (ShadCN)
+3. Interaction patterns (inline edit vs modal)
+4. States to handle (editing, saving, error)
+5. Accessibility considerations
+
+The feature allows users to edit their own posts with text and media.`
+})
+
+// Step 2: Database changes (if needed)
+Task({
+  subagent_type: 'database-architect',
+  description: 'Design post editing schema',
+  model: 'opus',
+  prompt: `Review the post editing feature spec at /specs/post-editing.md
+
+We need to track:
+- Post edit history
+- Last edited timestamp
+- Edit permissions
+
+Please design:
+1. Schema changes needed
+2. Migration strategy
+3. Index requirements
+4. Query optimization
+
+Note: We already have a posts table with columns: id, user_id, content, created_at`
+})
+
+// Step 3: Implement (multi-domain, so use system-architect)
+Task({
+  subagent_type: 'system-architect',
+  description: 'Implement post editing',
+  model: 'opus',
+  prompt: `Implement the post editing feature according to /specs/post-editing.md
+
+Designer guidance: [attach designer output]
+Database schema: [attach database-architect output]
+
+This is a multi-domain feature requiring:
+1. Shared Zod schemas in packages/common
+2. Backend API: PUT /api/posts/:id with validation
+3. Frontend: Edit form component with optimistic updates
+4. Real-time sync if post edited by author while others viewing
+
+Please coordinate the implementation across frontend and backend.`
+})
+```
+
+#### Example 2: Frontend-Only Feature
+
+**Feature:** "Add dark mode toggle"
+
+**Delegation:**
+```typescript
+// Step 1: Get UI guidance
+Task({
+  subagent_type: 'designer',
+  description: 'Design dark mode UI',
+  model: 'opus',
+  prompt: `Review the dark mode feature spec at /specs/dark-mode.md
+
+Please provide:
+1. Color palette for dark mode
+2. Toggle placement (settings page, header, etc.)
+3. Theme switching patterns
+4. Accessibility (contrast ratios)
+5. System preference detection`
+})
+
+// Step 2: Implement (frontend-only, skip system-architect)
+Task({
+  subagent_type: 'frontend',
+  description: 'Implement dark mode',
+  model: 'sonnet',
+  prompt: `Implement dark mode according to /specs/dark-mode.md
+
+Designer guidance: [attach designer output]
+
+This is a frontend-only feature requiring:
+1. Theme context/provider
+2. Dark mode toggle component
+3. CSS-in-JS or Tailwind dark mode classes
+4. Persist user preference in localStorage
+5. System preference detection
+
+No backend changes needed.`
+})
+```
+
+#### Example 3: Backend-Only Feature
+
+**Feature:** "Add content moderation queue"
+
+**Delegation:**
+```typescript
+// Step 1: Database changes
+Task({
+  subagent_type: 'database-architect',
+  description: 'Design moderation schema',
+  model: 'opus',
+  prompt: `Review the content moderation spec at /specs/content-moderation.md
+
+Design schema for:
+1. Moderation queue table
+2. Moderation actions/history
+3. Flagged content tracking
+4. Moderator assignments
+
+Optimize for: High-volume inserts, fast status queries`
+})
+
+// Step 2: Implement (backend-only)
+Task({
+  subagent_type: 'backend',
+  description: 'Implement moderation queue',
+  model: 'sonnet',
+  prompt: `Implement content moderation according to /specs/content-moderation.md
+
+Database schema: [attach database-architect output]
+
+This is a backend-only feature requiring:
+1. Queue consumer in apps/posts-queue-consumer
+2. Moderation API endpoints
+3. Cloudflare Queue integration
+4. Content filtering logic
+
+No frontend changes in this phase.`
+})
+```
+
+#### Example 4: Real-Time Feature
+
+**Feature:** "Add live typing indicators in chat"
+
+**Delegation:**
+```typescript
+// Step 1: UI guidance
+Task({
+  subagent_type: 'designer',
+  description: 'Design typing indicator',
+  model: 'opus',
+  prompt: `Review the typing indicators spec at /specs/typing-indicators.md
+
+Please provide:
+1. Visual design for "X is typing..." indicator
+2. Animation patterns
+3. Placement in chat UI
+4. Multi-user handling ("A, B, and C are typing...")
+5. Mobile responsiveness`
+})
+
+// Step 2: Implement (real-time, use realtime-architect)
+Task({
+  subagent_type: 'realtime-architect',
+  description: 'Implement typing indicators',
+  model: 'sonnet',
+  prompt: `Implement typing indicators according to /specs/typing-indicators.md
+
+Designer guidance: [attach designer output]
+
+This requires:
+1. WebSocket events: "typing_start", "typing_stop"
+2. Durable Object state management
+3. Debouncing (stop event after 3s of inactivity)
+4. Connection management
+5. Frontend integration with chat component
+
+Use Durable Objects for chat rooms and WebSocket for real-time sync.`
+})
+```
+
+### Delegation Patterns
+
+**Always delegate in this order:**
+
+1. **Designer** (if UI work) - Get design guidance first
+2. **Database Architect** (if DB changes) - Design schema before implementation
+3. **Implementation Agent** - Based on feature type:
+   - system-architect: Multi-domain coordination
+   - frontend: Frontend-only
+   - backend: Backend-only
+   - realtime-architect: Real-time features
+
+**Delegate in parallel when possible:**
+
+```typescript
+// UI and DB can be designed in parallel
+Task({ subagent_type: 'designer', ... })
+Task({ subagent_type: 'database-architect', ... })
+
+// Then wait for both to complete before implementation
+Task({ subagent_type: 'system-architect', ... })
+```
+
+**Skip agents when not needed:**
+
+- No UI changes? Skip designer
+- No DB changes? Skip database-architect
+- Simple frontend-only? Skip system-architect, go straight to frontend
+
+### What to Include in Delegation Prompts
+
+For each delegated task, provide:
+
+1. **Reference to spec:** Path to the spec file you created
+2. **Context:** What problem we're solving
+3. **Specific requirements:** Extract relevant sections from spec
+4. **Constraints:** Tech stack, existing code to integrate with
+5. **Dependencies:** Output from previous agents (designer, database-architect)
+
+### After Delegation
+
+Once you've delegated to all necessary agents:
+
+1. **Report what was delegated:**
+   - "Delegated to designer for UI guidance"
+   - "Delegated to database-architect for schema design"
+   - "Delegated to system-architect for implementation"
+
+2. **Provide spec location:**
+   - "Full spec saved to /specs/feature-name.md"
+
+3. **Set expectations:**
+   - "The agents will now work on implementation. You'll receive updates as they complete."
 
 ## Quality Standards
 
