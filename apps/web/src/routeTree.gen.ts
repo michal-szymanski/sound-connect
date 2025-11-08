@@ -21,6 +21,7 @@ import { Route as authSignUpIndexRouteImport } from './routes/(auth)/sign-up/ind
 import { Route as authSignInIndexRouteImport } from './routes/(auth)/sign-in/index'
 import { Route as mainUsersIdRouteImport } from './routes/(main)/users/$id'
 import { Route as mainPostsPostIdRouteImport } from './routes/(main)/posts/$postId'
+import { Route as mainBandsSearchRouteImport } from './routes/(main)/bands/search'
 import { Route as mainBandsNewRouteImport } from './routes/(main)/bands/new'
 import { Route as mainBandsIdRouteImport } from './routes/(main)/bands/$id'
 
@@ -82,6 +83,11 @@ const mainPostsPostIdRoute = mainPostsPostIdRouteImport.update({
   path: '/posts/$postId',
   getParentRoute: () => mainRouteRoute,
 } as any)
+const mainBandsSearchRoute = mainBandsSearchRouteImport.update({
+  id: '/bands/search',
+  path: '/bands/search',
+  getParentRoute: () => mainRouteRoute,
+} as any)
 const mainBandsNewRoute = mainBandsNewRouteImport.update({
   id: '/bands/new',
   path: '/bands/new',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/': typeof mainIndexRoute
   '/bands/$id': typeof mainBandsIdRoute
   '/bands/new': typeof mainBandsNewRoute
+  '/bands/search': typeof mainBandsSearchRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
   '/users/$id': typeof mainUsersIdRoute
   '/sign-in': typeof authSignInIndexRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/': typeof mainIndexRoute
   '/bands/$id': typeof mainBandsIdRoute
   '/bands/new': typeof mainBandsNewRoute
+  '/bands/search': typeof mainBandsSearchRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
   '/users/$id': typeof mainUsersIdRoute
   '/sign-in': typeof authSignInIndexRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/(main)/': typeof mainIndexRoute
   '/(main)/bands/$id': typeof mainBandsIdRoute
   '/(main)/bands/new': typeof mainBandsNewRoute
+  '/(main)/bands/search': typeof mainBandsSearchRoute
   '/(main)/posts/$postId': typeof mainPostsPostIdRoute
   '/(main)/users/$id': typeof mainUsersIdRoute
   '/(auth)/sign-in/': typeof authSignInIndexRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bands/$id'
     | '/bands/new'
+    | '/bands/search'
     | '/posts/$postId'
     | '/users/$id'
     | '/sign-in'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bands/$id'
     | '/bands/new'
+    | '/bands/search'
     | '/posts/$postId'
     | '/users/$id'
     | '/sign-in'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/(main)/'
     | '/(main)/bands/$id'
     | '/(main)/bands/new'
+    | '/(main)/bands/search'
     | '/(main)/posts/$postId'
     | '/(main)/users/$id'
     | '/(auth)/sign-in/'
@@ -277,6 +289,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof mainPostsPostIdRouteImport
       parentRoute: typeof mainRouteRoute
     }
+    '/(main)/bands/search': {
+      id: '/(main)/bands/search'
+      path: '/bands/search'
+      fullPath: '/bands/search'
+      preLoaderRoute: typeof mainBandsSearchRouteImport
+      parentRoute: typeof mainRouteRoute
+    }
     '/(main)/bands/new': {
       id: '/(main)/bands/new'
       path: '/bands/new'
@@ -313,6 +332,7 @@ interface mainRouteRouteChildren {
   mainIndexRoute: typeof mainIndexRoute
   mainBandsIdRoute: typeof mainBandsIdRoute
   mainBandsNewRoute: typeof mainBandsNewRoute
+  mainBandsSearchRoute: typeof mainBandsSearchRoute
   mainPostsPostIdRoute: typeof mainPostsPostIdRoute
   mainUsersIdRoute: typeof mainUsersIdRoute
   mainBandsIndexRoute: typeof mainBandsIndexRoute
@@ -325,6 +345,7 @@ const mainRouteRouteChildren: mainRouteRouteChildren = {
   mainIndexRoute: mainIndexRoute,
   mainBandsIdRoute: mainBandsIdRoute,
   mainBandsNewRoute: mainBandsNewRoute,
+  mainBandsSearchRoute: mainBandsSearchRoute,
   mainPostsPostIdRoute: mainPostsPostIdRoute,
   mainUsersIdRoute: mainUsersIdRoute,
   mainBandsIndexRoute: mainBandsIndexRoute,

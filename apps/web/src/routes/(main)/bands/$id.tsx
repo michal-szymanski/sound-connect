@@ -1,4 +1,4 @@
-import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
+import { createFileRoute, notFound, redirect, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { CreateBandInput, UpdateBandInput } from '@sound-connect/common/types/bands';
 import { Card, CardContent } from '@/web/components/ui/card';
@@ -21,7 +21,7 @@ import { AddMemberModal } from '@/web/components/band/add-member-modal';
 import { BandForm } from '@/web/components/band/band-form';
 import { useBand, useUpdateBand, useDeleteBand, useAddBandMember, useRemoveBandMember } from '@/web/hooks/use-bands';
 import { ProfileSection } from '@/web/components/profile/profile-section';
-import { Music2, Users, Search, AlertCircle } from 'lucide-react';
+import { Music2, Users, Search, AlertCircle, UserSearch } from 'lucide-react';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const Route = createFileRoute('/(main)/bands/$id' as any)({
@@ -118,6 +118,20 @@ function RouteComponent() {
         deleteBand.mutate(bandId);
     };
 
+    const buildMusiciansSearchUrl = () => {
+        const params = new URLSearchParams();
+
+        if (band.city) {
+            params.set('city', band.city);
+        }
+
+        if (band.primaryGenre) {
+            params.set('genres', band.primaryGenre);
+        }
+
+        return `/musicians?${params.toString()}`;
+    };
+
     return (
         <div className="w-full space-y-6">
             <Card>
@@ -126,10 +140,43 @@ function RouteComponent() {
                 </CardContent>
             </Card>
 
+            <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-4">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-primary flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
+                                <UserSearch className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-semibold">Looking for musicians?</h3>
+                                <p className="text-muted-foreground text-xs">Search for musicians in your area with the right skills</p>
+                            </div>
+                        </div>
+                        <Button asChild variant="default" size="sm">
+                            <Link to={buildMusiciansSearchUrl()}>Find Musicians</Link>
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
             {isEditing ? (
                 <Card>
                     <CardContent className="p-6">
-                        <BandForm initialData={band} onSubmit={handleUpdateBand} onCancel={() => setIsEditing(false)} isLoading={updateBand.isPending} isEdit />
+                        <BandForm
+                            initialData={{
+                                name: band.name,
+                                description: band.description ?? undefined,
+                                city: band.city ?? undefined,
+                                state: band.state ?? undefined,
+                                country: band.country ?? undefined,
+                                primaryGenre: band.primaryGenre ?? undefined,
+                                lookingFor: band.lookingFor ?? undefined
+                            }}
+                            onSubmit={handleUpdateBand}
+                            onCancel={() => setIsEditing(false)}
+                            isLoading={updateBand.isPending}
+                            isEdit
+                        />
                     </CardContent>
                 </Card>
             ) : (
