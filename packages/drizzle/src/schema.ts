@@ -67,8 +67,8 @@ export const mediaTable = sqliteTable('media', {
     key: text('key').notNull()
 });
 
-export const musicGroupsTable = sqliteTable(
-    'music_groups',
+export const bandsTable = sqliteTable(
+    'bands',
     {
         id: integer('id').primaryKey(),
         name: text('name').notNull(),
@@ -85,25 +85,25 @@ export const musicGroupsTable = sqliteTable(
         updatedAt: text('updated_at')
     },
     (table) => ({
-        primaryGenreIdx: index('idx_music_groups_primary_genre').on(table.primaryGenre),
-        locationIdx: index('idx_music_groups_location').on(table.latitude, table.longitude),
-        cityIdx: index('idx_music_groups_city').on(table.city)
+        primaryGenreIdx: index('idx_bands_primary_genre').on(table.primaryGenre),
+        locationIdx: index('idx_bands_location').on(table.latitude, table.longitude),
+        cityIdx: index('idx_bands_city').on(table.city)
     })
 );
 
-export const musicGroupMembersTable = sqliteTable(
-    'music_groups_members',
+export const bandsMembersTable = sqliteTable(
+    'bands_members',
     {
         id: integer('id').primaryKey(),
         userId: text('user_id').notNull(),
-        musicGroupId: integer('music_group_id')
+        bandId: integer('band_id')
             .notNull()
-            .references(() => musicGroupsTable.id, { onDelete: 'cascade' }),
+            .references(() => bandsTable.id, { onDelete: 'cascade' }),
         isAdmin: integer('is_admin', { mode: 'boolean' }).notNull(),
         joinedAt: text('joined_at').notNull()
     },
     (table) => ({
-        userBandsIdx: index('idx_music_groups_members_user_bands').on(table.userId, table.isAdmin, table.joinedAt)
+        userBandsIdx: index('idx_bands_members_user_bands').on(table.userId, table.isAdmin, table.joinedAt)
     })
 );
 
@@ -118,12 +118,12 @@ export const usersFollowersTable = sqliteTable('users_followers', {
     createdAt: text('created_at').notNull()
 });
 
-export const musicGroupsFollowersTable = sqliteTable('music_groups_followers', {
+export const bandsFollowersTable = sqliteTable('bands_followers', {
     id: integer('id').primaryKey(),
     followerId: text('follower_id').notNull(),
-    musicGroupId: integer('music_group_id')
+    bandId: integer('band_id')
         .notNull()
-        .references(() => musicGroupsTable.id),
+        .references(() => bandsTable.id),
     createdAt: text('created_at').notNull()
 });
 
@@ -141,7 +141,7 @@ export const messagesTable = sqliteTable('messages', {
 });
 
 export const notificationTypeEnum = ['follow_request', 'follow_accepted', 'comment', 'reaction', 'mention'] as const;
-export const entityTypeEnum = ['post', 'comment', 'message', 'music_group'] as const;
+export const entityTypeEnum = ['post', 'comment', 'message', 'band'] as const;
 
 export const notificationsTable = sqliteTable('notifications', {
     id: integer('id').primaryKey({ autoIncrement: true }),
@@ -182,17 +182,17 @@ export const mediaRelations = relations(mediaTable, ({ one }) => ({
     post: one(postsTable, { fields: [mediaTable.postId], references: [postsTable.id] })
 }));
 
-export const musicGroupsRelations = relations(musicGroupsTable, ({ many }) => ({
-    members: many(musicGroupMembersTable),
-    followers: many(musicGroupsFollowersTable)
+export const bandsRelations = relations(bandsTable, ({ many }) => ({
+    members: many(bandsMembersTable),
+    followers: many(bandsFollowersTable)
 }));
 
-export const musicGroupMembersRelations = relations(musicGroupMembersTable, ({ one }) => ({
-    musicGroup: one(musicGroupsTable, { fields: [musicGroupMembersTable.musicGroupId], references: [musicGroupsTable.id] })
+export const bandsMembersRelations = relations(bandsMembersTable, ({ one }) => ({
+    band: one(bandsTable, { fields: [bandsMembersTable.bandId], references: [bandsTable.id] })
 }));
 
-export const musicGroupsFollowersRelations = relations(musicGroupsFollowersTable, ({ one }) => ({
-    musicGroup: one(musicGroupsTable, { fields: [musicGroupsFollowersTable.musicGroupId], references: [musicGroupsTable.id] })
+export const bandsFollowersRelations = relations(bandsFollowersTable, ({ one }) => ({
+    band: one(bandsTable, { fields: [bandsFollowersTable.bandId], references: [bandsTable.id] })
 }));
 
 export const userProfilesTable = sqliteTable(

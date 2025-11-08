@@ -209,7 +209,7 @@ export const mediaSchema = z.object({
 export type CreateMedia = z.infer<typeof createMediaSchema>;
 export type Media = z.infer<typeof mediaSchema>;
 
-export const createMusicGroupSchema = z.object({
+export const createBandSchema = z.object({
     id: z.number(),
     name: z.string(),
     description: z.string().nullable(),
@@ -225,7 +225,7 @@ export const createMusicGroupSchema = z.object({
     updatedAt: z.string().nullable()
 });
 
-export const musicGroupSchema = z.object({
+export const bandSchema = z.object({
     id: z.number(),
     name: z.string(),
     description: z.string().nullable(),
@@ -241,27 +241,27 @@ export const musicGroupSchema = z.object({
     updatedAt: z.string().nullable()
 });
 
-export type CreateMusicGroup = z.infer<typeof createMusicGroupSchema>;
-export type MusicGroup = z.infer<typeof musicGroupSchema>;
+export type CreateBand = z.infer<typeof createBandSchema>;
+export type Band = z.infer<typeof bandSchema>;
 
-export const createMusicGroupMemberSchema = z.object({
+export const createBandMemberSchema = z.object({
     id: z.number(),
     userId: z.string(),
-    musicGroupId: z.number(),
+    bandId: z.number(),
     isAdmin: z.boolean(),
     joinedAt: z.string()
 });
 
-export const musicGroupMemberSchema = z.object({
+export const bandMemberSchema = z.object({
     id: z.number(),
     userId: z.string(),
-    musicGroupId: z.number(),
+    bandId: z.number(),
     isAdmin: z.boolean(),
     joinedAt: z.string()
 });
 
-export type CreateMusicGroupMember = z.infer<typeof createMusicGroupMemberSchema>;
-export type MusicGroupMember = z.infer<typeof musicGroupMemberSchema>;
+export type CreateBandMember = z.infer<typeof createBandMemberSchema>;
+export type BandMember = z.infer<typeof bandMemberSchema>;
 
 export const createUserFollowerSchema = z.object({
     id: z.number(),
@@ -280,22 +280,22 @@ export const userFollowerSchema = z.object({
 export type CreateUserFollower = z.infer<typeof createUserFollowerSchema>;
 export type UserFollower = z.infer<typeof userFollowerSchema>;
 
-export const createMusicGroupFollowerSchema = z.object({
+export const createBandFollowerSchema = z.object({
     id: z.number(),
     followerId: z.string(),
-    musicGroupId: z.number(),
+    bandId: z.number(),
     createdAt: z.string()
 });
 
-export const musicGroupFollowerSchema = z.object({
+export const bandFollowerSchema = z.object({
     id: z.number(),
     followerId: z.string(),
-    musicGroupId: z.number(),
+    bandId: z.number(),
     createdAt: z.string()
 });
 
-export type CreateMusicGroupFollower = z.infer<typeof createMusicGroupFollowerSchema>;
-export type MusicGroupFollower = z.infer<typeof musicGroupFollowerSchema>;
+export type CreateBandFollower = z.infer<typeof createBandFollowerSchema>;
+export type BandFollower = z.infer<typeof bandFollowerSchema>;
 
 export const createMessageSchema = z.object({
     id: z.number(),
@@ -319,7 +319,7 @@ export type CreateMessage = z.infer<typeof createMessageSchema>;
 export type Message = z.infer<typeof messageSchema>;
 
 export const notificationTypeEnum = z.enum(['follow_request', 'follow_accepted', 'comment', 'reaction', 'mention']);
-export const entityTypeEnum = z.enum(['post', 'comment', 'message', 'music_group']);
+export const entityTypeEnum = z.enum(['post', 'comment', 'message', 'band']);
 
 export const createNotificationSchema = z.object({
     id: z.number(),

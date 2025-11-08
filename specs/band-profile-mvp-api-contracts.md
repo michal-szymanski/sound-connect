@@ -34,9 +34,9 @@ All shared types, Zod schemas, and validation logic are defined in:
 **Response**: `bandSchema` (201 Created)
 
 **Side Effects**:
-- Creates band record in `music_groups` table
+- Creates band record in `bands` table
 - Geocodes city/state to latitude/longitude
-- Adds creator as admin member in `music_groups_members` table
+- Adds creator as admin member in `bands_members` table
 
 **Errors**:
 - 400: Validation errors (return field-specific messages)
@@ -96,7 +96,7 @@ All shared types, Zod schemas, and validation logic are defined in:
 **Response**: `bandSchema` (200 OK)
 
 **Side Effects**:
-- Updates band in `music_groups` table
+- Updates band in `bands` table
 - Re-geocodes if city/state changed
 - Updates `updatedAt` timestamp
 
@@ -121,8 +121,8 @@ All shared types, Zod schemas, and validation logic are defined in:
 **Response**: 204 No Content
 
 **Side Effects**:
-- Deletes band from `music_groups` table
-- Cascades delete to `music_groups_members` (all members removed)
+- Deletes band from `bands` table
+- Cascades delete to `bands_members` (all members removed)
 
 **Errors**:
 - 401: Unauthorized
@@ -162,7 +162,7 @@ All shared types, Zod schemas, and validation logic are defined in:
 ```
 
 **Side Effects**:
-- Adds user to `music_groups_members` table with `isAdmin: false`
+- Adds user to `bands_members` table with `isAdmin: false`
 
 **Errors**:
 - 400: User already a member
@@ -186,7 +186,7 @@ All shared types, Zod schemas, and validation logic are defined in:
 **Response**: 204 No Content
 
 **Side Effects**:
-- Removes user from `music_groups_members` table
+- Removes user from `bands_members` table
 
 **Validation**:
 - Cannot remove last admin (must have at least one admin)
@@ -226,7 +226,7 @@ All shared types, Zod schemas, and validation logic are defined in:
 
 ## Authorization Rules
 
-**Band Admin Actions** (require `isAdmin: true` in `music_groups_members`):
+**Band Admin Actions** (require `isAdmin: true` in `bands_members`):
 - Update band (PATCH /api/bands/:id)
 - Delete band (DELETE /api/bands/:id)
 - Add members (POST /api/bands/:id/members)
@@ -243,7 +243,7 @@ All shared types, Zod schemas, and validation logic are defined in:
 
 The backend agent will need to:
 
-1. **Add columns to `music_groups` table**:
+1. **Add columns to `bands` table**:
    - `description` (TEXT, nullable)
    - `primary_genre` (TEXT, nullable)
    - `city` (TEXT, nullable)
@@ -254,7 +254,7 @@ The backend agent will need to:
    - `looking_for` (TEXT, nullable)
    - `profile_image_url` (TEXT, nullable)
 
-2. **Add column to `music_groups_members` table**:
+2. **Add column to `bands_members` table**:
    - `joined_at` (TEXT, NOT NULL, default current timestamp)
 
 3. **Create indexes**:
