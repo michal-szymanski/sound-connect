@@ -31,6 +31,182 @@ Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
 
 Code quality is automatically enforced by the `code-quality-enforcer` agent. This agent validates all code changes against the rules below, runs automated checks (Prettier, ESLint, TypeScript), and blocks completion until standards are met. Agents working on code should invoke the code-quality-enforcer AFTER writing code and BEFORE marking tasks complete.
 
+### Agent Workflow
+
+Sound Connect uses specialized agents to handle different types of work. Use the correct agent entry point based on your task:
+
+#### Decision Tree: Which Agent to Invoke?
+
+```
+What type of work are you doing?
+
+├─ NEW FEATURE
+│  └─ Invoke: feature-spec-writer
+│     • Creates comprehensive specification
+│     • Automatically delegates to:
+│       - designer (if UI work)
+│       - database-architect (if DB changes)
+│       - system-architect (if multi-domain) OR
+│       - frontend/backend (if single-domain)
+│
+├─ BUG FIX
+│  ├─ Frontend bug → Invoke: frontend
+│  ├─ Backend bug → Invoke: backend
+│  └─ Multi-domain bug → Invoke: system-architect
+│
+├─ DATABASE WORK
+│  └─ Invoke: database-architect
+│     • Designs schema
+│     • Delegates to backend for implementation
+│
+├─ DEPLOYMENT / OPERATIONS
+│  └─ Invoke: devops
+│     • Handles deployments
+│     • Applies database migrations
+│     • Requires user approval
+│
+├─ TESTING
+│  └─ Invoke: test-expert
+│     • E2E tests (Playwright)
+│     • Integration tests
+│     • Unit tests
+│
+└─ REFACTORING
+   ├─ Single app → Invoke: frontend or backend
+   └─ Cross-cutting → Invoke: system-architect
+```
+
+#### Agent Descriptions
+
+**feature-spec-writer** (Entry point for new features)
+- Transforms vague ideas into detailed specifications
+- Asks clarifying questions
+- Creates `/specs/[feature-name].md` file
+- Automatically delegates to appropriate agents
+- Use when: Building any new feature
+
+**designer**
+- Provides UI/UX guidance
+- ShadCN component recommendations
+- Accessibility considerations (WCAG 2.1 AA)
+- Invoked by: feature-spec-writer (automatic)
+
+**database-architect**
+- Designs database schemas
+- Plans migrations
+- Optimizes queries and indexes
+- Invoked by: feature-spec-writer (automatic) or user directly
+
+**system-architect**
+- Coordinates multi-domain features (frontend + backend + shared code)
+- Manages `packages/common` (Zod schemas, types, utilities)
+- Ensures type safety across the stack
+- Delegates to frontend/backend agents
+- Use when: Feature spans multiple domains
+- DON'T use when: Feature is frontend-only or backend-only
+
+**frontend**
+- Tanstack Start implementation
+- React components and server functions
+- Tanstack Query hooks
+- Auto-invokes code-quality-enforcer
+- Use when: Frontend-only features or frontend portion of multi-domain
+
+**backend**
+- Hono API routes
+- Drizzle ORM queries
+- Durable Objects
+- Queue consumers
+- Auto-invokes code-quality-enforcer
+- Use when: Backend-only features or backend portion of multi-domain
+
+**realtime-architect**
+- WebSocket features
+- Durable Objects for real-time
+- Connection management
+- Use when: Real-time features (chat, notifications, live updates)
+
+**devops**
+- Cloudflare Workers deployments
+- Database migrations (production)
+- Monitoring configuration
+- Requires user approval for ALL operations
+- Use when: Deployment or operational tasks
+
+**test-expert**
+- E2E tests with Playwright
+- Integration tests
+- Unit tests
+- Test organization and coverage
+- Use when: Adding or fixing tests
+
+**code-quality-enforcer**
+- Validates CLAUDE.md compliance
+- Runs Prettier, ESLint, TypeScript checks
+- Invoked automatically by: frontend, backend
+- DON'T invoke manually
+
+#### Example Workflows
+
+**Example 1: New Feature (Post Editing)**
+```
+User: "Add post editing feature"
+  ↓
+Invoke: feature-spec-writer
+  ↓
+feature-spec-writer:
+  1. Asks clarifying questions
+  2. Writes spec to /specs/post-editing.md
+  3. Auto-delegates:
+     - Task(designer) → UI guidance
+     - Task(system-architect) → Implementation
+       - Creates Zod schemas in packages/common
+       - Task(backend) → PUT /posts/:id endpoint
+       - Task(frontend) → Edit form component
+```
+
+**Example 2: Frontend-Only Feature (Dark Mode)**
+```
+User: "Add dark mode toggle"
+  ↓
+Invoke: feature-spec-writer
+  ↓
+feature-spec-writer:
+  1. Asks clarifying questions
+  2. Writes spec to /specs/dark-mode.md
+  3. Auto-delegates:
+     - Task(designer) → Color palette, toggle design
+     - Task(frontend) → Implementation (skip system-architect)
+```
+
+**Example 3: Bug Fix**
+```
+User: "Fix broken profile image upload"
+  ↓
+Invoke: frontend (if frontend bug) or backend (if API bug)
+  ↓
+Agent fixes bug and auto-invokes code-quality-enforcer
+```
+
+**Example 4: Database Change**
+```
+User: "Add indexes for post queries"
+  ↓
+Invoke: database-architect
+  ↓
+database-architect:
+  1. Analyzes query patterns
+  2. Designs indexes
+  3. Delegates to backend for migration
+```
+
+#### Key Principles
+
+1. **Always start with feature-spec-writer for new features** - It handles the entire workflow automatically
+2. **Use system-architect only for multi-domain features** - Skip it for frontend-only or backend-only work
+3. **Don't invoke code-quality-enforcer manually** - frontend/backend agents do this automatically
+4. **Specify the spec file path** - When delegating, reference the spec created by feature-spec-writer
+
 ### General AI Rules (Apply to All Projects)
 
 - NEVER generate comments within the code. No exceptions.
