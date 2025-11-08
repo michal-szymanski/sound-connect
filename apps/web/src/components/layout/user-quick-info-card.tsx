@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/web/components/ui/card';
 import { Button } from '@/web/components/ui/button';
 import { useAuth, useFollowers, useFollowings } from '@/web/lib/react-query';
 import { signOut } from '@/web/server-functions/auth';
+import { NotificationsButton } from '@/web/components/notifications-button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -40,34 +41,37 @@ export function UserQuickInfoCard() {
     return (
         <Card className="border-border/40">
             <CardContent className="relative p-4">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="absolute top-3 right-3 h-8 w-8" aria-label="Account menu">
-                            <MoreVertical className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel>Account</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                            <Link to="/users/$id" params={{ id: auth.user.id }}>
-                                <User className="mr-2 h-4 w-4" aria-hidden="true" />
-                                View Profile
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Link to="/settings">
-                                <Settings className="mr-2 h-4 w-4" aria-hidden="true" />
-                                Settings & Privacy
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive cursor-pointer">
-                            <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
-                            Log Out
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="absolute top-3 right-3 flex items-center gap-1">
+                    <NotificationsButton />
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Account menu">
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuLabel>Account</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild>
+                                <Link to="/users/$id" params={{ id: auth.user.id }}>
+                                    <User className="mr-2 h-4 w-4" aria-hidden="true" />
+                                    View Profile
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Link to="/settings">
+                                    <Settings className="mr-2 h-4 w-4" aria-hidden="true" />
+                                    Settings & Privacy
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive cursor-pointer">
+                                <LogOut className="mr-2 h-4 w-4" aria-hidden="true" />
+                                Log Out
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
                 <Link to="/users/$id" params={{ id: auth.user.id }} className="group block">
                     <div className="flex items-center gap-3">
                         <UserAvatar user={auth.user} className="h-12 w-12" />
