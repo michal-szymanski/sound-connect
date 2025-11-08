@@ -19,7 +19,7 @@ import {
     type AvailabilityStatus
 } from '@sound-connect/common/types/profile-enums';
 import { searchRadiusEnum } from '@sound-connect/common/types/profile-search';
-import { availabilityStatusConfig } from '@sound-connect/common/utils/availability';
+import { availabilityStatusConfig } from '@/web/lib/utils/availability';
 import type { ProfileSearchParams } from '@sound-connect/common/types/profile-search';
 
 type Props = {
