@@ -71,7 +71,6 @@ function RouteComponent() {
     useEffect(() => {
         if (selectedPeer && auth?.user) {
             const roomId = getRoomId(auth.user.id, selectedPeer.id);
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCurrentRoomId(roomId);
 
             const initializeRoom = async () => {
@@ -95,7 +94,6 @@ function RouteComponent() {
     useEffect(() => {
         if (currentRoomId) {
             const roomMsgs = roomMessages.get(currentRoomId) || [];
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setMessages(roomMsgs);
         }
     }, [roomMessages, currentRoomId]);

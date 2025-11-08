@@ -71,8 +71,7 @@ const useFileUpload = (options?: { accept?: string; multiple?: boolean }) => {
                 URL.revokeObjectURL(file.previewUrl);
             });
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [uploadedFiles]);
 
     const FileInput = () => (
         <Input type="file" ref={fileInputRef} onChange={handleFileChange} accept={options?.accept} multiple={options?.multiple} className="hidden" />
