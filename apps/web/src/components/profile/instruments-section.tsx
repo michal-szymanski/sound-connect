@@ -6,6 +6,7 @@ import { Button } from '@/web/components/ui/button';
 import { Label } from '@/web/components/ui/label';
 import { Input } from '@/web/components/ui/input';
 import { Checkbox } from '@/web/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/web/components/ui/select';
 import type { InstrumentsSection as InstrumentsSectionData, UpdateInstruments, AdditionalInstrument } from '@sound-connect/common/types/profile';
 import { InstrumentEnum, type Instrument } from '@sound-connect/common/types/profile-enums';
 import { formatInstrument } from '@/web/lib/profile-utils';
@@ -78,19 +79,22 @@ export const InstrumentsSection = ({ data, canEdit }: Props) => {
                 <Label htmlFor="primaryInstrument">
                     Primary Instrument <span className="text-destructive">*</span>
                 </Label>
-                <select
-                    id="primaryInstrument"
+                <Select
                     value={formData.primaryInstrument}
-                    onChange={(e) => setFormData({ ...formData, primaryInstrument: e.target.value as Instrument })}
-                    className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                    onValueChange={(value) => setFormData({ ...formData, primaryInstrument: value as Instrument })}
                     required
                 >
-                    {InstrumentEnum.map((instrument) => (
-                        <option key={instrument} value={instrument}>
-                            {formatInstrument(instrument)}
-                        </option>
-                    ))}
-                </select>
+                    <SelectTrigger id="primaryInstrument" className="w-full" aria-required="true">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {InstrumentEnum.map((instrument) => (
+                            <SelectItem key={instrument} value={instrument}>
+                                {formatInstrument(instrument)}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className="space-y-2">
@@ -111,28 +115,29 @@ export const InstrumentsSection = ({ data, canEdit }: Props) => {
             <div className="space-y-2">
                 <Label>Additional Instruments</Label>
                 {formData.additionalInstruments.map((inst, index) => (
-                    <div key={index} className="flex gap-2">
-                        <select
-                            value={inst.instrument}
-                            onChange={(e) => updateAdditionalInstrument(index, 'instrument', e.target.value as Instrument)}
-                            className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 flex-1 rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
-                        >
-                            {InstrumentEnum.filter((i) => i !== formData.primaryInstrument).map((instrument) => (
-                                <option key={instrument} value={instrument}>
-                                    {formatInstrument(instrument)}
-                                </option>
-                            ))}
-                        </select>
+                    <div key={index} className="flex flex-col gap-2 sm:flex-row">
+                        <Select value={inst.instrument} onValueChange={(value) => updateAdditionalInstrument(index, 'instrument', value as Instrument)}>
+                            <SelectTrigger className="w-full sm:flex-1">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {InstrumentEnum.filter((i) => i !== formData.primaryInstrument).map((instrument) => (
+                                    <SelectItem key={instrument} value={instrument}>
+                                        {formatInstrument(instrument)}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                         <Input
                             type="number"
                             min={0}
                             max={70}
                             value={inst.years}
                             onChange={(e) => updateAdditionalInstrument(index, 'years', parseInt(e.target.value) || 0)}
-                            className="w-24"
+                            className="w-full sm:w-24"
                             placeholder="Years"
                         />
-                        <Button type="button" variant="ghost" size="sm" onClick={() => removeInstrument(index)}>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => removeInstrument(index)} className="w-full sm:w-auto">
                             Remove
                         </Button>
                     </div>
@@ -166,8 +171,15 @@ export const InstrumentsSection = ({ data, canEdit }: Props) => {
                 <Button type="button" variant="outline" onClick={closeForm}>
                     Cancel
                 </Button>
-                <Button type="submit" disabled={updateMutation.isPending}>
-                    {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                <Button type="submit" disabled={updateMutation.isPending} aria-busy={updateMutation.isPending}>
+                    {updateMutation.isPending ? (
+                        <>
+                            <span className="sr-only">Saving changes, please wait</span>
+                            <span aria-hidden="true">Saving...</span>
+                        </>
+                    ) : (
+                        'Save Changes'
+                    )}
                 </Button>
             </div>
         </form>

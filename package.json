@@ -49,5 +49,8 @@
   "volta": {
     "node": "22.20.0",
     "pnpm": "10.19.0"
+  },
+  "dependencies": {
+    "prettier-plugin-tailwindcss": "^0.7.1"
   }
 }

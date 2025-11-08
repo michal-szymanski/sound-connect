@@ -11,7 +11,6 @@ import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, f
 import { getPosts } from '@/web/server-functions/posts';
 import { getUser, followUser, unfollowUser } from '@/web/server-functions/users';
 import { useProfile } from '@/web/hooks/use-profile';
-import { ProfileCompletionBadge } from '@/web/components/profile/profile-completion-badge';
 import { ProfileSkeleton } from '@/web/components/profile/profile-skeleton';
 import { InstrumentsSection } from '@/web/components/profile/instruments-section';
 import { GenresSection } from '@/web/components/profile/genres-section';
@@ -86,7 +85,6 @@ function RouteComponent() {
     const isOwnProfile = currentUser.id === user.id;
 
     useEffect(() => {
-        /* eslint-disable react-hooks/set-state-in-effect */
         if (followRequestStatus?.status === 'following') {
             setOptimisticStatus('following');
         } else if (followRequestStatus?.status === 'pending') {
@@ -94,13 +92,11 @@ function RouteComponent() {
         } else if (followRequestStatus?.status === 'none') {
             setOptimisticStatus(null);
         }
-        /* eslint-enable react-hooks/set-state-in-effect */
     }, [followRequestStatus?.status]);
 
     useEffect(() => {
         const isCurrentUserFollowing = currentUserFollowings?.some((following) => following.id === user.id);
         if (isCurrentUserFollowing) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setOptimisticStatus(null);
         }
     }, [currentUserFollowings, user.id]);
@@ -177,19 +173,51 @@ function RouteComponent() {
                         className="object-fit h-90 w-full"
                     />
                 </div>
-                <UserAvatar user={user} className="relative -top-20 left-10 h-40 w-40" fallbackClassName="text-6xl" />
-                <div>
-                    <h1 className="relative -top-10 left-10 text-xl">{user.name}</h1>
-                    <div className="flex w-full flex-col items-end gap-5 p-5">
-                        <div className="text-muted-foreground inline-flex gap-3">
-                            <div>{posts.length} posts</div>
-                            <div>{followers.length} followers</div>
-                            {followings && <div>{followings.length} following</div>}
+
+                <div className="px-4 pb-4 sm:px-6 sm:pb-6">
+                    <div className="-mt-12 mb-4 sm:-mt-16">
+                        <UserAvatar user={user} className="border-card h-24 w-24 border-4 sm:h-32 sm:w-32" fallbackClassName="text-4xl sm:text-6xl" />
+                    </div>
+
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="min-w-0 flex-1">
+                            <h1 className="truncate text-xl font-bold sm:text-2xl">{user.name}</h1>
+                            <p className="text-muted-foreground text-sm">@{user.id.slice(0, 8)}</p>
                         </div>
-                        <div className="flex items-center gap-4">
-                            {isOwnProfile && profile && <ProfileCompletionBadge completion={profile.profileCompletion} />}
-                            {renderFollowButton()}
-                        </div>
+
+                        <div className="flex items-center gap-2">{renderFollowButton()}</div>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                        <button className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2">
+                            <span className="text-foreground font-semibold">{posts.length}</span>
+                            <span className="text-muted-foreground ml-1">posts</span>
+                        </button>
+                        <button className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2">
+                            <span className="text-foreground font-semibold">{followers.length}</span>
+                            <span className="text-muted-foreground ml-1">followers</span>
+                        </button>
+                        <button className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2">
+                            <span className="text-foreground font-semibold">{followings ? followings.length : 0}</span>
+                            <span className="text-muted-foreground ml-1">following</span>
+                        </button>
+
+                        {isOwnProfile && profile && (
+                            <div className="text-muted-foreground ml-auto flex items-center gap-2 text-xs">
+                                <div className="bg-accent h-2 w-20 overflow-hidden rounded-full sm:w-24">
+                                    <div
+                                        className="bg-primary h-full transition-all"
+                                        style={{ width: `${profile.profileCompletion}%` }}
+                                        role="progressbar"
+                                        aria-valuenow={profile.profileCompletion}
+                                        aria-valuemin={0}
+                                        aria-valuemax={100}
+                                        aria-label="Profile completion percentage"
+                                    />
+                                </div>
+                                <span>{profile.profileCompletion}%</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </Card>

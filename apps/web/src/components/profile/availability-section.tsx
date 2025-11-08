@@ -6,6 +6,7 @@ import { Button } from '@/web/components/ui/button';
 import { Label } from '@/web/components/ui/label';
 import { Input } from '@/web/components/ui/input';
 import { Textarea } from '@/web/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/web/components/ui/select';
 import { CharacterCounter } from './character-counter';
 import type { AvailabilitySection as AvailabilitySectionData, UpdateAvailability } from '@sound-connect/common/types/profile';
 import {
@@ -76,19 +77,18 @@ export const AvailabilitySection = ({ data, canEdit }: Props) => {
                 <Label htmlFor="status">
                     Status <span className="text-destructive">*</span>
                 </Label>
-                <select
-                    id="status"
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value as AvailabilityStatus })}
-                    className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
-                    required
-                >
-                    {AvailabilityStatusEnum.map((status) => (
-                        <option key={status} value={status}>
-                            {statusLabels[status]}
-                        </option>
-                    ))}
-                </select>
+                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as AvailabilityStatus })} required>
+                    <SelectTrigger id="status" className="w-full" aria-required="true">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {AvailabilityStatusEnum.map((status) => (
+                            <SelectItem key={status} value={status}>
+                                {statusLabels[status]}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
             {formData.status === 'actively_looking' && (
@@ -113,24 +113,26 @@ export const AvailabilitySection = ({ data, canEdit }: Props) => {
 
             <div className="space-y-2">
                 <Label htmlFor="commitmentLevel">Commitment Level</Label>
-                <select
-                    id="commitmentLevel"
+                <Select
                     value={formData.commitmentLevel || ''}
-                    onChange={(e) =>
+                    onValueChange={(value) =>
                         setFormData({
                             ...formData,
-                            commitmentLevel: (e.target.value || undefined) as CommitmentLevel
+                            commitmentLevel: (value || undefined) as CommitmentLevel
                         })
                     }
-                    className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
                 >
-                    <option value="">Select...</option>
-                    {CommitmentLevelEnum.map((level) => (
-                        <option key={level} value={level}>
-                            {commitmentLabels[level]}
-                        </option>
-                    ))}
-                </select>
+                    <SelectTrigger id="commitmentLevel" className="w-full">
+                        <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {CommitmentLevelEnum.map((level) => (
+                            <SelectItem key={level} value={level}>
+                                {commitmentLabels[level]}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className="space-y-2">
@@ -150,32 +152,41 @@ export const AvailabilitySection = ({ data, canEdit }: Props) => {
 
             <div className="space-y-2">
                 <Label htmlFor="rehearsalFrequency">Rehearsal Frequency</Label>
-                <select
-                    id="rehearsalFrequency"
+                <Select
                     value={formData.rehearsalFrequency || ''}
-                    onChange={(e) =>
+                    onValueChange={(value) =>
                         setFormData({
                             ...formData,
-                            rehearsalFrequency: (e.target.value || undefined) as RehearsalFrequency
+                            rehearsalFrequency: (value || undefined) as RehearsalFrequency
                         })
                     }
-                    className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
                 >
-                    <option value="">Select...</option>
-                    {RehearsalFrequencyEnum.map((freq) => (
-                        <option key={freq} value={freq}>
-                            {rehearsalLabels[freq]}
-                        </option>
-                    ))}
-                </select>
+                    <SelectTrigger id="rehearsalFrequency" className="w-full">
+                        <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {RehearsalFrequencyEnum.map((freq) => (
+                            <SelectItem key={freq} value={freq}>
+                                {rehearsalLabels[freq]}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={closeForm}>
                     Cancel
                 </Button>
-                <Button type="submit" disabled={updateMutation.isPending}>
-                    {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                <Button type="submit" disabled={updateMutation.isPending} aria-busy={updateMutation.isPending}>
+                    {updateMutation.isPending ? (
+                        <>
+                            <span className="sr-only">Saving changes, please wait</span>
+                            <span aria-hidden="true">Saving...</span>
+                        </>
+                    ) : (
+                        'Save Changes'
+                    )}
                 </Button>
             </div>
         </form>

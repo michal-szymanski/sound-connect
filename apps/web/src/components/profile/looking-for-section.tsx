@@ -81,8 +81,15 @@ export const LookingForSection = ({ data, canEdit }: Props) => {
                 <Button type="button" variant="outline" onClick={closeForm}>
                     Cancel
                 </Button>
-                <Button type="submit" disabled={updateMutation.isPending}>
-                    {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                <Button type="submit" disabled={updateMutation.isPending} aria-busy={updateMutation.isPending}>
+                    {updateMutation.isPending ? (
+                        <>
+                            <span className="sr-only">Saving changes, please wait</span>
+                            <span aria-hidden="true">Saving...</span>
+                        </>
+                    ) : (
+                        'Save Changes'
+                    )}
                 </Button>
             </div>
         </form>

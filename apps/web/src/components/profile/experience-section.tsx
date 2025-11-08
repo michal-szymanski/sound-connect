@@ -6,6 +6,7 @@ import { Button } from '@/web/components/ui/button';
 import { Label } from '@/web/components/ui/label';
 import { Textarea } from '@/web/components/ui/textarea';
 import { Checkbox } from '@/web/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/web/components/ui/select';
 import { CharacterCounter } from './character-counter';
 import type { ExperienceSection as ExperienceSectionData, UpdateExperience } from '@sound-connect/common/types/profile';
 import { GiggingLevelEnum, type GiggingLevel } from '@sound-connect/common/types/profile-enums';
@@ -44,24 +45,26 @@ export const ExperienceSection = ({ data, canEdit }: Props) => {
         <form onSubmit={(e) => handleSubmit(e, closeForm)} className="space-y-4">
             <div className="space-y-2">
                 <Label htmlFor="giggingLevel">Gigging Level</Label>
-                <select
-                    id="giggingLevel"
+                <Select
                     value={formData.giggingLevel || ''}
-                    onChange={(e) =>
+                    onValueChange={(value) =>
                         setFormData({
                             ...formData,
-                            giggingLevel: (e.target.value || undefined) as GiggingLevel
+                            giggingLevel: (value || undefined) as GiggingLevel
                         })
                     }
-                    className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
                 >
-                    <option value="">Select...</option>
-                    {GiggingLevelEnum.map((level) => (
-                        <option key={level} value={level}>
-                            {giggingLabels[level]}
-                        </option>
-                    ))}
-                </select>
+                    <SelectTrigger id="giggingLevel" className="w-full">
+                        <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {GiggingLevelEnum.map((level) => (
+                            <SelectItem key={level} value={level}>
+                                {giggingLabels[level]}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className="space-y-2">
@@ -94,8 +97,15 @@ export const ExperienceSection = ({ data, canEdit }: Props) => {
                 <Button type="button" variant="outline" onClick={closeForm}>
                     Cancel
                 </Button>
-                <Button type="submit" disabled={updateMutation.isPending}>
-                    {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                <Button type="submit" disabled={updateMutation.isPending} aria-busy={updateMutation.isPending}>
+                    {updateMutation.isPending ? (
+                        <>
+                            <span className="sr-only">Saving changes, please wait</span>
+                            <span aria-hidden="true">Saving...</span>
+                        </>
+                    ) : (
+                        'Save Changes'
+                    )}
                 </Button>
             </div>
         </form>

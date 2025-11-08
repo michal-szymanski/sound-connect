@@ -51,6 +51,13 @@ What type of work are you doing?
 │       - system-architect (only if needs shared code/API contracts) OR
 │       - frontend/backend directly (most cases - let them coordinate)
 │
+├─ UI/UX IMPROVEMENTS
+│  └─ Invoke: designer
+│     • Provides UI/UX recommendations
+│     • After designer responds, ask user: "Should I implement these improvements?"
+│     • On user agreement (yes/continue/proceed/etc.) → Automatically invoke frontend
+│     • Understand user intent, don't wait for specific keywords
+│
 ├─ BUG FIX
 │  ├─ Frontend bug → Invoke: frontend
 │  ├─ Backend bug → Invoke: backend
@@ -60,7 +67,8 @@ What type of work are you doing?
 ├─ DATABASE WORK
 │  └─ Invoke: database-architect
 │     • Designs schema
-│     • Delegates to backend for implementation
+│     • After database-architect responds, ask user: "Should I implement these changes?"
+│     • On user agreement → Automatically invoke backend
 │
 ├─ DEPLOYMENT / OPERATIONS
 │  └─ Invoke: devops
@@ -162,6 +170,40 @@ What type of work are you doing?
 - Invoked automatically by: frontend, backend
 - DON'T invoke manually
 
+#### Two-Step Workflows (Advisory → Implementation)
+
+Some tasks require consultation with an advisory agent followed by automatic implementation:
+
+**UI/UX Improvements Workflow:**
+1. User requests UI improvement → Invoke **designer** agent
+2. Designer provides comprehensive recommendations
+3. **Assistant asks**: "Should I implement these improvements?"
+4. **On any affirmative response** (yes/continue/proceed/sure/go ahead/do it/implement it/etc.) → **Automatically invoke frontend agent**
+5. Frontend agent implements the recommendations
+
+**Database Schema Changes Workflow:**
+1. User requests database changes → Invoke **database-architect** agent
+2. Database-architect provides schema design and migration plan
+3. **Assistant asks**: "Should I implement these changes?"
+4. **On any affirmative response** → **Automatically invoke backend agent**
+5. Backend agent implements migrations
+
+**Critical Rules for Two-Step Workflows:**
+- After advisory agent completes, ALWAYS proactively ask user if they want implementation
+- Detect user **intent**, not specific keywords - any affirmative response triggers implementation
+- If user says "no" or asks questions → wait for clarification, don't implement
+- If user provides feedback/changes → loop back to advisory agent first, then ask again
+- DON'T wait passively for user to explicitly say "invoke frontend" or "use the agent"
+- DON'T start implementing with direct tool use (Edit, Write) - always use the appropriate implementation agent
+
+**Advisory Agents:**
+- `designer` → provides UI/UX guidance → followed by `frontend` implementation
+- `database-architect` → provides schema design → followed by `backend` implementation
+
+**Implementation Agents:**
+- `frontend` → implements UI changes, React components, Tanstack Start features
+- `backend` → implements API routes, database migrations, Durable Objects
+
 #### Example Workflows
 
 **Example 1: New Feature (Post Editing)**
@@ -221,13 +263,63 @@ database-architect:
   3. Delegates to backend for migration
 ```
 
+**Example 5: UI/UX Improvement (Two-Step Workflow)**
+
+```
+User: "Improve the profile page UI"
+  ↓
+Invoke: designer
+  ↓
+designer:
+  Provides comprehensive UI/UX recommendations
+  ↓
+Assistant: "Should I implement these improvements?"
+  ↓
+User: "yes" (or "proceed" / "continue" / "sure" / "go ahead" / etc.)
+  ↓
+Automatically invoke: frontend
+  ↓
+frontend:
+  Implements all UI improvements
+  Auto-invokes code-quality-enforcer
+  ↓
+Done!
+```
+
+**Example 6: UI/UX Improvement with Feedback**
+
+```
+User: "Improve the profile page UI"
+  ↓
+Invoke: designer
+  ↓
+designer:
+  Provides comprehensive UI/UX recommendations
+  ↓
+Assistant: "Should I implement these improvements?"
+  ↓
+User: "Can you also add dark mode support?"
+  ↓
+Loop back to designer with additional requirements
+  ↓
+designer:
+  Provides updated recommendations including dark mode
+  ↓
+Assistant: "Should I implement these improvements?"
+  ↓
+User: "yes"
+  ↓
+Automatically invoke: frontend
+```
+
 #### Key Principles
 
 1. **Always start with feature-spec-writer for new features** - It handles the entire workflow automatically
-2. **system-architect is coordination-focused, not prescriptive** - It creates shared code and defines contracts, then lets domain agents use their expertise and MCPs
-3. **Use system-architect only for multi-domain features** - Skip it for frontend-only or backend-only work
-4. **Don't invoke code-quality-enforcer manually** - frontend/backend agents do this automatically
-5. **Trust domain agents** - Frontend and backend agents have specialized knowledge and access to MCPs (Magic UI, etc.). Let them make implementation decisions.
+2. **Follow two-step workflows for advisory agents** - After designer or database-architect responds, proactively ask if user wants implementation, then automatically invoke frontend/backend on any affirmative response. Understand intent, not keywords.
+3. **system-architect is coordination-focused, not prescriptive** - It creates shared code and defines contracts, then lets domain agents use their expertise and MCPs
+4. **Use system-architect only for multi-domain features** - Skip it for frontend-only or backend-only work
+5. **Don't invoke code-quality-enforcer manually** - frontend/backend agents do this automatically
+6. **Trust domain agents** - Frontend and backend agents have specialized knowledge and access to MCPs (Magic UI, etc.). Let them make implementation decisions.
 
 ### General AI Rules (Apply to All Projects)
 
