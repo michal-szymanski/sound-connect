@@ -38,6 +38,7 @@ function MusiciansPage() {
     }, []);
 
     const handleSearch = useCallback(async () => {
+        window.scrollTo(0, 0);
         setIsLoading(true);
         setError(null);
         setHasSearched(true);

@@ -49,7 +49,7 @@ export async function searchProfiles(db: D1Database, params: ProfileSearchParams
         if (bboxCondition) {
             whereConditions.push(bboxCondition);
         }
-    } else if (!geocodedLocation && params.city) {
+    } else if (params.city) {
         whereConditions.push(eq(userProfilesTable.city, params.city.trim().toLowerCase()));
     }
 
