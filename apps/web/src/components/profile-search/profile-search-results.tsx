@@ -12,7 +12,7 @@ export function ProfileSearchResults({ results, onPageChange }: Props) {
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="space-y-4">
                 {searchResults.map((result) => (
                     <ProfileSearchCard key={result.userId} result={result} />
                 ))}
