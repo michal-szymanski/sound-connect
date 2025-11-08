@@ -1,13 +1,10 @@
-import { Link, useLocation, useRouter } from '@tanstack/react-router';
-import { Cog, House, LogOut, LucideIcon, Mail, UserRound, Users } from 'lucide-react';
+import { Link, useLocation } from '@tanstack/react-router';
+import { House, LucideIcon, Mail, Users } from 'lucide-react';
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import AccountButton from '@/web/components/small/account-button';
 import { UserQuickInfoCard } from '@/web/components/layout/user-quick-info-card';
 import { useAuth } from '@/web/lib/react-query';
-import { signOut } from '@/web/server-functions/auth';
 import { collapseSidebar } from '@/web/redux/slices/ui-slice';
 import { RootState } from '@/web/redux/store';
 import {
@@ -20,17 +17,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from 'src/components/ui/sidebar';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger
-} from '@/web/components/ui/alert-dialog';
 
 type Item = {
     title: string;
@@ -57,16 +43,6 @@ const getItems = (userId: string | undefined): Item[] => {
             title: 'Messages',
             url: '/messages',
             icon: Mail
-        },
-        {
-            title: 'Profile',
-            url: `/users/${userId}`,
-            icon: UserRound
-        },
-        {
-            title: 'Settings',
-            url: '/settings',
-            icon: Cog
         }
     ];
 };
@@ -74,20 +50,8 @@ const getItems = (userId: string | undefined): Item[] => {
 export function LeftSidebarDesktop() {
     const { data: auth } = useAuth();
     const location = useLocation();
-    const router = useRouter();
-    const queryClient = useQueryClient();
 
     const items = getItems(auth?.user?.id);
-
-    const handleLogout = async () => {
-        try {
-            await signOut();
-            queryClient.clear();
-            router.invalidate();
-        } catch {
-            toast.error('Failed to sign out. Please try again.');
-        }
-    };
 
     return (
         <aside className="sticky top-20 hidden h-fit lg:col-span-3 lg:block">
@@ -112,29 +76,7 @@ export function LeftSidebarDesktop() {
                         );
                     })}
                 </div>
-                <div className="border-border/40 border-t pt-4">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <button
-                                className="focus-visible:ring-ring text-foreground hover:bg-accent flex min-h-12 w-full items-center gap-3 rounded-md px-3 transition-all focus-visible:ring-2 focus-visible:outline-none"
-                                aria-label="Log out of your account"
-                            >
-                                <LogOut className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
-                                <span>Log Out</span>
-                            </button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Log out of Sound Connect?</AlertDialogTitle>
-                                <AlertDialogDescription>You can always log back in at any time.</AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleLogout}>Log Out</AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </div>
+                <div id="musicians-filters-slot" />
             </nav>
         </aside>
     );

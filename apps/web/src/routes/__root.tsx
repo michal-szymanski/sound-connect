@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 import { APP_NAME } from '@/common/constants';
 import type { QueryClient } from '@tanstack/react-query';
-import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from '@tanstack/react-router';
-import { type ReactNode } from 'react';
+import { Outlet, createRootRouteWithContext, HeadContent, Scripts, useLocation } from '@tanstack/react-router';
+import { type ReactNode, useEffect } from 'react';
 import { Toaster } from '@/web/components/ui/sonner';
 import { getAuth } from '@/web/server-functions/auth';
 import globalsCss from '@/web/styles/globals.css?url';
@@ -46,9 +46,20 @@ export const Route = createRootRouteWithContext<{
     }
 });
 
+function ScrollToTop() {
+    const location = useLocation();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [location.pathname]);
+
+    return null;
+}
+
 function RootComponent() {
     return (
         <RootDocument>
+            <ScrollToTop />
             <Outlet />
         </RootDocument>
     );
