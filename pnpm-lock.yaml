@@ -43,6 +43,10 @@ catalogs:
 importers:
 
   .:
+    dependencies:
+      prettier-plugin-tailwindcss:
+        specifier: ^0.7.1
+        version: 0.7.1(prettier@3.6.2)
     devDependencies:
       '@eslint/js':
         specifier: ^9.38.0

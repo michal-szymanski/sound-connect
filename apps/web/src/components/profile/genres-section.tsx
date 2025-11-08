@@ -5,6 +5,7 @@ import { useUpdateGenres } from '@/web/hooks/use-profile';
 import { Button } from '@/web/components/ui/button';
 import { Label } from '@/web/components/ui/label';
 import { Textarea } from '@/web/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/web/components/ui/select';
 import { CharacterCounter } from './character-counter';
 import type { GenresSection as GenresSectionData, UpdateGenres } from '@sound-connect/common/types/profile';
 import { GenreEnum, type Genre } from '@sound-connect/common/types/profile-enums';
@@ -53,19 +54,18 @@ export const GenresSection = ({ data, canEdit }: Props) => {
                 <Label htmlFor="primaryGenre">
                     Primary Genre <span className="text-destructive">*</span>
                 </Label>
-                <select
-                    id="primaryGenre"
-                    value={formData.primaryGenre}
-                    onChange={(e) => setFormData({ ...formData, primaryGenre: e.target.value as Genre })}
-                    className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:outline-none"
-                    required
-                >
-                    {GenreEnum.map((genre) => (
-                        <option key={genre} value={genre}>
-                            {formatGenre(genre)}
-                        </option>
-                    ))}
-                </select>
+                <Select value={formData.primaryGenre} onValueChange={(value) => setFormData({ ...formData, primaryGenre: value as Genre })} required>
+                    <SelectTrigger id="primaryGenre" className="w-full" aria-required="true">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {GenreEnum.map((genre) => (
+                            <SelectItem key={genre} value={genre}>
+                                {formatGenre(genre)}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
 
             <div className="space-y-2">
@@ -108,8 +108,15 @@ export const GenresSection = ({ data, canEdit }: Props) => {
                 <Button type="button" variant="outline" onClick={closeForm}>
                     Cancel
                 </Button>
-                <Button type="submit" disabled={updateMutation.isPending}>
-                    {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                <Button type="submit" disabled={updateMutation.isPending} aria-busy={updateMutation.isPending}>
+                    {updateMutation.isPending ? (
+                        <>
+                            <span className="sr-only">Saving changes, please wait</span>
+                            <span aria-hidden="true">Saving...</span>
+                        </>
+                    ) : (
+                        'Save Changes'
+                    )}
                 </Button>
             </div>
         </form>
