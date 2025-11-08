@@ -40,6 +40,11 @@ const getItems = (userId: string | undefined): Item[] => {
             icon: Users
         },
         {
+            title: 'Find Bands',
+            url: '/bands/search',
+            icon: Music
+        },
+        {
             title: 'Messages',
             url: '/messages',
             icon: Mail
@@ -82,6 +87,7 @@ export function LeftSidebarDesktop() {
                     })}
                 </div>
                 <div id="musicians-filters-slot" />
+                <div id="bands-filters-slot" />
             </nav>
         </aside>
     );

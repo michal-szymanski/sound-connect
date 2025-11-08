@@ -18,6 +18,7 @@
         "./types/profile": "./src/types/profile.ts",
         "./types/profile-search": "./src/types/profile-search.ts",
         "./types/bands": "./src/types/bands.ts",
+        "./types/band-search": "./src/types/band-search.ts",
         "./utils/profile-completion": "./src/utils/profile-completion.ts",
         "./utils/geo": "./src/utils/geo.ts",
         "./utils/availability": "./src/utils/availability.ts"
