@@ -15,6 +15,13 @@
       "when": 1762595249113,
       "tag": "0003_create_users_fts",
       "breakpoints": false
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1762600232423,
+      "tag": "0004_strange_shen",
+      "breakpoints": true
     }
   ]
 }

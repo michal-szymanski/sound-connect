@@ -3,6 +3,8 @@ import { eq } from 'drizzle-orm';
 import { db } from '../index';
 import { calculateProfileCompletion } from '@/common/utils/profile-completion';
 import type { Instrument, Genre, AvailabilityStatus, CommitmentLevel, RehearsalFrequency, GiggingLevel } from '@/common/types/profile-enums';
+import { geocodeCity } from '@/api/services/geocoding-service';
+import { env } from 'cloudflare:workers';
 
 const { users, userProfilesTable, userAdditionalInstrumentsTable } = schema;
 
@@ -193,18 +195,21 @@ export const updateUserProfileLogistics = async (
 ) => {
     await getOrCreateUserProfile(userId);
 
-    await db
-        .update(userProfilesTable)
-        .set({
-            city: data.city,
-            state: data.state || null,
-            country: data.country,
-            travelRadius: data.travelRadius ?? null,
-            hasRehearsalSpace: data.hasRehearsalSpace ?? null,
-            hasTransportation: data.hasTransportation ?? null,
-            updatedAt: new Date().toISOString()
-        })
-        .where(eq(userProfilesTable.userId, userId));
+    const geocoded = await geocodeCity(env.DB, { city: data.city });
+
+    const updateData = {
+        city: data.city,
+        state: data.state || null,
+        country: data.country,
+        travelRadius: data.travelRadius ?? null,
+        hasRehearsalSpace: data.hasRehearsalSpace ?? null,
+        hasTransportation: data.hasTransportation ?? null,
+        latitude: geocoded?.latitude ?? null,
+        longitude: geocoded?.longitude ?? null,
+        updatedAt: new Date().toISOString()
+    };
+
+    await db.update(userProfilesTable).set(updateData).where(eq(userProfilesTable.userId, userId));
 
     const [updatedProfile] = await db.select().from(userProfilesTable).where(eq(userProfilesTable.userId, userId)).limit(1);
 

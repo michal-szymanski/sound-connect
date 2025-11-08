@@ -13,6 +13,7 @@ import { Route as mainRouteRouteImport } from './routes/(main)/route'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as mainIndexRouteImport } from './routes/(main)/index'
 import { Route as MediaKeyRouteImport } from './routes/media/$key'
+import { Route as mainMusiciansRouteImport } from './routes/(main)/musicians'
 import { Route as mainSettingsIndexRouteImport } from './routes/(main)/settings/index'
 import { Route as mainMessagesIndexRouteImport } from './routes/(main)/messages/index'
 import { Route as authSignUpIndexRouteImport } from './routes/(auth)/sign-up/index'
@@ -37,6 +38,11 @@ const MediaKeyRoute = MediaKeyRouteImport.update({
   id: '/media/$key',
   path: '/media/$key',
   getParentRoute: () => rootRouteImport,
+} as any)
+const mainMusiciansRoute = mainMusiciansRouteImport.update({
+  id: '/musicians',
+  path: '/musicians',
+  getParentRoute: () => mainRouteRoute,
 } as any)
 const mainSettingsIndexRoute = mainSettingsIndexRouteImport.update({
   id: '/settings/',
@@ -70,6 +76,7 @@ const mainPostsPostIdRoute = mainPostsPostIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/musicians': typeof mainMusiciansRoute
   '/media/$key': typeof MediaKeyRoute
   '/': typeof mainIndexRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof mainSettingsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/musicians': typeof mainMusiciansRoute
   '/media/$key': typeof MediaKeyRoute
   '/': typeof mainIndexRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(auth)': typeof authRouteRouteWithChildren
   '/(main)': typeof mainRouteRouteWithChildren
+  '/(main)/musicians': typeof mainMusiciansRoute
   '/media/$key': typeof MediaKeyRoute
   '/(main)/': typeof mainIndexRoute
   '/(main)/posts/$postId': typeof mainPostsPostIdRoute
@@ -105,6 +114,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/musicians'
     | '/media/$key'
     | '/'
     | '/posts/$postId'
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/musicians'
     | '/media/$key'
     | '/'
     | '/posts/$postId'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/(auth)'
     | '/(main)'
+    | '/(main)/musicians'
     | '/media/$key'
     | '/(main)/'
     | '/(main)/posts/$postId'
@@ -172,6 +184,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/media/$key'
       preLoaderRoute: typeof MediaKeyRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/(main)/musicians': {
+      id: '/(main)/musicians'
+      path: '/musicians'
+      fullPath: '/musicians'
+      preLoaderRoute: typeof mainMusiciansRouteImport
+      parentRoute: typeof mainRouteRoute
     }
     '/(main)/settings/': {
       id: '/(main)/settings/'
@@ -233,6 +252,7 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 )
 
 interface mainRouteRouteChildren {
+  mainMusiciansRoute: typeof mainMusiciansRoute
   mainIndexRoute: typeof mainIndexRoute
   mainPostsPostIdRoute: typeof mainPostsPostIdRoute
   mainUsersIdRoute: typeof mainUsersIdRoute
@@ -241,6 +261,7 @@ interface mainRouteRouteChildren {
 }
 
 const mainRouteRouteChildren: mainRouteRouteChildren = {
+  mainMusiciansRoute: mainMusiciansRoute,
   mainIndexRoute: mainIndexRoute,
   mainPostsPostIdRoute: mainPostsPostIdRoute,
   mainUsersIdRoute: mainUsersIdRoute,

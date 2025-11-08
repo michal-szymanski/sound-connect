@@ -350,6 +350,8 @@ export const createUserProfileSchema = z.object({
     city: z.string().nullable(),
     state: z.string().nullable(),
     country: z.string().nullable(),
+    latitude: z.number().nullable(),
+    longitude: z.number().nullable(),
     travelRadius: z.number().nullable(),
     hasRehearsalSpace: z.boolean().nullable(),
     hasTransportation: z.boolean().nullable(),
@@ -385,6 +387,8 @@ export const userProfileSchema = z.object({
     city: z.string().nullable(),
     state: z.string().nullable(),
     country: z.string().nullable(),
+    latitude: z.number().nullable(),
+    longitude: z.number().nullable(),
     travelRadius: z.number().nullable(),
     hasRehearsalSpace: z.boolean().nullable(),
     hasTransportation: z.boolean().nullable(),
@@ -421,3 +425,28 @@ export const userAdditionalInstrumentSchema = z.object({
 
 export type CreateUserAdditionalInstrument = z.infer<typeof createUserAdditionalInstrumentSchema>;
 export type UserAdditionalInstrument = z.infer<typeof userAdditionalInstrumentSchema>;
+
+export const createGeocodingCacheSchema = z.object({
+    id: z.number(),
+    city: z.string(),
+    state: z.string().nullable(),
+    country: z.string().nullable(),
+    latitude: z.number(),
+    longitude: z.number(),
+    createdAt: z.string(),
+    updatedAt: z.string()
+});
+
+export const geocodingCacheSchema = z.object({
+    id: z.number(),
+    city: z.string(),
+    state: z.string().nullable(),
+    country: z.string().nullable(),
+    latitude: z.number(),
+    longitude: z.number(),
+    createdAt: z.string(),
+    updatedAt: z.string()
+});
+
+export type CreateGeocodingCache = z.infer<typeof createGeocodingCacheSchema>;
+export type GeocodingCache = z.infer<typeof geocodingCacheSchema>;
