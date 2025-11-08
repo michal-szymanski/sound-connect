@@ -48,7 +48,7 @@ export function Post({ item }: Props) {
     const username = user.name.toLowerCase().replace(/\s+/g, '');
 
     return (
-        <Card className="border-border bg-card w-[500px] overflow-hidden">
+        <Card className="border-border/40 bg-card w-full overflow-hidden transition-shadow hover:shadow-md hover:shadow-black/5">
             <div className="flex items-start justify-between px-4 py-3">
                 <div className="flex items-center gap-2">
                     <Link to="/users/$id" params={{ id: post.userId }}>
@@ -65,8 +65,8 @@ export function Post({ item }: Props) {
                 </div>
                 <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="size-8">
-                            <MoreHorizontal className="size-4" />
+                        <Button variant="ghost" size="icon" className="size-8" aria-label="Post options">
+                            <MoreHorizontal className="size-4" aria-hidden="true" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -88,28 +88,46 @@ export function Post({ item }: Props) {
             {media && media.length > 0 && (
                 <div className="bg-muted relative aspect-video w-full cursor-pointer overflow-hidden" onClick={() => setIsModalOpen(true)}>
                     {media.map((m) => (
-                        <img key={m.id} src={`/media/${m.key}`} alt={m.type} className="h-full w-full object-cover" />
+                        <img key={m.id} src={`/media/${m.key}`} alt={`Post media by ${user.name}`} className="h-full w-full object-cover" loading="lazy" />
                     ))}
                 </div>
             )}
-            <CardFooter className="border-border flex min-h-[44px] items-center justify-between border-t px-4 py-0">
+            <CardFooter className="border-border/40 flex min-h-[52px] items-center justify-between border-t px-4 py-0">
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={handleLikeToggle} className={isLiked ? 'text-red-500' : 'text-muted-foreground'}>
-                        <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleLikeToggle}
+                        className={`min-h-[44px] min-w-[44px] transition-all ${isLiked ? 'scale-105 text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
+                        aria-label={isLiked ? 'Unlike post' : 'Like post'}
+                        aria-pressed={isLiked}
+                    >
+                        <Heart className={`h-5 w-5 transition-all ${isLiked ? 'fill-current' : ''}`} aria-hidden="true" />
                     </Button>
                     <span className="text-sm font-medium tabular-nums">{reactions.length}</span>
                 </div>
 
                 <div className="text-muted-foreground flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => setIsModalOpen(true)}>
-                        <MessageCircle className="h-5 w-5" />
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsModalOpen(true)}
+                        className="text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] transition-colors"
+                        aria-label={`View ${commentsCount} comments`}
+                    >
+                        <MessageCircle className="h-5 w-5" aria-hidden="true" />
                     </Button>
                     <span className="text-sm font-medium tabular-nums">{commentsCount}</span>
                 </div>
 
                 <div className="text-muted-foreground flex items-center gap-2">
-                    <Button variant="ghost" size="sm">
-                        <Share2 className="h-5 w-5" />
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] transition-colors"
+                        aria-label="Share post"
+                    >
+                        <Share2 className="h-5 w-5" aria-hidden="true" />
                     </Button>
                     <span className="text-sm font-medium tabular-nums">0</span>
                 </div>

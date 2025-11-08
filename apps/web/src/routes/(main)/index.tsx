@@ -2,7 +2,9 @@ import { userDTOSchema } from '@/common/types/models';
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import AddPostDialog from '@/web/components/dialogs/add-post-dialog';
+import { EmptyFeed } from '@/web/components/empty-states/empty-feed';
 import { Post } from '@/web/components/post';
+import { PostSkeleton } from '@/web/components/skeletons/post-skeleton';
 import UserAvatar from '@/web/components/small/user-avatar';
 import { Card, CardContent } from '@/web/components/ui/card';
 import { envsQuery, feedQuery, followersQuery, followingsQuery, useFeed, authQuery, useAuth } from '@/web/lib/react-query';
@@ -20,7 +22,7 @@ export const Route = createFileRoute('/(main)/')({
 
 function RouteComponent() {
     const { data: auth } = useAuth();
-    const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useFeed();
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useFeed();
 
     const feed = data?.pages.flat() ?? [];
 
@@ -43,8 +45,8 @@ function RouteComponent() {
     }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
     return (
-        <div className="flex flex-col items-center gap-5">
-            <Card className="w-[500px]">
+        <div className="flex w-full flex-col gap-5">
+            <Card className="border-border/40 w-full">
                 <CardContent className="w-full">
                     <div className="inline-flex w-full items-center justify-center gap-5">
                         <UserAvatar user={userDTOSchema.parse(auth?.user)} />
@@ -52,13 +54,28 @@ function RouteComponent() {
                     </div>
                 </CardContent>
             </Card>
-            {feed.map((item) => (
-                <Post key={item.post.id} item={item} />
-            ))}
+
+            {isLoading ? (
+                <>
+                    <PostSkeleton />
+                    <PostSkeleton />
+                    <PostSkeleton />
+                </>
+            ) : feed.length === 0 ? (
+                <EmptyFeed />
+            ) : (
+                <>
+                    {feed.map((item) => (
+                        <Post key={item.post.id} item={item} />
+                    ))}
+                </>
+            )}
+
             {isFetchingNextPage && (
-                <div className="flex justify-center py-4">
-                    <div className="text-muted-foreground text-sm">Loading more posts...</div>
-                </div>
+                <>
+                    <PostSkeleton />
+                    <PostSkeleton />
+                </>
             )}
         </div>
     );

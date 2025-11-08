@@ -164,13 +164,14 @@ function RouteComponent() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-6">
-            <Card className="overflow-hidden">
+        <div className="w-full space-y-6">
+            <Card className="border-border/40 overflow-hidden">
                 <div className="relative h-48 overflow-hidden sm:h-60">
                     <img
                         src="https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80"
                         alt="Photo by Drew Beamer"
                         className="h-full w-full object-cover"
+                        loading="lazy"
                     />
                 </div>
 
@@ -222,21 +223,19 @@ function RouteComponent() {
                 </div>
             </Card>
 
-            <div className="mt-6 space-y-6">
-                {isProfileLoading ? (
-                    <ProfileSkeleton />
-                ) : profile ? (
-                    <>
-                        <InstrumentsSection data={profile.instruments} canEdit={isOwnProfile} />
-                        <GenresSection data={profile.genres} canEdit={isOwnProfile} />
-                        <AvailabilitySection data={profile.availability} canEdit={isOwnProfile} />
-                        <ExperienceSection data={profile.experience} canEdit={isOwnProfile} />
-                        <LogisticsSection data={profile.logistics} canEdit={isOwnProfile} />
-                        <LookingForSection data={profile.lookingFor} canEdit={isOwnProfile} />
-                        <BioSection data={profile.bio} canEdit={isOwnProfile} />
-                    </>
-                ) : null}
-            </div>
+            {isProfileLoading ? (
+                <ProfileSkeleton />
+            ) : profile ? (
+                <>
+                    <InstrumentsSection data={profile.instruments} canEdit={isOwnProfile} />
+                    <GenresSection data={profile.genres} canEdit={isOwnProfile} />
+                    <AvailabilitySection data={profile.availability} canEdit={isOwnProfile} />
+                    <ExperienceSection data={profile.experience} canEdit={isOwnProfile} />
+                    <LogisticsSection data={profile.logistics} canEdit={isOwnProfile} />
+                    <LookingForSection data={profile.lookingFor} canEdit={isOwnProfile} />
+                    <BioSection data={profile.bio} canEdit={isOwnProfile} />
+                </>
+            ) : null}
         </div>
     );
 }
