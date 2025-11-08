@@ -3,7 +3,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { useSelector } from 'react-redux';
 import { ChatWindowProvider } from '@/web/components/chat/chat-window-manager';
 import Header from '@/web/components/layout/header';
-import LeftSidebar from '@/web/components/layout/left-sidebar';
+import LeftSidebarMobile, { LeftSidebarDesktop } from '@/web/components/layout/left-sidebar';
 import RightSidebar from '@/web/components/layout/right-sidebar';
 import { SidebarProvider } from '@/web/components/ui/sidebar';
 import { WebSocketProvider } from '@/web/providers/websocket-provider';
@@ -34,24 +34,31 @@ function LayoutContent() {
             <NotificationsProvider>
                 <ChatWindowProvider>
                     <SidebarProvider>
-                        <LeftSidebar />
+                        <a
+                            href="#main-content"
+                            className="focus-visible:ring-ring focus-visible:bg-primary focus-visible:text-primary-foreground sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-4 focus-visible:left-4 focus-visible:z-50 focus-visible:rounded-md focus-visible:px-4 focus-visible:py-2 focus-visible:ring-2 focus-visible:outline-none"
+                        >
+                            Skip to main content
+                        </a>
+                        <LeftSidebarMobile />
                         <Header />
                         {isMessagesPage ? (
                             <>
-                                <main className="h-screen flex-1 pt-16">
+                                <main id="main-content" className="h-screen flex-1 pt-16">
                                     <Outlet />
                                 </main>
                             </>
                         ) : (
                             <>
-                                <main className="w-full py-20">
-                                    <div className="flex justify-center">
-                                        <div className="w-full max-w-2xl px-6">
+                                <main id="main-content" className="w-full py-20">
+                                    <div className="grid grid-cols-1 gap-6 px-4 lg:grid-cols-12 lg:px-6 xl:mx-auto xl:max-w-[1400px]">
+                                        <LeftSidebarDesktop />
+                                        <div className="lg:col-span-6">
                                             <Outlet />
                                         </div>
+                                        <RightSidebar />
                                     </div>
                                 </main>
-                                <RightSidebar />
                             </>
                         )}
                     </SidebarProvider>
