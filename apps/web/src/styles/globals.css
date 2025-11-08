@@ -155,7 +155,3 @@ a,
 button {
     cursor: pointer;
 }
-
-[data-slot='dialog-overlay'] {
-    z-index: 99;
-}
