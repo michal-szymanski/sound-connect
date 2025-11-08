@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Filter } from 'lucide-react';
 import { Button } from '@/web/components/ui/button';
 import { Alert, AlertDescription } from '@/web/components/ui/alert';
@@ -28,8 +29,13 @@ function MusiciansPage() {
     const [results, setResults] = useState<ProfileSearchResponse | null>(null);
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
+    const [filterSlot, setFilterSlot] = useState<HTMLElement | null>(null);
 
     const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
+
+    useEffect(() => {
+        setFilterSlot(document.getElementById('musicians-filters-slot'));
+    }, []);
 
     const handleSearch = useCallback(async () => {
         setIsLoading(true);
@@ -92,19 +98,24 @@ function MusiciansPage() {
         filters.availabilityStatus && filters.availabilityStatus.length > 0
     ].filter(Boolean).length;
 
+    const filtersComponent = (
+        <Card className="border-border/40">
+            <CardContent className="p-4">
+                <ProfileSearchFilters
+                    filters={filters}
+                    onFiltersChange={setFilters}
+                    onSearch={handleSearch}
+                    onClear={handleClearFilters}
+                    isLoading={isLoading}
+                    activeFilterCount={activeFilterCount}
+                />
+            </CardContent>
+        </Card>
+    );
+
     return (
         <div className="min-h-screen space-y-6">
-            <Card className="hidden lg:block">
-                <CardContent className="py-4">
-                    <ProfileSearchFilters
-                        filters={filters}
-                        onFiltersChange={setFilters}
-                        onSearch={handleSearch}
-                        onClear={handleClearFilters}
-                        isLoading={isLoading}
-                    />
-                </CardContent>
-            </Card>
+            {filterSlot && createPortal(filtersComponent, filterSlot)}
 
             <div className="mb-4 lg:hidden">
                 <Button onClick={() => setIsFiltersOpen(true)} variant="outline" className="relative w-full">
@@ -164,6 +175,7 @@ function MusiciansPage() {
                         }}
                         onClear={handleClearFilters}
                         isLoading={isLoading}
+                        activeFilterCount={activeFilterCount}
                     />
                 </SheetContent>
             </Sheet>

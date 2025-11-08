@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, ChevronsUpDown, X } from 'lucide-react';
+import { Check, ChevronsUpDown, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/web/components/ui/button';
 import { Checkbox } from '@/web/components/ui/checkbox';
 import { Input } from '@/web/components/ui/input';
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/web/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/web/components/ui/popover';
 import { Badge } from '@/web/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/web/components/ui/collapsible';
 import { cn } from '@/web/lib/utils';
 import {
     InstrumentEnum,
@@ -28,10 +29,13 @@ type Props = {
     onSearch: () => void;
     onClear: () => void;
     isLoading: boolean;
+    activeFilterCount?: number;
 };
 
-export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onClear, isLoading }: Props) {
+export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onClear, isLoading, activeFilterCount }: Props) {
     const [instrumentsOpen, setInstrumentsOpen] = useState(false);
+    const [genresOpen, setGenresOpen] = useState(true);
+    const [availabilityOpen, setAvailabilityOpen] = useState(true);
 
     const selectedInstruments = filters.instruments || [];
     const selectedGenres = filters.genres || [];
@@ -68,8 +72,9 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
 
     return (
         <div className="space-y-6">
-            <div>
-                <h2 className="mb-4 text-lg font-semibold">Filter Musicians</h2>
+            <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Filter Musicians</h2>
+                {activeFilterCount !== undefined && activeFilterCount > 0 && <Badge variant="secondary">{activeFilterCount} active</Badge>}
             </div>
 
             <div className="space-y-4">
@@ -156,49 +161,63 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
                     </Select>
                 </div>
 
-                <div>
-                    <Label>Genres</Label>
-                    <ScrollArea className="mt-2 h-48 rounded-md border p-4">
-                        <div className="space-y-2">
-                            {GenreEnum.map((genre) => (
-                                <div key={genre} className="flex items-center space-x-2">
-                                    <Checkbox id={`genre-${genre}`} checked={selectedGenres.includes(genre)} onCheckedChange={() => handleGenreToggle(genre)} />
-                                    <label
-                                        htmlFor={`genre-${genre}`}
-                                        className="cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                    >
-                                        {formatLabel(genre)}
-                                    </label>
-                                </div>
-                            ))}
-                        </div>
-                    </ScrollArea>
-                </div>
+                <Collapsible open={genresOpen} onOpenChange={setGenresOpen}>
+                    <CollapsibleTrigger className="hover:bg-accent -ml-1 flex w-full items-center justify-between rounded-sm px-1 py-0.5">
+                        <Label className="cursor-pointer">Genres</Label>
+                        <ChevronDown className={cn('h-4 w-4 transition-transform', genresOpen && 'rotate-180')} />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <ScrollArea className="mt-2 h-48 rounded-md border p-4">
+                            <div className="space-y-2">
+                                {GenreEnum.map((genre) => (
+                                    <div key={genre} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`genre-${genre}`}
+                                            checked={selectedGenres.includes(genre)}
+                                            onCheckedChange={() => handleGenreToggle(genre)}
+                                        />
+                                        <label
+                                            htmlFor={`genre-${genre}`}
+                                            className="cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                        >
+                                            {formatLabel(genre)}
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                        </ScrollArea>
+                    </CollapsibleContent>
+                </Collapsible>
 
-                <div>
-                    <Label>Availability Status</Label>
-                    <div className="mt-2 space-y-2">
-                        {AvailabilityStatusEnum.map((status) => {
-                            const config = availabilityStatusConfig[status];
-                            return (
-                                <div key={status} className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id={`status-${status}`}
-                                        checked={selectedStatuses.includes(status)}
-                                        onCheckedChange={() => handleStatusToggle(status)}
-                                    />
-                                    <label
-                                        htmlFor={`status-${status}`}
-                                        className="flex cursor-pointer items-center gap-2 text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                    >
-                                        <span className={cn('h-2 w-2 rounded-full', config.dot)} />
-                                        {config.label}
-                                    </label>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
+                <Collapsible open={availabilityOpen} onOpenChange={setAvailabilityOpen}>
+                    <CollapsibleTrigger className="hover:bg-accent -ml-1 flex w-full items-center justify-between rounded-sm px-1 py-0.5">
+                        <Label className="cursor-pointer">Availability Status</Label>
+                        <ChevronDown className={cn('h-4 w-4 transition-transform', availabilityOpen && 'rotate-180')} />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <div className="mt-2 space-y-2">
+                            {AvailabilityStatusEnum.map((status) => {
+                                const config = availabilityStatusConfig[status];
+                                return (
+                                    <div key={status} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`status-${status}`}
+                                            checked={selectedStatuses.includes(status)}
+                                            onCheckedChange={() => handleStatusToggle(status)}
+                                        />
+                                        <label
+                                            htmlFor={`status-${status}`}
+                                            className="flex cursor-pointer items-center gap-2 text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                        >
+                                            <span className={cn('h-2 w-2 rounded-full', config.dot)} />
+                                            {config.label}
+                                        </label>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </CollapsibleContent>
+                </Collapsible>
 
                 <div className="flex flex-col gap-2 pt-4">
                     <Button onClick={onSearch} disabled={isLoading} className="w-full">
