@@ -1,13 +1,13 @@
 import { createFileRoute, Outlet, redirect, useLocation } from '@tanstack/react-router';
 import { Provider as ReduxProvider } from 'react-redux';
 import { useSelector } from 'react-redux';
-import { ChatWindowProvider } from '@/web/components/chat/chat-window-manager';
-import Header from '@/web/components/layout/header';
-import LeftSidebarMobile, { LeftSidebarDesktop } from '@/web/components/layout/left-sidebar';
-import RightSidebar from '@/web/components/layout/right-sidebar';
-import { SidebarProvider } from '@/web/components/ui/sidebar';
-import { WebSocketProvider } from '@/web/providers/websocket-provider';
-import { NotificationsProvider } from '@/web/providers/notifications-provider';
+import { ChatWindowProvider } from '@/features/chat/components/chat-window-manager';
+import Header from '@/shared/components/layout/header';
+import LeftSidebarMobile, { LeftSidebarDesktop } from '@/shared/components/layout/left-sidebar';
+import RightSidebar from '@/shared/components/layout/right-sidebar';
+import { SidebarProvider } from '@/shared/components/ui/sidebar';
+import { WebSocketProvider } from '@/shared/components/providers/websocket-provider';
+import { NotificationsProvider } from '@/features/notifications/providers/notifications-provider';
 import { store } from '@/web/redux/store';
 import { RootState } from '@/web/redux/store';
 

@@ -1,10 +1,10 @@
 import { createFileRoute, notFound, redirect, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { CreateBandInput, UpdateBandInput } from '@sound-connect/common/types/bands';
-import { Card, CardContent } from '@/web/components/ui/card';
-import { Button } from '@/web/components/ui/button';
-import { Skeleton } from '@/web/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/web/components/ui/alert';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { Button } from '@/shared/components/ui/button';
+import { Skeleton } from '@/shared/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -14,13 +14,13 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle
-} from '@/web/components/ui/alert-dialog';
-import { BandHeader } from '@/web/components/band/band-header';
-import { BandMemberCard } from '@/web/components/band/band-member-card';
-import { AddMemberModal } from '@/web/components/band/add-member-modal';
-import { BandForm } from '@/web/components/band/band-form';
-import { useBand, useUpdateBand, useDeleteBand, useAddBandMember, useRemoveBandMember } from '@/web/hooks/use-bands';
-import { ProfileSection } from '@/web/components/profile/profile-section';
+} from '@/shared/components/ui/alert-dialog';
+import { BandHeader } from '@/features/bands/components/band-header';
+import { BandMemberCard } from '@/features/bands/components/band-member-card';
+import { AddMemberModal } from '@/features/bands/components/add-member-modal';
+import { BandForm } from '@/features/bands/components/band-form';
+import { useBand, useUpdateBand, useDeleteBand, useAddBandMember, useRemoveBandMember } from '@/features/bands/hooks/use-bands';
+import { ProfileSection } from '@/features/profile/components/profile-section';
 import { Music2, Users, Search, AlertCircle, UserSearch } from 'lucide-react';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

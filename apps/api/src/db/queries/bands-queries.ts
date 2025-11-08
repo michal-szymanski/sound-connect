@@ -32,7 +32,7 @@ export const createBand = async (data: CreateBandInput & { latitude: number; lon
 
     await db.insert(bandsMembersTable).values({
         userId,
-        musicGroupId: band.id,
+        bandId: band.id,
         isAdmin: true,
         joinedAt: now
     });
@@ -129,7 +129,7 @@ export const addBandMember = async (
 
     await db.insert(bandsMembersTable).values({
         userId,
-        musicGroupId: bandId,
+        bandId: bandId,
         isAdmin: false,
         joinedAt: now
     });

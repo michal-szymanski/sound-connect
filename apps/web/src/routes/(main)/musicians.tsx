@@ -2,17 +2,17 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Filter } from 'lucide-react';
-import { Button } from '@/web/components/ui/button';
-import { Alert, AlertDescription } from '@/web/components/ui/alert';
-import { Sheet, SheetContent } from '@/web/components/ui/sheet';
-import { Badge } from '@/web/components/ui/badge';
-import { Card, CardContent } from '@/web/components/ui/card';
-import { ProfileSearchFilters } from '@/web/components/profile-search/profile-search-filters';
-import { ProfileSearchResults } from '@/web/components/profile-search/profile-search-results';
-import { ProfileSearchSkeleton } from '@/web/components/profile-search/profile-search-skeleton';
-import { ProfileSearchEmptyState } from '@/web/components/profile-search/profile-search-empty-state';
-import { ProfileSearchErrorState } from '@/web/components/profile-search/profile-search-error-state';
-import { searchProfiles } from '@/web/server-functions/profile-search';
+import { Button } from '@/shared/components/ui/button';
+import { Alert, AlertDescription } from '@/shared/components/ui/alert';
+import { Sheet, SheetContent } from '@/shared/components/ui/sheet';
+import { Badge } from '@/shared/components/ui/badge';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { ProfileSearchFilters } from '@/features/search/components/profile-search/profile-search-filters';
+import { ProfileSearchResults } from '@/features/search/components/profile-search/profile-search-results';
+import { ProfileSearchSkeleton } from '@/features/search/components/profile-search/profile-search-skeleton';
+import { ProfileSearchEmptyState } from '@/features/search/components/profile-search/profile-search-empty-state';
+import { ProfileSearchErrorState } from '@/features/search/components/profile-search/profile-search-error-state';
+import { searchProfiles } from '@/features/search/server-functions/profile-search';
 import type { ProfileSearchParams, ProfileSearchResponse } from '@sound-connect/common/types/profile-search';
 
 export const Route = createFileRoute('/(main)/musicians')({

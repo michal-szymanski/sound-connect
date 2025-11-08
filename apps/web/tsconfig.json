@@ -4,6 +4,8 @@
         "baseUrl": ".",
         "paths": {
             "@/web/*": ["src/*"],
+            "@/features/*": ["src/features/*"],
+            "@/shared/*": ["src/shared/*"],
             "@/common/*": ["../../packages/common/src/*"],
             "@/drizzle": ["../../packages/drizzle/src"],
             "@/drizzle/*": ["../../packages/drizzle/src/*"]

@@ -1,7 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/web/components/ui/card';
-import { BandForm } from '@/web/components/band/band-form';
-import { useCreateBand } from '@/web/hooks/use-bands';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card';
+import { BandForm } from '@/features/bands/components/band-form';
+import { useCreateBand } from '@/features/bands/hooks/use-bands';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const Route = createFileRoute('/(main)/bands/new' as any)({
