@@ -1,84 +1,17 @@
-import { relations, sql } from 'drizzle-orm';
-import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
+import { relations } from 'drizzle-orm';
+import { sqliteTable, integer, text, index } from 'drizzle-orm/sqlite-core';
+import {
+    InstrumentEnum,
+    GenreEnum,
+    AvailabilityStatusEnum,
+    CommitmentLevelEnum,
+    RehearsalFrequencyEnum,
+    GiggingLevelEnum
+} from '@sound-connect/common/types/profile-enums';
 
-export const users = sqliteTable('users', {
-    id: text('id').primaryKey(),
-    name: text('name').notNull(),
-    email: text('email').notNull().unique(),
-    emailVerified: integer('email_verified', { mode: 'boolean' }).default(false).notNull(),
-    image: text('image'),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' })
-        .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-        .notNull(),
-    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
-        .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-        .$onUpdate(() => /* @__PURE__ */ new Date())
-        .notNull()
-});
+export * from './better-auth';
 
-export const sessions = sqliteTable('sessions', {
-    id: text('id').primaryKey(),
-    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
-    token: text('token').notNull().unique(),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' })
-        .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-        .notNull(),
-    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
-        .$onUpdate(() => /* @__PURE__ */ new Date())
-        .notNull(),
-    ipAddress: text('ip_address'),
-    userAgent: text('user_agent'),
-    userId: text('user_id')
-        .notNull()
-        .references(() => users.id, { onDelete: 'cascade' })
-});
-
-export const accounts = sqliteTable('accounts', {
-    id: text('id').primaryKey(),
-    accountId: text('account_id').notNull(),
-    providerId: text('provider_id').notNull(),
-    userId: text('user_id')
-        .notNull()
-        .references(() => users.id, { onDelete: 'cascade' }),
-    accessToken: text('access_token'),
-    refreshToken: text('refresh_token'),
-    idToken: text('id_token'),
-    accessTokenExpiresAt: integer('access_token_expires_at', {
-        mode: 'timestamp_ms'
-    }),
-    refreshTokenExpiresAt: integer('refresh_token_expires_at', {
-        mode: 'timestamp_ms'
-    }),
-    scope: text('scope'),
-    password: text('password'),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' })
-        .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-        .notNull(),
-    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
-        .$onUpdate(() => /* @__PURE__ */ new Date())
-        .notNull()
-});
-
-export const verifications = sqliteTable('verifications', {
-    id: text('id').primaryKey(),
-    identifier: text('identifier').notNull(),
-    value: text('value').notNull(),
-    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' })
-        .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-        .notNull(),
-    updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
-        .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-        .$onUpdate(() => /* @__PURE__ */ new Date())
-        .notNull()
-});
-
-export const jwkss = sqliteTable('jwkss', {
-    id: text('id').primaryKey(),
-    publicKey: text('public_key').notNull(),
-    privateKey: text('private_key').notNull(),
-    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull()
-});
+import { users } from './better-auth';
 
 export const postsTable = sqliteTable('posts', {
     id: integer('id').primaryKey(),
@@ -236,4 +169,81 @@ export const musicGroupMembersRelations = relations(musicGroupMembersTable, ({ o
 
 export const musicGroupsFollowersRelations = relations(musicGroupsFollowersTable, ({ one }) => ({
     musicGroup: one(musicGroupsTable, { fields: [musicGroupsFollowersTable.musicGroupId], references: [musicGroupsTable.id] })
+}));
+
+export const userProfilesTable = sqliteTable(
+    'user_profiles',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        userId: text('user_id')
+            .notNull()
+            .unique()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        primaryInstrument: text('primary_instrument', { enum: InstrumentEnum }),
+        yearsPlayingPrimary: integer('years_playing_primary'),
+        seekingToPlay: text('seeking_to_play'),
+        primaryGenre: text('primary_genre', { enum: GenreEnum }),
+        secondaryGenres: text('secondary_genres'),
+        influences: text('influences'),
+        status: text('status', { enum: AvailabilityStatusEnum }),
+        statusExpiresAt: text('status_expires_at'),
+        commitmentLevel: text('commitment_level', { enum: CommitmentLevelEnum }),
+        weeklyAvailability: text('weekly_availability'),
+        rehearsalFrequency: text('rehearsal_frequency', { enum: RehearsalFrequencyEnum }),
+        giggingLevel: text('gigging_level', { enum: GiggingLevelEnum }),
+        pastBands: text('past_bands'),
+        hasStudioExperience: integer('has_studio_experience', { mode: 'boolean' }),
+        city: text('city'),
+        state: text('state'),
+        country: text('country'),
+        travelRadius: integer('travel_radius'),
+        hasRehearsalSpace: integer('has_rehearsal_space', { mode: 'boolean' }),
+        hasTransportation: integer('has_transportation', { mode: 'boolean' }),
+        seeking: text('seeking'),
+        canOffer: text('can_offer'),
+        dealBreakers: text('deal_breakers'),
+        bio: text('bio'),
+        musicalGoals: text('musical_goals'),
+        ageRange: text('age_range'),
+        profileCompletion: integer('profile_completion').notNull().default(0),
+        setupCompleted: integer('setup_completed', { mode: 'boolean' }).notNull().default(false),
+        createdAt: text('created_at').notNull(),
+        updatedAt: text('updated_at')
+    },
+    (table) => ({
+        userIdIdx: index('idx_user_profiles_user_id').on(table.userId),
+        statusIdx: index('idx_user_profiles_status').on(table.status),
+        primaryGenreIdx: index('idx_user_profiles_primary_genre').on(table.primaryGenre),
+        cityIdx: index('idx_user_profiles_city').on(table.city)
+    })
+);
+
+export const userAdditionalInstrumentsTable = sqliteTable(
+    'user_additional_instruments',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        userId: text('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        instrument: text('instrument', { enum: InstrumentEnum }).notNull(),
+        years: integer('years').notNull(),
+        createdAt: text('created_at').notNull()
+    },
+    (table) => ({
+        userIdIdx: index('idx_user_additional_instruments_user_id').on(table.userId),
+        instrumentIdx: index('idx_user_additional_instruments_instrument').on(table.instrument)
+    })
+);
+
+export const userProfilesRelations = relations(userProfilesTable, ({ one, many }) => ({
+    user: one(users, { fields: [userProfilesTable.userId], references: [users.id] }),
+    additionalInstruments: many(userAdditionalInstrumentsTable)
+}));
+
+export const userAdditionalInstrumentsRelations = relations(userAdditionalInstrumentsTable, ({ one }) => ({
+    user: one(users, { fields: [userAdditionalInstrumentsTable.userId], references: [users.id] })
+}));
+
+export const usersRelations = relations(users, ({ one }) => ({
+    profile: one(userProfilesTable, { fields: [users.id], references: [userProfilesTable.userId] })
 }));

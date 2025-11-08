@@ -18,6 +18,14 @@ export const auth = betterAuth({
     emailAndPassword: {
         enabled: true
     },
+    user: {
+        additionalFields: {
+            lastActiveAt: {
+                type: 'string',
+                input: false
+            }
+        }
+    },
     advanced: {
         defaultCookieAttributes: {
             sameSite: 'none',

@@ -10,6 +10,16 @@ import { Card } from '@/web/components/ui/card';
 import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, followersQuery, followRequestStatusQuery } from '@/web/lib/react-query';
 import { getPosts } from '@/web/server-functions/posts';
 import { getUser, followUser, unfollowUser } from '@/web/server-functions/users';
+import { useProfile } from '@/web/hooks/use-profile';
+import { ProfileCompletionBadge } from '@/web/components/profile/profile-completion-badge';
+import { ProfileSkeleton } from '@/web/components/profile/profile-skeleton';
+import { InstrumentsSection } from '@/web/components/profile/instruments-section';
+import { GenresSection } from '@/web/components/profile/genres-section';
+import { AvailabilitySection } from '@/web/components/profile/availability-section';
+import { ExperienceSection } from '@/web/components/profile/experience-section';
+import { LogisticsSection } from '@/web/components/profile/logistics-section';
+import { LookingForSection } from '@/web/components/profile/looking-for-section';
+import { BioSection } from '@/web/components/profile/bio-section';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
@@ -69,9 +79,11 @@ function RouteComponent() {
     const { data: followers } = useFollowers(user);
     const { data: currentUserFollowings } = useFollowings(currentUser);
     const { data: followRequestStatus } = useFollowRequestStatus(user.id);
+    const { data: profile, isLoading: isProfileLoading } = useProfile(user.id);
     const queryClient = useQueryClient();
     const router = useRouter();
     const [optimisticStatus, setOptimisticStatus] = useState<'pending' | 'following' | null>(null);
+    const isOwnProfile = currentUser.id === user.id;
 
     useEffect(() => {
         /* eslint-disable react-hooks/set-state-in-effect */
@@ -156,7 +168,7 @@ function RouteComponent() {
     };
 
     return (
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 py-6">
             <Card className="overflow-hidden">
                 <div className="relative h-60 max-h-60">
                     <img
@@ -174,10 +186,29 @@ function RouteComponent() {
                             <div>{followers.length} followers</div>
                             {followings && <div>{followings.length} following</div>}
                         </div>
-                        <div>{renderFollowButton()}</div>
+                        <div className="flex items-center gap-4">
+                            {isOwnProfile && profile && <ProfileCompletionBadge completion={profile.profileCompletion} />}
+                            {renderFollowButton()}
+                        </div>
                     </div>
                 </div>
             </Card>
+
+            <div className="mt-6 space-y-6">
+                {isProfileLoading ? (
+                    <ProfileSkeleton />
+                ) : profile ? (
+                    <>
+                        <InstrumentsSection data={profile.instruments} canEdit={isOwnProfile} />
+                        <GenresSection data={profile.genres} canEdit={isOwnProfile} />
+                        <AvailabilitySection data={profile.availability} canEdit={isOwnProfile} />
+                        <ExperienceSection data={profile.experience} canEdit={isOwnProfile} />
+                        <LogisticsSection data={profile.logistics} canEdit={isOwnProfile} />
+                        <LookingForSection data={profile.lookingFor} canEdit={isOwnProfile} />
+                        <BioSection data={profile.bio} canEdit={isOwnProfile} />
+                    </>
+                ) : null}
+            </div>
         </div>
     );
 }

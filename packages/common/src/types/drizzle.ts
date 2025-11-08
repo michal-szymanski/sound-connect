@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { InstrumentEnum, GenreEnum, AvailabilityStatusEnum, CommitmentLevelEnum, RehearsalFrequencyEnum, GiggingLevelEnum } from './profile-enums';
 
 export const createUserSchema = z.object({
     id: z.string(),
@@ -6,6 +7,7 @@ export const createUserSchema = z.object({
     email: z.string().email(),
     emailVerified: z.boolean(),
     image: z.string().nullable(),
+    lastActiveAt: z.string().nullish(),
     createdAt: z.date(),
     updatedAt: z.date()
 });
@@ -16,6 +18,7 @@ export const userSchema = z.object({
     email: z.string().email(),
     emailVerified: z.boolean(),
     image: z.string().nullable(),
+    lastActiveAt: z.string().nullish(),
     createdAt: z.string(),
     updatedAt: z.string()
 });
@@ -326,3 +329,95 @@ export type CreateNotification = z.infer<typeof createNotificationSchema>;
 export type Notification = z.infer<typeof notificationSchema>;
 export type NotificationType = z.infer<typeof notificationTypeEnum>;
 export type EntityType = z.infer<typeof entityTypeEnum>;
+
+export const createUserProfileSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    primaryInstrument: z.enum(InstrumentEnum).nullable(),
+    yearsPlayingPrimary: z.number().nullable(),
+    seekingToPlay: z.string().nullable(),
+    primaryGenre: z.enum(GenreEnum).nullable(),
+    secondaryGenres: z.string().nullable(),
+    influences: z.string().nullable(),
+    status: z.enum(AvailabilityStatusEnum).nullable(),
+    statusExpiresAt: z.string().nullable(),
+    commitmentLevel: z.enum(CommitmentLevelEnum).nullable(),
+    weeklyAvailability: z.string().nullable(),
+    rehearsalFrequency: z.enum(RehearsalFrequencyEnum).nullable(),
+    giggingLevel: z.enum(GiggingLevelEnum).nullable(),
+    pastBands: z.string().nullable(),
+    hasStudioExperience: z.boolean().nullable(),
+    city: z.string().nullable(),
+    state: z.string().nullable(),
+    country: z.string().nullable(),
+    travelRadius: z.number().nullable(),
+    hasRehearsalSpace: z.boolean().nullable(),
+    hasTransportation: z.boolean().nullable(),
+    seeking: z.string().nullable(),
+    canOffer: z.string().nullable(),
+    dealBreakers: z.string().nullable(),
+    bio: z.string().nullable(),
+    musicalGoals: z.string().nullable(),
+    ageRange: z.string().nullable(),
+    profileCompletion: z.number(),
+    setupCompleted: z.boolean(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
+export const userProfileSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    primaryInstrument: z.enum(InstrumentEnum).nullable(),
+    yearsPlayingPrimary: z.number().nullable(),
+    seekingToPlay: z.string().nullable(),
+    primaryGenre: z.enum(GenreEnum).nullable(),
+    secondaryGenres: z.string().nullable(),
+    influences: z.string().nullable(),
+    status: z.enum(AvailabilityStatusEnum).nullable(),
+    statusExpiresAt: z.string().nullable(),
+    commitmentLevel: z.enum(CommitmentLevelEnum).nullable(),
+    weeklyAvailability: z.string().nullable(),
+    rehearsalFrequency: z.enum(RehearsalFrequencyEnum).nullable(),
+    giggingLevel: z.enum(GiggingLevelEnum).nullable(),
+    pastBands: z.string().nullable(),
+    hasStudioExperience: z.boolean().nullable(),
+    city: z.string().nullable(),
+    state: z.string().nullable(),
+    country: z.string().nullable(),
+    travelRadius: z.number().nullable(),
+    hasRehearsalSpace: z.boolean().nullable(),
+    hasTransportation: z.boolean().nullable(),
+    seeking: z.string().nullable(),
+    canOffer: z.string().nullable(),
+    dealBreakers: z.string().nullable(),
+    bio: z.string().nullable(),
+    musicalGoals: z.string().nullable(),
+    ageRange: z.string().nullable(),
+    profileCompletion: z.number(),
+    setupCompleted: z.boolean(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
+export type CreateUserProfile = z.infer<typeof createUserProfileSchema>;
+export type UserProfile = z.infer<typeof userProfileSchema>;
+
+export const createUserAdditionalInstrumentSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    instrument: z.enum(InstrumentEnum),
+    years: z.number(),
+    createdAt: z.string()
+});
+
+export const userAdditionalInstrumentSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    instrument: z.enum(InstrumentEnum),
+    years: z.number(),
+    createdAt: z.string()
+});
+
+export type CreateUserAdditionalInstrument = z.infer<typeof createUserAdditionalInstrumentSchema>;
+export type UserAdditionalInstrument = z.infer<typeof userAdditionalInstrumentSchema>;
