@@ -51,11 +51,7 @@ function MusiciansPage() {
             const result = await searchProfiles({ data: searchParams });
 
             if (!result.success) {
-                const errorMsg =
-                    result.body && typeof result.body === 'object' && 'message' in result.body
-                        ? (result.body as { message: string }).message
-                        : 'Failed to fetch search results';
-                setError(errorMsg);
+                setError(result.body?.message ?? 'Failed to fetch search results');
                 setResults(null);
             } else {
                 setResults(result.body);
