@@ -222,7 +222,7 @@ export const updateUserProfileLogistics = async (
     const geocoded = await geocodeCity(env.DB, { city: data.city });
 
     const updateData = {
-        city: data.city,
+        city: data.city.trim().toLowerCase(),
         state: data.state || null,
         country: data.country,
         travelRadius: data.travelRadius ?? null,
