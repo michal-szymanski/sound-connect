@@ -1,40 +1,28 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Plus, Music2 } from 'lucide-react';
 import { Button } from '@/web/components/ui/button';
-import { Skeleton } from '@/web/components/ui/skeleton';
 import { UserBandCard } from '@/web/components/band/user-band-card';
-import { useUserBands } from '@/web/hooks/use-bands';
+import { useUserBands, userBandsQuery } from '@/web/hooks/use-bands';
 import { useAuth } from '@/web/lib/react-query';
 
 export const Route = createFileRoute('/(main)/bands/')({
-    component: MyBandsPage
+    component: MyBandsPage,
+    loader: async ({ context: { queryClient, user } }) => {
+        if (user) {
+            await queryClient.ensureQueryData(userBandsQuery(user.id));
+        }
+    }
 });
 
 function MyBandsPage() {
     const { data: auth } = useAuth();
     const navigate = useNavigate();
-    const { data: bandsData, isLoading } = useUserBands(auth?.user?.id ?? '');
+    const { data: bandsData } = useUserBands(auth.user.id);
 
-    const bands = bandsData?.bands ?? [];
+    const bands = bandsData.bands;
     const adminBands = bands.filter((band) => band.isAdmin);
     const memberBands = bands.filter((band) => !band.isAdmin);
     const sortedBands = [...adminBands, ...memberBands];
-
-    if (isLoading) {
-        return (
-            <div className="flex-1 px-4 py-6">
-                <div className="mb-6 flex items-center justify-between">
-                    <Skeleton className="h-8 w-32" />
-                    <Skeleton className="h-10 w-32" />
-                </div>
-                <div className="grid gap-4">
-                    {[1, 2, 3].map((i) => (
-                        <Skeleton key={i} className="h-32" />
-                    ))}
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="flex-1 px-4 py-6">

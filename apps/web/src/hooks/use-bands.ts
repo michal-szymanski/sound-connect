@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useNavigate } from '@tanstack/react-router';
 import { createBand, getBand, updateBand, deleteBand, addBandMember, removeBandMember, getUserBands } from '@/web/server-functions/bands';
@@ -18,18 +18,20 @@ export const useBand = (bandId: number) => {
     });
 };
 
+export const userBandsQuery = (userId: string) => ({
+    queryKey: ['user-bands', userId],
+    queryFn: async () => {
+        const result = await getUserBands({ data: { userId } });
+        if (!result.success) {
+            throw new Error(result.body?.message || 'Failed to load bands');
+        }
+        return result.body;
+    },
+    staleTime: 5 * 60 * 1000
+});
+
 export const useUserBands = (userId: string) => {
-    return useQuery({
-        queryKey: ['user-bands', userId],
-        queryFn: async () => {
-            const result = await getUserBands({ data: { userId } });
-            if (!result.success) {
-                throw new Error(result.body?.message || 'Failed to load bands');
-            }
-            return result.body;
-        },
-        staleTime: 5 * 60 * 1000
-    });
+    return useSuspenseQuery(userBandsQuery(userId));
 };
 
 export const useCreateBand = () => {
