@@ -13,7 +13,7 @@ export async function searchProfiles(db: D1Database, params: ProfileSearchParams
             sql`EXISTS (
                 SELECT 1 FROM ${userAdditionalInstrumentsTable}
                 WHERE ${userAdditionalInstrumentsTable.userId} = ${users.id}
-                AND ${userAdditionalInstrumentsTable.instrument} IN (${sql.raw(params.instruments.map(() => '?').join(','))})
+                AND ${inArray(userAdditionalInstrumentsTable.instrument, params.instruments)}
             )`
         );
         if (instrumentConditions) {
@@ -57,12 +57,12 @@ export async function searchProfiles(db: D1Database, params: ProfileSearchParams
         params.instruments && params.instruments.length > 0
             ? sql<'primary' | 'additional'>`
             CASE
-                WHEN ${userProfilesTable.primaryInstrument} IN (${sql.raw(params.instruments.map(() => '?').join(','))})
+                WHEN ${inArray(userProfilesTable.primaryInstrument, params.instruments)}
                 THEN 'primary'
                 ELSE 'additional'
             END
-        `
-            : sql<'primary' | 'additional'>`'primary'`;
+        `.as('matched_instrument_type')
+            : sql<'primary' | 'additional'>`'primary'`.as('matched_instrument_type');
 
     const results = await drizzle(db)
         .select({
@@ -86,7 +86,7 @@ export async function searchProfiles(db: D1Database, params: ProfileSearchParams
         .innerJoin(userProfilesTable, eq(userProfilesTable.userId, users.id))
         .where(and(...whereConditions))
         .orderBy(
-            params.instruments && params.instruments.length > 0 ? sql`CASE WHEN matched_instrument_type = 'primary' THEN 0 ELSE 1 END` : sql`1`,
+            params.instruments && params.instruments.length > 0 ? sql`CASE WHEN ${matchedInstrumentType} = 'primary' THEN 0 ELSE 1 END` : sql`1`,
             desc(users.lastActiveAt)
         );
 
