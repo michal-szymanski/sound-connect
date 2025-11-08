@@ -8,6 +8,26 @@ import { env } from 'cloudflare:workers';
 
 const { users, userProfilesTable, userAdditionalInstrumentsTable } = schema;
 
+const autoCompleteSetupIfReady = async (userId: string) => {
+    const [profile] = await db.select().from(userProfilesTable).where(eq(userProfilesTable.userId, userId)).limit(1);
+
+    if (!profile) return;
+
+    if (profile.setupCompleted) return;
+
+    const hasRequiredFields = profile.city && profile.primaryInstrument && profile.primaryGenre;
+
+    if (hasRequiredFields) {
+        await db
+            .update(userProfilesTable)
+            .set({
+                setupCompleted: true,
+                updatedAt: new Date().toISOString()
+            })
+            .where(eq(userProfilesTable.userId, userId));
+    }
+};
+
 export const getOrCreateUserProfile = async (userId: string) => {
     const [existingProfile] = await db.select().from(userProfilesTable).where(eq(userProfilesTable.userId, userId)).limit(1);
 
@@ -74,6 +94,8 @@ export const updateUserProfileInstruments = async (
 
     await db.update(userProfilesTable).set({ profileCompletion }).where(eq(userProfilesTable.userId, userId));
 
+    await autoCompleteSetupIfReady(userId);
+
     return profileCompletion;
 };
 
@@ -108,6 +130,8 @@ export const updateUserProfileGenres = async (
     const profileCompletion = calculateProfileCompletion(updatedProfile);
 
     await db.update(userProfilesTable).set({ profileCompletion }).where(eq(userProfilesTable.userId, userId));
+
+    await autoCompleteSetupIfReady(userId);
 
     return profileCompletion;
 };
@@ -220,6 +244,8 @@ export const updateUserProfileLogistics = async (
     const profileCompletion = calculateProfileCompletion(updatedProfile);
 
     await db.update(userProfilesTable).set({ profileCompletion }).where(eq(userProfilesTable.userId, userId));
+
+    await autoCompleteSetupIfReady(userId);
 
     return profileCompletion;
 };
