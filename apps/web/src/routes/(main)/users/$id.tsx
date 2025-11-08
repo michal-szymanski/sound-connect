@@ -4,22 +4,22 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import z from 'zod';
-import UserAvatar from '@/web/components/small/user-avatar';
-import { Button } from '@/web/components/ui/button';
-import { Card } from '@/web/components/ui/card';
-import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, followersQuery, followRequestStatusQuery } from '@/web/lib/react-query';
-import { getPosts } from '@/web/server-functions/posts';
-import { getUser, followUser, unfollowUser } from '@/web/server-functions/users';
-import { useProfile } from '@/web/hooks/use-profile';
-import { ProfileSkeleton } from '@/web/components/profile/profile-skeleton';
-import { InstrumentsSection } from '@/web/components/profile/instruments-section';
-import { GenresSection } from '@/web/components/profile/genres-section';
-import { AvailabilitySection } from '@/web/components/profile/availability-section';
-import { ExperienceSection } from '@/web/components/profile/experience-section';
-import { LogisticsSection } from '@/web/components/profile/logistics-section';
-import { LookingForSection } from '@/web/components/profile/looking-for-section';
-import { BioSection } from '@/web/components/profile/bio-section';
-import { UserBandsSection } from '@/web/components/band/user-bands-section';
+import UserAvatar from '@/shared/components/common/user-avatar';
+import { Button } from '@/shared/components/ui/button';
+import { Card } from '@/shared/components/ui/card';
+import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, followersQuery, followRequestStatusQuery } from '@/shared/lib/react-query';
+import { getPosts } from '@/features/posts/server-functions/posts';
+import { getUser, followUser, unfollowUser } from '@/shared/server-functions/users';
+import { useProfile } from '@/features/profile/hooks/use-profile';
+import { ProfileSkeleton } from '@/features/profile/components/profile-skeleton';
+import { InstrumentsSection } from '@/features/profile/components/instruments-section';
+import { GenresSection } from '@/features/profile/components/genres-section';
+import { AvailabilitySection } from '@/features/profile/components/availability-section';
+import { ExperienceSection } from '@/features/profile/components/experience-section';
+import { LogisticsSection } from '@/features/profile/components/logistics-section';
+import { LookingForSection } from '@/features/profile/components/looking-for-section';
+import { BioSection } from '@/features/profile/components/bio-section';
+import { UserBandsSection } from '@/features/bands/components/user-bands-section';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
@@ -87,6 +87,7 @@ function RouteComponent() {
 
     useEffect(() => {
         if (followRequestStatus?.status === 'following') {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setOptimisticStatus('following');
         } else if (followRequestStatus?.status === 'pending') {
             setOptimisticStatus(null);
@@ -98,6 +99,7 @@ function RouteComponent() {
     useEffect(() => {
         const isCurrentUserFollowing = currentUserFollowings?.some((following) => following.id === user.id);
         if (isCurrentUserFollowing) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setOptimisticStatus(null);
         }
     }, [currentUserFollowings, user.id]);

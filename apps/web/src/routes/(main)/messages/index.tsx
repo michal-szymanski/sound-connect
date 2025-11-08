@@ -8,15 +8,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { z } from 'zod';
-import UserAvatar from '@/web/components/small/user-avatar';
-import { Button } from '@/web/components/ui/button';
-import { Card } from '@/web/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/web/components/ui/form';
-import { Input } from '@/web/components/ui/input';
-import { ScrollArea } from '@/web/components/ui/scroll-area';
-import useContacts from '@/web/hooks/use-contacts';
-import { useAuth } from '@/web/lib/react-query';
-import { useWebSocket } from '@/web/providers/websocket-provider';
+import UserAvatar from '@/shared/components/common/user-avatar';
+import { Button } from '@/shared/components/ui/button';
+import { Card } from '@/shared/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/shared/components/ui/form';
+import { Input } from '@/shared/components/ui/input';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import useContacts from '@/features/chat/hooks/use-contacts';
+import { useAuth } from '@/shared/lib/react-query';
+import { useWebSocket } from '@/shared/components/providers/websocket-provider';
 import { RootState } from '@/web/redux/store';
 
 export const Route = createFileRoute('/(main)/messages/')({
@@ -71,6 +71,7 @@ function RouteComponent() {
     useEffect(() => {
         if (selectedPeer && auth?.user) {
             const roomId = getRoomId(auth.user.id, selectedPeer.id);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setCurrentRoomId(roomId);
 
             const initializeRoom = async () => {
@@ -94,6 +95,7 @@ function RouteComponent() {
     useEffect(() => {
         if (currentRoomId) {
             const roomMsgs = roomMessages.get(currentRoomId) || [];
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setMessages(roomMsgs);
         }
     }, [roomMessages, currentRoomId]);

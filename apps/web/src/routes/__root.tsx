@@ -3,10 +3,10 @@ import { APP_NAME } from '@/common/constants';
 import type { QueryClient } from '@tanstack/react-query';
 import { Outlet, createRootRouteWithContext, HeadContent, Scripts, useLocation } from '@tanstack/react-router';
 import { type ReactNode, useEffect } from 'react';
-import { Toaster } from '@/web/components/ui/sonner';
-import { getAuth } from '@/web/server-functions/auth';
+import { Toaster } from '@/shared/components/ui/sonner';
+import { getAuth } from '@/features/auth/server-functions/auth';
 import globalsCss from '@/web/styles/globals.css?url';
-import { ThemeProvider } from '@/web/components/providers/theme-provider';
+import { ThemeProvider } from '@/shared/components/providers/theme-provider';
 
 export const Route = createRootRouteWithContext<{
     queryClient: QueryClient;

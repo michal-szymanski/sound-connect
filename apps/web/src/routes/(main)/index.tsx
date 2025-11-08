@@ -1,13 +1,11 @@
 import { userDTOSchema } from '@/common/types/models';
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
-import AddPostDialog from '@/web/components/dialogs/add-post-dialog';
-import { EmptyFeed } from '@/web/components/empty-states/empty-feed';
-import { Post } from '@/web/components/post';
-import { PostSkeleton } from '@/web/components/skeletons/post-skeleton';
-import UserAvatar from '@/web/components/small/user-avatar';
-import { Card, CardContent } from '@/web/components/ui/card';
-import { envsQuery, feedQuery, followersQuery, followingsQuery, useFeed, authQuery, useAuth } from '@/web/lib/react-query';
+import { AddPostDialog, Post, PostSkeleton, feedQuery, useFeed } from '@/features/posts';
+import { EmptyFeed } from '@/shared/components/empty-states/empty-feed';
+import UserAvatar from '@/shared/components/common/user-avatar';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { envsQuery, followersQuery, followingsQuery, authQuery, useAuth } from '@/shared/lib/react-query';
 
 export const Route = createFileRoute('/(main)/')({
     component: RouteComponent,

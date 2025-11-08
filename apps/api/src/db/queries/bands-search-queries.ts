@@ -35,7 +35,7 @@ export async function searchBands(db: D1Database, params: BandSearchParams, geoc
 
     const memberCountSubquery = drizzle(db)
         .select({
-            musicGroupId: bandsMembersTable.bandId,
+            bandId: bandsMembersTable.bandId,
             count: sql<number>`COUNT(*)`.as('member_count')
         })
         .from(bandsMembersTable)

@@ -2,17 +2,17 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Filter } from 'lucide-react';
-import { Button } from '@/web/components/ui/button';
-import { Alert, AlertDescription } from '@/web/components/ui/alert';
-import { Sheet, SheetContent } from '@/web/components/ui/sheet';
-import { Badge } from '@/web/components/ui/badge';
-import { Card, CardContent } from '@/web/components/ui/card';
-import { BandSearchFilters } from '@/web/components/band-search/band-search-filters';
-import { BandSearchResults } from '@/web/components/band-search/band-search-results';
-import { BandSearchSkeleton } from '@/web/components/band-search/band-search-skeleton';
-import { BandSearchEmptyState } from '@/web/components/band-search/band-search-empty-state';
-import { BandSearchErrorState } from '@/web/components/band-search/band-search-error-state';
-import { searchBands } from '@/web/server-functions/band-search';
+import { Button } from '@/shared/components/ui/button';
+import { Alert, AlertDescription } from '@/shared/components/ui/alert';
+import { Sheet, SheetContent } from '@/shared/components/ui/sheet';
+import { Badge } from '@/shared/components/ui/badge';
+import { Card, CardContent } from '@/shared/components/ui/card';
+import { BandSearchFilters } from '@/features/search/components/band-search/band-search-filters';
+import { BandSearchResults } from '@/features/search/components/band-search/band-search-results';
+import { BandSearchSkeleton } from '@/features/search/components/band-search/band-search-skeleton';
+import { BandSearchEmptyState } from '@/features/search/components/band-search/band-search-empty-state';
+import { BandSearchErrorState } from '@/features/search/components/band-search/band-search-error-state';
+import { searchBands } from '@/features/search/server-functions/band-search';
 import type { BandSearchParams, BandSearchResponse } from '@sound-connect/common/types/band-search';
 
 export const Route = createFileRoute('/(main)/bands/search')({

@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Plus, Music2 } from 'lucide-react';
-import { Button } from '@/web/components/ui/button';
-import { UserBandCard } from '@/web/components/band/user-band-card';
-import { useUserBands, userBandsQuery } from '@/web/hooks/use-bands';
-import { useAuth } from '@/web/lib/react-query';
+import { Button } from '@/shared/components/ui/button';
+import { UserBandCard } from '@/features/bands/components/user-band-card';
+import { useUserBands, userBandsQuery } from '@/features/bands/hooks/use-bands';
+import { useAuth } from '@/shared/lib/react-query';
 
 export const Route = createFileRoute('/(main)/bands/')({
     component: MyBandsPage,
@@ -17,9 +17,9 @@ export const Route = createFileRoute('/(main)/bands/')({
 function MyBandsPage() {
     const { data: auth } = useAuth();
     const navigate = useNavigate();
-    const { data: bandsData } = useUserBands(auth.user.id);
+    const { data: bandsData } = useUserBands(auth?.user?.id ?? '');
 
-    const bands = bandsData.bands;
+    const bands = bandsData?.bands ?? [];
     const adminBands = bands.filter((band) => band.isAdmin);
     const memberBands = bands.filter((band) => !band.isAdmin);
     const sortedBands = [...adminBands, ...memberBands];
