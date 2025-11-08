@@ -1,4 +1,4 @@
-import type { AvailabilityStatus } from '../types/profile-enums';
+import type { AvailabilityStatus } from '@sound-connect/common/types/profile-enums';
 
 export type AvailabilityStatusColor = {
     badge: 'default' | 'secondary' | 'destructive' | 'outline';

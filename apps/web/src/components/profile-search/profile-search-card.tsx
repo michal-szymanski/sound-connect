@@ -5,7 +5,7 @@ import { Badge } from '@/web/components/ui/badge';
 import { Button } from '@/web/components/ui/button';
 import { Card, CardContent } from '@/web/components/ui/card';
 import { Progress } from '@/web/components/ui/progress';
-import { availabilityStatusConfig } from '@sound-connect/common/utils/availability';
+import { availabilityStatusConfig } from '@/web/lib/utils/availability';
 import type { ProfileSearchResult } from '@sound-connect/common/types/profile-search';
 
 type Props = {
