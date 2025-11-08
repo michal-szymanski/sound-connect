@@ -166,11 +166,11 @@ function RouteComponent() {
     return (
         <div className="container mx-auto px-4 py-6">
             <Card className="overflow-hidden">
-                <div className="relative h-60 max-h-60">
+                <div className="relative h-48 overflow-hidden sm:h-60">
                     <img
                         src="https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80"
                         alt="Photo by Drew Beamer"
-                        className="object-fit h-90 w-full"
+                        className="h-full w-full object-cover"
                     />
                 </div>
 
