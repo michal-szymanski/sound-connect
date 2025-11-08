@@ -6,6 +6,7 @@ import { type ReactNode, useEffect } from 'react';
 import { Toaster } from '@/web/components/ui/sonner';
 import { getAuth } from '@/web/server-functions/auth';
 import globalsCss from '@/web/styles/globals.css?url';
+import { ThemeProvider } from '@/web/components/providers/theme-provider';
 
 export const Route = createRootRouteWithContext<{
     queryClient: QueryClient;
@@ -67,15 +68,17 @@ function RootComponent() {
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
     return (
-        <html className="dark">
+        <html suppressHydrationWarning>
             <head>
                 <HeadContent />
             </head>
             <body>
-                {children}
-                {/* <TanStackRouterDevtools position="bottom-right" />
-                <ReactQueryDevtools buttonPosition="bottom-right" /> */}
-                <Toaster position="top-right" duration={7000} />
+                <ThemeProvider>
+                    {children}
+                    {/* <TanStackRouterDevtools position="bottom-right" />
+                    <ReactQueryDevtools buttonPosition="bottom-right" /> */}
+                    <Toaster position="top-right" duration={7000} />
+                </ThemeProvider>
                 <Scripts />
             </body>
         </html>
