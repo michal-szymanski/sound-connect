@@ -121,7 +121,7 @@
         @apply h-full;
     }
     body {
-        @apply bg-background text-foreground h-full !overflow-y-scroll;
+        @apply bg-background text-foreground h-full overflow-y-scroll;
         scrollbar-gutter: stable;
     }
 

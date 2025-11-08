@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/d1';
-import { eq, and, or, sql, isNotNull, desc } from 'drizzle-orm';
-import { musicGroupsTable, musicGroupMembersTable } from '@/drizzle/schema';
+import { eq, and, sql, isNotNull, desc } from 'drizzle-orm';
+import { bandsTable, bandsMembersTable } from '@/drizzle/schema';
 import { calculateBoundingBox, calculateHaversineDistance } from '@sound-connect/common/utils/geo';
 import type { BandSearchParams, GeocodingLookupResponse } from '@sound-connect/common/types/band-search';
 
@@ -8,60 +8,60 @@ export async function searchBands(db: D1Database, params: BandSearchParams, geoc
     const whereConditions = [];
 
     if (params.genre) {
-        whereConditions.push(eq(musicGroupsTable.primaryGenre, params.genre));
+        whereConditions.push(eq(bandsTable.primaryGenre, params.genre));
     }
 
     if (params.lookingFor) {
-        whereConditions.push(sql`LOWER(${musicGroupsTable.lookingFor}) LIKE LOWER(${'%' + params.lookingFor + '%'})`);
+        whereConditions.push(sql`LOWER(${bandsTable.lookingFor}) LIKE LOWER(${'%' + params.lookingFor + '%'})`);
     }
 
     if (geocodedLocation && params.radius) {
         const bbox = calculateBoundingBox(geocodedLocation.latitude, geocodedLocation.longitude, params.radius);
 
         const bboxCondition = and(
-            isNotNull(musicGroupsTable.latitude),
-            isNotNull(musicGroupsTable.longitude),
-            sql`${musicGroupsTable.latitude} >= ${bbox.minLat}`,
-            sql`${musicGroupsTable.latitude} <= ${bbox.maxLat}`,
-            sql`${musicGroupsTable.longitude} >= ${bbox.minLng}`,
-            sql`${musicGroupsTable.longitude} <= ${bbox.maxLng}`
+            isNotNull(bandsTable.latitude),
+            isNotNull(bandsTable.longitude),
+            sql`${bandsTable.latitude} >= ${bbox.minLat}`,
+            sql`${bandsTable.latitude} <= ${bbox.maxLat}`,
+            sql`${bandsTable.longitude} >= ${bbox.minLng}`,
+            sql`${bandsTable.longitude} <= ${bbox.maxLng}`
         );
         if (bboxCondition) {
             whereConditions.push(bboxCondition);
         }
     } else if (params.city) {
-        whereConditions.push(eq(musicGroupsTable.city, params.city.trim().toLowerCase()));
+        whereConditions.push(eq(bandsTable.city, params.city.trim().toLowerCase()));
     }
 
     const memberCountSubquery = drizzle(db)
         .select({
-            musicGroupId: musicGroupMembersTable.musicGroupId,
+            musicGroupId: bandsMembersTable.bandId,
             count: sql<number>`COUNT(*)`.as('member_count')
         })
-        .from(musicGroupMembersTable)
-        .groupBy(musicGroupMembersTable.musicGroupId)
+        .from(bandsMembersTable)
+        .groupBy(bandsMembersTable.bandId)
         .as('member_counts');
 
     const results = await drizzle(db)
         .select({
-            id: musicGroupsTable.id,
-            name: musicGroupsTable.name,
-            description: musicGroupsTable.description,
-            primaryGenre: musicGroupsTable.primaryGenre,
-            city: musicGroupsTable.city,
-            state: musicGroupsTable.state,
-            country: musicGroupsTable.country,
-            lookingFor: musicGroupsTable.lookingFor,
-            profileImageUrl: musicGroupsTable.profileImageUrl,
-            latitude: musicGroupsTable.latitude,
-            longitude: musicGroupsTable.longitude,
-            updatedAt: musicGroupsTable.updatedAt,
+            id: bandsTable.id,
+            name: bandsTable.name,
+            description: bandsTable.description,
+            primaryGenre: bandsTable.primaryGenre,
+            city: bandsTable.city,
+            state: bandsTable.state,
+            country: bandsTable.country,
+            lookingFor: bandsTable.lookingFor,
+            profileImageUrl: bandsTable.profileImageUrl,
+            latitude: bandsTable.latitude,
+            longitude: bandsTable.longitude,
+            updatedAt: bandsTable.updatedAt,
             memberCount: sql<number>`COALESCE(${memberCountSubquery.count}, 0)`
         })
-        .from(musicGroupsTable)
-        .leftJoin(memberCountSubquery, eq(musicGroupsTable.id, memberCountSubquery.musicGroupId))
+        .from(bandsTable)
+        .leftJoin(memberCountSubquery, eq(bandsTable.id, memberCountSubquery.bandId))
         .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
-        .orderBy(desc(musicGroupsTable.updatedAt));
+        .orderBy(desc(bandsTable.updatedAt));
 
     let filteredResults = results.map((row) => {
         const distance =

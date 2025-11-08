@@ -3,13 +3,13 @@ import { eq, desc, and, sql } from 'drizzle-orm';
 import type { CreateBandInput, UpdateBandInput, Band, BandWithMembers, BandMembership } from '@sound-connect/common/types/bands';
 import { db } from '../index';
 
-const { musicGroupsTable, musicGroupMembersTable, users } = schema;
+const { bandsTable, bandsMembersTable, users } = schema;
 
 export const createBand = async (data: CreateBandInput & { latitude: number; longitude: number }, userId: string): Promise<Band> => {
     const now = new Date().toISOString();
 
     const [band] = await db
-        .insert(musicGroupsTable)
+        .insert(bandsTable)
         .values({
             name: data.name,
             description: data.description,
@@ -30,7 +30,7 @@ export const createBand = async (data: CreateBandInput & { latitude: number; lon
         throw new Error('Failed to create band');
     }
 
-    await db.insert(musicGroupMembersTable).values({
+    await db.insert(bandsMembersTable).values({
         userId,
         musicGroupId: band.id,
         isAdmin: true,
@@ -41,7 +41,7 @@ export const createBand = async (data: CreateBandInput & { latitude: number; lon
 };
 
 export const getBandById = async (bandId: number, currentUserId?: string): Promise<BandWithMembers | null> => {
-    const [band] = await db.select().from(musicGroupsTable).where(eq(musicGroupsTable.id, bandId)).limit(1);
+    const [band] = await db.select().from(bandsTable).where(eq(bandsTable.id, bandId)).limit(1);
 
     if (!band) {
         return null;
@@ -49,16 +49,16 @@ export const getBandById = async (bandId: number, currentUserId?: string): Promi
 
     const membersResults = await db
         .select({
-            userId: musicGroupMembersTable.userId,
+            userId: bandsMembersTable.userId,
             name: users.name,
             profileImageUrl: users.image,
-            isAdmin: musicGroupMembersTable.isAdmin,
-            joinedAt: musicGroupMembersTable.joinedAt
+            isAdmin: bandsMembersTable.isAdmin,
+            joinedAt: bandsMembersTable.joinedAt
         })
-        .from(musicGroupMembersTable)
-        .innerJoin(users, eq(musicGroupMembersTable.userId, users.id))
-        .where(eq(musicGroupMembersTable.musicGroupId, bandId))
-        .orderBy(desc(musicGroupMembersTable.isAdmin), musicGroupMembersTable.joinedAt);
+        .from(bandsMembersTable)
+        .innerJoin(users, eq(bandsMembersTable.userId, users.id))
+        .where(eq(bandsMembersTable.bandId, bandId))
+        .orderBy(desc(bandsMembersTable.isAdmin), bandsMembersTable.joinedAt);
 
     const members = membersResults.map((m) => ({
         userId: m.userId,
@@ -98,7 +98,7 @@ export const updateBand = async (bandId: number, data: UpdateBandInput & { latit
     if (data.latitude !== undefined) updateData['latitude'] = data.latitude;
     if (data.longitude !== undefined) updateData['longitude'] = data.longitude;
 
-    const [updated] = await db.update(musicGroupsTable).set(updateData).where(eq(musicGroupsTable.id, bandId)).returning();
+    const [updated] = await db.update(bandsTable).set(updateData).where(eq(bandsTable.id, bandId)).returning();
 
     if (!updated) {
         throw new Error('Failed to update band');
@@ -108,14 +108,14 @@ export const updateBand = async (bandId: number, data: UpdateBandInput & { latit
 };
 
 export const deleteBand = async (bandId: number): Promise<void> => {
-    await db.delete(musicGroupsTable).where(eq(musicGroupsTable.id, bandId));
+    await db.delete(bandsTable).where(eq(bandsTable.id, bandId));
 };
 
 export const isBandAdmin = async (bandId: number, userId: string): Promise<boolean> => {
     const [result] = await db
-        .select({ isAdmin: musicGroupMembersTable.isAdmin })
-        .from(musicGroupMembersTable)
-        .where(and(eq(musicGroupMembersTable.musicGroupId, bandId), eq(musicGroupMembersTable.userId, userId)))
+        .select({ isAdmin: bandsMembersTable.isAdmin })
+        .from(bandsMembersTable)
+        .where(and(eq(bandsMembersTable.bandId, bandId), eq(bandsMembersTable.userId, userId)))
         .limit(1);
 
     return result ? Boolean(result.isAdmin) : false;
@@ -127,7 +127,7 @@ export const addBandMember = async (
 ): Promise<{ userId: string; name: string; profileImageUrl: string | null; isAdmin: boolean; joinedAt: string }> => {
     const now = new Date().toISOString();
 
-    await db.insert(musicGroupMembersTable).values({
+    await db.insert(bandsMembersTable).values({
         userId,
         musicGroupId: bandId,
         isAdmin: false,
@@ -158,14 +158,14 @@ export const addBandMember = async (
 };
 
 export const removeBandMember = async (bandId: number, userId: string): Promise<void> => {
-    await db.delete(musicGroupMembersTable).where(and(eq(musicGroupMembersTable.musicGroupId, bandId), eq(musicGroupMembersTable.userId, userId)));
+    await db.delete(bandsMembersTable).where(and(eq(bandsMembersTable.bandId, bandId), eq(bandsMembersTable.userId, userId)));
 };
 
 export const isBandMember = async (bandId: number, userId: string): Promise<boolean> => {
     const [result] = await db
-        .select({ id: musicGroupMembersTable.id })
-        .from(musicGroupMembersTable)
-        .where(and(eq(musicGroupMembersTable.musicGroupId, bandId), eq(musicGroupMembersTable.userId, userId)))
+        .select({ id: bandsMembersTable.id })
+        .from(bandsMembersTable)
+        .where(and(eq(bandsMembersTable.bandId, bandId), eq(bandsMembersTable.userId, userId)))
         .limit(1);
 
     return Boolean(result);
@@ -174,8 +174,8 @@ export const isBandMember = async (bandId: number, userId: string): Promise<bool
 export const getAdminCount = async (bandId: number): Promise<number> => {
     const [result] = await db
         .select({ count: sql<number>`count(*)` })
-        .from(musicGroupMembersTable)
-        .where(and(eq(musicGroupMembersTable.musicGroupId, bandId), eq(musicGroupMembersTable.isAdmin, true)));
+        .from(bandsMembersTable)
+        .where(and(eq(bandsMembersTable.bandId, bandId), eq(bandsMembersTable.isAdmin, true)));
 
     return result?.count ?? 0;
 };
@@ -183,19 +183,19 @@ export const getAdminCount = async (bandId: number): Promise<number> => {
 export const getUserBands = async (userId: string): Promise<BandMembership[]> => {
     const results = await db
         .select({
-            id: musicGroupsTable.id,
-            name: musicGroupsTable.name,
-            primaryGenre: musicGroupsTable.primaryGenre,
-            city: musicGroupsTable.city,
-            state: musicGroupsTable.state,
-            profileImageUrl: musicGroupsTable.profileImageUrl,
-            isAdmin: musicGroupMembersTable.isAdmin,
-            joinedAt: musicGroupMembersTable.joinedAt
+            id: bandsTable.id,
+            name: bandsTable.name,
+            primaryGenre: bandsTable.primaryGenre,
+            city: bandsTable.city,
+            state: bandsTable.state,
+            profileImageUrl: bandsTable.profileImageUrl,
+            isAdmin: bandsMembersTable.isAdmin,
+            joinedAt: bandsMembersTable.joinedAt
         })
-        .from(musicGroupMembersTable)
-        .innerJoin(musicGroupsTable, eq(musicGroupMembersTable.musicGroupId, musicGroupsTable.id))
-        .where(eq(musicGroupMembersTable.userId, userId))
-        .orderBy(desc(musicGroupMembersTable.isAdmin), desc(musicGroupMembersTable.joinedAt));
+        .from(bandsMembersTable)
+        .innerJoin(bandsTable, eq(bandsMembersTable.bandId, bandsTable.id))
+        .where(eq(bandsMembersTable.userId, userId))
+        .orderBy(desc(bandsMembersTable.isAdmin), desc(bandsMembersTable.joinedAt));
 
     return results.map((r) => ({
         id: r.id,
