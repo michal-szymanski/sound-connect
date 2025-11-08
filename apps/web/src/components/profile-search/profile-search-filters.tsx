@@ -220,7 +220,7 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
                 </Collapsible>
 
                 <div className="flex flex-col gap-2 pt-4">
-                    <Button onClick={onSearch} disabled={isLoading} className="w-full">
+                    <Button onClick={onSearch} disabled={isLoading} className="w-full" data-testid="search-musicians-button">
                         {isLoading ? 'Searching...' : 'Search Musicians'}
                     </Button>
                     <Button onClick={onClear} variant="secondary" disabled={isLoading} className="w-full">
