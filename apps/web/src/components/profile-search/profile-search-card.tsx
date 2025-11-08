@@ -24,7 +24,16 @@ export function ProfileSearchCard({ result }: Props) {
 
     const statusConfig = result.status ? availabilityStatusConfig[result.status] : null;
 
-    const secondaryGenres = result.secondaryGenres ? result.secondaryGenres.split(',').slice(0, 2) : [];
+    const secondaryGenres = result.secondaryGenres
+        ? (() => {
+              try {
+                  const parsed = JSON.parse(result.secondaryGenres);
+                  return Array.isArray(parsed) ? parsed.slice(0, 2) : [];
+              } catch {
+                  return [];
+              }
+          })()
+        : [];
 
     const genres = [result.primaryGenre, ...secondaryGenres].filter(Boolean).slice(0, 3);
 
@@ -36,69 +45,79 @@ export function ProfileSearchCard({ result }: Props) {
     };
 
     return (
-        <Card className="h-full transition-shadow hover:shadow-lg">
-            <CardContent className="relative flex h-full flex-col p-4">
-                {statusConfig && (
-                    <Badge variant={statusConfig.badge} className="absolute top-4 right-4 gap-1">
-                        <span className={`h-2 w-2 rounded-full ${statusConfig.dot}`} />
-                        {statusConfig.label}
-                    </Badge>
-                )}
+        <Card className="w-full overflow-hidden transition-shadow hover:shadow-lg">
+            <CardContent className="p-4">
+                <div className="flex gap-4">
+                    <Avatar className="h-16 w-16 flex-shrink-0">
+                        <AvatarImage src={result.image || undefined} alt={result.name} />
+                        <AvatarFallback>{initials}</AvatarFallback>
+                    </Avatar>
 
-                <Avatar className="mb-3 h-20 w-20">
-                    <AvatarImage src={result.image || undefined} alt={result.name} />
-                    <AvatarFallback>{initials}</AvatarFallback>
-                </Avatar>
-
-                <h3 className="mb-1 text-lg font-semibold">{result.name}</h3>
-
-                {result.primaryInstrument && (
-                    <div className="text-muted-foreground mb-2 flex items-center text-sm">
-                        <Music2 className="mr-1 h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">
-                            {formatLabel(result.primaryInstrument)}
-                            {result.yearsPlayingPrimary && ` • ${result.yearsPlayingPrimary} years`}
-                        </span>
-                    </div>
-                )}
-
-                {result.city && (
-                    <div className="text-muted-foreground mb-2 flex items-center text-sm">
-                        <MapPin className="mr-1 h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">
-                            {result.city}, {result.state}
-                            {result.distance !== null && result.distance !== undefined && ` • ${result.distance.toFixed(1)} mi`}
-                        </span>
-                    </div>
-                )}
-
-                {genres.length > 0 && (
-                    <div className="mb-3 flex flex-wrap gap-1">
-                        {genres.map((genre) => (
-                            <Badge key={genre} variant="outline" className="text-xs">
-                                {formatLabel(genre as string)}
-                            </Badge>
-                        ))}
-                    </div>
-                )}
-
-                {result.profileCompletion < 100 && (
-                    <div className="mb-3">
-                        <div className="text-muted-foreground mb-1 flex justify-between text-xs">
-                            <span>Profile Completion</span>
-                            <span>{result.profileCompletion}%</span>
+                    <div className="flex min-w-0 flex-1 flex-col gap-2">
+                        <div className="flex items-center justify-between gap-2">
+                            <h3 className="text-lg font-semibold">{result.name}</h3>
+                            {statusConfig && (
+                                <Badge variant={statusConfig.badge} className="gap-1 whitespace-nowrap">
+                                    <span className={`h-2 w-2 rounded-full ${statusConfig.dot}`} />
+                                    {statusConfig.label}
+                                </Badge>
+                            )}
                         </div>
-                        <Progress value={result.profileCompletion} />
-                    </div>
-                )}
 
-                <div className="mt-auto flex gap-2">
-                    <Button variant="outline" className="flex-1" onClick={() => navigate({ to: `/users/${result.userId}` })}>
-                        View Profile
-                    </Button>
-                    <Button variant="default" className="flex-1" onClick={() => navigate({ to: '/messages', search: { userId: result.userId } })}>
-                        Message
-                    </Button>
+                        {result.primaryInstrument && (
+                            <div className="text-muted-foreground flex items-center gap-1 text-sm">
+                                <Music2 className="h-4 w-4 flex-shrink-0" />
+                                <span>
+                                    {formatLabel(result.primaryInstrument)}
+                                    {result.yearsPlayingPrimary && ` • ${result.yearsPlayingPrimary} years`}
+                                </span>
+                            </div>
+                        )}
+
+                        {result.city && (
+                            <div className="text-muted-foreground flex items-center gap-1 text-sm">
+                                <MapPin className="h-4 w-4 flex-shrink-0" />
+                                <span>
+                                    {result.city}, {result.state}
+                                    {result.distance !== null && result.distance !== undefined && ` • ${result.distance.toFixed(1)} mi`}
+                                </span>
+                            </div>
+                        )}
+
+                        {genres.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                                {genres.map((genre) => (
+                                    <Badge key={genre} variant="outline" className="text-xs">
+                                        {formatLabel(genre as string)}
+                                    </Badge>
+                                ))}
+                            </div>
+                        )}
+
+                        {result.profileCompletion < 100 && (
+                            <div className="mt-1">
+                                <div className="text-muted-foreground mb-1 flex justify-between text-xs">
+                                    <span>Profile Completion</span>
+                                    <span>{result.profileCompletion}%</span>
+                                </div>
+                                <Progress value={result.profileCompletion} />
+                            </div>
+                        )}
+
+                        <div className="mt-2 flex gap-2">
+                            <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate({ to: `/users/${result.userId}` })}>
+                                View Profile
+                            </Button>
+                            <Button
+                                variant="default"
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => navigate({ to: '/messages', search: { userId: result.userId } })}
+                            >
+                                Message
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </CardContent>
         </Card>

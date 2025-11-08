@@ -5,6 +5,7 @@ import { Button } from '@/web/components/ui/button';
 import { Alert, AlertDescription } from '@/web/components/ui/alert';
 import { Sheet, SheetContent } from '@/web/components/ui/sheet';
 import { Badge } from '@/web/components/ui/badge';
+import { Card, CardContent } from '@/web/components/ui/card';
 import { ProfileSearchFilters } from '@/web/components/profile-search/profile-search-filters';
 import { ProfileSearchResults } from '@/web/components/profile-search/profile-search-results';
 import { ProfileSearchSkeleton } from '@/web/components/profile-search/profile-search-skeleton';
@@ -92,71 +93,65 @@ function MusiciansPage() {
     ].filter(Boolean).length;
 
     return (
-        <div className="min-h-screen">
-            <div className="relative flex gap-6">
-                <aside className="sticky top-20 hidden w-72 self-start lg:block">
-                    <div className="bg-card rounded-lg border p-4">
-                        <ProfileSearchFilters
-                            filters={filters}
-                            onFiltersChange={setFilters}
-                            onSearch={handleSearch}
-                            onClear={handleClearFilters}
-                            isLoading={isLoading}
-                        />
-                    </div>
-                </aside>
+        <div className="min-h-screen space-y-6">
+            <Card className="hidden lg:block">
+                <CardContent className="py-4">
+                    <ProfileSearchFilters
+                        filters={filters}
+                        onFiltersChange={setFilters}
+                        onSearch={handleSearch}
+                        onClear={handleClearFilters}
+                        isLoading={isLoading}
+                    />
+                </CardContent>
+            </Card>
 
-                <main className="min-w-0 flex-1">
-                    <div className="mb-4 lg:hidden">
-                        <Button onClick={() => setIsFiltersOpen(true)} variant="outline" className="relative">
-                            <Filter className="mr-2 h-4 w-4" />
-                            Filters
-                            {activeFilterCount > 0 && (
-                                <Badge variant="destructive" className="ml-2 h-5 min-w-5 px-1.5">
-                                    {activeFilterCount}
-                                </Badge>
-                            )}
-                        </Button>
-                    </div>
-
-                    {results?.geocodingFallback && (
-                        <Alert className="mb-4">
-                            <AlertDescription>Location search is temporarily unavailable. Showing results based on city name only.</AlertDescription>
-                        </Alert>
+            <div className="mb-4 lg:hidden">
+                <Button onClick={() => setIsFiltersOpen(true)} variant="outline" className="relative w-full">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filters
+                    {activeFilterCount > 0 && (
+                        <Badge variant="destructive" className="ml-2 h-5 min-w-5 px-1.5">
+                            {activeFilterCount}
+                        </Badge>
                     )}
-
-                    {hasSearched && results && (
-                        <h2 className="mb-4 text-lg font-semibold" tabIndex={-1} ref={resultsHeadingRef} aria-live="polite">
-                            {results.pagination.total} {results.pagination.total === 1 ? 'musician' : 'musicians'} found
-                        </h2>
-                    )}
-
-                    {!hasSearched && (
-                        <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
-                            <Filter className="text-muted-foreground mb-4 h-16 w-16" />
-                            <h2 className="mb-2 text-2xl font-semibold">Find Musicians</h2>
-                            <p className="text-muted-foreground mb-6 max-w-md">
-                                Use the filters to search for musicians by instrument, location, genre, and availability status.
-                            </p>
-                            <Button onClick={handleSearch} size="lg">
-                                Show All Musicians
-                            </Button>
-                        </div>
-                    )}
-
-                    {isLoading && <ProfileSearchSkeleton />}
-
-                    {error && hasSearched && <ProfileSearchErrorState onRetry={handleSearch} error={error} />}
-
-                    {!isLoading && !error && hasSearched && results && results.results.length === 0 && (
-                        <ProfileSearchEmptyState onClearFilters={handleClearFilters} />
-                    )}
-
-                    {!isLoading && !error && hasSearched && results && results.results.length > 0 && (
-                        <ProfileSearchResults results={results} onPageChange={handlePageChange} />
-                    )}
-                </main>
+                </Button>
             </div>
+
+            {results?.geocodingFallback && (
+                <Alert>
+                    <AlertDescription>Location search is temporarily unavailable. Showing results based on city name only.</AlertDescription>
+                </Alert>
+            )}
+
+            {hasSearched && results && (
+                <h2 className="text-lg font-semibold" tabIndex={-1} ref={resultsHeadingRef} aria-live="polite">
+                    {results.pagination.total} {results.pagination.total === 1 ? 'musician' : 'musicians'} found
+                </h2>
+            )}
+
+            {!hasSearched && (
+                <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
+                    <Filter className="text-muted-foreground mb-4 h-16 w-16" />
+                    <h2 className="mb-2 text-2xl font-semibold">Find Musicians</h2>
+                    <p className="text-muted-foreground mb-6 max-w-md">
+                        Use the filters to search for musicians by instrument, location, genre, and availability status.
+                    </p>
+                    <Button onClick={handleSearch} size="lg">
+                        Show All Musicians
+                    </Button>
+                </div>
+            )}
+
+            {isLoading && <ProfileSearchSkeleton />}
+
+            {error && hasSearched && <ProfileSearchErrorState onRetry={handleSearch} error={error} />}
+
+            {!isLoading && !error && hasSearched && results && results.results.length === 0 && <ProfileSearchEmptyState onClearFilters={handleClearFilters} />}
+
+            {!isLoading && !error && hasSearched && results && results.results.length > 0 && (
+                <ProfileSearchResults results={results} onPageChange={handlePageChange} />
+            )}
 
             <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
                 <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
