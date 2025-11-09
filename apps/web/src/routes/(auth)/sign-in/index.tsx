@@ -8,6 +8,8 @@ import SubmitButton from '@/shared/components/common/submit-button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { signIn } from '@/features/auth/server-functions/auth';
+import { VideoBackground } from '@/shared/components/common/video-background';
+import { Music } from 'lucide-react';
 
 export const Route = createFileRoute('/(auth)/sign-in/')({
     component: RouteComponent,
@@ -77,9 +79,23 @@ function RouteComponent() {
 
     return (
         <div className="relative container hidden h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-            <div className="bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r">
-                <div className="absolute inset-0 bg-zinc-900" />
-            </div>
+            <VideoBackground
+                videoSrc="/videos/login-hero.mp4"
+                posterSrc="/images/login-hero-poster.jpg"
+                fallbackSrc="/images/login-hero-fallback.jpg"
+                className="bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r"
+            >
+                <div className="flex h-full flex-col justify-between">
+                    <div className="flex items-center gap-2">
+                        <Music className="h-6 w-6" aria-hidden="true" />
+                        <span className="text-lg font-semibold">Sound Connect</span>
+                    </div>
+                    <div className="space-y-2">
+                        <h2 className="text-3xl font-bold tracking-tight drop-shadow-lg">Find your next bandmate</h2>
+                        <p className="text-lg text-white/90 drop-shadow-md">Connect with musicians. Collaborate. Create.</p>
+                    </div>
+                </div>
+            </VideoBackground>
             <div className="lg:p-8">
                 <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
                     <h1 className="text-center text-2xl font-semibold tracking-tight">Sign in</h1>
