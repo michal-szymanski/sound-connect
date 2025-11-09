@@ -68,6 +68,7 @@
             "vars": {
                 "API_URL": "https://sound-connect-api-production.michal-szymanski92.workers.dev",
                 "CLIENT_URL": "https://sound-connect-web-production.michal-szymanski92.workers.dev",
+                "BETTER_AUTH_SECRET": "",
                 "BETTER_AUTH_URL": "https://sound-connect-api-production.michal-szymanski92.workers.dev/api/auth"
             },
             "version_metadata": {
