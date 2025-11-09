@@ -177,11 +177,15 @@ What type of work are you doing?
 │     • After database-architect responds, ask user: "Should I implement these changes?"
 │     • On user agreement → Automatically invoke backend
 │
-├─ DEPLOYMENT / OPERATIONS
+├─ DEPLOYMENT / OPERATIONS / INFRASTRUCTURE
 │  └─ Invoke: devops
-│     • Handles deployments
-│     • Applies database migrations
+│     • CI/CD pipeline changes (.github/workflows/*.yml)
+│     • Infrastructure config (wrangler.jsonc)
+│     • Deployments and rollbacks
+│     • Database migrations (production)
+│     • Secret management
 │     • Requires user approval
+│     • ALWAYS invoke for infrastructure/deployment changes
 │
 ├─ TESTING
 │  └─ Invoke: test-expert
@@ -259,8 +263,18 @@ What type of work are you doing?
 - Cloudflare Workers deployments
 - Database migrations (production)
 - Monitoring configuration
+- CI/CD pipeline modifications (GitHub Actions workflows)
+- Secret management (Cloudflare secrets, environment variables)
+- Infrastructure configuration (wrangler.jsonc, deployment settings)
 - Requires user approval for ALL operations
-- Use when: Deployment or operational tasks
+- **MUST be invoked for:**
+  - Any changes to `.github/workflows/*.yml` files
+  - Any changes to `wrangler.jsonc` files
+  - Production deployments or rollbacks
+  - Creating/updating/deleting Cloudflare secrets
+  - Database migrations in production
+  - Queue, Durable Object, or R2 bucket configuration changes
+- Use when: Deployment, operational, or infrastructure tasks
 
 **test-expert**
 

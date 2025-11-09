@@ -56,6 +56,7 @@ jobs:
                     - api
                     - web
                     - posts-queue-consumer
+                    - notifications-queue-consumer
                     - common
                     - drizzle
                     - e2e
@@ -98,6 +99,7 @@ jobs:
                     - api
                     - web
                     - posts-queue-consumer
+                    - notifications-queue-consumer
                     - common
                     - drizzle
 
@@ -139,6 +141,7 @@ jobs:
                     - api
                     - web
                     - posts-queue-consumer
+                    - notifications-queue-consumer
                     - common
                     - drizzle
 
@@ -245,8 +248,8 @@ jobs:
                   path: apps/web/dist/
                   retention-days: 1
 
-    build-queue:
-        name: Build Queue Consumer
+    build-posts-queue:
+        name: Build Posts Queue Consumer
         needs: [prettier, lint, typecheck]
         runs-on: ubuntu-latest
 
@@ -275,8 +278,41 @@ jobs:
                   key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
                   fail-on-cache-miss: true
 
-            - name: Build Queue Consumer
+            - name: Build Posts Queue Consumer
               run: pnpm --filter @sound-connect/posts-queue-consumer build
+
+    build-notifications-queue:
+        name: Build Notifications Queue Consumer
+        needs: [prettier, lint, typecheck]
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
+
+            - name: Build Notifications Queue Consumer
+              run: pnpm --filter @sound-connect/notifications-queue-consumer build
 
     test:
         name: E2E Tests
@@ -435,9 +471,9 @@ jobs:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-    deploy-queue:
-        name: Deploy Queue Consumer
-        needs: [build-queue]
+    deploy-posts-queue:
+        name: Deploy Posts Queue Consumer
+        needs: [build-posts-queue]
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
@@ -471,6 +507,46 @@ jobs:
 
             - name: Deploy Posts Queue Consumer Worker
               run: pnpm --filter @sound-connect/posts-queue-consumer run deploy
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+    deploy-notifications-queue:
+        name: Deploy Notifications Queue Consumer
+        needs: [build-notifications-queue]
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            deployments: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
+
+            - name: Deploy Notifications Queue Consumer Worker
+              run: pnpm --filter @sound-connect/notifications-queue-consumer run deploy
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
