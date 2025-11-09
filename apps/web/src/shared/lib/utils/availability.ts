@@ -8,12 +8,12 @@ export type AvailabilityStatusColor = {
 
 export const availabilityStatusConfig: Record<AvailabilityStatus, AvailabilityStatusColor> = {
     actively_looking: {
-        badge: 'default',
+        badge: 'outline',
         dot: 'bg-green-500',
         label: 'Actively Looking'
     },
     open_to_offers: {
-        badge: 'secondary',
+        badge: 'outline',
         dot: 'bg-blue-500',
         label: 'Open to Offers'
     },

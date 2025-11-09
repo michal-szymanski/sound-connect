@@ -8,6 +8,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { CharacterCounter } from './character-counter';
+import { availabilityStatusConfig } from '@/shared/lib/utils/availability';
 import type { AvailabilitySection as AvailabilitySectionData, UpdateAvailability } from '@sound-connect/common/types/profile';
 import {
     AvailabilityStatusEnum,
@@ -21,13 +22,6 @@ import {
 type Props = {
     data: AvailabilitySectionData | null;
     canEdit: boolean;
-};
-
-const statusLabels: Record<AvailabilityStatus, string> = {
-    actively_looking: 'Actively Looking',
-    open_to_offers: 'Open to Offers',
-    not_looking: 'Not Looking',
-    just_browsing: 'Just Browsing'
 };
 
 const commitmentLabels: Record<CommitmentLevel, string> = {
@@ -79,14 +73,30 @@ export const AvailabilitySection = ({ data, canEdit }: Props) => {
                 </Label>
                 <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as AvailabilityStatus })} required>
                     <SelectTrigger id="status" className="w-full" aria-required="true">
-                        <SelectValue />
+                        <SelectValue>
+                            {formData.status && (
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        className={`h-2.5 w-2.5 rounded-full ${availabilityStatusConfig[formData.status].dot} ring-background ring-2`}
+                                        aria-hidden="true"
+                                    />
+                                    <span>{availabilityStatusConfig[formData.status].label}</span>
+                                </div>
+                            )}
+                        </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                        {AvailabilityStatusEnum.map((status) => (
-                            <SelectItem key={status} value={status}>
-                                {statusLabels[status]}
-                            </SelectItem>
-                        ))}
+                        {AvailabilityStatusEnum.map((status) => {
+                            const config = availabilityStatusConfig[status];
+                            return (
+                                <SelectItem key={status} value={status}>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`h-2.5 w-2.5 rounded-full ${config.dot} ring-background ring-2`} aria-hidden="true" />
+                                        <span>{config.label}</span>
+                                    </div>
+                                </SelectItem>
+                            );
+                        })}
                     </SelectContent>
                 </Select>
             </div>
@@ -203,8 +213,17 @@ export const AvailabilitySection = ({ data, canEdit }: Props) => {
         >
             {data && (
                 <div className="space-y-2">
-                    <div>
-                        <span className="font-medium">Status:</span> {data.status && statusLabels[data.status]}
+                    <div className="flex items-center gap-2">
+                        <span className="font-medium">Status:</span>
+                        {data.status && (
+                            <>
+                                <span
+                                    className={`h-2.5 w-2.5 rounded-full ${availabilityStatusConfig[data.status].dot} ring-background ring-2`}
+                                    aria-hidden="true"
+                                />
+                                <span>{availabilityStatusConfig[data.status].label}</span>
+                            </>
+                        )}
                         {data.status === 'actively_looking' && data.statusExpiresAt && (
                             <span className="text-muted-foreground ml-2 text-sm">({getExpirationText(data.statusExpiresAt)})</span>
                         )}
