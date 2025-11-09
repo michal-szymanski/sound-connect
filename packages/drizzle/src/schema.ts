@@ -13,16 +13,27 @@ export * from './better-auth';
 
 import { users } from './better-auth';
 
-export const postsTable = sqliteTable('posts', {
-    id: integer('id').primaryKey(),
-    userId: text('user_id').notNull(),
-    content: text('content').notNull(),
-    status: text('status').default('pending').notNull(),
-    moderationReason: text('moderation_reason'),
-    moderatedAt: text('moderated_at'),
-    createdAt: text('created_at').notNull(),
-    updatedAt: text('updated_at')
-});
+export const authorTypeEnum = ['user', 'band'] as const;
+
+export const postsTable = sqliteTable(
+    'posts',
+    {
+        id: integer('id').primaryKey(),
+        authorType: text('author_type', { enum: authorTypeEnum }).default('user').notNull(),
+        userId: text('user_id').notNull(),
+        bandId: integer('band_id').references(() => bandsTable.id, { onDelete: 'cascade' }),
+        content: text('content').notNull(),
+        status: text('status').default('pending').notNull(),
+        moderationReason: text('moderation_reason'),
+        moderatedAt: text('moderated_at'),
+        createdAt: text('created_at').notNull(),
+        updatedAt: text('updated_at')
+    },
+    (table) => ({
+        authorTypeIdx: index('idx_posts_author_type').on(table.authorType, table.createdAt),
+        bandIdIdx: index('idx_posts_band_id').on(table.bandId)
+    })
+);
 
 export const postsReactionsTable = sqliteTable('posts_reactions', {
     id: integer('id').primaryKey(),
@@ -34,18 +45,27 @@ export const postsReactionsTable = sqliteTable('posts_reactions', {
 });
 
 // @ts-expect-error - Self-referencing foreign key requires circular reference
-export const commentsTable = sqliteTable('comments', {
-    id: integer('id').primaryKey(),
-    userId: text('user_id').notNull(),
-    postId: integer('post_id')
-        .notNull()
-        .references(() => postsTable.id),
-    // @ts-expect-error - Self-referencing foreign key requires circular reference
-    parentCommentId: integer('parent_comment_id').references(() => commentsTable.id),
-    content: text('content').notNull(),
-    createdAt: text('created_at').notNull(),
-    updatedAt: text('updated_at')
-});
+export const commentsTable = sqliteTable(
+    'comments',
+    {
+        id: integer('id').primaryKey(),
+        authorType: text('author_type', { enum: authorTypeEnum }).default('user').notNull(),
+        userId: text('user_id').notNull(),
+        bandId: integer('band_id').references(() => bandsTable.id, { onDelete: 'cascade' }),
+        postId: integer('post_id')
+            .notNull()
+            .references(() => postsTable.id),
+        // @ts-expect-error - Self-referencing foreign key requires circular reference
+        parentCommentId: integer('parent_comment_id').references(() => commentsTable.id),
+        content: text('content').notNull(),
+        createdAt: text('created_at').notNull(),
+        updatedAt: text('updated_at')
+    },
+    (table) => ({
+        authorTypeIdx: index('idx_comments_author_type').on(table.authorType),
+        bandIdIdx: index('idx_comments_band_id').on(table.bandId)
+    })
+);
 
 export const commentsReactionsTable = sqliteTable('comments_reactions', {
     id: integer('id').primaryKey(),
@@ -118,14 +138,21 @@ export const usersFollowersTable = sqliteTable('users_followers', {
     createdAt: text('created_at').notNull()
 });
 
-export const bandsFollowersTable = sqliteTable('bands_followers', {
-    id: integer('id').primaryKey(),
-    followerId: text('follower_id').notNull(),
-    bandId: integer('band_id')
-        .notNull()
-        .references(() => bandsTable.id),
-    createdAt: text('created_at').notNull()
-});
+export const bandsFollowersTable = sqliteTable(
+    'bands_followers',
+    {
+        id: integer('id').primaryKey(),
+        followerId: text('follower_id').notNull(),
+        bandId: integer('band_id')
+            .notNull()
+            .references(() => bandsTable.id, { onDelete: 'cascade' }),
+        createdAt: text('created_at').notNull()
+    },
+    (table) => ({
+        bandIdIdx: index('idx_bands_followers_band_id').on(table.bandId),
+        followerBandIdx: index('idx_bands_followers_follower_band').on(table.followerId, table.bandId)
+    })
+);
 
 export const messagesTable = sqliteTable('messages', {
     id: integer('id').primaryKey(),
@@ -184,7 +211,8 @@ export const mediaRelations = relations(mediaTable, ({ one }) => ({
 
 export const bandsRelations = relations(bandsTable, ({ many }) => ({
     members: many(bandsMembersTable),
-    followers: many(bandsFollowersTable)
+    followers: many(bandsFollowersTable),
+    posts: many(postsTable)
 }));
 
 export const bandsMembersRelations = relations(bandsMembersTable, ({ one }) => ({

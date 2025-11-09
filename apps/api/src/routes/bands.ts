@@ -3,6 +3,14 @@ import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 import { HonoContext } from 'types';
 import { createBandInputSchema, updateBandInputSchema, addBandMemberInputSchema, userBandsResponseSchema } from '@sound-connect/common/types/bands';
+import { createBandPostInputSchema, bandPostsResponseSchema } from '@sound-connect/common/types/band-posts';
+import {
+    followBandResponseSchema,
+    bandFollowersResponseSchema,
+    bandFollowerCountSchema,
+    isFollowingBandSchema
+} from '@sound-connect/common/types/band-follows';
+import { postQueueMessageSchema } from '@sound-connect/common/types/posts';
 import {
     createBand,
     getBandById,
@@ -16,6 +24,15 @@ import {
     getUserBands,
     userExists
 } from '@/api/db/queries/bands-queries';
+import { createBandPost, getBandPosts } from '@/api/db/queries/band-posts-queries';
+import {
+    followBand as followBandQuery,
+    unfollowBand,
+    getBandFollowers,
+    getBandFollowerCount,
+    isFollowingBand as isFollowingBandQuery,
+    bandExists
+} from '@/api/db/queries/band-follows-queries';
 import { geocodeCity } from '@/api/services/geocoding-service';
 
 const bandsRoutes = new Hono<HonoContext>();
@@ -183,6 +200,149 @@ bandsRoutes.get('/users/:userId/bands', async (c) => {
     const bands = await getUserBands(userId);
 
     return c.json(userBandsResponseSchema.parse({ bands }));
+});
+
+bandsRoutes.post('/bands/:id/posts', async (c) => {
+    const { id } = z.object({ id: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const exists = await bandExists(id);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const isAdmin = await isBandAdmin(id, user.id);
+    if (!isAdmin) {
+        throw new HTTPException(403, { message: 'Only band admins can create posts' });
+    }
+
+    const body = await c.req.json();
+    const data = createBandPostInputSchema.parse(body);
+
+    const post = await createBandPost(id, user.id, data);
+
+    const mediaKeys = data.media?.map((m) => m.key) ?? [];
+
+    const queueMessage = postQueueMessageSchema.parse({
+        postId: post.id,
+        userId: user.id,
+        content: data.content,
+        mediaKeys
+    });
+
+    await c.env.PostsQueue.send(queueMessage);
+
+    return c.json(post, 201);
+});
+
+bandsRoutes.get('/bands/:id/posts', async (c) => {
+    const { id } = z.object({ id: z.coerce.number().positive() }).parse(c.req.param());
+
+    const exists = await bandExists(id);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const { page = 1, limit = 20 } = z
+        .object({
+            page: z.coerce.number().int().positive().default(1),
+            limit: z.coerce.number().int().positive().max(50).default(20)
+        })
+        .parse({
+            page: c.req.query('page'),
+            limit: c.req.query('limit')
+        });
+
+    const result = await getBandPosts(id, page, limit);
+
+    return c.json(bandPostsResponseSchema.parse(result));
+});
+
+bandsRoutes.post('/bands/:id/follow', async (c) => {
+    const { id } = z.object({ id: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const exists = await bandExists(id);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const isMember = await isBandMember(id, user.id);
+    if (isMember) {
+        throw new HTTPException(400, { message: 'You cannot follow a band you are a member of' });
+    }
+
+    const result = await followBandQuery(id, user.id);
+
+    return c.json(followBandResponseSchema.parse(result), 201);
+});
+
+bandsRoutes.delete('/bands/:id/follow', async (c) => {
+    const { id } = z.object({ id: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const exists = await bandExists(id);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    await unfollowBand(id, user.id);
+
+    return c.body(null, 204);
+});
+
+bandsRoutes.get('/bands/:id/followers', async (c) => {
+    const { id } = z.object({ id: z.coerce.number().positive() }).parse(c.req.param());
+
+    const exists = await bandExists(id);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const { page = 1, limit = 50 } = z
+        .object({
+            page: z.coerce.number().int().positive().default(1),
+            limit: z.coerce.number().int().positive().max(100).default(50)
+        })
+        .parse({
+            page: c.req.query('page'),
+            limit: c.req.query('limit')
+        });
+
+    const result = await getBandFollowers(id, page, limit);
+
+    return c.json(bandFollowersResponseSchema.parse(result));
+});
+
+bandsRoutes.get('/bands/:id/followers/count', async (c) => {
+    const { id } = z.object({ id: z.coerce.number().positive() }).parse(c.req.param());
+
+    const exists = await bandExists(id);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const count = await getBandFollowerCount(id);
+
+    return c.json(bandFollowerCountSchema.parse({ count }));
+});
+
+bandsRoutes.get('/bands/:id/is-following', async (c) => {
+    const { id } = z.object({ id: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const exists = await bandExists(id);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const isFollowing = await isFollowingBandQuery(id, user.id);
+
+    return c.json(isFollowingBandSchema.parse({ isFollowing }));
 });
 
 export { bandsRoutes };

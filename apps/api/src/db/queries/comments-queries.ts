@@ -2,14 +2,16 @@ import { count, desc, eq, isNull, and, inArray } from 'drizzle-orm';
 import { schema } from '@/drizzle';
 import { db } from '../index';
 
-const { commentsTable, commentsReactionsTable, users } = schema;
+const { commentsTable, commentsReactionsTable, users, bandsTable } = schema;
 
 export async function getCommentsByPostId(postId: number) {
     const comments = await db
         .select({
             comment: {
                 id: commentsTable.id,
+                authorType: commentsTable.authorType,
                 userId: commentsTable.userId,
+                bandId: commentsTable.bandId,
                 postId: commentsTable.postId,
                 parentCommentId: commentsTable.parentCommentId,
                 content: commentsTable.content,
@@ -20,10 +22,16 @@ export async function getCommentsByPostId(postId: number) {
                 id: users.id,
                 name: users.name,
                 image: users.image
+            },
+            band: {
+                id: bandsTable.id,
+                name: bandsTable.name,
+                profileImageUrl: bandsTable.profileImageUrl
             }
         })
         .from(commentsTable)
         .leftJoin(users, eq(commentsTable.userId, users.id))
+        .leftJoin(bandsTable, eq(commentsTable.bandId, bandsTable.id))
         .where(and(eq(commentsTable.postId, postId), isNull(commentsTable.parentCommentId)))
         .orderBy(desc(commentsTable.createdAt));
 
@@ -47,7 +55,9 @@ export async function getCommentsByPostId(postId: number) {
         .select({
             comment: {
                 id: commentsTable.id,
+                authorType: commentsTable.authorType,
                 userId: commentsTable.userId,
+                bandId: commentsTable.bandId,
                 postId: commentsTable.postId,
                 parentCommentId: commentsTable.parentCommentId,
                 content: commentsTable.content,
@@ -58,10 +68,16 @@ export async function getCommentsByPostId(postId: number) {
                 id: users.id,
                 name: users.name,
                 image: users.image
+            },
+            band: {
+                id: bandsTable.id,
+                name: bandsTable.name,
+                profileImageUrl: bandsTable.profileImageUrl
             }
         })
         .from(commentsTable)
         .leftJoin(users, eq(commentsTable.userId, users.id))
+        .leftJoin(bandsTable, eq(commentsTable.bandId, bandsTable.id))
         .where(inArray(commentsTable.parentCommentId, commentIds))
         .orderBy(desc(commentsTable.createdAt));
 
@@ -89,6 +105,7 @@ export async function getCommentsByPostId(postId: number) {
                 return {
                     comment: reply.comment,
                     user: reply.user,
+                    band: reply.band,
                     reactions: replyReactionsList
                 };
             });
@@ -96,13 +113,21 @@ export async function getCommentsByPostId(postId: number) {
         return {
             comment: comment.comment,
             user: comment.user,
+            band: comment.band,
             reactions: commentReactions,
             replies: commentReplies
         };
     });
 }
 
-export async function createComment(userId: string, postId: number, content: string, parentCommentId?: number | null) {
+export async function createComment(
+    userId: string,
+    postId: number,
+    content: string,
+    parentCommentId?: number | null,
+    authorType: 'user' | 'band' = 'user',
+    bandId?: number | null
+) {
     if (parentCommentId) {
         const parentComment = await db
             .select({ parentCommentId: commentsTable.parentCommentId })
@@ -124,7 +149,9 @@ export async function createComment(userId: string, postId: number, content: str
     const result = await db
         .insert(commentsTable)
         .values({
+            authorType,
             userId,
+            bandId: bandId || null,
             postId,
             parentCommentId: parentCommentId || null,
             content,

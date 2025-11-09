@@ -110,9 +110,13 @@ export const verificationSchema = z.object({
 export type CreateVerification = z.infer<typeof createVerificationSchema>;
 export type Verification = z.infer<typeof verificationSchema>;
 
+export const authorTypeEnum = z.enum(['user', 'band']);
+
 export const createPostSchema = z.object({
     id: z.number(),
+    authorType: authorTypeEnum.default('user'),
     userId: z.string(),
+    bandId: z.number().nullable().optional(),
     content: z.string(),
     status: z.string(),
     moderationReason: z.string().nullable(),
@@ -123,7 +127,9 @@ export const createPostSchema = z.object({
 
 export const postSchema = z.object({
     id: z.number(),
+    authorType: authorTypeEnum.default('user'),
     userId: z.string(),
+    bandId: z.number().nullable().optional(),
     content: z.string(),
     status: z.string(),
     moderationReason: z.string().nullable(),
@@ -134,6 +140,7 @@ export const postSchema = z.object({
 
 export type CreatePost = z.infer<typeof createPostSchema>;
 export type Post = z.infer<typeof postSchema>;
+export type AuthorType = z.infer<typeof authorTypeEnum>;
 
 export const createPostReactionSchema = z.object({
     id: z.number(),
@@ -154,7 +161,9 @@ export type PostReaction = z.infer<typeof postReactionSchema>;
 
 export const createCommentSchema = z.object({
     id: z.number(),
+    authorType: z.enum(['user', 'band']).default('user'),
     userId: z.string(),
+    bandId: z.number().nullable().optional(),
     postId: z.number(),
     parentCommentId: z.number().nullable().optional(),
     content: z.string(),
@@ -164,7 +173,9 @@ export const createCommentSchema = z.object({
 
 export const commentSchema = z.object({
     id: z.number(),
+    authorType: z.enum(['user', 'band']).default('user'),
     userId: z.string(),
+    bandId: z.number().nullable().optional(),
     postId: z.number(),
     parentCommentId: z.number().nullable(),
     content: z.string(),

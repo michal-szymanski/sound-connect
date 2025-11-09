@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -19,7 +20,10 @@ import { BandHeader } from '@/features/bands/components/band-header';
 import { BandMemberCard } from '@/features/bands/components/band-member-card';
 import { AddMemberModal } from '@/features/bands/components/add-member-modal';
 import { BandForm } from '@/features/bands/components/band-form';
+import { BandPostComposer } from '@/features/bands/components/band-post-composer';
+import { BandPostFeed } from '@/features/bands/components/band-post-feed';
 import { useBand, useUpdateBand, useDeleteBand, useAddBandMember, useRemoveBandMember } from '@/features/bands/hooks/use-bands';
+import { useAuth } from '@/shared/lib/react-query';
 import { ProfileSection } from '@/features/profile/components/profile-section';
 import { Music2, Users, Search, AlertCircle, UserSearch } from 'lucide-react';
 
@@ -46,6 +50,7 @@ export const Route = createFileRoute('/(main)/bands/$id' as any)({
 function RouteComponent() {
     const { bandId } = Route.useLoaderData();
     const { data: band, isLoading, error } = useBand(bandId);
+    const { data: auth } = useAuth();
     const updateBand = useUpdateBand(bandId);
     const deleteBand = useDeleteBand();
     const addMember = useAddBandMember(bandId);
@@ -88,6 +93,7 @@ function RouteComponent() {
     }
 
     const isUserAdmin = band.isUserAdmin || false;
+    const isUserMember = auth?.user ? band.members.some((m) => m.userId === auth.user?.id) : false;
     const existingMemberIds = band.members.map((m) => m.userId);
 
     const handleUpdateBand = (data: UpdateBandInput | CreateBandInput) => {
@@ -136,7 +142,7 @@ function RouteComponent() {
         <div className="w-full space-y-6">
             <Card>
                 <CardContent className="p-6">
-                    <BandHeader band={band} isUserAdmin={isUserAdmin} onEdit={() => setIsEditing(true)} />
+                    <BandHeader band={band} isUserAdmin={isUserAdmin} isUserMember={isUserMember} onEdit={() => setIsEditing(true)} />
                 </CardContent>
             </Card>
 
@@ -181,71 +187,88 @@ function RouteComponent() {
                 </Card>
             ) : (
                 <>
-                    {band.description && (
-                        <ProfileSection title="About" icon={<Music2 className="h-5 w-5" />} canEdit={false} isEmpty={false}>
-                            <p className="text-foreground whitespace-pre-wrap">{band.description}</p>
-                        </ProfileSection>
-                    )}
+                    <Tabs defaultValue="posts" className="w-full">
+                        <TabsList className="grid w-full grid-cols-3">
+                            <TabsTrigger value="posts">Posts</TabsTrigger>
+                            <TabsTrigger value="about">About</TabsTrigger>
+                            <TabsTrigger value="members">Members</TabsTrigger>
+                        </TabsList>
 
-                    {band.lookingFor && (
-                        <Card className="border-primary/20 bg-primary/5">
-                            <CardContent className="p-6">
-                                <div className="flex items-start gap-3">
-                                    <div className="bg-primary flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
-                                        <Search className="h-5 w-5 text-white" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <h2 className="mb-2 text-lg font-semibold">Looking For</h2>
-                                        <p className="text-foreground whitespace-pre-wrap">{band.lookingFor}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                        <TabsContent value="posts" className="mt-6 space-y-6">
+                            {isUserAdmin && <BandPostComposer bandId={band.id} bandName={band.name} />}
+                            <BandPostFeed bandId={band.id} />
+                        </TabsContent>
 
-                    <Card>
-                        <CardContent className="p-6">
-                            <div className="mb-4 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Users className="h-5 w-5" />
-                                    <h2 className="text-lg font-semibold">Members ({band.members.length})</h2>
-                                </div>
-                                {isUserAdmin && (
-                                    <Button onClick={() => setShowAddMemberModal(true)} size="sm" aria-label="Add member">
-                                        Add Member
-                                    </Button>
-                                )}
-                            </div>
-
-                            {band.members.length > 0 ? (
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                    {band.members.map((member) => (
-                                        <BandMemberCard
-                                            key={member.userId}
-                                            member={member}
-                                            canRemove={isUserAdmin && (!member.isAdmin || band.members.filter((m) => m.isAdmin).length > 1)}
-                                            onRemove={(userId) => handleRemoveMember(userId, member.name)}
-                                            isRemoving={removeMember.isPending}
-                                        />
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-muted-foreground text-center text-sm">No members yet. Add members to get started.</p>
+                        <TabsContent value="about" className="mt-6 space-y-6">
+                            {band.description && (
+                                <ProfileSection title="About" icon={<Music2 className="h-5 w-5" />} canEdit={false} isEmpty={false}>
+                                    <p className="text-foreground whitespace-pre-wrap">{band.description}</p>
+                                </ProfileSection>
                             )}
-                        </CardContent>
-                    </Card>
 
-                    {isUserAdmin && (
-                        <Card className="border-destructive/50">
-                            <CardContent className="p-6">
-                                <h2 className="mb-2 text-lg font-semibold">Danger Zone</h2>
-                                <p className="text-muted-foreground mb-4 text-sm">Once you delete a band, there is no going back. Please be certain.</p>
-                                <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} aria-label="Delete band">
-                                    Delete Band
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    )}
+                            {band.lookingFor && (
+                                <Card className="border-primary/20 bg-primary/5">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-start gap-3">
+                                            <div className="bg-primary flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
+                                                <Search className="h-5 w-5 text-white" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <h2 className="mb-2 text-lg font-semibold">Looking For</h2>
+                                                <p className="text-foreground whitespace-pre-wrap">{band.lookingFor}</p>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {isUserAdmin && (
+                                <Card className="border-destructive/50">
+                                    <CardContent className="p-6">
+                                        <h2 className="mb-2 text-lg font-semibold">Danger Zone</h2>
+                                        <p className="text-muted-foreground mb-4 text-sm">Once you delete a band, there is no going back. Please be certain.</p>
+                                        <Button variant="destructive" onClick={() => setShowDeleteDialog(true)} aria-label="Delete band">
+                                            Delete Band
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="members" className="mt-6 space-y-6">
+                            <Card>
+                                <CardContent className="p-6">
+                                    <div className="mb-4 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Users className="h-5 w-5" />
+                                            <h2 className="text-lg font-semibold">Members ({band.members.length})</h2>
+                                        </div>
+                                        {isUserAdmin && (
+                                            <Button onClick={() => setShowAddMemberModal(true)} size="sm" aria-label="Add member">
+                                                Add Member
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    {band.members.length > 0 ? (
+                                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                            {band.members.map((member) => (
+                                                <BandMemberCard
+                                                    key={member.userId}
+                                                    member={member}
+                                                    canRemove={isUserAdmin && (!member.isAdmin || band.members.filter((m) => m.isAdmin).length > 1)}
+                                                    onRemove={(userId) => handleRemoveMember(userId, member.name)}
+                                                    isRemoving={removeMember.isPending}
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-muted-foreground text-center text-sm">No members yet. Add members to get started.</p>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+                    </Tabs>
                 </>
             )}
 
