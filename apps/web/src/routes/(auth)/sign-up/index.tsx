@@ -10,6 +10,7 @@ import { Input } from '@/shared/components/ui/input';
 import { signUp } from '@/features/auth/server-functions/auth';
 import { VideoBackground } from '@/shared/components/common/video-background';
 import { Music } from 'lucide-react';
+import { memo, useEffect, useState } from 'react';
 
 export const Route = createFileRoute('/(auth)/sign-up/')({
     component: RouteComponent,
@@ -18,6 +19,43 @@ export const Route = createFileRoute('/(auth)/sign-up/')({
             throw redirect({ to: '/' });
         }
     }
+});
+
+type WindowWithFlag = Window & { __loginHeroAnimated?: boolean };
+
+const AnimatedHeroContent = memo(function AnimatedHeroContent() {
+    const [animate] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        return !(window as WindowWithFlag).__loginHeroAnimated;
+    });
+
+    useEffect(() => {
+        if (!(window as WindowWithFlag).__loginHeroAnimated) {
+            (window as WindowWithFlag).__loginHeroAnimated = true;
+        }
+    }, []);
+
+    return (
+        <div className="flex h-full flex-col justify-between">
+            <div
+                className={`flex items-center gap-2 transition-opacity hover:opacity-80 ${
+                    animate ? 'animate-in fade-in slide-in-from-top-2 duration-500' : ''
+                }`}
+            >
+                <div className="bg-primary/20 rounded-full p-2 backdrop-blur-sm">
+                    <Music className="text-primary h-5 w-5" aria-hidden="true" />
+                </div>
+                <span className="text-xl font-bold tracking-tight">Sound Connect</span>
+            </div>
+
+            <div className={`space-y-3 ${animate ? 'animate-in fade-in slide-in-from-bottom-6 delay-150 duration-700' : ''}`}>
+                <h2 className="text-4xl font-bold tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Find your next bandmate</h2>
+                <p className="max-w-md text-xl leading-relaxed text-white/95 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
+                    Connect with musicians. Collaborate. Create.
+                </p>
+            </div>
+        </div>
+    );
 });
 
 function RouteComponent() {
@@ -84,19 +122,10 @@ function RouteComponent() {
                 fallbackSrc="/images/login-hero-fallback.jpg"
                 className="bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r"
             >
-                <div className="flex h-full flex-col justify-between">
-                    <div className="flex items-center gap-2">
-                        <Music className="h-6 w-6" aria-hidden="true" />
-                        <span className="text-lg font-semibold">Sound Connect</span>
-                    </div>
-                    <div className="space-y-2">
-                        <h2 className="text-3xl font-bold tracking-tight drop-shadow-lg">Find your next bandmate</h2>
-                        <p className="text-lg text-white/90 drop-shadow-md">Connect with musicians. Collaborate. Create.</p>
-                    </div>
-                </div>
+                <AnimatedHeroContent />
             </VideoBackground>
-            <div className="lg:p-8">
-                <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+            <div className="lg:p-12">
+                <div className="mx-auto flex w-full flex-col justify-center space-y-8 sm:w-[400px]">
                     <h1 className="text-center text-2xl font-semibold tracking-tight">Create an account</h1>
                     <div className="flex flex-col gap-6">
                         <Form {...form}>
