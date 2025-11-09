@@ -27,6 +27,113 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 
 Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
 
+## Implemented Features
+
+### Authentication & User Management
+- Sign up / Sign in (better-auth)
+- Session management
+- User accounts
+
+### User Profiles
+- **Rich musician profiles** with 30+ fields:
+  - **Instruments**: Primary instrument, years playing, up to 4 additional instruments, "seeking to play" preferences
+  - **Genres**: Primary genre, secondary genres (44 genre options)
+  - **Availability Status**: 4-tier system with color-coded indicators
+    - Actively Looking (green, with expiration date)
+    - Open to Offers (blue)
+    - Not Looking (gray)
+    - Just Browsing (yellow)
+  - **Experience**: Years playing, commitment level (hobbyist/serious amateur/professional), past bands, studio experience, gigging level
+  - **Location**: City, state, country (geocoded with lat/long), travel radius
+  - **Availability**: Weekly availability schedule, rehearsal frequency preference
+  - **Logistics**: Rehearsal space, transportation
+  - **Goals**: Bio, musical influences, seeking, can offer, deal breakers, musical goals, age range
+- **Profile completion tracking**: 0-100% score with visual progress indicator
+- **Inline profile editing**: All sections editable directly on profile page
+- Follow/unfollow users
+- View followers and following lists
+- Follow request system
+
+### Musician Discovery
+- **Advanced search** at `/musicians`:
+  - Filter by instruments (multi-select, searches primary + additional)
+  - Filter by genres (multi-select, searches primary + secondary)
+  - Filter by location with radius (5, 10, 25, 50, 100 miles)
+  - Filter by availability status (multi-select)
+  - Geocoding with fallback to city name matching
+  - Distance calculation (haversine formula)
+  - Results sorted by instrument match + last active
+  - Pagination (12 results per page)
+- Profile cards showing key musician info
+- User detail pages with full profile information
+
+### Band/Group Management
+- **Create bands** with profile information:
+  - Name, bio, profile image
+  - Primary genre
+  - Location (geocoded)
+  - "Looking for" section (prominently displayed)
+- **Member management**:
+  - Add/remove members
+  - Admin role system (multiple admins per band)
+  - Protection: Last admin cannot be removed
+- **Band pages**: View band details, members, posts
+- **Band posts**: Admins can create posts on behalf of band
+- **Follow bands**: Users can follow/unfollow bands
+- View band followers and follower count
+- View all bands a user belongs to
+
+### Band Discovery
+- **Band search** at `/bands/search`:
+  - Filter by genre
+  - Filter by location with radius (5, 10, 25, 50, 100 miles)
+  - Filter by "looking for" text search
+  - Distance calculation
+  - Shows member count
+  - Pagination (12 results per page)
+- My Bands page (`/bands`) showing all bands user belongs to
+
+### Social Features
+- **Posts**:
+  - Create posts (text, images, videos)
+  - Posts by users or bands (author_type: 'user' | 'band')
+  - View post detail pages
+  - Social feed on home page
+- **Reactions**: React to posts
+- **Comments**: Comment on posts
+- **User search**: Basic user search functionality
+
+### Real-time Communication
+- **Direct messaging**:
+  - 1:1 conversations
+  - Real-time message delivery (Durable Objects)
+  - Message history
+  - Conversation list
+
+### Notifications
+- Notification system
+- Queue-based notification processing (Cloudflare Queues)
+
+### Content Moderation
+- Queue-based content moderation for posts (Cloudflare Queues)
+
+## Known Gaps / Future Features
+
+### High Priority (Affects Activation & Retention)
+- **Onboarding flow**: No guided profile setup for new users after sign-up
+- **Settings page**: Currently empty placeholder - needs account settings, privacy controls, notification preferences
+- **Discovery feed**: No personalized "For You" feed - users must manually search
+- **Band applications**: No structured "Request to Join Band" workflow
+- **Saved profiles**: Cannot bookmark musicians/bands for later
+
+### Medium Priority
+- Profile views analytics
+- Recommendations engine
+- Advanced messaging (group chats, read receipts)
+- Event/gig calendar
+- Audio/video player for sharing music
+- Reviews/endorsements system
+
 ## Development Rules
 
 ### Code Quality Enforcement
