@@ -57,9 +57,9 @@ export function ProfileSearchCard({ result }: Props) {
                         <div className="flex items-center justify-between gap-2">
                             <h3 className="text-lg font-semibold">{result.name}</h3>
                             {statusConfig && (
-                                <Badge variant={statusConfig.badge} className="gap-1 whitespace-nowrap">
-                                    <span className={`h-2 w-2 rounded-full ${statusConfig.dot}`} />
-                                    {statusConfig.label}
+                                <Badge variant={statusConfig.badge} className="gap-1.5 whitespace-nowrap" role="status">
+                                    <span className={`h-2.5 w-2.5 rounded-full ${statusConfig.dot} ring-background ring-2`} aria-hidden="true" />
+                                    <span>{statusConfig.label}</span>
                                 </Badge>
                             )}
                         </div>

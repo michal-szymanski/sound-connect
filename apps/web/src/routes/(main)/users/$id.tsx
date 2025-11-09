@@ -7,6 +7,8 @@ import z from 'zod';
 import UserAvatar from '@/shared/components/common/user-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
+import { Badge } from '@/shared/components/ui/badge';
+import { availabilityStatusConfig } from '@/shared/lib/utils/availability';
 import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, followersQuery, followRequestStatusQuery } from '@/shared/lib/react-query';
 import { getPosts } from '@/features/posts/server-functions/posts';
 import { getUser, followUser, unfollowUser } from '@/shared/server-functions/users';
@@ -185,7 +187,19 @@ function RouteComponent() {
 
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0 flex-1">
-                            <h1 className="truncate text-xl font-bold sm:text-2xl">{user.name}</h1>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <h1 className="truncate text-xl font-bold sm:text-2xl">{user.name}</h1>
+
+                                {profile?.availability?.status && (
+                                    <Badge variant="outline" className="gap-1.5 whitespace-nowrap" role="status">
+                                        <span
+                                            className={`h-2.5 w-2.5 rounded-full ${availabilityStatusConfig[profile.availability.status].dot} ring-background ring-2`}
+                                            aria-hidden="true"
+                                        />
+                                        <span>{availabilityStatusConfig[profile.availability.status].label}</span>
+                                    </Badge>
+                                )}
+                            </div>
                             <p className="text-muted-foreground text-sm">@{user.id.slice(0, 8)}</p>
                         </div>
 
