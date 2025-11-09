@@ -50,14 +50,18 @@ export function VideoBackground({ videoSrc, posterSrc, fallbackSrc, className = 
                     preload="metadata"
                     poster={posterSrc}
                     aria-hidden="true"
-                    className="absolute inset-0 h-full w-full object-cover"
+                    onLoadedData={(e) => {
+                        e.currentTarget.classList.add('opacity-100');
+                        e.currentTarget.classList.remove('opacity-0');
+                    }}
+                    className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-1000"
                 >
                     <source src={videoSrc} type="video/mp4" />
                 </video>
             ) : (
                 <img src={fallbackSrc} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+            <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/40 to-black/80" />
             <div className="relative z-10">{children}</div>
         </div>
     );
