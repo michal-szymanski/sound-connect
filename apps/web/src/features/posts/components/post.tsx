@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useLikeToggle } from '../hooks/use-posts';
 import { useFollowings, useAuth } from '@/shared/lib/react-query';
 import { useElapsedTime } from '@/shared/lib/utils';
+import { useUserBands } from '@/features/bands/hooks/use-bands';
 
 type Props = {
     item: FeedItem;
@@ -26,41 +27,73 @@ const formatContent = (content: string) => {
 };
 
 export function Post({ item }: Props) {
-    const { post, user, media, reactions, commentsCount } = item;
+    const { post, user, band, media, reactions, commentsCount } = item;
     const { data: auth } = useAuth();
     const { data: followings } = useFollowings(auth?.user ?? null);
+    const { data: userBands } = useUserBands(auth?.user?.id ?? '');
     const [isLikesDialogOpen, setIsLikesDialogOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const elapsedTime = useElapsedTime(post.createdAt);
 
-    const canFollow = auth?.user?.id !== post.userId && !followings.some((following) => following.id === post.userId);
+    const isBandPost = post.authorType === 'band';
+    const authorId = isBandPost ? String(post.bandId ?? 0) : post.userId;
+    const authorName = isBandPost ? (band?.name ?? 'Band') : (user?.name ?? 'User');
+    const authorImage = isBandPost ? (band?.profileImageUrl ?? null) : (user?.image ?? null);
+
+    const canFollow = !isBandPost && auth?.user?.id !== post.userId && !followings.some((following) => following.id === post.userId);
+
+    const isUserBandAdmin = isBandPost && post.bandId ? userBands?.bands.some((membership) => membership.id === post.bandId && membership.isAdmin) : false;
+
+    const canLike = auth?.user && (isBandPost ? !isUserBandAdmin : auth.user.id !== post.userId);
 
     const isLiked = reactions.some((reaction) => reaction.userId === auth?.user?.id);
 
     const likeMutation = useLikeToggle(post.id, auth?.user ?? null);
 
     const handleLikeToggle = () => {
-        if (!auth?.user || likeMutation.isPending) return;
+        if (!canLike || !auth?.user || likeMutation.isPending) return;
         likeMutation.mutate(isLiked);
     };
 
-    if (!user) return null;
-
-    const username = user.name.toLowerCase().replace(/\s+/g, '');
+    const username = isBandPost ? '' : (user?.name.toLowerCase().replace(/\s+/g, '') ?? '');
 
     return (
         <Card className="border-border/40 bg-card w-full overflow-hidden transition-shadow hover:shadow-md hover:shadow-black/5">
             <div className="flex items-start justify-between px-4 py-3">
                 <div className="flex items-center gap-2">
-                    <Link to="/users/$id" params={{ id: post.userId }}>
-                        <UserAvatar user={user} />
-                    </Link>
-                    <div className="flex flex-col">
-                        <Link to="/users/$id" params={{ id: post.userId }} className="text-foreground text-sm font-semibold hover:underline">
-                            {user.name}
+                    {isBandPost ? (
+                        <Link to="/bands/$id" params={{ id: String(post.bandId!) }}>
+                            {authorImage ? (
+                                <img src={authorImage} alt={authorName} className="h-10 w-10 rounded-full object-cover" />
+                            ) : (
+                                <div className="bg-muted flex h-10 w-10 items-center justify-center rounded-full">
+                                    <span className="text-sm font-semibold">{authorName.charAt(0)}</span>
+                                </div>
+                            )}
                         </Link>
+                    ) : (
+                        <Link to="/users/$id" params={{ id: post.userId }}>
+                            <UserAvatar user={user ?? { id: post.userId, name: 'User', image: null, lastActiveAt: null }} />
+                        </Link>
+                    )}
+                    <div className="flex flex-col">
+                        {isBandPost ? (
+                            <Link
+                                to="/bands/$id"
+                                params={{ id: String(post.bandId!) }}
+                                className="text-foreground flex items-center gap-2 text-sm font-semibold hover:underline"
+                            >
+                                {authorName}
+                                <span className="text-muted-foreground bg-muted rounded px-2 py-0.5 text-xs font-normal">Band</span>
+                            </Link>
+                        ) : (
+                            <Link to="/users/$id" params={{ id: post.userId }} className="text-foreground text-sm font-semibold hover:underline">
+                                {authorName}
+                            </Link>
+                        )}
                         <span className="text-muted-foreground text-xs">
-                            @{username} · {elapsedTime}
+                            {!isBandPost && `@${username} · `}
+                            {elapsedTime}
                         </span>
                     </div>
                 </div>
@@ -89,7 +122,7 @@ export function Post({ item }: Props) {
             {media && media.length > 0 && (
                 <div className="bg-muted relative aspect-video w-full cursor-pointer overflow-hidden" onClick={() => setIsModalOpen(true)}>
                     {media.map((m) => (
-                        <img key={m.id} src={`/media/${m.key}`} alt={`Post media by ${user.name}`} className="h-full w-full object-cover" loading="lazy" />
+                        <img key={m.id} src={`/media/${m.key}`} alt={`Post media by ${authorName}`} className="h-full w-full object-cover" loading="lazy" />
                     ))}
                 </div>
             )}
@@ -99,7 +132,8 @@ export function Post({ item }: Props) {
                         variant="ghost"
                         size="sm"
                         onClick={handleLikeToggle}
-                        className={`min-h-[44px] min-w-[44px] transition-all ${isLiked ? 'scale-105 text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
+                        disabled={!canLike}
+                        className={`min-h-[44px] min-w-[44px] ${!canLike ? `${isLiked ? 'text-red-500 opacity-75' : 'opacity-50'}` : isLiked ? 'scale-105 text-red-500 transition-all' : 'text-muted-foreground transition-all hover:scale-105 hover:text-red-500'}`}
                         aria-label={isLiked ? 'Unlike post' : 'Like post'}
                         aria-pressed={isLiked}
                     >
@@ -139,10 +173,10 @@ export function Post({ item }: Props) {
                 onOpenChange={setIsModalOpen}
                 postId={post.id}
                 author={{
-                    id: user.id,
-                    name: user.name,
+                    id: authorId,
+                    name: authorName,
                     username: username,
-                    avatar: user.image
+                    avatar: authorImage
                 }}
                 content={post.content}
                 image={media && media.length > 0 && media[0] ? `/media/${media[0].key}` : undefined}
@@ -150,6 +184,7 @@ export function Post({ item }: Props) {
                 likes={reactions.length}
                 shares={0}
                 isLiked={isLiked}
+                canLike={canLike ?? false}
             />
         </Card>
     );

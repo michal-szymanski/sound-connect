@@ -82,17 +82,26 @@ export const postStatusSchema = z.enum(['pending', 'approved', 'rejected', 'flag
 
 export type PostStatus = z.infer<typeof postStatusSchema>;
 
+export const bandInfoSchema = z.object({
+    id: z.number(),
+    name: z.string(),
+    profileImageUrl: z.string().nullable()
+});
+
 export const feedItemSchema = z.object({
     post: postSchema,
-    user: userDTOSchema,
+    user: userDTOSchema.nullable(),
+    band: bandInfoSchema.nullable().optional(),
     reactions: z.array(postReactionSchema),
     media: z.array(mediaSchema),
     commentsCount: z.number()
 });
 
 export type FeedItem = z.infer<typeof feedItemSchema>;
+export type BandInfo = z.infer<typeof bandInfoSchema>;
 
 export const postLikeDataSchema = z.object({
+    success: z.boolean().optional(),
     likesCount: z.number(),
     isLiked: z.boolean()
 });
@@ -101,14 +110,16 @@ export type PostLikeData = z.infer<typeof postLikeDataSchema>;
 
 export type CommentWithUser = {
     comment: Comment;
-    user: UserDTO;
+    user: UserDTO | null;
+    band?: BandInfo | null;
     reactions: CommentReaction[];
     replies?: CommentWithUser[];
 };
 
 export const commentWithUserSchema: z.ZodType<CommentWithUser> = z.object({
     comment: commentSchema,
-    user: userDTOSchema,
+    user: userDTOSchema.nullable(),
+    band: bandInfoSchema.nullable().optional(),
     reactions: z.array(commentReactionSchema),
     replies: z.array(z.lazy(() => commentWithUserSchema)).optional()
 });

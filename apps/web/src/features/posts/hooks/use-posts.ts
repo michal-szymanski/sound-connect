@@ -63,16 +63,20 @@ export const useLikeToggle = (postId: number, currentUser: User | UserDTO | null
 
     return useMutation({
         mutationFn: async (isLiked: boolean) => {
-            if (isLiked) {
-                return await unlikePost({ data: { postId } });
-            } else {
-                return await likePost({ data: { postId } });
+            const result = isLiked ? await unlikePost({ data: { postId } }) : await likePost({ data: { postId } });
+
+            if (!result.success) {
+                throw new Error('Failed to update like status');
             }
+
+            return result;
         },
         onMutate: async (isLiked: boolean) => {
             await queryClient.cancelQueries({ queryKey: ['feed-infinite'] });
+            await queryClient.cancelQueries({ queryKey: ['band-posts'] });
+            await queryClient.cancelQueries({ queryKey: ['post', postId] });
 
-            const previousData = queryClient.getQueryData(['feed-infinite']);
+            const previousFeedData = queryClient.getQueryData(['feed-infinite']);
 
             queryClient.setQueryData(['feed-infinite'], (old: { pages: FeedItem[][]; pageParams: number[] } | undefined) => {
                 if (!old || !currentUser) return old;
@@ -105,13 +109,74 @@ export const useLikeToggle = (postId: number, currentUser: User | UserDTO | null
                 };
             });
 
-            return { previousData };
+            queryClient.setQueriesData({ queryKey: ['band-posts'] }, (old: { pages: FeedItem[][]; pageParams: number[] } | undefined) => {
+                if (!old || !currentUser) return old;
+
+                return {
+                    ...old,
+                    pages: old.pages.map((page) =>
+                        page.map((item) => {
+                            if (item.post.id !== postId) return item;
+
+                            if (isLiked) {
+                                return {
+                                    ...item,
+                                    reactions: item.reactions.filter((reaction) => reaction.userId !== currentUser.id)
+                                };
+                            } else {
+                                const newReaction: PostReaction = {
+                                    id: Date.now(),
+                                    userId: currentUser.id,
+                                    postId,
+                                    createdAt: new Date().toISOString()
+                                };
+                                return {
+                                    ...item,
+                                    reactions: [...item.reactions, newReaction]
+                                };
+                            }
+                        })
+                    )
+                };
+            });
+
+            queryClient.setQueryData(['post', postId], (old: FeedItem | null | undefined) => {
+                if (!old || !currentUser) return old;
+
+                if (isLiked) {
+                    return {
+                        ...old,
+                        reactions: old.reactions.filter((reaction) => reaction.userId !== currentUser.id)
+                    };
+                } else {
+                    const newReaction: PostReaction = {
+                        id: Date.now(),
+                        userId: currentUser.id,
+                        postId,
+                        createdAt: new Date().toISOString()
+                    };
+                    return {
+                        ...old,
+                        reactions: [...old.reactions, newReaction]
+                    };
+                }
+            });
+
+            return { previousFeedData };
         },
-        onError: (_error, _variables, context) => {
-            if (context?.previousData) {
-                queryClient.setQueryData(['feed-infinite'], context.previousData);
+        onError: (error, _variables, context) => {
+            console.error('Like mutation error:', error);
+            if (context?.previousFeedData) {
+                queryClient.setQueryData(['feed-infinite'], context.previousFeedData);
             }
-            toast.error('Failed to update like status');
+            queryClient.invalidateQueries({ queryKey: ['band-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['post', postId] });
+            toast.error(`Failed to update like status: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['feed-infinite'] });
+            queryClient.invalidateQueries({ queryKey: ['band-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['post', postId] });
         }
     });
 };
@@ -146,6 +211,8 @@ export const useCreateComment = (postId: number) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['comments', postId] });
             queryClient.invalidateQueries({ queryKey: ['feed-infinite'] });
+            queryClient.invalidateQueries({ queryKey: ['band-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['post', postId] });
         },
         onError: () => {
             toast.error('Failed to create comment');

@@ -9,6 +9,13 @@ import {
     bandMemberSchema,
     userBandsResponseSchema
 } from '@sound-connect/common/types/bands';
+import { createBandPostInputSchema, bandPostSchema, bandPostsResponseSchema } from '@sound-connect/common/types/band-posts';
+import {
+    bandFollowersResponseSchema,
+    bandFollowerCountSchema,
+    isFollowingBandSchema,
+    followBandResponseSchema
+} from '@sound-connect/common/types/band-follows';
 import { apiErrorHandler, failure, success } from '@/shared/server-functions/helpers';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
 
@@ -193,6 +200,193 @@ export const getUserBands = createServerFn()
             return success(userBandsResponseSchema.parse(json));
         } catch (error) {
             console.error('getUserBands error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred' });
+        }
+    });
+
+export const createBandPost = createServerFn({ method: 'POST' })
+    .middleware([authMiddleware])
+    .inputValidator(createBandPostInputSchema.extend({ bandId: z.number() }))
+    .handler(async ({ data, context: { env, auth } }) => {
+        try {
+            const { bandId, ...postData } = data;
+
+            const response = await env.API.fetch(`${env.API_URL}/bands/${bandId}/posts`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(auth.cookie && { Cookie: auth.cookie })
+                },
+                body: JSON.stringify(postData),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                return await apiErrorHandler(response);
+            }
+
+            const json = await response.json();
+            return success(bandPostSchema.parse(json));
+        } catch (error) {
+            console.error('createBandPost error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred' });
+        }
+    });
+
+export const getBandPosts = createServerFn()
+    .middleware([authMiddleware])
+    .inputValidator(z.object({ bandId: z.number(), page: z.number().optional(), limit: z.number().optional() }))
+    .handler(async ({ data, context: { env, auth } }) => {
+        try {
+            const searchParams = new URLSearchParams();
+            if (data.page) searchParams.set('page', data.page.toString());
+            if (data.limit) searchParams.set('limit', data.limit.toString());
+
+            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}/posts?${searchParams.toString()}`, {
+                method: 'GET',
+                headers: {
+                    ...(auth.cookie && { Cookie: auth.cookie })
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                return await apiErrorHandler(response);
+            }
+
+            const json = await response.json();
+            return success(bandPostsResponseSchema.parse(json));
+        } catch (error) {
+            console.error('getBandPosts error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred' });
+        }
+    });
+
+export const followBand = createServerFn({ method: 'POST' })
+    .middleware([authMiddleware])
+    .inputValidator(z.object({ bandId: z.number() }))
+    .handler(async ({ data, context: { env, auth } }) => {
+        try {
+            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}/follow`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(auth.cookie && { Cookie: auth.cookie })
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                return await apiErrorHandler(response);
+            }
+
+            const json = await response.json();
+            return success(followBandResponseSchema.parse(json));
+        } catch (error) {
+            console.error('followBand error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred' });
+        }
+    });
+
+export const unfollowBand = createServerFn()
+    .middleware([authMiddleware])
+    .inputValidator(z.object({ bandId: z.number() }))
+    .handler(async ({ data, context: { env, auth } }) => {
+        try {
+            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}/follow`, {
+                method: 'DELETE',
+                headers: {
+                    ...(auth.cookie && { Cookie: auth.cookie })
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                return await apiErrorHandler(response);
+            }
+
+            return success(null);
+        } catch (error) {
+            console.error('unfollowBand error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred' });
+        }
+    });
+
+export const getBandFollowers = createServerFn()
+    .middleware([authMiddleware])
+    .inputValidator(z.object({ bandId: z.number(), page: z.number().optional(), limit: z.number().optional() }))
+    .handler(async ({ data, context: { env, auth } }) => {
+        try {
+            const searchParams = new URLSearchParams();
+            if (data.page) searchParams.set('page', data.page.toString());
+            if (data.limit) searchParams.set('limit', data.limit.toString());
+
+            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}/followers?${searchParams.toString()}`, {
+                method: 'GET',
+                headers: {
+                    ...(auth.cookie && { Cookie: auth.cookie })
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                return await apiErrorHandler(response);
+            }
+
+            const json = await response.json();
+            return success(bandFollowersResponseSchema.parse(json));
+        } catch (error) {
+            console.error('getBandFollowers error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred' });
+        }
+    });
+
+export const getBandFollowerCount = createServerFn()
+    .middleware([authMiddleware])
+    .inputValidator(z.object({ bandId: z.number() }))
+    .handler(async ({ data, context: { env, auth } }) => {
+        try {
+            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}/followers/count`, {
+                method: 'GET',
+                headers: {
+                    ...(auth.cookie && { Cookie: auth.cookie })
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                return await apiErrorHandler(response);
+            }
+
+            const json = await response.json();
+            return success(bandFollowerCountSchema.parse(json));
+        } catch (error) {
+            console.error('getBandFollowerCount error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred' });
+        }
+    });
+
+export const getIsFollowingBand = createServerFn()
+    .middleware([authMiddleware])
+    .inputValidator(z.object({ bandId: z.number() }))
+    .handler(async ({ data, context: { env, auth } }) => {
+        try {
+            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}/is-following`, {
+                method: 'GET',
+                headers: {
+                    ...(auth.cookie && { Cookie: auth.cookie })
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                return await apiErrorHandler(response);
+            }
+
+            const json = await response.json();
+            return success(isFollowingBandSchema.parse(json));
+        } catch (error) {
+            console.error('getIsFollowingBand error:', error);
             return failure({ status: 500, message: 'An unexpected error occurred' });
         }
     });

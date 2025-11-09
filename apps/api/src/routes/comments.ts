@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { HonoContext } from 'types';
 import { createCommentSchema } from '@/common/types/models';
 import { getCommentsByPostId, createComment, likeComment, unlikeComment, getCommentLikesData } from '@/api/db/queries/comments-queries';
+import { getPostById } from '@/api/db/queries/posts-queries';
+import { isBandAdmin } from '@/api/db/queries/bands-queries';
 
 const commentsRoutes = new Hono<HonoContext>();
 
@@ -19,7 +21,24 @@ commentsRoutes.post('/comments', async (c) => {
     const body = await c.req.json();
     const { postId, parentCommentId, content } = createCommentSchema.parse(body);
 
-    const comment = await createComment(user.id, postId, content, parentCommentId);
+    const post = await getPostById(postId);
+
+    if (!post) {
+        return c.json({ error: 'Post not found' }, 404);
+    }
+
+    let authorType: 'user' | 'band' = 'user';
+    let bandId: number | null = null;
+
+    if (post.post.authorType === 'band' && post.post.bandId) {
+        const isAdmin = await isBandAdmin(post.post.bandId, user.id);
+        if (isAdmin) {
+            authorType = 'band';
+            bandId = post.post.bandId;
+        }
+    }
+
+    const comment = await createComment(user.id, postId, content, parentCommentId, authorType, bandId);
 
     return c.json(comment);
 });

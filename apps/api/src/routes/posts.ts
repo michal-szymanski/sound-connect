@@ -14,6 +14,7 @@ import {
     getPostById
 } from '@/api/db/queries/posts-queries';
 import { addMedia } from '@/api/db/queries/media-queries';
+import { isBandAdmin } from '@/api/db/queries/bands-queries';
 import { postQueueMessageSchema } from '@/common/types/posts';
 
 const postsRoutes = new Hono<HonoContext>();
@@ -106,7 +107,8 @@ postsRoutes.get('/feed', async (c) => {
             offset: c.req.query('offset')
         });
 
-    const feedResults = await getFeed(limit, offset);
+    const user = c.get('user');
+    const feedResults = await getFeed(limit, offset, user?.id);
 
     return c.json(feedResults, 200);
 });
@@ -122,6 +124,23 @@ postsRoutes.post('/posts/:postId/like', async (c) => {
     const user = c.get('user');
     const { postId } = z.object({ postId: z.coerce.number().positive() }).parse(c.req.param());
 
+    const post = await getPostById(postId);
+
+    if (!post) {
+        throw new HTTPException(404, { message: 'Post not found' });
+    }
+
+    if (post.post.authorType === 'user' && post.post.userId === user.id) {
+        throw new HTTPException(403, { message: 'Cannot like your own post' });
+    }
+
+    if (post.post.authorType === 'band' && post.post.bandId) {
+        const isAdmin = await isBandAdmin(post.post.bandId, user.id);
+        if (isAdmin) {
+            throw new HTTPException(403, { message: 'Cannot like your own post' });
+        }
+    }
+
     await likePost(user.id, postId);
     const likesData = await getPostLikesData(user.id, postId);
 
@@ -131,6 +150,23 @@ postsRoutes.post('/posts/:postId/like', async (c) => {
 postsRoutes.delete('/posts/:postId/like', async (c) => {
     const user = c.get('user');
     const { postId } = z.object({ postId: z.coerce.number().positive() }).parse(c.req.param());
+
+    const post = await getPostById(postId);
+
+    if (!post) {
+        throw new HTTPException(404, { message: 'Post not found' });
+    }
+
+    if (post.post.authorType === 'user' && post.post.userId === user.id) {
+        throw new HTTPException(403, { message: 'Cannot like your own post' });
+    }
+
+    if (post.post.authorType === 'band' && post.post.bandId) {
+        const isAdmin = await isBandAdmin(post.post.bandId, user.id);
+        if (isAdmin) {
+            throw new HTTPException(403, { message: 'Cannot like your own post' });
+        }
+    }
 
     await unlikePost(user.id, postId);
     const likesData = await getPostLikesData(user.id, postId);

@@ -26,9 +26,10 @@ type Props = {
     likes: number;
     shares: number;
     isLiked?: boolean;
+    canLike?: boolean;
 };
 
-export function PostModal({ open, onOpenChange, postId, author, content, image, timestamp, likes, shares: _shares, isLiked = false }: Props) {
+export function PostModal({ open, onOpenChange, postId, author, content, image, timestamp, likes, shares: _shares, isLiked = false, canLike = true }: Props) {
     const [commentText, setCommentText] = useState('');
     const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
     const [replyingTo, setReplyingTo] = useState<number | null>(null);
@@ -39,7 +40,7 @@ export function PostModal({ open, onOpenChange, postId, author, content, image, 
     const createCommentMutation = useCreateComment(postId);
 
     const handleLikeToggle = () => {
-        if (!auth?.user || likeMutation.isPending) return;
+        if (!canLike || !auth?.user || likeMutation.isPending) return;
         likeMutation.mutate(isLiked);
     };
 
@@ -191,7 +192,8 @@ export function PostModal({ open, onOpenChange, postId, author, content, image, 
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleLikeToggle}
-                                    className={`h-8 px-2 ${isLiked ? 'text-red-500' : 'text-muted-foreground'}`}
+                                    disabled={!canLike}
+                                    className={`h-8 px-2 ${!canLike ? `${isLiked ? 'text-red-500 opacity-75' : 'opacity-50'}` : isLiked ? 'text-red-500 transition-colors' : 'text-muted-foreground transition-colors hover:text-red-500'}`}
                                 >
                                     <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
                                 </Button>
