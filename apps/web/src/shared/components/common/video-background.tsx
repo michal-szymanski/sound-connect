@@ -8,17 +8,8 @@ type Props = {
     children?: React.ReactNode;
 };
 
-const getInitialVideoState = () => {
-    if (typeof window === 'undefined') {
-        return false;
-    }
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
-    return isDesktop && !prefersReducedMotion;
-};
-
 export function VideoBackground({ videoSrc, posterSrc, fallbackSrc, className = '', children }: Props) {
-    const [shouldShowVideo, setShouldShowVideo] = useState(getInitialVideoState);
+    const [shouldShowVideo, setShouldShowVideo] = useState(false);
 
     useEffect(() => {
         const mediaQueryList = window.matchMedia('(min-width: 1024px)');
@@ -29,6 +20,8 @@ export function VideoBackground({ videoSrc, posterSrc, fallbackSrc, className = 
             const currentIsDesktop = mediaQueryList.matches;
             setShouldShowVideo(currentIsDesktop && !currentPrefersReducedMotion);
         };
+
+        updateShouldShowVideo();
 
         mediaQueryList.addEventListener('change', updateShouldShowVideo);
         motionQueryList.addEventListener('change', updateShouldShowVideo);
@@ -54,7 +47,7 @@ export function VideoBackground({ videoSrc, posterSrc, fallbackSrc, className = 
                         e.currentTarget.classList.add('opacity-100');
                         e.currentTarget.classList.remove('opacity-0');
                     }}
-                    className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-1000"
+                    className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-800"
                 >
                     <source src={videoSrc} type="video/mp4" />
                 </video>
