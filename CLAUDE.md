@@ -90,6 +90,18 @@ Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
   - Message band button (starts conversation with band admins)
 - **My Bands page** (`/bands`): View all bands user belongs to (sorted by admin status)
 - **"Find Musicians" CTA**: Band profiles have quick link to musician search pre-filled with band's location and genre
+- **Band applications**:
+  - Musicians can apply to join bands with "looking for" section
+  - Application form with message, position (optional), and music link (optional)
+  - Applications tab on band page (visible to admins only) with pending count badge
+  - Accept/reject workflow with confirmation dialogs
+  - Rejection feedback message (optional)
+  - Prevents re-application after rejection during current recruitment period
+  - Prevents duplicate applications (one pending per band)
+  - Notifications sent to band admins when application received
+  - Notifications sent to applicants when accepted/rejected
+  - Apply button shows status: "Apply", "Application Pending", or "Application Declined"
+  - Auto-adds accepted applicants as band members
 
 ### Band Discovery
 - **Band search** at `/bands/search`:
@@ -131,7 +143,6 @@ Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
 - **Onboarding flow**: No guided profile setup for new users after sign-up
 - **Settings page**: Currently empty placeholder - needs account settings, privacy controls, notification preferences
 - **Discovery feed**: No personalized "For You" feed - users must manually search
-- **Band applications**: No structured "Request to Join Band" workflow
 - **Saved profiles**: Cannot bookmark musicians/bands for later
 
 ### Medium Priority

@@ -10,7 +10,9 @@ import {
     bandFollowerCountSchema,
     isFollowingBandSchema
 } from '@sound-connect/common/types/band-follows';
+import { createBandApplicationSchema, rejectBandApplicationSchema, applicationStatusEnum } from '@sound-connect/common/types/band-applications';
 import { postQueueMessageSchema } from '@sound-connect/common/types/posts';
+import { notificationQueueMessageSchema } from '@sound-connect/common/types/notifications';
 import {
     createBand,
     getBandById,
@@ -33,6 +35,17 @@ import {
     isFollowingBand as isFollowingBandQuery,
     bandExists
 } from '@/api/db/queries/band-follows-queries';
+import {
+    createBandApplication,
+    getBandApplications,
+    getApplicationById,
+    hasPendingApplication,
+    hasRejectedApplicationInCurrentPeriod,
+    updateApplicationStatus,
+    rejectPendingApplicationsForBand,
+    deleteRejectedApplicationsForBand,
+    getBandAdminIds
+} from '@/api/db/queries/band-applications-queries';
 import { geocodeCity } from '@/api/services/geocoding-service';
 
 const bandsRoutes = new Hono<HonoContext>();
@@ -92,12 +105,12 @@ bandsRoutes.patch('/bands/:id', async (c) => {
     let latitude: number | undefined = undefined;
     let longitude: number | undefined = undefined;
 
-    if (data.city !== undefined || data.state !== undefined) {
-        const band = await getBandById(id);
-        if (!band) {
-            throw new HTTPException(404, { message: 'Band not found' });
-        }
+    const band = await getBandById(id);
+    if (!band) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
 
+    if (data.city !== undefined || data.state !== undefined) {
         const cityToGeocode = data.city ?? band.city;
         const stateToGeocode = data.state ?? band.state;
 
@@ -111,6 +124,15 @@ bandsRoutes.patch('/bands/:id', async (c) => {
             latitude = geocodingResult.latitude;
             longitude = geocodingResult.longitude;
         }
+    }
+
+    const wasRecruiting = Boolean(band.lookingFor);
+    const isRecruiting = data.lookingFor !== undefined ? Boolean(data.lookingFor) : wasRecruiting;
+
+    if (wasRecruiting && !isRecruiting) {
+        await rejectPendingApplicationsForBand(id);
+    } else if (!wasRecruiting && isRecruiting) {
+        await deleteRejectedApplicationsForBand(id);
     }
 
     const updatedBand = await updateBand(id, { ...data, latitude, longitude });
@@ -343,6 +365,247 @@ bandsRoutes.get('/bands/:id/is-following', async (c) => {
     const isFollowing = await isFollowingBandQuery(id, user.id);
 
     return c.json(isFollowingBandSchema.parse({ isFollowing }));
+});
+
+bandsRoutes.post('/bands/:bandId/applications', async (c) => {
+    const { bandId } = z.object({ bandId: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const exists = await bandExists(bandId);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const band = await getBandById(bandId);
+    if (!band || !band.lookingFor) {
+        throw new HTTPException(400, { message: 'This band is not currently recruiting' });
+    }
+
+    const isMember = await isBandMember(bandId, user.id);
+    if (isMember) {
+        throw new HTTPException(400, { message: 'You are already a member of this band' });
+    }
+
+    const hasPending = await hasPendingApplication(bandId, user.id);
+    if (hasPending) {
+        throw new HTTPException(400, { message: 'You already have a pending application to this band' });
+    }
+
+    const hasRejected = await hasRejectedApplicationInCurrentPeriod(bandId, user.id);
+    if (hasRejected) {
+        throw new HTTPException(400, { message: 'You cannot re-apply during this recruitment period' });
+    }
+
+    const body = await c.req.json();
+    const data = createBandApplicationSchema.parse(body);
+
+    const application = await createBandApplication(bandId, user.id, data);
+
+    const adminIds = await getBandAdminIds(bandId);
+    const position = data.position ? ` as ${data.position}` : '';
+
+    for (const adminId of adminIds) {
+        const queueMessage = notificationQueueMessageSchema.parse({
+            userId: adminId,
+            type: 'band_application_received',
+            actorId: user.id,
+            actorName: user.name,
+            entityId: String(bandId),
+            entityType: 'band',
+            content: `${user.name} applied to join ${band.name}${position}`
+        });
+
+        await c.env.NotificationsQueue.send(queueMessage);
+    }
+
+    return c.json({ application }, 201);
+});
+
+bandsRoutes.get('/bands/:bandId/applications', async (c) => {
+    const { bandId } = z.object({ bandId: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const exists = await bandExists(bandId);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const isAdmin = await isBandAdmin(bandId, user.id);
+    if (!isAdmin) {
+        throw new HTTPException(403, { message: 'You must be a band admin to view applications' });
+    }
+
+    const {
+        status = 'pending',
+        limit = 20,
+        offset = 0
+    } = z
+        .object({
+            status: applicationStatusEnum.default('pending'),
+            limit: z.coerce.number().int().positive().max(100).default(20),
+            offset: z.coerce.number().int().min(0).default(0)
+        })
+        .parse({
+            status: c.req.query('status'),
+            limit: c.req.query('limit'),
+            offset: c.req.query('offset')
+        });
+
+    const { applications, total } = await getBandApplications(bandId, status, limit, offset);
+
+    return c.json({
+        applications,
+        total,
+        hasMore: offset + applications.length < total
+    });
+});
+
+bandsRoutes.get('/bands/:bandId/application-status', async (c) => {
+    const { bandId } = z.object({ bandId: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const exists = await bandExists(bandId);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const hasApplied = await hasPendingApplication(bandId, user.id);
+    const isRejected = await hasRejectedApplicationInCurrentPeriod(bandId, user.id);
+
+    return c.json({
+        hasApplied,
+        isRejected
+    });
+});
+
+bandsRoutes.patch('/bands/:bandId/applications/:applicationId/accept', async (c) => {
+    const { bandId, applicationId } = z.object({ bandId: z.coerce.number().positive(), applicationId: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const exists = await bandExists(bandId);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const isAdmin = await isBandAdmin(bandId, user.id);
+    if (!isAdmin) {
+        throw new HTTPException(403, { message: 'You must be a band admin to accept applications' });
+    }
+
+    const application = await getApplicationById(applicationId);
+    if (!application) {
+        throw new HTTPException(404, { message: 'Application not found' });
+    }
+
+    if (application.bandId !== bandId) {
+        throw new HTTPException(403, { message: 'Application does not belong to this band' });
+    }
+
+    if (application.status !== 'pending') {
+        throw new HTTPException(400, { message: 'Application has already been processed' });
+    }
+
+    const band = await getBandById(bandId);
+    if (!band) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const alreadyMember = await isBandMember(bandId, application.userId);
+    if (alreadyMember) {
+        const updatedApplication = await updateApplicationStatus(applicationId, 'accepted');
+        return c.json({
+            application: updatedApplication,
+            message: 'User was already a member. Application marked as accepted.'
+        });
+    }
+
+    const member = await addBandMember(bandId, application.userId);
+    const updatedApplication = await updateApplicationStatus(applicationId, 'accepted');
+
+    const queueMessage = notificationQueueMessageSchema.parse({
+        userId: application.userId,
+        type: 'band_application_accepted',
+        actorId: user.id,
+        actorName: user.name,
+        entityId: String(bandId),
+        entityType: 'band',
+        content: `Your application to ${band.name} has been accepted!`
+    });
+
+    await c.env.NotificationsQueue.send(queueMessage);
+
+    return c.json({
+        application: updatedApplication,
+        member: {
+            id: 0,
+            userId: member.userId,
+            bandId,
+            isAdmin: member.isAdmin,
+            joinedAt: member.joinedAt
+        }
+    });
+});
+
+bandsRoutes.patch('/bands/:bandId/applications/:applicationId/reject', async (c) => {
+    const { bandId, applicationId } = z.object({ bandId: z.coerce.number().positive(), applicationId: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const exists = await bandExists(bandId);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const isAdmin = await isBandAdmin(bandId, user.id);
+    if (!isAdmin) {
+        throw new HTTPException(403, { message: 'You must be a band admin to reject applications' });
+    }
+
+    const application = await getApplicationById(applicationId);
+    if (!application) {
+        throw new HTTPException(404, { message: 'Application not found' });
+    }
+
+    if (application.bandId !== bandId) {
+        throw new HTTPException(403, { message: 'Application does not belong to this band' });
+    }
+
+    if (application.status !== 'pending') {
+        throw new HTTPException(400, { message: 'Application has already been processed' });
+    }
+
+    const band = await getBandById(bandId);
+    if (!band) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const body = await c.req.json();
+    const data = rejectBandApplicationSchema.parse(body);
+
+    const updatedApplication = await updateApplicationStatus(applicationId, 'rejected', data.feedbackMessage);
+
+    let notificationContent = `Your application to ${band.name} has been declined.`;
+    if (data.feedbackMessage) {
+        notificationContent += ` ${data.feedbackMessage}`;
+    }
+
+    const queueMessage = notificationQueueMessageSchema.parse({
+        userId: application.userId,
+        type: 'band_application_rejected',
+        actorId: user.id,
+        actorName: user.name,
+        entityId: String(bandId),
+        entityType: 'band',
+        content: notificationContent
+    });
+
+    await c.env.NotificationsQueue.send(queueMessage);
+
+    return c.json({ application: updatedApplication });
 });
 
 export { bandsRoutes };
