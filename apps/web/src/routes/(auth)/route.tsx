@@ -25,7 +25,7 @@ const AnimatedHeroContent = memo(function AnimatedHeroContent() {
         <div className="flex h-full flex-col justify-between">
             <div
                 className={`flex items-center gap-2 transition-opacity hover:opacity-80 ${
-                    animate ? 'animate-in fade-in slide-in-from-top-2 duration-500' : ''
+                    animate ? 'animate-in fade-in slide-in-from-top-2 delay-200 duration-400' : ''
                 }`}
             >
                 <div className="bg-primary/20 rounded-full p-2 backdrop-blur-sm">
@@ -34,9 +34,15 @@ const AnimatedHeroContent = memo(function AnimatedHeroContent() {
                 <span className="text-xl font-bold tracking-tight">{APP_NAME}</span>
             </div>
 
-            <div className={`space-y-3 ${animate ? 'animate-in fade-in slide-in-from-bottom-6 delay-150 duration-700' : ''}`}>
-                <h2 className="text-4xl font-bold tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">Find your next bandmate</h2>
-                <p className="max-w-md text-xl leading-relaxed text-white/95 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
+            <div className="space-y-3">
+                <h2
+                    className={`text-4xl font-bold tracking-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] ${animate ? 'animate-in fade-in slide-in-from-bottom-4 delay-500 duration-600' : ''}`}
+                >
+                    Find your next bandmate
+                </h2>
+                <p
+                    className={`max-w-md text-xl leading-relaxed text-white/95 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)] ${animate ? 'animate-in fade-in slide-in-from-bottom-4 delay-650 duration-600' : ''}`}
+                >
                     Connect with musicians. Collaborate. Create.
                 </p>
             </div>
