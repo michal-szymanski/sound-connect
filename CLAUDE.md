@@ -9,6 +9,10 @@ This project is a monorepo containing a social media app designed like LinkedIn 
     - `apps/api` - REST API built with Cloudflare Workers, Durable Objects for real-time communication, Drizzle.js ORM with D1 database
     - `apps/posts-queue-consumer` - Queue consumer worker for content moderation, using Cloudflare Queues
     - `apps/notifications-queue-consumer` - Queue consumer worker for processing and delivering notifications, using Cloudflare Queues
+- **Storage**:
+    - `sound-connect-assets` - R2 bucket for user-uploaded media (profile images, band images, post media)
+    - Public URL: `https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev`
+    - Accessible via `c.env.ASSETS` binding in API and queue consumers
 - **Common**: `packages/common` - Shared types, constants, and utilities between frontend and backend
 
 ## Quick Reference
@@ -528,6 +532,52 @@ When you identify an issue or need to implement a feature:
 #### Backend API (`apps/api`)
 
 - ALWAYS access current user ID with `c.get('user')` - NEVER trust user IDs from frontend requests
+
+#### R2 Asset Storage (`sound-connect-assets`)
+
+**Current Setup:**
+- Bucket name: `sound-connect-assets`
+- Binding: `ASSETS` (accessible via `c.env.ASSETS` in API and queue consumers)
+- Public URL: `https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev`
+- No egress fees (Cloudflare R2's key advantage over S3)
+
+**Upload Flow:**
+- Client uploads files via API endpoints (POST /posts, PUT /media)
+- API receives file and uploads to R2 using `c.env.ASSETS.put(key, file)`
+- Optional: Queue consumer processes for moderation (future AI moderation)
+- Files are publicly accessible at `https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev/{key}`
+
+**Folder Structure:**
+```
+sound-connect-assets/
+├── temp/           # Temporary uploads (lifecycle: auto-delete after 24hrs)
+├── profiles/       # User profile images (profiles/{userId}/avatar.{ext})
+├── bands/          # Band profile images (bands/{bandId}/avatar.{ext})
+└── posts/          # Post media (posts/{postId}/image-{n}.{ext})
+```
+
+**Key Patterns:**
+- Use `crypto.randomUUID()` for generating unique object keys
+- Store R2 object keys in database (not full URLs)
+- Construct public URLs when needed: `${PUBLIC_R2_URL}/${key}`
+- All uploaded files are public by default (no presigned URLs needed for read access)
+
+**Cost:**
+- Storage: $0.015/GB/month
+- Class A operations (PUT): $4.50/million
+- Class B operations (GET): $0.50/million
+- Egress: FREE (no bandwidth charges)
+- Estimated cost for 10k DAU: ~$3-5/month
+
+**Future Enhancements:**
+- Presigned URLs for direct client uploads (bypasses API for large files)
+- AI-based content moderation in queue consumer
+- Image optimization and resizing
+- Lifecycle rules for cleanup
+
+**Legacy:**
+- Old bucket `users-bucket` (binding: `UsersBucket`) - kept as backup, not used in code
+- Migration completed: 2025-11-10
 
 #### Database (`packages/drizzle`)
 

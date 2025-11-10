@@ -46,8 +46,8 @@
     },
     "r2_buckets": [
         {
-            "binding": "UsersBucket",
-            "bucket_name": "users-bucket"
+            "binding": "ASSETS",
+            "bucket_name": "sound-connect-assets"
         }
     ],
     "queues": {
@@ -98,8 +98,8 @@
             },
             "r2_buckets": [
                 {
-                    "binding": "UsersBucket",
-                    "bucket_name": "users-bucket"
+                    "binding": "ASSETS",
+                    "bucket_name": "sound-connect-assets"
                 }
             ],
             "queues": {
