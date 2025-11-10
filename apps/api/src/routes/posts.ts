@@ -75,7 +75,7 @@ postsRoutes.post('/posts', async (c) => {
 
     for (const file of media) {
         const key = crypto.randomUUID();
-        const uploadedFile = await c.env.UsersBucket.put(key, file);
+        const uploadedFile = await c.env.ASSETS.put(key, file);
 
         if (uploadedFile) {
             mediaKeys.push(uploadedFile.key);

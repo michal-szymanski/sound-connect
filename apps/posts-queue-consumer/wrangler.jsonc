@@ -25,6 +25,12 @@
             "database_id": "6f14b889-a6fb-4565-857d-d841cef75df2"
         }
     ],
+    "r2_buckets": [
+        {
+            "binding": "ASSETS",
+            "bucket_name": "sound-connect-assets"
+        }
+    ],
     "env": {
         "production": {
             "queues": {
@@ -43,6 +49,12 @@
                     "binding": "DB",
                     "database_name": "sound-connect-db",
                     "database_id": "6f14b889-a6fb-4565-857d-d841cef75df2"
+                }
+            ],
+            "r2_buckets": [
+                {
+                    "binding": "ASSETS",
+                    "bucket_name": "sound-connect-assets"
                 }
             ]
         }
