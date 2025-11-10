@@ -24,7 +24,7 @@
         {
             "binding": "DB",
             "database_name": "sound-connect-db",
-            "database_id": "4d13c143-e7a0-4eca-b214-25bf2ef6129a",
+            "database_id": "6f14b889-a6fb-4565-857d-d841cef75df2",
             "migrations_dir": "../../packages/drizzle/migrations"
         }
     ],
@@ -76,7 +76,7 @@
                 {
                     "binding": "DB",
                     "database_name": "sound-connect-db",
-                    "database_id": "4d13c143-e7a0-4eca-b214-25bf2ef6129a",
+                    "database_id": "6f14b889-a6fb-4565-857d-d841cef75df2",
                     "migrations_dir": "../../packages/drizzle/migrations"
                 }
             ],

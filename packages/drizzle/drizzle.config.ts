@@ -7,7 +7,7 @@ export default defineConfig({
     driver: 'd1-http',
     dbCredentials: {
         accountId: 'a9aafd47f2deb719fa67d2987fefbb47',
-        databaseId: '4d13c143-e7a0-4eca-b214-25bf2ef6129a',
+        databaseId: '6f14b889-a6fb-4565-857d-d841cef75df2',
         token: 'toA-LhJ726BPQ85bWRRr2-81mXhwIHnMobAVns-3'
     },
     migrations: {
