@@ -68,20 +68,28 @@ Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
 - User detail pages with full profile information
 
 ### Band/Group Management
-- **Create bands** with profile information:
+- **Create bands** (`/bands/new`) with profile information:
   - Name, bio, profile image
   - Primary genre
   - Location (geocoded)
   - "Looking for" section (prominently displayed)
+- **Band profile pages** (`/bands/:id`) with tabbed interface:
+  - Posts tab: Band posts feed, post composer (admin only)
+  - About tab: Bio, "Looking for" section (highlighted), delete band (admin only)
+  - Members tab: Member grid with roles, add/remove members (admin only)
 - **Member management**:
-  - Add/remove members
+  - Add/remove members (admin only)
   - Admin role system (multiple admins per band)
   - Protection: Last admin cannot be removed
-- **Band pages**: View band details, members, posts
+  - Member cards showing name, profile image, admin badge
 - **Band posts**: Admins can create posts on behalf of band
-- **Follow bands**: Users can follow/unfollow bands
-- View band followers and follower count
-- View all bands a user belongs to
+- **Follow bands**: Follow/unfollow button on band profiles
+- **Band followers**:
+  - Follower count display on profile
+  - Followers modal showing list of followers
+  - Message band button (starts conversation with band admins)
+- **My Bands page** (`/bands`): View all bands user belongs to (sorted by admin status)
+- **"Find Musicians" CTA**: Band profiles have quick link to musician search pre-filled with band's location and genre
 
 ### Band Discovery
 - **Band search** at `/bands/search`:
