@@ -1,0 +1,265 @@
+import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
+import { HonoContext } from 'types';
+import { presignedUrlRequestSchema, uploadConfirmRequestSchema, batchConfirmRequestSchema } from '@sound-connect/common/types/uploads';
+import { ALLOWED_IMAGE_TYPES, ALLOWED_VIDEO_TYPES, MAX_IMAGE_SIZE, MAX_VIDEO_SIZE, PRESIGNED_URL_EXPIRY_MINUTES } from '@sound-connect/common/constants';
+import { isBandAdmin } from '@/api/db/queries/bands-queries';
+import {
+    createUploadSession,
+    getUploadSession,
+    confirmUploadSession,
+    getExpiredUnconfirmedSessions,
+    deleteUploadSessions
+} from '@/api/db/queries/upload-sessions-queries';
+import {
+    generateUploadUrl,
+    moveR2Object,
+    deleteR2Object,
+    validateR2Object,
+    validateMagicNumbers,
+    constructPublicUrl,
+    sanitizeFileName
+} from '@/api/services/r2-service';
+
+const uploadsRoutes = new Hono<HonoContext>();
+
+uploadsRoutes.post('/api/uploads/presigned-url', async (c) => {
+    const user = c.get('user');
+
+    const body = await c.req.json();
+    const data = presignedUrlRequestSchema.parse(body);
+
+    const allowedTypes = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES];
+    if (!allowedTypes.includes(data.fileType as never)) {
+        throw new HTTPException(400, {
+            message: `Invalid file type. Allowed types: ${allowedTypes.join(', ')}`
+        });
+    }
+
+    const isImage = ALLOWED_IMAGE_TYPES.includes(data.fileType as never);
+    const isVideo = ALLOWED_VIDEO_TYPES.includes(data.fileType as never);
+
+    const maxSize = isImage ? MAX_IMAGE_SIZE : isVideo ? MAX_VIDEO_SIZE : 0;
+
+    if (data.fileSize > maxSize) {
+        throw new HTTPException(400, {
+            message: `File size exceeds maximum (${maxSize} bytes for ${isImage ? 'images' : 'videos'})`
+        });
+    }
+
+    if (data.purpose === 'band-image') {
+        if (!data.bandId) {
+            throw new HTTPException(400, { message: 'Band ID is required for band image uploads' });
+        }
+
+        const isAdmin = await isBandAdmin(data.bandId, user.id);
+        if (!isAdmin) {
+            throw new HTTPException(403, { message: 'You must be a band admin to upload band images' });
+        }
+    }
+
+    const sessionId = crypto.randomUUID();
+    const sanitizedName = sanitizeFileName(data.fileName);
+    const extension = sanitizedName.split('.').pop() || 'bin';
+    const timestamp = Date.now();
+    const tempKey = `temp/${user.id}/${timestamp}-${sessionId}.${extension}`;
+
+    const expiresAt = new Date(Date.now() + PRESIGNED_URL_EXPIRY_MINUTES * 60 * 1000).toISOString();
+
+    await createUploadSession({
+        id: sessionId,
+        userId: user.id,
+        uploadType: data.purpose,
+        bandId: data.bandId,
+        fileName: data.fileName,
+        fileSize: data.fileSize,
+        contentType: data.fileType,
+        tempKey,
+        expiresAt
+    });
+
+    const uploadUrl = await generateUploadUrl(c.env.ASSETS, tempKey);
+
+    return c.json({
+        uploadUrl,
+        key: tempKey,
+        sessionId,
+        expiresAt,
+        maxFileSize: maxSize
+    });
+});
+
+uploadsRoutes.post('/api/uploads/upload', async (c) => {
+    const user = c.get('user');
+
+    const sessionId = c.req.query('sessionId');
+    if (!sessionId) {
+        throw new HTTPException(400, { message: 'Session ID is required' });
+    }
+
+    const session = await getUploadSession(sessionId);
+
+    if (!session) {
+        throw new HTTPException(404, { message: 'Upload session not found' });
+    }
+
+    if (session.userId !== user.id) {
+        throw new HTTPException(403, { message: 'Not authorized to upload to this session' });
+    }
+
+    if (new Date(session.expiresAt) < new Date()) {
+        throw new HTTPException(410, { message: 'Upload session has expired' });
+    }
+
+    const body = await c.req.arrayBuffer();
+
+    await c.env.ASSETS.put(session.tempKey, body, {
+        httpMetadata: {
+            contentType: session.contentType
+        }
+    });
+
+    return c.json({ success: true });
+});
+
+uploadsRoutes.post('/api/uploads/confirm', async (c) => {
+    const user = c.get('user');
+
+    const body = await c.req.json();
+    const data = uploadConfirmRequestSchema.parse(body);
+
+    const session = await getUploadSession(data.sessionId);
+
+    if (!session) {
+        throw new HTTPException(404, { message: 'Upload session not found or expired' });
+    }
+
+    if (session.userId !== user.id) {
+        throw new HTTPException(403, { message: 'You do not have permission to confirm this upload' });
+    }
+
+    if (new Date(session.expiresAt) < new Date()) {
+        throw new HTTPException(410, { message: 'Upload session has expired' });
+    }
+
+    const isValid = await validateR2Object(c.env.ASSETS, session.tempKey, session.fileSize, session.contentType);
+
+    if (!isValid) {
+        throw new HTTPException(400, { message: 'File validation failed: Size or type mismatch' });
+    }
+
+    const magicValid = await validateMagicNumbers(c.env.ASSETS, session.tempKey, session.contentType);
+
+    if (!magicValid) {
+        throw new HTTPException(400, { message: 'File validation failed: Invalid file type' });
+    }
+
+    const timestamp = Date.now();
+    const extension = session.fileName.split('.').pop() || 'bin';
+
+    let permanentKey: string;
+
+    if (session.uploadType === 'profile-image') {
+        permanentKey = `profiles/${user.id}/avatar-${timestamp}.${extension}`;
+    } else if (session.uploadType === 'band-image') {
+        if (!session.bandId) {
+            throw new HTTPException(400, { message: 'Band ID is missing' });
+        }
+        permanentKey = `bands/${session.bandId}/avatar-${timestamp}.${extension}`;
+    } else {
+        permanentKey = `posts/pending/${data.sessionId}.${extension}`;
+    }
+
+    await moveR2Object(c.env.ASSETS, session.tempKey, permanentKey);
+
+    await confirmUploadSession(data.sessionId);
+
+    const publicUrl = constructPublicUrl(permanentKey);
+
+    return c.json({
+        success: true,
+        publicUrl,
+        key: permanentKey
+    });
+});
+
+uploadsRoutes.post('/api/uploads/confirm-batch', async (c) => {
+    const user = c.get('user');
+
+    const body = await c.req.json();
+    const data = batchConfirmRequestSchema.parse(body);
+
+    const results = await Promise.all(
+        data.sessionIds.map(async (sessionId, index) => {
+            const session = await getUploadSession(sessionId);
+
+            if (!session) {
+                throw new HTTPException(404, { message: `Upload session not found: ${sessionId}` });
+            }
+
+            if (session.userId !== user.id) {
+                throw new HTTPException(403, { message: 'You do not have permission to confirm these uploads' });
+            }
+
+            if (new Date(session.expiresAt) < new Date()) {
+                throw new HTTPException(410, { message: `Upload session has expired: ${sessionId}` });
+            }
+
+            const isValid = await validateR2Object(c.env.ASSETS, session.tempKey, session.fileSize, session.contentType);
+
+            if (!isValid) {
+                throw new HTTPException(400, { message: `File validation failed for ${data.keys[index]}` });
+            }
+
+            const magicValid = await validateMagicNumbers(c.env.ASSETS, session.tempKey, session.contentType);
+
+            if (!magicValid) {
+                throw new HTTPException(400, { message: `Invalid file type for ${data.keys[index]}` });
+            }
+
+            const extension = session.fileName.split('.').pop() || 'bin';
+            const permanentKey = `posts/pending/${sessionId}.${extension}`;
+
+            await moveR2Object(c.env.ASSETS, session.tempKey, permanentKey);
+            await confirmUploadSession(sessionId);
+
+            const publicUrl = constructPublicUrl(permanentKey);
+
+            return {
+                success: true,
+                publicUrl,
+                key: permanentKey
+            };
+        })
+    );
+
+    return c.json({ results });
+});
+
+uploadsRoutes.post('/api/uploads/cleanup', async (c) => {
+    const before = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    const expiredSessions = await getExpiredUnconfirmedSessions(before);
+
+    let deletedCount = 0;
+
+    for (const session of expiredSessions) {
+        try {
+            await deleteR2Object(c.env.ASSETS, session.tempKey);
+            deletedCount++;
+        } catch {
+            continue;
+        }
+    }
+
+    const sessionIds = expiredSessions.map((s) => s.id);
+    await deleteUploadSessions(sessionIds);
+
+    return c.json({
+        success: true,
+        deletedCount,
+        message: `Cleaned up ${deletedCount} expired upload sessions`
+    });
+});
+
+export { uploadsRoutes };
