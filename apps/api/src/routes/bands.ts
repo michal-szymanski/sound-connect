@@ -419,7 +419,7 @@ bandsRoutes.post('/bands/:bandId/applications', async (c) => {
         await c.env.NotificationsQueue.send(queueMessage);
     }
 
-    return c.json({ application }, 201);
+    return c.json({ success: true, application }, 201);
 });
 
 bandsRoutes.get('/bands/:bandId/applications', async (c) => {
@@ -539,6 +539,7 @@ bandsRoutes.patch('/bands/:bandId/applications/:applicationId/accept', async (c)
     await c.env.NotificationsQueue.send(queueMessage);
 
     return c.json({
+        success: true,
         application: updatedApplication,
         member: {
             id: 0,
@@ -605,7 +606,7 @@ bandsRoutes.patch('/bands/:bandId/applications/:applicationId/reject', async (c)
 
     await c.env.NotificationsQueue.send(queueMessage);
 
-    return c.json({ application: updatedApplication });
+    return c.json({ success: true, application: updatedApplication });
 });
 
 export { bandsRoutes };

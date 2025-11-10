@@ -69,7 +69,7 @@ export const likeComment = createServerFn({ method: 'POST' })
         return success(null);
     });
 
-export const unlikeComment = createServerFn()
+export const unlikeComment = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ commentId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {

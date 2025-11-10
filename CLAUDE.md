@@ -186,7 +186,13 @@ What type of work are you doing?
 │
 ├─ BUG FIX
 │  ├─ Frontend bug → Invoke: frontend
+│  │  • React components, hooks, server functions, routing, UI issues
+│  │  • Tanstack Query configuration, data fetching
+│  │  • Form validation, state management
+│  │  • NEVER fix frontend bugs directly - ALWAYS use frontend agent
 │  ├─ Backend bug → Invoke: backend
+│  │  • API routes, database queries, Durable Objects
+│  │  • NEVER fix backend bugs directly - ALWAYS use backend agent
 │  └─ Multi-domain bug → Invoke: frontend or backend (they can coordinate)
 │     • Only use system-architect if shared code needs updating
 │
@@ -260,6 +266,8 @@ What type of work are you doing?
 - Tanstack Query hooks
 - Auto-invokes code-quality-enforcer
 - Use when: Frontend-only features or frontend portion of multi-domain
+- **CRITICAL**: ALWAYS invoke for ANY frontend code changes (bugs, features, refactors)
+- **NEVER** make direct edits to frontend files - delegate to frontend agent
 
 **backend**
 
@@ -269,6 +277,8 @@ What type of work are you doing?
 - Queue consumers
 - Auto-invokes code-quality-enforcer
 - Use when: Backend-only features or backend portion of multi-domain
+- **CRITICAL**: ALWAYS invoke for ANY backend code changes (bugs, features, refactors)
+- **NEVER** make direct edits to backend files - delegate to backend agent
 
 **realtime-architect**
 
@@ -460,6 +470,39 @@ Automatically invoke: frontend
 4. **Use system-architect only for multi-domain features** - Skip it for frontend-only or backend-only work
 5. **Don't invoke code-quality-enforcer manually** - frontend/backend agents do this automatically
 6. **Trust domain agents** - Frontend and backend agents have specialized knowledge and access to MCPs (Magic UI, etc.). Let them make implementation decisions.
+
+#### CRITICAL: Never Make Direct Code Changes
+
+**ABSOLUTE RULE: You must NEVER directly edit code files in `apps/web/`, `apps/api/`, `apps/*-queue-consumer/` using Edit, Write, or other tools.**
+
+When you identify an issue or need to implement a feature:
+1. **Frontend issues** (`apps/web/**`): ALWAYS invoke `frontend` agent
+   - Server functions, React hooks, components, routing, Tanstack Query
+   - Even for "simple" fixes like adding a parameter or fixing a condition
+2. **Backend issues** (`apps/api/**`, `apps/*-queue-consumer/**`): ALWAYS invoke `backend` agent
+   - API routes, database queries, Durable Objects, queue consumers
+   - Even for "simple" fixes like adding validation or fixing logic
+
+**Why this matters:**
+- Specialized agents have deep domain knowledge and access to specialized MCPs
+- They automatically run code quality checks
+- They follow framework-specific best practices
+- They maintain consistency across the codebase
+
+**When direct editing IS allowed:**
+- Documentation files (`.md`)
+- Configuration files (only when not part of feature implementation)
+- Shared code in `packages/common` (only when coordinating with system-architect)
+
+**Examples of what NOT to do:**
+- ❌ "Let me fix this React Query hook configuration" → Edit tool
+- ❌ "I'll add the missing method parameter" → Edit tool
+- ❌ "Let me update this API route" → Edit tool
+
+**Examples of what TO do:**
+- ✅ "Let me invoke the frontend agent to fix this React Query hook configuration" → Task(frontend)
+- ✅ "Let me invoke the frontend agent to add the missing method parameter" → Task(frontend)
+- ✅ "Let me invoke the backend agent to update this API route" → Task(backend)
 
 ### General AI Rules (Apply to All Projects)
 

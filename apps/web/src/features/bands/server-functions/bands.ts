@@ -71,7 +71,7 @@ export const getBand = createServerFn()
         }
     });
 
-export const updateBand = createServerFn({ method: 'PATCH' as any }) // eslint-disable-line @typescript-eslint/no-explicit-any
+export const updateBand = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateBandInputSchema.extend({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
@@ -100,7 +100,7 @@ export const updateBand = createServerFn({ method: 'PATCH' as any }) // eslint-d
         }
     });
 
-export const deleteBand = createServerFn({ method: 'DELETE' as any }) // eslint-disable-line @typescript-eslint/no-explicit-any
+export const deleteBand = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
@@ -153,7 +153,7 @@ export const addBandMember = createServerFn({ method: 'POST' })
         }
     });
 
-export const removeBandMember = createServerFn({ method: 'DELETE' as any }) // eslint-disable-line @typescript-eslint/no-explicit-any
+export const removeBandMember = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number(), userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
@@ -288,7 +288,7 @@ export const followBand = createServerFn({ method: 'POST' })
         }
     });
 
-export const unfollowBand = createServerFn()
+export const unfollowBand = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {

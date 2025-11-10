@@ -30,7 +30,7 @@ export const getNotifications = createServerFn()
         }
     });
 
-export const markNotificationAsSeen = createServerFn()
+export const markNotificationAsSeen = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ notificationId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
@@ -49,7 +49,7 @@ export const markNotificationAsSeen = createServerFn()
         return success(null);
     });
 
-export const markAllNotificationsAsSeen = createServerFn()
+export const markAllNotificationsAsSeen = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/notifications/seen`, {
@@ -67,7 +67,7 @@ export const markAllNotificationsAsSeen = createServerFn()
         return success(null);
     });
 
-export const markNotificationsAsRead = createServerFn()
+export const markNotificationsAsRead = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(markNotificationsAsReadSchema)
     .handler(async ({ data, context: { env, auth } }) => {
@@ -88,7 +88,7 @@ export const markNotificationsAsRead = createServerFn()
         return success(null);
     });
 
-export const deleteNotification = createServerFn()
+export const deleteNotification = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ notificationId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
