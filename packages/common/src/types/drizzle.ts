@@ -329,7 +329,16 @@ export const messageSchema = z.object({
 export type CreateMessage = z.infer<typeof createMessageSchema>;
 export type Message = z.infer<typeof messageSchema>;
 
-export const notificationTypeEnum = z.enum(['follow_request', 'follow_accepted', 'comment', 'reaction', 'mention']);
+export const notificationTypeEnum = z.enum([
+    'follow_request',
+    'follow_accepted',
+    'comment',
+    'reaction',
+    'mention',
+    'band_application_received',
+    'band_application_accepted',
+    'band_application_rejected'
+]);
 export const entityTypeEnum = z.enum(['post', 'comment', 'message', 'band']);
 
 export const createNotificationSchema = z.object({
@@ -481,3 +490,35 @@ export const geocodingCacheSchema = z.object({
 
 export type CreateGeocodingCache = z.infer<typeof createGeocodingCacheSchema>;
 export type GeocodingCache = z.infer<typeof geocodingCacheSchema>;
+
+export const applicationStatusEnum = z.enum(['pending', 'accepted', 'rejected']);
+
+export const createBandApplicationSchema = z.object({
+    id: z.number(),
+    bandId: z.number(),
+    userId: z.string(),
+    message: z.string(),
+    position: z.string().nullable(),
+    musicLink: z.string().nullable(),
+    status: applicationStatusEnum,
+    feedbackMessage: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string()
+});
+
+export const bandApplicationSchema = z.object({
+    id: z.number(),
+    bandId: z.number(),
+    userId: z.string(),
+    message: z.string(),
+    position: z.string().nullable(),
+    musicLink: z.string().nullable(),
+    status: applicationStatusEnum,
+    feedbackMessage: z.string().nullable(),
+    createdAt: z.string(),
+    updatedAt: z.string()
+});
+
+export type CreateBandApplication = z.infer<typeof createBandApplicationSchema>;
+export type BandApplication = z.infer<typeof bandApplicationSchema>;
+export type ApplicationStatus = z.infer<typeof applicationStatusEnum>;

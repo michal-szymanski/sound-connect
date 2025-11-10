@@ -1,7 +1,6 @@
 import { createMiddleware } from '@tanstack/react-start';
 import { env } from 'cloudflare:workers';
 import { getSessionData, getSessionCookie } from '@/shared/server-functions/helpers';
-import { redirect } from '@tanstack/react-router';
 import { Session, User } from '@/common/types/drizzle';
 
 type Auth = {
@@ -29,7 +28,7 @@ export const authMiddleware = createMiddleware()
 
         if (!sessionData) {
             console.error('[Auth Middleware] Unauthorized: No valid session found');
-            throw redirect({ to: '/sign-in' });
+            throw new Error('UNAUTHORIZED');
         }
 
         const cookie = getSessionCookie();

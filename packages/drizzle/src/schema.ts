@@ -167,7 +167,16 @@ export const messagesTable = sqliteTable('messages', {
     updatedAt: text('updated_at')
 });
 
-export const notificationTypeEnum = ['follow_request', 'follow_accepted', 'comment', 'reaction', 'mention'] as const;
+export const notificationTypeEnum = [
+    'follow_request',
+    'follow_accepted',
+    'comment',
+    'reaction',
+    'mention',
+    'band_application_received',
+    'band_application_accepted',
+    'band_application_rejected'
+] as const;
 export const entityTypeEnum = ['post', 'comment', 'message', 'band'] as const;
 
 export const notificationsTable = sqliteTable('notifications', {
@@ -212,7 +221,8 @@ export const mediaRelations = relations(mediaTable, ({ one }) => ({
 export const bandsRelations = relations(bandsTable, ({ many }) => ({
     members: many(bandsMembersTable),
     followers: many(bandsFollowersTable),
-    posts: many(postsTable)
+    posts: many(postsTable),
+    applications: many(bandApplicationsTable)
 }));
 
 export const bandsMembersRelations = relations(bandsMembersTable, ({ one }) => ({
@@ -299,8 +309,9 @@ export const userAdditionalInstrumentsRelations = relations(userAdditionalInstru
     user: one(users, { fields: [userAdditionalInstrumentsTable.userId], references: [users.id] })
 }));
 
-export const usersRelations = relations(users, ({ one }) => ({
-    profile: one(userProfilesTable, { fields: [users.id], references: [userProfilesTable.userId] })
+export const usersRelations = relations(users, ({ one, many }) => ({
+    profile: one(userProfilesTable, { fields: [users.id], references: [userProfilesTable.userId] }),
+    bandApplications: many(bandApplicationsTable)
 }));
 
 export const geocodingCacheTable = sqliteTable(
@@ -320,3 +331,35 @@ export const geocodingCacheTable = sqliteTable(
         createdAtIdx: index('idx_geocoding_cache_created_at').on(table.createdAt)
     })
 );
+
+export const applicationStatusEnum = ['pending', 'accepted', 'rejected'] as const;
+
+export const bandApplicationsTable = sqliteTable(
+    'band_applications',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        bandId: integer('band_id')
+            .notNull()
+            .references(() => bandsTable.id, { onDelete: 'cascade' }),
+        userId: text('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        message: text('message').notNull(),
+        position: text('position'),
+        musicLink: text('music_link'),
+        status: text('status', { enum: applicationStatusEnum }).notNull(),
+        feedbackMessage: text('feedback_message'),
+        createdAt: text('created_at').notNull(),
+        updatedAt: text('updated_at').notNull()
+    },
+    (table) => ({
+        bandStatusCreatedIdx: index('idx_band_applications_band_id').on(table.bandId, table.status, table.createdAt),
+        userStatusIdx: index('idx_band_applications_user_id').on(table.userId, table.status),
+        statusIdx: index('idx_band_applications_status').on(table.status)
+    })
+);
+
+export const bandApplicationsRelations = relations(bandApplicationsTable, ({ one }) => ({
+    band: one(bandsTable, { fields: [bandApplicationsTable.bandId], references: [bandsTable.id] }),
+    user: one(users, { fields: [bandApplicationsTable.userId], references: [users.id] })
+}));

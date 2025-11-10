@@ -21,6 +21,7 @@
         "./types/band-search": "./src/types/band-search.ts",
         "./types/band-posts": "./src/types/band-posts.ts",
         "./types/band-follows": "./src/types/band-follows.ts",
+        "./types/band-applications": "./src/types/band-applications.ts",
         "./utils/profile-completion": "./src/utils/profile-completion.ts",
         "./utils/geo": "./src/utils/geo.ts",
         "./utils/availability": "./src/utils/availability.ts"

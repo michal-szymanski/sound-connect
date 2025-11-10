@@ -22,10 +22,14 @@ import { AddMemberModal } from '@/features/bands/components/add-member-modal';
 import { BandForm } from '@/features/bands/components/band-form';
 import { BandPostComposer } from '@/features/bands/components/band-post-composer';
 import { BandPostFeed } from '@/features/bands/components/band-post-feed';
+import { ApplyToBandButton } from '@/features/bands/components/apply-to-band-button';
+import { BandApplicationsList } from '@/features/bands/components/band-applications-list';
 import { useBand, useUpdateBand, useDeleteBand, useAddBandMember, useRemoveBandMember } from '@/features/bands/hooks/use-bands';
+import { useBandApplications, useUserApplicationStatus } from '@/features/bands/hooks/use-band-applications';
 import { useAuth } from '@/shared/lib/react-query';
 import { ProfileSection } from '@/features/profile/components/profile-section';
-import { Music2, Users, Search, AlertCircle, UserSearch } from 'lucide-react';
+import { Music2, Users, Search, AlertCircle, UserSearch, FileText } from 'lucide-react';
+import { Badge } from '@/shared/components/ui/badge';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const Route = createFileRoute('/(main)/bands/$id' as any)({
@@ -51,6 +55,8 @@ function RouteComponent() {
     const { bandId } = Route.useLoaderData();
     const { data: band, isLoading, error } = useBand(bandId);
     const { data: auth } = useAuth();
+    const { data: applicationsData } = useBandApplications(bandId, 'pending');
+    const { data: applicationStatus } = useUserApplicationStatus(bandId);
     const updateBand = useUpdateBand(bandId);
     const deleteBand = useDeleteBand();
     const addMember = useAddBandMember(bandId);
@@ -60,6 +66,8 @@ function RouteComponent() {
     const [showAddMemberModal, setShowAddMemberModal] = useState(false);
     const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+    const pendingApplicationsCount = applicationsData?.total || 0;
 
     if (isLoading) {
         return (
@@ -188,10 +196,22 @@ function RouteComponent() {
             ) : (
                 <>
                     <Tabs defaultValue="posts" className="w-full">
-                        <TabsList className="grid w-full grid-cols-3">
+                        <TabsList className={`grid w-full ${isUserAdmin ? 'grid-cols-4' : 'grid-cols-3'}`}>
                             <TabsTrigger value="posts">Posts</TabsTrigger>
                             <TabsTrigger value="about">About</TabsTrigger>
                             <TabsTrigger value="members">Members</TabsTrigger>
+                            {isUserAdmin && (
+                                <TabsTrigger value="applications">
+                                    <div className="flex items-center gap-2">
+                                        Applications
+                                        {pendingApplicationsCount > 0 && (
+                                            <Badge variant="default" className="ml-1 rounded-full px-2 py-0.5 text-xs">
+                                                {pendingApplicationsCount}
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </TabsTrigger>
+                            )}
                         </TabsList>
 
                         <TabsContent value="posts" className="mt-6 space-y-6">
@@ -209,14 +229,28 @@ function RouteComponent() {
                             {band.lookingFor && (
                                 <Card className="border-primary/20 bg-primary/5">
                                     <CardContent className="p-6">
-                                        <div className="flex items-start gap-3">
-                                            <div className="bg-primary flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
-                                                <Search className="h-5 w-5 text-white" />
+                                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                            <div className="flex items-start gap-3">
+                                                <div className="bg-primary flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
+                                                    <Search className="h-5 w-5 text-white" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h2 className="mb-2 text-lg font-semibold">Looking For</h2>
+                                                    <p className="text-foreground whitespace-pre-wrap">{band.lookingFor}</p>
+                                                </div>
                                             </div>
-                                            <div className="flex-1">
-                                                <h2 className="mb-2 text-lg font-semibold">Looking For</h2>
-                                                <p className="text-foreground whitespace-pre-wrap">{band.lookingFor}</p>
-                                            </div>
+                                            {!isUserAdmin && (
+                                                <div className="sm:flex-shrink-0">
+                                                    <ApplyToBandButton
+                                                        bandId={band.id}
+                                                        bandName={band.name}
+                                                        lookingFor={band.lookingFor}
+                                                        isUserMember={isUserMember}
+                                                        hasApplied={applicationStatus?.hasApplied || false}
+                                                        isRejected={applicationStatus?.isRejected || false}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -268,6 +302,22 @@ function RouteComponent() {
                                 </CardContent>
                             </Card>
                         </TabsContent>
+
+                        {isUserAdmin && (
+                            <TabsContent value="applications" className="mt-6 space-y-6">
+                                <div className="mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <FileText className="h-5 w-5" />
+                                        <h2 className="text-lg font-semibold">Pending Applications</h2>
+                                        {pendingApplicationsCount > 0 && <Badge variant="secondary">{pendingApplicationsCount}</Badge>}
+                                    </div>
+                                    <p className="text-muted-foreground mt-1 text-sm">
+                                        Review and manage applications from musicians interested in joining your band.
+                                    </p>
+                                </div>
+                                <BandApplicationsList bandId={band.id} />
+                            </TabsContent>
+                        )}
                     </Tabs>
                 </>
             )}
