@@ -363,3 +363,34 @@ export const bandApplicationsRelations = relations(bandApplicationsTable, ({ one
     band: one(bandsTable, { fields: [bandApplicationsTable.bandId], references: [bandsTable.id] }),
     user: one(users, { fields: [bandApplicationsTable.userId], references: [users.id] })
 }));
+
+export const uploadTypeEnum = ['profile-image', 'band-image', 'post-media'] as const;
+
+export const uploadSessionsTable = sqliteTable(
+    'upload_sessions',
+    {
+        id: text('id').primaryKey(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        uploadType: text('upload_type', { enum: uploadTypeEnum }).notNull(),
+        bandId: integer('band_id').references(() => bandsTable.id, { onDelete: 'cascade' }),
+        fileName: text('file_name').notNull(),
+        fileSize: integer('file_size').notNull(),
+        contentType: text('content_type').notNull(),
+        tempKey: text('temp_key').notNull(),
+        expiresAt: text('expires_at').notNull(),
+        createdAt: text('created_at').notNull(),
+        confirmedAt: text('confirmed_at')
+    },
+    (table) => ({
+        userIdIdx: index('idx_upload_sessions_user_id').on(table.userId),
+        expiresAtIdx: index('idx_upload_sessions_expires_at').on(table.expiresAt),
+        confirmedAtIdx: index('idx_upload_sessions_confirmed_at').on(table.confirmedAt)
+    })
+);
+
+export const uploadSessionsRelations = relations(uploadSessionsTable, ({ one }) => ({
+    user: one(users, { fields: [uploadSessionsTable.userId], references: [users.id] }),
+    band: one(bandsTable, { fields: [uploadSessionsTable.bandId], references: [bandsTable.id] })
+}));

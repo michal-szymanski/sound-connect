@@ -541,11 +541,30 @@ When you identify an issue or need to implement a feature:
 - Public URL: `https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev`
 - No egress fees (Cloudflare R2's key advantage over S3)
 
-**Upload Flow:**
-- Client uploads files via API endpoints (POST /posts, PUT /media)
+**Upload Flow (Hybrid Approach):**
+
+*Modern Flow (Presigned URLs - Recommended):*
+1. **Request:** Client calls `POST /api/uploads/presigned-url` with file metadata
+   - Backend validates auth, file type, size limits
+   - Creates `upload_session` in database
+   - Returns: uploadUrl, sessionId, tempKey, expiresAt
+2. **Upload:** Client uploads directly to `POST /api/uploads/upload?sessionId={id}`
+   - File streams to R2 `temp/` folder (bypasses Worker for file transfer)
+   - Progress tracking on client
+   - Presigned URL expires in 15 minutes
+3. **Confirm:** Client calls `POST /api/uploads/confirm` with sessionId and key
+   - Backend validates file exists, matches size/type
+   - Validates file type via magic numbers (JPEG, PNG, WebP, GIF, MP4, WebM, MOV)
+   - Moves from `temp/{userId}/{timestamp}-{uuid}.{ext}` to permanent location
+   - Returns publicUrl and permanent key
+4. **Cleanup:** R2 lifecycle rule auto-deletes `temp/` files after 24 hours
+
+*Legacy Flow (Through-API - For backward compatibility):*
+- Client uploads via `POST /posts` (with media) or `PUT /media`
 - API receives file and uploads to R2 using `c.env.ASSETS.put(key, file)`
 - Optional: Queue consumer processes for moderation (future AI moderation)
-- Files are publicly accessible at `https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev/{key}`
+
+*Result:* Files publicly accessible at `https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev/{key}`
 
 **Folder Structure:**
 ```
@@ -556,11 +575,27 @@ sound-connect-assets/
 └── posts/          # Post media (posts/{postId}/image-{n}.{ext})
 ```
 
+**Upload API Endpoints:**
+- `POST /api/uploads/presigned-url` - Request upload session (returns uploadUrl, sessionId, key)
+- `POST /api/uploads/upload?sessionId={id}` - Streaming proxy upload to R2
+- `POST /api/uploads/confirm` - Validate and move single file to permanent location
+- `POST /api/uploads/confirm-batch` - Validate and move multiple files (for post media)
+- `POST /api/uploads/cleanup` - Cron endpoint to cleanup expired sessions
+
+**Frontend Upload Components:**
+- `ProfileImageUpload` - Circular avatar upload with preview (`apps/web/src/features/profile/components/`)
+- `BandImageUpload` - Square band image upload (`apps/web/src/features/bands/components/`)
+- `PostMediaUpload` - Multi-file grid upload, up to 5 files (`apps/web/src/features/posts/components/`)
+- Hooks: `usePresignedUpload` (single file), `useBatchPresignedUpload` (multiple files)
+
 **Key Patterns:**
 - Use `crypto.randomUUID()` for generating unique object keys
 - Store R2 object keys in database (not full URLs)
 - Construct public URLs when needed: `${PUBLIC_R2_URL}/${key}`
 - All uploaded files are public by default (no presigned URLs needed for read access)
+- File size limits: 10MB for images, 100MB for videos
+- Allowed types: JPEG, PNG, WebP, GIF (images); MP4, WebM, MOV (videos)
+- Upload sessions expire after 15 minutes (presigned URL) or 1 hour (upload window)
 
 **Cost:**
 - Storage: $0.015/GB/month
@@ -569,15 +604,30 @@ sound-connect-assets/
 - Egress: FREE (no bandwidth charges)
 - Estimated cost for 10k DAU: ~$3-5/month
 
+**Implemented Features:**
+- ✅ Presigned URL uploads (streaming proxy to R2)
+- ✅ Upload session tracking in database
+- ✅ File validation (size, type, magic numbers)
+- ✅ Automatic cleanup via R2 lifecycle rules (temp/ folder, 24 hours)
+- ✅ Progress tracking on client
+- ✅ Batch uploads for post media (up to 5 files)
+
 **Future Enhancements:**
-- Presigned URLs for direct client uploads (bypasses API for large files)
-- AI-based content moderation in queue consumer
-- Image optimization and resizing
-- Lifecycle rules for cleanup
+- AI-based content moderation in queue consumer (validate uploads before moving to permanent location)
+- Image optimization and resizing (create thumbnails, convert to WebP)
+- Video transcoding (convert to optimized formats)
+- Resumable uploads for large files (multipart uploads)
+
+**Database:**
+- `upload_sessions` table tracks presigned URL requests and confirmations
+- Columns: id, user_id, upload_type, band_id, file_name, file_size, content_type, temp_key, expires_at, created_at, confirmed_at
+- Indexed on user_id, expires_at, confirmed_at for efficient queries
+- Migration: `0010_add_upload_sessions.sql`
 
 **Legacy:**
 - Old bucket `users-bucket` (binding: `UsersBucket`) - kept as backup, not used in code
 - Migration completed: 2025-11-10
+- Presigned upload system implemented: 2025-11-10
 
 #### Database (`packages/drizzle`)
 
