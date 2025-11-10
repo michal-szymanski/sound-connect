@@ -55,7 +55,8 @@ function RouteComponent() {
     const { bandId } = Route.useLoaderData();
     const { data: band, isLoading, error } = useBand(bandId);
     const { data: auth } = useAuth();
-    const { data: applicationsData } = useBandApplications(bandId, 'pending');
+    const isUserAdmin = band?.isUserAdmin || false;
+    const { data: applicationsData } = useBandApplications(bandId, 'pending', isUserAdmin);
     const { data: applicationStatus } = useUserApplicationStatus(bandId);
     const updateBand = useUpdateBand(bandId);
     const deleteBand = useDeleteBand();
@@ -100,7 +101,6 @@ function RouteComponent() {
         );
     }
 
-    const isUserAdmin = band.isUserAdmin || false;
     const isUserMember = auth?.user ? band.members.some((m) => m.userId === auth.user?.id) : false;
     const existingMemberIds = band.members.map((m) => m.userId);
 
@@ -195,7 +195,7 @@ function RouteComponent() {
                 </Card>
             ) : (
                 <>
-                    <Tabs defaultValue="posts" className="w-full">
+                    <Tabs defaultValue="about" className="w-full">
                         <TabsList className={`grid w-full ${isUserAdmin ? 'grid-cols-4' : 'grid-cols-3'}`}>
                             <TabsTrigger value="posts">Posts</TabsTrigger>
                             <TabsTrigger value="about">About</TabsTrigger>

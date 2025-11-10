@@ -36,7 +36,7 @@ export function useSubmitBandApplication(bandId: number) {
     });
 }
 
-export function useBandApplications(bandId: number, status: 'pending' | 'accepted' | 'rejected' = 'pending') {
+export function useBandApplications(bandId: number, status: 'pending' | 'accepted' | 'rejected' = 'pending', enabled = true) {
     return useQuery({
         queryKey: ['band-applications', bandId, status],
         queryFn: async () => {
@@ -46,7 +46,9 @@ export function useBandApplications(bandId: number, status: 'pending' | 'accepte
             }
             return result.body;
         },
-        staleTime: 30 * 1000
+        staleTime: 30 * 1000,
+        enabled,
+        retry: false
     });
 }
 

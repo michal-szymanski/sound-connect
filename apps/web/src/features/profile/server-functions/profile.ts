@@ -41,7 +41,7 @@ export const getProfile = createServerFn()
         }
     });
 
-export const updateInstruments = createServerFn()
+export const updateInstruments = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateInstrumentsSchema)
     .handler(async ({ data, context: { env, auth } }) => {
@@ -68,7 +68,7 @@ export const updateInstruments = createServerFn()
         }
     });
 
-export const updateGenres = createServerFn()
+export const updateGenres = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateGenresSchema)
     .handler(async ({ data, context: { env, auth } }) => {
@@ -95,7 +95,7 @@ export const updateGenres = createServerFn()
         }
     });
 
-export const updateAvailability = createServerFn()
+export const updateAvailability = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateAvailabilitySchema)
     .handler(async ({ data, context: { env, auth } }) => {
@@ -122,7 +122,7 @@ export const updateAvailability = createServerFn()
         }
     });
 
-export const updateExperience = createServerFn()
+export const updateExperience = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateExperienceSchema)
     .handler(async ({ data, context: { env, auth } }) => {
@@ -149,7 +149,7 @@ export const updateExperience = createServerFn()
         }
     });
 
-export const updateLogistics = createServerFn()
+export const updateLogistics = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateLogisticsSchema)
     .handler(async ({ data, context: { env, auth } }) => {
@@ -176,7 +176,7 @@ export const updateLogistics = createServerFn()
         }
     });
 
-export const updateLookingFor = createServerFn()
+export const updateLookingFor = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateLookingForSchema)
     .handler(async ({ data, context: { env, auth } }) => {
@@ -203,7 +203,7 @@ export const updateLookingFor = createServerFn()
         }
     });
 
-export const updateBio = createServerFn()
+export const updateBio = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateBioSchema)
     .handler(async ({ data, context: { env, auth } }) => {
@@ -230,7 +230,7 @@ export const updateBio = createServerFn()
         }
     });
 
-export const completeSetup = createServerFn()
+export const completeSetup = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(completeSetupSchema)
     .handler(async ({ data, context: { env, auth } }) => {
