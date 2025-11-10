@@ -474,6 +474,75 @@ Automatically invoke: frontend
 4. **Use system-architect only for multi-domain features** - Skip it for frontend-only or backend-only work
 5. **Don't invoke code-quality-enforcer manually** - frontend/backend agents do this automatically
 6. **Trust domain agents** - Frontend and backend agents have specialized knowledge and access to MCPs (Magic UI, etc.). Let them make implementation decisions.
+7. **Parallelize agent execution whenever possible** - Invoke independent agents simultaneously using multiple Task calls in a single message to minimize total execution time
+
+#### Parallel Agent Execution
+
+To speed up feature implementation, invoke agents **in parallel** when they don't depend on each other's outputs.
+
+**How to Invoke Agents in Parallel:**
+Use multiple Task tool calls in a **single message**:
+```
+Task(system-architect, "Create shared types")
+Task(database-architect, "Design schema")
+Task(designer, "Create UI recommendations")
+```
+
+All three agents execute simultaneously, reducing total time from 15 minutes (sequential) to 5 minutes (parallel).
+
+**Optimal Parallel Workflow for Multi-Domain Features:**
+
+```
+Phase 1: Specification (Sequential - Required First)
+  feature-spec-writer (5 min)
+    ↓
+Phase 2: Design & Architecture (Parallel)
+  system-architect + database-architect + designer (5 min parallel)
+    ↓
+Phase 3: Implementation (Parallel, after Phase 2 completes)
+  backend + frontend (10 min parallel)
+    ↓
+Phase 4: Validation (Parallel, after Phase 3 completes)
+  test-expert + code-quality-enforcer (5 min parallel)
+
+Total: ~25 minutes (vs 35+ sequential)
+```
+
+**Dependency Rules:**
+- **Phase 2 agents** (system-architect, database-architect, designer) can run in parallel - they produce independent outputs
+- **Phase 3 agents** (backend, frontend) can run in parallel IF:
+  - They both need system-architect's types → wait for Phase 2
+  - They coordinate via shared types (no direct file conflicts)
+- **Phase 4 agents** (test-expert, code-quality-enforcer) can run in parallel - they validate completed code
+
+**Example Sequential vs Parallel:**
+
+*Sequential (old way):*
+```
+1. feature-spec-writer → 5 min
+2. system-architect → 3 min
+3. database-architect → 3 min
+4. designer → 3 min
+5. backend → 10 min
+6. frontend → 10 min
+Total: 34 minutes
+```
+
+*Parallel (new way):*
+```
+1. feature-spec-writer → 5 min
+2. system-architect + database-architect + designer → 5 min (parallel)
+3. backend + frontend → 10 min (parallel)
+Total: 20 minutes (41% faster!)
+```
+
+**When NOT to Parallelize:**
+- frontend/backend agents editing the same files (rare, but possible)
+- Agent B needs Agent A's output immediately (create dependency chain)
+- Advisory agents (designer, database-architect) that inform implementation decisions
+
+**Implementation Note:**
+When user requests a feature, proactively identify parallel opportunities and invoke agents simultaneously to minimize total execution time.
 
 #### CRITICAL: Never Make Direct Code Changes
 
