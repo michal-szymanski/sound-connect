@@ -1,10 +1,10 @@
--- Seed Playwright test users
+-- Seed Playwright test users (password: Test123!)
 INSERT INTO users (id, name, email, email_verified, created_at, updated_at)
 VALUES
-    ('xIaZhdYzGgdUCArgtU0QdLOBWGHB08Mz', 'Playwright User 1', 'pw1@test.test', 1, 1760907429000, 1760907429000),
-    ('mstMlnzefkISg3BtHbz6ZmJ6HAokd6xz', 'Playwright User 2', 'pw2@test.test', 1, 1760907455000, 1760907455000);
+    ('Ojb9Yu5WQSUwUAWPFgOeOaCyHvu6eU7o', 'Playwright User 1', 'pw1@test.test', 0, 1762768651167, 1762768651167),
+    ('ObTL2d1Sy7xBIKmr5WSo5u7zcP6qk6cK', 'Playwright User 2', 'pw2@test.test', 0, 1762768686703, 1762768686703);
 
 INSERT INTO accounts (id, user_id, account_id, provider_id, password, created_at, updated_at)
 VALUES
-    ('xIaZhdYzGgdUCArgtU0QdLOBWGHB08Mz', 'xIaZhdYzGgdUCArgtU0QdLOBWGHB08Mz', 'pw1@test.test', 'credential', 'fdb8d697c2fb87d2a216d2e154dbabf9:b178a3915cf816698039418e50b47f5b12658e21b911ffb3b85a3741537b1b7e636c5dcafe89fea1f7ebf394e82ed478c5564b59880d063705d566e8fb9f3b96', 1760907429000, 1760907429000),
-    ('mstMlnzefkISg3BtHbz6ZmJ6HAokd6xz', 'mstMlnzefkISg3BtHbz6ZmJ6HAokd6xz', 'pw2@test.test', 'credential', '1cace227241962ebf1dee5cc502969c2:3c5874aca7c852fb1de0243e96df2689f86b9ac5af59e7eaa10320b20c7f891be911dd093819ae5571b87ceb67d94297441e823b7093222e2b959d2851d1714b', 1760907455000, 1760907455000);
+    ('ngEGUH3YuK6dqqJ46seqmm4qZwlEy0T0', 'Ojb9Yu5WQSUwUAWPFgOeOaCyHvu6eU7o', 'Ojb9Yu5WQSUwUAWPFgOeOaCyHvu6eU7o', 'credential', '443eb652dd5ce6c2829ef82ec3ecd054:a5566cbc5216a19e204ccc69191f00807a1b2fe9310d94f61e2778ae7dc2a7f0d7648d04779db89aa50c82fca3bcc4e631398d176fa207944d419f921673d8d0', 1762768651170, 1762768651170),
+    ('FgEuv9lLVjA43UEE1zE9GyRkZsC5j4YV', 'ObTL2d1Sy7xBIKmr5WSo5u7zcP6qk6cK', 'ObTL2d1Sy7xBIKmr5WSo5u7zcP6qk6cK', 'credential', 'e44d68022b74bd067e2667a2f1c8c9f1:bd5a1499d431ca7be8bec84422a452816ff8afbec702e0c290f0f0ab227eeb0b78d88a0b9db32aca667bf0937b6ae8b1a090424b6fa73ed076d717d11e211afe', 1762768686705, 1762768686705);

@@ -7,8 +7,8 @@ const API_DIR = path.join(process.cwd(), '..', 'apps', 'api');
 const WRANGLER_STATE_DIR = path.join(API_DIR, '.wrangler', 'state', 'v3', 'd1', 'miniflare-D1DatabaseObject');
 
 const MIGRATION_SEEDED_USER_IDS = {
-    T1: 'xGvICj1532ArhGacyObqzE1bkEounP0y',
-    T2: 'keUzTIdaFlWWWgiG61OC5nLza3cbIyWN'
+    T1: 'qNsCKabaSy0rH16ncmCU73FxnCQR4T4z',
+    T2: 'SCQDH9YOqtVkPZDt7q4yTJEjCkE2YhC4'
 };
 
 type DbFile = {
