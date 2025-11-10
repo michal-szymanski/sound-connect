@@ -72,13 +72,13 @@ export async function signOut(page: Page): Promise<void> {
 
 export const TEST_USERS = {
     USER_A: {
-        id: 'xIaZhdYzGgdUCArgtU0QdLOBWGHB08Mz',
+        id: 'Ojb9Yu5WQSUwUAWPFgOeOaCyHvu6eU7o',
         name: 'Playwright User 1',
         email: 'pw1@test.test',
         password: 'Test123!'
     },
     USER_B: {
-        id: 'mstMlnzefkISg3BtHbz6ZmJ6HAokd6xz',
+        id: 'ObTL2d1Sy7xBIKmr5WSo5u7zcP6qk6cK',
         name: 'Playwright User 2',
         email: 'pw2@test.test',
         password: 'Test123!'
