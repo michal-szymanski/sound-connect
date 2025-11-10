@@ -598,6 +598,35 @@ When you identify an issue or need to implement a feature:
 
 - NEVER modify files in `src/components/ui/` - these are ShadCN auto-generated components
 
+**Z-Index System:**
+
+Sound Connect uses a centralized z-index system defined in Tailwind configuration to ensure consistent layering across the application.
+
+**Available Tokens:**
+- `z-base` (0) - Default layer for normal content
+- `z-dropdown` (1) - Dropdown menus (not popovers)
+- `z-sticky` (10) - Sticky headers and navigation
+- `z-sidebar` (60) - Sidebar navigation (main layout)
+- `z-dialog` (100) - Dialog/modal overlays
+- `z-popover` (110) - Popover components (emoji picker, tooltips)
+- `z-tooltip` (120) - Tooltip overlays (highest priority)
+
+**Usage:**
+```tsx
+<div className="z-popover">...</div>
+<div className="z-tooltip">...</div>
+```
+
+**Rules:**
+- ALWAYS use semantic z-index tokens (e.g., `z-popover`) instead of numeric values (e.g., `z-[110]`)
+- NEVER use arbitrary z-index values like `z-[999]` or `z-50` unless adding to the token system
+- Tooltips must use `pointer-events-none` to prevent hover interference
+- If a new layering level is needed, add it to the Tailwind config and document it here
+
+**Defined in:**
+- CSS variables: `apps/web/src/styles/globals.css:170-177`
+- Tailwind config: `apps/web/tailwind.config.ts` (theme.extend.zIndex)
+
 #### Backend API (`apps/api`)
 
 - ALWAYS access current user ID with `c.get('user')` - NEVER trust user IDs from frontend requests

@@ -195,7 +195,7 @@ function RouteComponent() {
 
     return (
         <div className="flex h-full w-full flex-col overflow-hidden">
-            <div className="bg-background absolute top-0 z-[60] flex h-screen w-80 flex-col border-r" style={{ left: leftPosition }}>
+            <div className="bg-background z-sidebar absolute top-0 flex h-screen w-80 flex-col border-r" style={{ left: leftPosition }}>
                 <div className="flex flex-col gap-1.5 p-4">
                     <h2 className="text-foreground text-2xl font-semibold">Contacts</h2>
                 </div>

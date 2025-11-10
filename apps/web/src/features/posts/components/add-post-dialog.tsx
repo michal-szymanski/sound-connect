@@ -10,7 +10,8 @@ import { useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import z from 'zod';
-import EmojiPicker from '@/shared/components/common/emoji-picker';
+import { EmojiPicker } from '@/web/components/emoji-picker';
+import { insertAtCursor } from '@/web/utils/emoji-utils';
 import SubmitButton from '@/shared/components/common/submit-button';
 import { Button } from '@/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/components/ui/dialog';
@@ -25,7 +26,6 @@ const AddPostDialog = () => {
     const text = `What's on your mind?`;
     const [open, setOpen] = useState(false);
     const dispatch = useDispatch();
-    const dialogContentRef = useRef<HTMLDivElement | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const queryClient = useQueryClient();
 
@@ -79,10 +79,15 @@ const AddPostDialog = () => {
         dispatch(showSidebar(!open));
     }, [open, dispatch]);
 
-    const handleAddEmoji = (emoji: { native: string }) => {
+    const handleAddEmoji = (emoji: string) => {
         if (form.getValues('content').length >= POST_TEXT_MAX_LENGTH) return;
 
-        form.setValue('content', form.getValues('content') + emoji.native);
+        if (textareaRef.current) {
+            insertAtCursor(textareaRef.current, emoji);
+            form.setValue('content', textareaRef.current.value);
+        } else {
+            form.setValue('content', form.getValues('content') + emoji);
+        }
         form.trigger('content');
     };
 
@@ -93,7 +98,7 @@ const AddPostDialog = () => {
             <DialogTrigger className="border-input dark:bg-input/30 text-muted-foreground dark:hover:bg-accent h-12 flex-1 rounded-md border bg-transparent px-3 py-1 text-left text-sm font-normal shadow-xs">
                 {text}
             </DialogTrigger>
-            <DialogContent ref={dialogContentRef} className="z-[100]! flex max-h-[90vh] w-full max-w-2xl flex-col p-6">
+            <DialogContent className="z-dialog! flex max-h-[90vh] w-full max-w-2xl flex-col p-6">
                 <DialogHeader className="mb-4">
                     <DialogTitle>Create post</DialogTitle>
                     <VisuallyHidden.Root>
@@ -147,7 +152,7 @@ const AddPostDialog = () => {
                         )}
 
                         <div className="inline-flex items-end justify-end gap-3">
-                            <EmojiPicker onEmojiSelect={handleAddEmoji} dialogRef={dialogContentRef} />
+                            <EmojiPicker onEmojiSelect={handleAddEmoji} />
                             <FileInput />
                             <Button
                                 type="button"

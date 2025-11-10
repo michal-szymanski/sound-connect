@@ -166,6 +166,14 @@
     --shadow-lg: var(--shadow-lg);
     --shadow-xl: var(--shadow-xl);
     --shadow-2xl: var(--shadow-2xl);
+
+    --z-base: 0;
+    --z-dropdown: 1;
+    --z-sticky: 10;
+    --z-sidebar: 60;
+    --z-dialog: 100;
+    --z-popover: 110;
+    --z-tooltip: 120;
 }
 
 @layer base {

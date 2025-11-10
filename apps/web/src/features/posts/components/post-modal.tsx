@@ -95,7 +95,7 @@ export function PostModal({ open, onOpenChange, postId, author, content, image, 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className={`z-[100]! flex h-[90vh] flex-row gap-0 overflow-hidden p-0 ${image ? 'w-[90vw] max-w-[1400px] sm:max-w-[1400px]' : 'w-[500px]'}`}
+                className={`z-dialog! flex h-[90vh] flex-row gap-0 overflow-hidden p-0 ${image ? 'w-[90vw] max-w-[1400px] sm:max-w-[1400px]' : 'w-[500px]'}`}
                 showCloseButton={true}
             >
                 {image && (
