@@ -180,7 +180,7 @@ export const notificationTypeEnum = [
 export const entityTypeEnum = ['post', 'comment', 'message', 'band'] as const;
 
 export const notificationsTable = sqliteTable('notifications', {
-    id: integer('id').primaryKey({ autoIncrement: true }),
+    id: integer('id').primaryKey(),
     userId: text('user_id')
         .notNull()
         .references(() => users.id, { onDelete: 'cascade' }),
@@ -236,7 +236,7 @@ export const bandsFollowersRelations = relations(bandsFollowersTable, ({ one }) 
 export const userProfilesTable = sqliteTable(
     'user_profiles',
     {
-        id: integer('id').primaryKey({ autoIncrement: true }),
+        id: integer('id').primaryKey(),
         userId: text('user_id')
             .notNull()
             .unique()
@@ -286,7 +286,7 @@ export const userProfilesTable = sqliteTable(
 export const userAdditionalInstrumentsTable = sqliteTable(
     'user_additional_instruments',
     {
-        id: integer('id').primaryKey({ autoIncrement: true }),
+        id: integer('id').primaryKey(),
         userId: text('user_id')
             .notNull()
             .references(() => users.id, { onDelete: 'cascade' }),
@@ -317,7 +317,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 export const geocodingCacheTable = sqliteTable(
     'geocoding_cache',
     {
-        id: integer('id').primaryKey({ autoIncrement: true }),
+        id: integer('id').primaryKey(),
         city: text('city').notNull(),
         state: text('state'),
         country: text('country'),
@@ -337,7 +337,7 @@ export const applicationStatusEnum = ['pending', 'accepted', 'rejected'] as cons
 export const bandApplicationsTable = sqliteTable(
     'band_applications',
     {
-        id: integer('id').primaryKey({ autoIncrement: true }),
+        id: integer('id').primaryKey(),
         bandId: integer('band_id')
             .notNull()
             .references(() => bandsTable.id, { onDelete: 'cascade' }),
@@ -402,7 +402,7 @@ export const followPermissionEnum = ['anyone', 'approval', 'none'] as const;
 export const userSettingsTable = sqliteTable(
     'user_settings',
     {
-        id: integer('id').primaryKey({ autoIncrement: true }),
+        id: integer('id').primaryKey(),
         userId: text('user_id')
             .notNull()
             .unique()
@@ -431,7 +431,7 @@ export const userSettingsTable = sqliteTable(
 export const blockedUsersTable = sqliteTable(
     'blocked_users',
     {
-        id: integer('id').primaryKey({ autoIncrement: true }),
+        id: integer('id').primaryKey(),
         blockerId: text('blocker_id')
             .notNull()
             .references(() => users.id, { onDelete: 'cascade' }),
@@ -460,7 +460,7 @@ export const discoveryEventTypeEnum = ['page_view', 'card_click', 'application',
 export const discoveryAnalyticsTable = sqliteTable(
     'discovery_analytics',
     {
-        id: integer('id').primaryKey({ autoIncrement: true }),
+        id: integer('id').primaryKey(),
         userId: text('user_id')
             .notNull()
             .references(() => users.id, { onDelete: 'cascade' }),
