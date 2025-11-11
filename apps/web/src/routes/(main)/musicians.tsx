@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Filter } from 'lucide-react';
@@ -16,13 +16,36 @@ import { searchProfiles } from '@/features/search/server-functions/profile-searc
 import type { ProfileSearchParams, ProfileSearchResponse } from '@sound-connect/common/types/profile-search';
 
 export const Route = createFileRoute('/(main)/musicians')({
-    component: MusiciansPage
+    component: MusiciansPage,
+    validateSearch: (search: Record<string, unknown>) => {
+        return {
+            city: search['city'] as string | undefined,
+            instruments: search['instruments'] ? (Array.isArray(search['instruments']) ? search['instruments'] : [search['instruments']]) : undefined,
+            genres: search['genres'] ? (Array.isArray(search['genres']) ? search['genres'] : [search['genres']]) : undefined,
+            availabilityStatus: search['availabilityStatus']
+                ? Array.isArray(search['availabilityStatus'])
+                    ? search['availabilityStatus']
+                    : [search['availabilityStatus']]
+                : undefined,
+            radius: search['radius'] ? Number(search['radius']) : undefined,
+            page: search['page'] ? Number(search['page']) : 1,
+            limit: 12
+        } as ProfileSearchParams;
+    }
 });
 
 function MusiciansPage() {
+    const searchParams = Route.useSearch();
+    const navigate = useNavigate();
+
     const [filters, setFilters] = useState<ProfileSearchParams>({
-        page: 1,
-        limit: 12
+        page: searchParams.page || 1,
+        limit: 12,
+        city: searchParams.city,
+        instruments: searchParams.instruments,
+        genres: searchParams.genres,
+        availabilityStatus: searchParams.availabilityStatus,
+        radius: searchParams.radius
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -42,6 +65,20 @@ function MusiciansPage() {
         setIsLoading(true);
         setError(null);
         setHasSearched(true);
+
+        navigate({
+            to: '/musicians',
+            search: {
+                city: filters.city,
+                instruments: filters.instruments,
+                genres: filters.genres,
+                availabilityStatus: filters.availabilityStatus,
+                radius: filters.radius,
+                page: filters.page,
+                limit: 12
+            },
+            replace: true
+        });
 
         try {
             const searchParams = {
@@ -67,13 +104,22 @@ function MusiciansPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [filters]);
+    }, [filters, navigate]);
 
     const handleClearFilters = () => {
         setFilters({ page: 1, limit: 12 });
         setResults(null);
         setError(null);
         setHasSearched(false);
+
+        navigate({
+            to: '/musicians',
+            search: {
+                page: 1,
+                limit: 12
+            },
+            replace: true
+        });
     };
 
     const handlePageChange = (page: number) => {
@@ -86,6 +132,15 @@ function MusiciansPage() {
             handleSearch();
         }
     }, [filters.page, hasSearched, handleSearch]);
+
+    useEffect(() => {
+        const hasUrlFilters = searchParams.city || searchParams.instruments?.length || searchParams.genres?.length || searchParams.availabilityStatus?.length;
+
+        if (hasUrlFilters && !hasSearched) {
+            handleSearch();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const activeFilterCount = [
         filters.instruments && filters.instruments.length > 0,

@@ -15,7 +15,7 @@ export function EmptyFeed() {
                     Follow musicians to see their posts and discover new music collaborations.
                 </p>
                 <Button asChild>
-                    <Link to="/musicians">
+                    <Link to="/musicians" search={{ page: 1, limit: 12 }}>
                         <Users className="mr-2 h-4 w-4" aria-hidden="true" />
                         Find Musicians
                     </Link>
