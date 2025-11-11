@@ -10,6 +10,8 @@ import { WebSocketProvider } from '@/shared/components/providers/websocket-provi
 import { NotificationsProvider } from '@/features/notifications/providers/notifications-provider';
 import { store } from '@/web/redux/store';
 import { RootState } from '@/web/redux/store';
+import { MessagingProvider, useMessagingContext } from './messages/context';
+import { ConversationsListSidebar } from '@/shared/components/layout/conversations-list-sidebar';
 
 export const Route = createFileRoute('/(main)')({
     component: RouteComponent,
@@ -34,37 +36,52 @@ function LayoutContent() {
             <NotificationsProvider>
                 <ChatWindowProvider>
                     <SidebarProvider>
-                        <a
-                            href="#main-content"
-                            className="focus-visible:ring-ring focus-visible:bg-primary focus-visible:text-primary-foreground sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-4 focus-visible:left-4 focus-visible:z-50 focus-visible:rounded-md focus-visible:px-4 focus-visible:py-2 focus-visible:ring-2 focus-visible:outline-none"
-                        >
-                            Skip to main content
-                        </a>
-                        <LeftSidebarMobile />
-                        <Header />
-                        {isMessagesPage ? (
-                            <>
-                                <main id="main-content" className="h-screen flex-1 pt-16">
-                                    <Outlet />
-                                </main>
-                            </>
-                        ) : (
-                            <>
-                                <main id="main-content" className="w-full py-20">
-                                    <div className="grid grid-cols-1 gap-6 px-4 lg:grid-cols-12 lg:px-6 xl:mx-auto xl:max-w-[1400px]">
-                                        <LeftSidebarDesktop />
-                                        <div className="lg:col-span-6">
-                                            <Outlet />
-                                        </div>
-                                        <RightSidebar />
-                                    </div>
-                                </main>
-                            </>
-                        )}
+                        <MessagingProvider>
+                            <a
+                                href="#main-content"
+                                className="focus-visible:ring-ring focus-visible:bg-primary focus-visible:text-primary-foreground sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:top-4 focus-visible:left-4 focus-visible:z-50 focus-visible:rounded-md focus-visible:px-4 focus-visible:py-2 focus-visible:ring-2 focus-visible:outline-none"
+                            >
+                                Skip to main content
+                            </a>
+                            <LeftSidebarMobile />
+                            <Header />
+                            <main id="main-content" className="w-full py-20">
+                                <div className="grid grid-cols-1 gap-6 px-4 lg:grid-cols-12 lg:px-6 xl:mx-auto xl:max-w-[1400px]">
+                                    <LeftSidebarDesktop />
+                                    {isMessagesPage ? <MessagesLayout /> : <StandardLayout />}
+                                </div>
+                            </main>
+                        </MessagingProvider>
                     </SidebarProvider>
                 </ChatWindowProvider>
             </NotificationsProvider>
         </WebSocketProvider>
+    );
+}
+
+function StandardLayout() {
+    return (
+        <>
+            <div className="lg:col-span-6">
+                <Outlet />
+            </div>
+            <RightSidebar />
+        </>
+    );
+}
+
+function MessagesLayout() {
+    const { selectedPeer, setSelectedPeer } = useMessagingContext();
+
+    return (
+        <>
+            <div className="lg:col-span-6">
+                <Outlet />
+            </div>
+            <div className="hidden lg:col-span-3 lg:block">
+                <ConversationsListSidebar selectedPeer={selectedPeer} onSelectPeer={setSelectedPeer} />
+            </div>
+        </>
     );
 }
 
