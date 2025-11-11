@@ -6,9 +6,14 @@ import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
 
 type Props = {
     onEmojiSelect: (emoji: string) => void;
+    popoverProps?: {
+        side?: 'top' | 'bottom' | 'left' | 'right';
+        sideOffset?: number;
+        align?: 'start' | 'center' | 'end';
+    };
 };
 
-export function EmojiPicker({ onEmojiSelect }: Props) {
+export function EmojiPicker({ onEmojiSelect, popoverProps }: Props) {
     const [open, setOpen] = useState(false);
 
     const handleEmojiSelect = (emoji: string) => {
@@ -28,7 +33,13 @@ export function EmojiPicker({ onEmojiSelect }: Props) {
                     <Smile />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="z-popover w-full max-w-[352px] p-0" style={{ width: '352px', height: '435px' }} align="start">
+            <PopoverContent
+                className="z-popover w-full max-w-[352px] p-0"
+                style={{ width: '352px', height: '435px' }}
+                align={popoverProps?.align || 'start'}
+                side={popoverProps?.side}
+                sideOffset={popoverProps?.sideOffset}
+            >
                 <EmojiPickerContent onEmojiSelect={handleEmojiSelect} onClose={() => setOpen(false)} />
             </PopoverContent>
         </Popover>
