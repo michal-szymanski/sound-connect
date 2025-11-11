@@ -5,7 +5,7 @@ import { desc, eq, inArray, and, count, sql } from 'drizzle-orm';
 import z from 'zod';
 import { db } from '../index';
 
-const { mediaTable, postsReactionsTable, postsTable, users, commentsTable, bandsTable, bandsFollowersTable, usersFollowersTable } = schema;
+const { mediaTable, postsReactionsTable, postsTable, users, commentsTable, bandsTable, bandsFollowersTable, usersFollowersTable, blockedUsersTable } = schema;
 
 type FeedPostRow = {
     id: number;
@@ -109,6 +109,18 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
     let posts: FeedPostRow[] = [];
 
     if (currentUserId) {
+        const blockedByCurrentUser = await db
+            .select({ blockedId: blockedUsersTable.blockedId })
+            .from(blockedUsersTable)
+            .where(eq(blockedUsersTable.blockerId, currentUserId));
+
+        const blockedCurrentUser = await db
+            .select({ blockerId: blockedUsersTable.blockerId })
+            .from(blockedUsersTable)
+            .where(eq(blockedUsersTable.blockedId, currentUserId));
+
+        const blockedUserIds = [...blockedByCurrentUser.map((b) => b.blockedId), ...blockedCurrentUser.map((b) => b.blockerId)];
+
         const followedUsers = await db
             .select({ userId: usersFollowersTable.followedUserId })
             .from(usersFollowersTable)
@@ -119,7 +131,7 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
             .from(bandsFollowersTable)
             .where(eq(bandsFollowersTable.followerId, currentUserId));
 
-        const followedUserIds = [...followedUsers.map((f) => f.userId), currentUserId];
+        const followedUserIds = [...followedUsers.map((f) => f.userId), currentUserId].filter((id) => !blockedUserIds.includes(id));
         const followedBandIds = followedBands.map((f) => f.bandId);
 
         const userPosts =

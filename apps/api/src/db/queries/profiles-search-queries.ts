@@ -1,11 +1,34 @@
 import { drizzle } from 'drizzle-orm/d1';
 import { eq, and, or, sql, isNotNull, inArray, desc } from 'drizzle-orm';
-import { userProfilesTable, userAdditionalInstrumentsTable, users } from '@/drizzle/schema';
+import { userProfilesTable, userAdditionalInstrumentsTable, users, userSettingsTable, blockedUsersTable } from '@/drizzle/schema';
 import { calculateBoundingBox, calculateHaversineDistance } from '@sound-connect/common/utils/geo';
 import type { ProfileSearchParams, GeocodingLookupResponse } from '@sound-connect/common/types/profile-search';
 
-export async function searchProfiles(db: D1Database, params: ProfileSearchParams, geocodedLocation: GeocodingLookupResponse | null) {
+export async function searchProfiles(db: D1Database, params: ProfileSearchParams, geocodedLocation: GeocodingLookupResponse | null, requesterId?: string) {
     const whereConditions = [eq(userProfilesTable.setupCompleted, true)];
+
+    if (requesterId) {
+        const blockedByRequester = await drizzle(db)
+            .select({ blockedId: blockedUsersTable.blockedId })
+            .from(blockedUsersTable)
+            .where(eq(blockedUsersTable.blockerId, requesterId));
+
+        const blockedRequester = await drizzle(db)
+            .select({ blockerId: blockedUsersTable.blockerId })
+            .from(blockedUsersTable)
+            .where(eq(blockedUsersTable.blockedId, requesterId));
+
+        const blockedUserIds = [...blockedByRequester.map((b) => b.blockedId), ...blockedRequester.map((b) => b.blockerId)];
+
+        if (blockedUserIds.length > 0) {
+            whereConditions.push(
+                sql`${users.id} NOT IN (${sql.join(
+                    blockedUserIds.map((id) => sql`${id}`),
+                    sql`, `
+                )})`
+            );
+        }
+    }
 
     if (params.instruments && params.instruments.length > 0) {
         const instrumentConditions = or(
@@ -80,27 +103,31 @@ export async function searchProfiles(db: D1Database, params: ProfileSearchParams
             profileCompletion: userProfilesTable.profileCompletion,
             latitude: userProfilesTable.latitude,
             longitude: userProfilesTable.longitude,
-            matchedInstrumentType
+            matchedInstrumentType,
+            searchVisibility: userSettingsTable.searchVisibility
         })
         .from(users)
         .innerJoin(userProfilesTable, eq(userProfilesTable.userId, users.id))
+        .leftJoin(userSettingsTable, eq(userSettingsTable.userId, users.id))
         .where(and(...whereConditions))
         .orderBy(
             params.instruments && params.instruments.length > 0 ? sql`CASE WHEN ${matchedInstrumentType} = 'primary' THEN 0 ELSE 1 END` : sql`1`,
             desc(users.lastActiveAt)
         );
 
-    let filteredResults = results.map((row) => {
-        const distance =
-            geocodedLocation && row.latitude !== null && row.longitude !== null
-                ? calculateHaversineDistance(geocodedLocation.latitude, geocodedLocation.longitude, row.latitude, row.longitude)
-                : null;
+    let filteredResults = results
+        .filter((row) => row.searchVisibility === null || row.searchVisibility === true)
+        .map((row) => {
+            const distance =
+                geocodedLocation && row.latitude !== null && row.longitude !== null
+                    ? calculateHaversineDistance(geocodedLocation.latitude, geocodedLocation.longitude, row.latitude, row.longitude)
+                    : null;
 
-        return {
-            ...row,
-            distance
-        };
-    });
+            return {
+                ...row,
+                distance
+            };
+        });
 
     if (params.radius && geocodedLocation) {
         filteredResults = filteredResults.filter((row) => row.distance !== null && row.distance <= params.radius!);

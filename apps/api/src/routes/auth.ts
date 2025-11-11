@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { HonoContext } from 'types';
 import { auth } from 'auth';
+import { createUserSettings } from '@/api/db/queries/settings-queries';
 
 const authRoutes = new Hono<HonoContext>();
 
@@ -17,8 +18,21 @@ authRoutes.use(
     })
 );
 
-authRoutes.on(['POST', 'GET'], '/api/auth/*', (c) => {
-    return auth.handler(c.req.raw);
+authRoutes.on(['POST', 'GET'], '/api/auth/*', async (c) => {
+    const response = await auth.handler(c.req.raw);
+
+    if (c.req.method === 'POST' && c.req.url.includes('/sign-up/email')) {
+        if (response.status === 200) {
+            const clonedResponse = response.clone();
+            const data = (await clonedResponse.json()) as { user?: { id: string } };
+
+            if (data.user?.id) {
+                await createUserSettings(data.user.id);
+            }
+        }
+    }
+
+    return response;
 });
 
 export { authRoutes };

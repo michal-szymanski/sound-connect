@@ -522,3 +522,66 @@ export const bandApplicationSchema = z.object({
 export type CreateBandApplication = z.infer<typeof createBandApplicationSchema>;
 export type BandApplication = z.infer<typeof bandApplicationSchema>;
 export type ApplicationStatus = z.infer<typeof applicationStatusEnum>;
+
+export const profileVisibilityEnum = z.enum(['public', 'followers_only', 'private']);
+export const messagingPermissionEnum = z.enum(['anyone', 'followers', 'none']);
+export const followPermissionEnum = z.enum(['anyone', 'approval', 'none']);
+
+export const createUserSettingsSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    profileVisibility: profileVisibilityEnum,
+    searchVisibility: z.boolean(),
+    messagingPermission: messagingPermissionEnum,
+    followPermission: followPermissionEnum,
+    emailEnabled: z.boolean(),
+    followNotifications: z.boolean(),
+    commentNotifications: z.boolean(),
+    reactionNotifications: z.boolean(),
+    mentionNotifications: z.boolean(),
+    bandApplicationNotifications: z.boolean(),
+    bandResponseNotifications: z.boolean(),
+    createdAt: z.string(),
+    updatedAt: z.string()
+});
+
+export const userSettingsSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    profileVisibility: profileVisibilityEnum,
+    searchVisibility: z.boolean(),
+    messagingPermission: messagingPermissionEnum,
+    followPermission: followPermissionEnum,
+    emailEnabled: z.boolean(),
+    followNotifications: z.boolean(),
+    commentNotifications: z.boolean(),
+    reactionNotifications: z.boolean(),
+    mentionNotifications: z.boolean(),
+    bandApplicationNotifications: z.boolean(),
+    bandResponseNotifications: z.boolean(),
+    createdAt: z.string(),
+    updatedAt: z.string()
+});
+
+export type CreateUserSettings = z.infer<typeof createUserSettingsSchema>;
+export type UserSettings = z.infer<typeof userSettingsSchema>;
+export type ProfileVisibility = z.infer<typeof profileVisibilityEnum>;
+export type MessagingPermission = z.infer<typeof messagingPermissionEnum>;
+export type FollowPermission = z.infer<typeof followPermissionEnum>;
+
+export const createBlockedUserSchema = z.object({
+    id: z.number(),
+    blockerId: z.string(),
+    blockedId: z.string(),
+    blockedAt: z.string()
+});
+
+export const blockedUserSchema = z.object({
+    id: z.number(),
+    blockerId: z.string(),
+    blockedId: z.string(),
+    blockedAt: z.string()
+});
+
+export type CreateBlockedUser = z.infer<typeof createBlockedUserSchema>;
+export type BlockedUser = z.infer<typeof blockedUserSchema>;

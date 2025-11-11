@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { HonoContext } from 'types';
 import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getContacts, followUser } from '@/api/db/queries/users-queries';
 import { notificationQueueMessageSchema } from '@/common/types/notifications';
+import { canViewProfile, canFollow } from '@/api/db/queries/settings-queries';
 
 const usersRoutes = new Hono<HonoContext>();
 
@@ -25,6 +26,16 @@ usersRoutes.post('/users/:userId/follow', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
 
     const user = c.get('user');
+
+    const followPermission = await canFollow(user.id, userId);
+
+    if (followPermission === 'blocked') {
+        throw new HTTPException(403, { message: 'Cannot follow this user' });
+    }
+
+    if (followPermission === 'approval') {
+        throw new HTTPException(403, { message: 'This user requires approval to follow' });
+    }
 
     const currentUserFollowedUsers = await getFollowedUsers(user.id);
     if (currentUserFollowedUsers.some((followed) => followed.id === userId)) {
@@ -79,6 +90,13 @@ usersRoutes.get('/users/:userId/follow-request-status', async (c) => {
 
 usersRoutes.get('/users/:userId', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
+    const currentUser = c.get('user');
+
+    const allowed = await canViewProfile(currentUser.id, userId);
+
+    if (!allowed) {
+        throw new HTTPException(403, { message: 'Cannot view this profile' });
+    }
 
     const user = await getUserById(userId);
 

@@ -8,6 +8,7 @@ const profilesSearchRoutes = new Hono<HonoContext>();
 
 profilesSearchRoutes.get('/search', async (c) => {
     const db = c.env.DB;
+    const currentUser = c.get('user');
     const query = c.req.query();
 
     const rawParams = {
@@ -36,7 +37,7 @@ profilesSearchRoutes.get('/search', async (c) => {
         }
     }
 
-    const results = await searchProfiles(db, params, geocodedLocation);
+    const results = await searchProfiles(db, params, geocodedLocation, currentUser.id);
 
     return c.json({
         results: results.data,

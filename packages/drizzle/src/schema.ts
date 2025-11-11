@@ -394,3 +394,63 @@ export const uploadSessionsRelations = relations(uploadSessionsTable, ({ one }) 
     user: one(users, { fields: [uploadSessionsTable.userId], references: [users.id] }),
     band: one(bandsTable, { fields: [uploadSessionsTable.bandId], references: [bandsTable.id] })
 }));
+
+export const profileVisibilityEnum = ['public', 'followers_only', 'private'] as const;
+export const messagingPermissionEnum = ['anyone', 'followers', 'none'] as const;
+export const followPermissionEnum = ['anyone', 'approval', 'none'] as const;
+
+export const userSettingsTable = sqliteTable(
+    'user_settings',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        userId: text('user_id')
+            .notNull()
+            .unique()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        profileVisibility: text('profile_visibility', { enum: profileVisibilityEnum }).notNull().default('public'),
+        searchVisibility: integer('search_visibility', { mode: 'boolean' }).notNull().default(true),
+        messagingPermission: text('messaging_permission', { enum: messagingPermissionEnum }).notNull().default('anyone'),
+        followPermission: text('follow_permission', { enum: followPermissionEnum }).notNull().default('anyone'),
+        emailEnabled: integer('email_enabled', { mode: 'boolean' }).notNull().default(true),
+        followNotifications: integer('follow_notifications', { mode: 'boolean' }).notNull().default(true),
+        commentNotifications: integer('comment_notifications', { mode: 'boolean' }).notNull().default(true),
+        reactionNotifications: integer('reaction_notifications', { mode: 'boolean' }).notNull().default(true),
+        mentionNotifications: integer('mention_notifications', { mode: 'boolean' }).notNull().default(true),
+        bandApplicationNotifications: integer('band_application_notifications', { mode: 'boolean' }).notNull().default(true),
+        bandResponseNotifications: integer('band_response_notifications', { mode: 'boolean' }).notNull().default(true),
+        createdAt: text('created_at').notNull(),
+        updatedAt: text('updated_at').notNull()
+    },
+    (table) => ({
+        userIdIdx: index('idx_user_settings_user_id').on(table.userId),
+        searchVisibilityIdx: index('idx_user_settings_search_visibility').on(table.searchVisibility),
+        profileVisibilityIdx: index('idx_user_settings_profile_visibility').on(table.profileVisibility)
+    })
+);
+
+export const blockedUsersTable = sqliteTable(
+    'blocked_users',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        blockerId: text('blocker_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        blockedId: text('blocked_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        blockedAt: text('blocked_at').notNull()
+    },
+    (table) => ({
+        blockerBlockedIdx: index('idx_blocked_users_blocker').on(table.blockerId),
+        blockedIdx: index('idx_blocked_users_blocked').on(table.blockedId)
+    })
+);
+
+export const userSettingsRelations = relations(userSettingsTable, ({ one }) => ({
+    user: one(users, { fields: [userSettingsTable.userId], references: [users.id] })
+}));
+
+export const blockedUsersRelations = relations(blockedUsersTable, ({ one }) => ({
+    blocker: one(users, { fields: [blockedUsersTable.blockerId], references: [users.id] }),
+    blocked: one(users, { fields: [blockedUsersTable.blockedId], references: [users.id] })
+}));

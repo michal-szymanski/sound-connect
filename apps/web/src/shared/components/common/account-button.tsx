@@ -1,7 +1,9 @@
 import clsx from 'clsx';
+import { Link } from '@tanstack/react-router';
+import { Settings } from 'lucide-react';
 import SignOutButton from '@/shared/components/common/sign-out-button';
 import UserAvatar from '@/shared/components/common/user-avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/shared/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/shared/components/ui/dropdown-menu';
 import { SidebarMenuButton } from '@/shared/components/ui/sidebar';
 import { useAuth } from '@/shared/lib/react-query';
 
@@ -35,7 +37,14 @@ export const AccountButton = ({ isCollapsed }: Props) => {
                     </span>
                 </DropdownMenuTrigger>
             </SidebarMenuButton>
-            <DropdownMenuContent className="z-90" align="end">
+            <DropdownMenuContent className="z-popover" align="end">
+                <DropdownMenuItem asChild>
+                    <Link to="/settings" className="flex w-full cursor-pointer items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Settings</span>
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <SignOutButton />
             </DropdownMenuContent>
         </DropdownMenu>
