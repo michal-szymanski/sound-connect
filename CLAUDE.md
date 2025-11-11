@@ -141,11 +141,32 @@ Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
 ### Content Moderation
 - Queue-based content moderation for posts (Cloudflare Queues)
 
+### User Settings
+- **Settings page** at `/settings` with tabbed interface:
+  - **Account tab**: Update email address, change password, view account creation date
+  - **Privacy tab**:
+    - Profile visibility control (public, followers only, private)
+    - Search visibility toggle (appear in musician search)
+    - Who can message me (anyone, followers only, no one)
+    - Who can follow me (anyone, approval required, no one)
+    - Block/unblock users with blocked users list management
+  - **Notifications tab**:
+    - Global email notifications toggle
+    - Granular controls per notification type (follows, comments, reactions, mentions, band applications)
+    - In-app notifications always enabled
+  - **Data & Account tab**:
+    - Export all user data in JSON format (profile, posts, comments, messages, bands)
+    - Delete account with password confirmation
+- **Privacy enforcement**:
+  - Profile visibility respected across the platform
+  - Search visibility excludes users from musician search results when disabled
+  - Blocked users cannot view profile, send messages, or see content in feed
+  - Messaging and follow permissions enforced on all interactions
+
 ## Known Gaps / Future Features
 
 ### High Priority (Affects Activation & Retention)
 - **Onboarding flow**: No guided profile setup for new users after sign-up
-- **Settings page**: Currently empty placeholder - needs account settings, privacy controls, notification preferences
 - **Discovery feed**: No personalized "For You" feed - users must manually search
 - **Saved profiles**: Cannot bookmark musicians/bands for later
 
