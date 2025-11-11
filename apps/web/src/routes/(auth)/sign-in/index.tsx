@@ -99,7 +99,12 @@ function RouteComponent() {
                             name="password"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Password</FormLabel>
+                                    <div className="flex items-center justify-between">
+                                        <FormLabel>Password</FormLabel>
+                                        <Link to="/forgot-password" className="text-muted-foreground hover:text-primary text-sm underline underline-offset-4">
+                                            Forgot password?
+                                        </Link>
+                                    </div>
                                     <FormControl>
                                         <Input {...field} type="password" data-testid="sign-in-password" />
                                     </FormControl>

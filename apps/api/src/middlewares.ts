@@ -1,5 +1,5 @@
 import { HonoContext } from 'types';
-import { auth } from 'auth';
+import { createAuth } from 'auth';
 import { Context, Next } from 'hono';
 import { createLocalJWKSet, jwtVerify } from 'jose';
 import { z } from 'zod';
@@ -15,6 +15,13 @@ const jwtPayloadSchema = z.object({
 });
 
 export const authMiddleware = async (c: Context<HonoContext>, next: Next) => {
+    const auth = createAuth({
+        queue: c.env.NotificationsQueue,
+        apiUrl: c.env.API_URL,
+        clientUrl: c.env.CLIENT_URL,
+        secret: c.env.BETTER_AUTH_SECRET
+    });
+
     if (
         c.req.path.startsWith('/api/auth/') ||
         c.req.path.startsWith('/debug') ||

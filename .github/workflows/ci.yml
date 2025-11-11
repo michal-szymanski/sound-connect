@@ -545,6 +545,19 @@ jobs:
                   key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
                   fail-on-cache-miss: true
 
+            - name: Set Resend API Key
+              run: |
+                  if ! pnpm wrangler secret list --env production 2>/dev/null | grep -q "RESEND_API_KEY"; then
+                      echo "Secret RESEND_API_KEY does not exist, creating it..."
+                      echo "${{ secrets.RESEND_API_KEY }}" | pnpm wrangler secret put RESEND_API_KEY --env production
+                  else
+                      echo "Secret RESEND_API_KEY already exists, skipping..."
+                  fi
+              working-directory: apps/notifications-queue-consumer
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
             - name: Deploy Notifications Queue Consumer Worker
               run: pnpm --filter @sound-connect/notifications-queue-consumer run deploy
               env:

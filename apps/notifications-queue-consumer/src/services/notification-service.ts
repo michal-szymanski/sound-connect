@@ -1,7 +1,8 @@
 import { notificationsTable, userSettingsTable } from '@/drizzle/schema';
-import type { NotificationQueueMessage } from '@sound-connect/common/types/notifications';
+import type { NotificationQueueMessage, SocialNotificationMessage } from '@sound-connect/common/types/notifications';
 import { db } from '../db';
 import { eq } from 'drizzle-orm';
+import { sendVerificationEmail, sendPasswordResetEmail } from './email-service';
 
 type UserSettingsRow = typeof userSettingsTable.$inferSelect;
 
@@ -33,8 +34,8 @@ const sendEmailNotification = async (userId: string, notificationType: string, c
     console.log(`  Content: ${content}`);
 };
 
-export const processNotification = async (message: NotificationQueueMessage, env: CloudflareBindings): Promise<void> => {
-    console.log(`Processing notification for user ${message.userId}, type: ${message.type}`);
+const processSocialNotification = async (message: SocialNotificationMessage, env: CloudflareBindings): Promise<void> => {
+    console.log(`Processing social notification for user ${message.userId}, type: ${message.type}`);
 
     const createdAt = new Date().toISOString();
 
@@ -106,4 +107,20 @@ export const processNotification = async (message: NotificationQueueMessage, env
     await sendEmailNotification(message.userId, message.type, message.content, message.actorName);
 
     console.log(`Email notification sent to user ${message.userId}`);
+};
+
+export const processNotification = async (message: NotificationQueueMessage, env: CloudflareBindings): Promise<void> => {
+    if (message.type === 'email_verification') {
+        console.log(`Processing email verification for user ${message.userId}`);
+        await sendVerificationEmail(message, env.RESEND_API_KEY);
+        return;
+    }
+
+    if (message.type === 'password_reset') {
+        console.log(`Processing password reset for user ${message.userId}`);
+        await sendPasswordResetEmail(message, env.RESEND_API_KEY);
+        return;
+    }
+
+    await processSocialNotification(message, env);
 };

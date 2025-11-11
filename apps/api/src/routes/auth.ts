@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { HonoContext } from 'types';
-import { auth } from 'auth';
+import { createAuth } from 'auth';
 import { createUserSettings } from '@/api/db/queries/settings-queries';
 
 const authRoutes = new Hono<HonoContext>();
@@ -19,6 +19,13 @@ authRoutes.use(
 );
 
 authRoutes.on(['POST', 'GET'], '/api/auth/*', async (c) => {
+    const auth = createAuth({
+        queue: c.env.NotificationsQueue,
+        apiUrl: c.env.API_URL,
+        clientUrl: c.env.CLIENT_URL,
+        secret: c.env.BETTER_AUTH_SECRET
+    });
+
     const response = await auth.handler(c.req.raw);
 
     if (c.req.method === 'POST' && c.req.url.includes('/sign-up/email')) {

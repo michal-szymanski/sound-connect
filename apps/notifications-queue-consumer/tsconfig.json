@@ -2,6 +2,7 @@
     "extends": "../../tsconfig.json",
     "compilerOptions": {
         "baseUrl": ".",
+        "jsx": "react",
         "paths": {
             "@/notifications-queue-consumer/*": ["src/*"],
             "@/common/*": ["../../packages/common/src/*"],

@@ -1,8 +1,8 @@
-import { auth } from 'auth';
+import type { Auth } from 'auth';
 
 export type HonoContext = {
     Bindings: CloudflareBindings;
     Variables: {
-        user: typeof auth.$Infer.Session.user;
+        user: Auth['$Infer']['Session']['user'];
     };
 };
