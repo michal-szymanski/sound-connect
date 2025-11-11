@@ -193,7 +193,7 @@ export function EmojiPickerContent({ onEmojiSelect, onClose }: Props) {
                     </TabsList>
                 )}
 
-                <ScrollArea className="flex-1">
+                <ScrollArea className="flex-1 overflow-hidden">
                     <div ref={gridRef} className="p-2">
                         {filteredEmojis.length === 0 ? (
                             <div className="text-muted-foreground flex flex-col items-center justify-center py-12">
