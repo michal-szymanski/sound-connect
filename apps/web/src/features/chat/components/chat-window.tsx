@@ -3,7 +3,7 @@ import { CHAT_MESSAGE_MAX_LENGTH } from '@/common/constants';
 import { getRoomId } from '@/common/helpers';
 import { ChatMessage, UserDTO } from '@/common/types/models';
 import clsx from 'clsx';
-import { X, Minus, Send } from 'lucide-react';
+import { X, Minus, Send, Smile } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -11,8 +11,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avat
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { useAuth } from '@/shared/lib/react-query';
 import { useWebSocket } from '@/shared/components/providers/websocket-provider';
+import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
 
 type Props = {
     user: UserDTO;
@@ -39,9 +41,11 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const [roomId, setRoomId] = useState<string | null>(null);
     const [isHovered, setIsHovered] = useState(false);
     const [animationKey, setAnimationKey] = useState(0);
+    const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const prevMinimizedRef = useRef(isMinimized);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const formSchema = z.object({
         text: z.string().max(CHAT_MESSAGE_MAX_LENGTH)
@@ -111,6 +115,28 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
             e.preventDefault();
             form.handleSubmit(onSubmit)();
         }
+    };
+
+    const insertEmoji = (emoji: string) => {
+        const input = inputRef.current;
+        const currentValue = form.getValues('text') || '';
+
+        if (!input) {
+            form.setValue('text', currentValue + emoji);
+            setIsEmojiPickerOpen(false);
+            return;
+        }
+
+        const cursorPos = input.selectionStart || currentValue.length;
+        const newMessage = currentValue.slice(0, cursorPos) + emoji + currentValue.slice(cursorPos);
+
+        form.setValue('text', newMessage);
+        setIsEmojiPickerOpen(false);
+
+        setTimeout(() => {
+            input.focus();
+            input.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
+        }, 0);
     };
 
     if (!auth?.user) return null;
@@ -210,13 +236,42 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
             <div className="bg-card border-border border-t p-3">
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <div className="flex items-center gap-2">
+                        <Popover open={isEmojiPickerOpen} onOpenChange={setIsEmojiPickerOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-muted-foreground hover:text-foreground hover:bg-accent min-h-11 min-w-11 shrink-0 md:min-h-10 md:min-w-10"
+                                    aria-label="Open emoji picker"
+                                    aria-expanded={isEmojiPickerOpen}
+                                    aria-haspopup="dialog"
+                                >
+                                    <Smile className="h-5 w-5" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                                className="z-popover w-full max-w-[352px] p-0"
+                                style={{ width: '352px', height: '435px' }}
+                                side="top"
+                                align="start"
+                                sideOffset={8}
+                            >
+                                <EmojiPickerContent onEmojiSelect={insertEmoji} onClose={() => setIsEmojiPickerOpen(false)} />
+                            </PopoverContent>
+                        </Popover>
                         <Input
-                            {...form.register('text')}
+                            {...form.register('text', {
+                                setValueAs: (v) => v
+                            })}
                             placeholder="Enter Message"
                             onKeyPress={handleKeyPress}
-                            className="bg-background border-border flex-1"
+                            className="bg-background border-border flex-1 text-base md:text-sm"
                             maxLength={CHAT_MESSAGE_MAX_LENGTH}
                             autoComplete="off"
+                            onFocus={(e) => {
+                                inputRef.current = e.target;
+                            }}
                         />
                         {/* eslint-disable-next-line react-hooks/incompatible-library */}
                         <Button type="submit" size="icon" disabled={!form.watch('text')?.trim()} className="shrink-0">
