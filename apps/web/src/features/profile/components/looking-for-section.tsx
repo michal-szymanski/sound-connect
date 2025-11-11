@@ -23,6 +23,11 @@ export const LookingForSection = ({ data, canEdit }: Props) => {
 
     const isEmpty = !data?.seeking && !data?.canOffer && !data?.dealBreakers;
 
+    const getCompletionStatus = (): 'complete' | 'incomplete' => {
+        if (data?.seeking || data?.canOffer || data?.dealBreakers) return 'complete';
+        return 'incomplete';
+    };
+
     const handleSubmit = (e: React.FormEvent, closeForm: () => void) => {
         e.preventDefault();
         updateMutation.mutate(formData, {
@@ -103,6 +108,7 @@ export const LookingForSection = ({ data, canEdit }: Props) => {
             isEmpty={isEmpty}
             emptyMessage="Complete this section to help musicians find you"
             editForm={canEdit ? editForm : undefined}
+            completionStatus={getCompletionStatus()}
         >
             {data && (
                 <div className="space-y-2">

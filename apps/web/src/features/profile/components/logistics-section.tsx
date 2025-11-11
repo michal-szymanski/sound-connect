@@ -11,9 +11,10 @@ import type { LogisticsSection as LogisticsSectionData, UpdateLogistics } from '
 type Props = {
     data: LogisticsSectionData | null;
     canEdit: boolean;
+    id?: string;
 };
 
-export const LogisticsSection = ({ data, canEdit }: Props) => {
+export const LogisticsSection = ({ data, canEdit, id }: Props) => {
     const updateMutation = useUpdateLogistics();
     const [formData, setFormData] = useState<UpdateLogistics>({
         city: data?.city || '',
@@ -25,6 +26,13 @@ export const LogisticsSection = ({ data, canEdit }: Props) => {
     });
 
     const isEmpty = !data?.city;
+
+    const getCompletionStatus = (): 'complete' | 'incomplete' | 'required' => {
+        if (!data?.city) return 'required';
+        if (data.travelRadius !== null && data.travelRadius !== undefined) return 'complete';
+        if (data.hasRehearsalSpace || data.hasTransportation) return 'complete';
+        return 'incomplete';
+    };
 
     const handleSubmit = (e: React.FormEvent, closeForm: () => void) => {
         e.preventDefault();
@@ -148,6 +156,8 @@ export const LogisticsSection = ({ data, canEdit }: Props) => {
             isEmpty={isEmpty}
             emptyMessage="Complete your logistics to help musicians find you"
             editForm={canEdit ? editForm : undefined}
+            completionStatus={getCompletionStatus()}
+            id={id}
         >
             {data && (
                 <div className="space-y-2">

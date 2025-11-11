@@ -28,55 +28,11 @@ type ProfileData = {
 
 export const calculateProfileCompletion = (profile: ProfileData): number => {
     let completion = 0;
+    const requiredFields = 3;
 
-    const requiredFieldsWeight = 40;
-    const optionalSectionWeight = 60 / 7;
+    if (profile.primaryInstrument) completion++;
+    if (profile.primaryGenre) completion++;
+    if (profile.city) completion++;
 
-    const hasRequiredFields = profile.city && profile.primaryInstrument && profile.primaryGenre;
-    if (hasRequiredFields) {
-        completion += requiredFieldsWeight;
-    }
-
-    const hasInstrumentsSection = profile.yearsPlayingPrimary !== null || profile.seekingToPlay !== null;
-    if (hasInstrumentsSection) {
-        completion += optionalSectionWeight;
-    }
-
-    const hasGenresSection = profile.secondaryGenres !== null || profile.influences !== null;
-    if (hasGenresSection) {
-        completion += optionalSectionWeight;
-    }
-
-    const hasAvailabilitySection =
-        profile.status !== null || profile.commitmentLevel !== null || profile.weeklyAvailability !== null || profile.rehearsalFrequency !== null;
-    if (hasAvailabilitySection) {
-        completion += optionalSectionWeight;
-    }
-
-    const hasExperienceSection = profile.giggingLevel !== null || profile.pastBands !== null || profile.hasStudioExperience !== null;
-    if (hasExperienceSection) {
-        completion += optionalSectionWeight;
-    }
-
-    const hasLogisticsSection =
-        profile.state !== null ||
-        profile.country !== null ||
-        profile.travelRadius !== null ||
-        profile.hasRehearsalSpace !== null ||
-        profile.hasTransportation !== null;
-    if (hasLogisticsSection) {
-        completion += optionalSectionWeight;
-    }
-
-    const hasLookingForSection = profile.seeking !== null || profile.canOffer !== null || profile.dealBreakers !== null;
-    if (hasLookingForSection) {
-        completion += optionalSectionWeight;
-    }
-
-    const hasBioSection = profile.bio !== null || profile.musicalGoals !== null || profile.ageRange !== null;
-    if (hasBioSection) {
-        completion += optionalSectionWeight;
-    }
-
-    return Math.round(completion);
+    return Math.round((completion / requiredFields) * 100);
 };
