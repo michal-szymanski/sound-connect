@@ -5,44 +5,16 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1762595249112,
-      "tag": "0000_adorable_karnak",
+      "when": 1762894727346,
+      "tag": "0000_noisy_logan",
       "breakpoints": true
     },
     {
-      "idx": 3,
+      "idx": 1,
       "version": "6",
-      "when": 1762595249113,
-      "tag": "0003_create_users_fts",
+      "when": 1762894727347,
+      "tag": "0001_seed_users",
       "breakpoints": false
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1762600232423,
-      "tag": "0004_strange_shen",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1762627396925,
-      "tag": "0005_daily_blue_shield",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1762635600000,
-      "tag": "0006_rename_music_groups_to_bands",
-      "breakpoints": false
-    },
-    {
-      "idx": 7,
-      "version": "6",
-      "when": 1762640000000,
-      "tag": "0007_add_band_posts_support",
-      "breakpoints": true
     }
   ]
 }
