@@ -1,4 +1,5 @@
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Maximize2 } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
 import { useChatWindows } from '@/features/chat/components/chat-window-manager';
 import UserAvatar from '@/shared/components/common/user-avatar';
 import { Button } from '@/shared/components/ui/button';
@@ -19,7 +20,20 @@ export default function RightSidebar() {
             <div className="sticky top-20 space-y-4">
                 <Card className="border-border/40">
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-semibold">Contacts</CardTitle>
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-base font-semibold">Messages</CardTitle>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:text-foreground hover:bg-accent h-8 w-8 transition-colors"
+                                asChild
+                            >
+                                <Link to="/messages">
+                                    <Maximize2 className="h-4 w-4" aria-hidden="true" />
+                                    <span className="sr-only">Open full messages view</span>
+                                </Link>
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent className="pb-4">
                         {users.length === 0 ? (
