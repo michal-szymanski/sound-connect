@@ -48,7 +48,7 @@ export const sendVerificationEmail = async (message: EmailVerificationMessage, r
     const text = getVerificationEmailText(message.verificationUrl, message.name);
 
     await resend.emails.send({
-        from: 'Sound Connect <noreply@soundconnect.app>',
+        from: 'Sound Connect <onboarding@resend.dev>',
         to: message.email,
         subject: 'Verify Your Email - Sound Connect',
         html,
@@ -70,7 +70,7 @@ export const sendPasswordResetEmail = async (message: PasswordResetMessage, rese
     const text = getPasswordResetEmailText(message.resetUrl, message.name);
 
     await resend.emails.send({
-        from: 'Sound Connect <noreply@soundconnect.app>',
+        from: 'Sound Connect <onboarding@resend.dev>',
         to: message.email,
         subject: 'Reset Your Password - Sound Connect',
         html,
