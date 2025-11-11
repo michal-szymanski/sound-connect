@@ -11,14 +11,14 @@ const usersRoutes = new Hono<HonoContext>();
 usersRoutes.get('/users/:userId/followers', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
 
-    const followersResults = await getFollowedUsers(userId);
+    const followersResults = await getUserFollowers(userId);
     return c.json(followersResults);
 });
 
 usersRoutes.get('/users/:userId/followings', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
 
-    const followingsResults = await getUserFollowers(userId);
+    const followingsResults = await getFollowedUsers(userId);
     return c.json(followingsResults);
 });
 
