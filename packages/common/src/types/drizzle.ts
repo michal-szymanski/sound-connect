@@ -585,3 +585,35 @@ export const blockedUserSchema = z.object({
 
 export type CreateBlockedUser = z.infer<typeof createBlockedUserSchema>;
 export type BlockedUser = z.infer<typeof blockedUserSchema>;
+
+export const discoveryEventTypeEnum = z.enum(['page_view', 'card_click', 'application', 'pagination']);
+
+export const createDiscoveryAnalyticsSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    sessionId: z.string(),
+    eventType: discoveryEventTypeEnum,
+    bandId: z.number().nullable(),
+    matchScore: z.number().nullable(),
+    matchFactors: z.string().nullable(),
+    positionInFeed: z.number().nullable(),
+    pageNumber: z.number().nullable(),
+    createdAt: z.string()
+});
+
+export const discoveryAnalyticsSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    sessionId: z.string(),
+    eventType: discoveryEventTypeEnum,
+    bandId: z.number().nullable(),
+    matchScore: z.number().nullable(),
+    matchFactors: z.string().nullable(),
+    positionInFeed: z.number().nullable(),
+    pageNumber: z.number().nullable(),
+    createdAt: z.string()
+});
+
+export type CreateDiscoveryAnalytics = z.infer<typeof createDiscoveryAnalyticsSchema>;
+export type DiscoveryAnalytics = z.infer<typeof discoveryAnalyticsSchema>;
+export type DiscoveryEventType = z.infer<typeof discoveryEventTypeEnum>;

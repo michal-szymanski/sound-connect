@@ -454,3 +454,37 @@ export const blockedUsersRelations = relations(blockedUsersTable, ({ one }) => (
     blocker: one(users, { fields: [blockedUsersTable.blockerId], references: [users.id] }),
     blocked: one(users, { fields: [blockedUsersTable.blockedId], references: [users.id] })
 }));
+
+export const discoveryEventTypeEnum = ['page_view', 'card_click', 'application', 'pagination'] as const;
+
+export const discoveryAnalyticsTable = sqliteTable(
+    'discovery_analytics',
+    {
+        id: integer('id').primaryKey({ autoIncrement: true }),
+        userId: text('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        sessionId: text('session_id').notNull(),
+        eventType: text('event_type', { enum: discoveryEventTypeEnum }).notNull(),
+        bandId: integer('band_id').references(() => bandsTable.id, { onDelete: 'cascade' }),
+        matchScore: integer('match_score'),
+        matchFactors: text('match_factors'),
+        positionInFeed: integer('position_in_feed'),
+        pageNumber: integer('page_number'),
+        createdAt: text('created_at').notNull()
+    },
+    (table) => ({
+        userIdIdx: index('idx_discovery_analytics_user_id').on(table.userId),
+        eventTypeIdx: index('idx_discovery_analytics_event_type').on(table.eventType),
+        bandIdIdx: index('idx_discovery_analytics_band_id').on(table.bandId),
+        createdAtIdx: index('idx_discovery_analytics_created_at').on(table.createdAt),
+        sessionIdIdx: index('idx_discovery_analytics_session_id').on(table.sessionId),
+        userEventIdx: index('idx_discovery_analytics_user_event').on(table.userId, table.eventType),
+        bandEventIdx: index('idx_discovery_analytics_band_event').on(table.bandId, table.eventType)
+    })
+);
+
+export const discoveryAnalyticsRelations = relations(discoveryAnalyticsTable, ({ one }) => ({
+    user: one(users, { fields: [discoveryAnalyticsTable.userId], references: [users.id] }),
+    band: one(bandsTable, { fields: [discoveryAnalyticsTable.bandId], references: [bandsTable.id] })
+}));
