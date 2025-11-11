@@ -1,8 +1,13 @@
 import { ChatMessage, chatMessageSchema, WebSocketMessage } from '@sound-connect/common/types/models';
 import { DurableObject } from 'cloudflare:workers';
+import { drizzle } from 'drizzle-orm/d1';
+import { eq, and } from 'drizzle-orm';
+import { schema } from '@sound-connect/drizzle';
 
 const MESSAGES_KEY = 'messages';
 const PARTICIPANTS_KEY = 'participants';
+
+const { userSettingsTable, blockedUsersTable, usersFollowersTable } = schema;
 
 export class ChatDurableObject extends DurableObject {
     private storage: DurableObjectStorage;
@@ -59,6 +64,15 @@ export class ChatDurableObject extends DurableObject {
             return;
         }
 
+        const recipientId = Array.from(this.participants).find((id) => id !== senderId);
+
+        if (recipientId) {
+            const canSend = await this.canSendMessage(senderId, recipientId);
+            if (!canSend) {
+                return;
+            }
+        }
+
         const message = chatMessageSchema.parse({
             id: crypto.randomUUID(),
             type: 'chat',
@@ -70,6 +84,49 @@ export class ChatDurableObject extends DurableObject {
 
         await this.storeMessage(message);
         await this.broadcastMessage(message);
+    }
+
+    private async canSendMessage(senderId: string, recipientId: string): Promise<boolean> {
+        const db = drizzle(this.env.DB);
+
+        const [blockedBySender, blockedByRecipient] = await Promise.all([
+            db
+                .select()
+                .from(blockedUsersTable)
+                .where(and(eq(blockedUsersTable.blockerId, senderId), eq(blockedUsersTable.blockedId, recipientId)))
+                .limit(1),
+            db
+                .select()
+                .from(blockedUsersTable)
+                .where(and(eq(blockedUsersTable.blockerId, recipientId), eq(blockedUsersTable.blockedId, senderId)))
+                .limit(1)
+        ]);
+
+        if (blockedBySender.length > 0 || blockedByRecipient.length > 0) {
+            return false;
+        }
+
+        const [settings] = await db.select().from(userSettingsTable).where(eq(userSettingsTable.userId, recipientId)).limit(1);
+
+        if (!settings) {
+            return true;
+        }
+
+        if (settings.messagingPermission === 'none') {
+            return false;
+        }
+
+        if (settings.messagingPermission === 'followers') {
+            const [following] = await db
+                .select()
+                .from(usersFollowersTable)
+                .where(and(eq(usersFollowersTable.userId, senderId), eq(usersFollowersTable.followedUserId, recipientId)))
+                .limit(1);
+
+            return following !== undefined;
+        }
+
+        return true;
     }
 
     async getRoomHistory(roomId: string): Promise<ChatMessage[]> {

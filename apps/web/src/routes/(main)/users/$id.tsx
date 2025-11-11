@@ -4,10 +4,22 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import z from 'zod';
+import { MoreVertical } from 'lucide-react';
 import UserAvatar from '@/shared/components/common/user-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/shared/components/ui/dropdown-menu';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
+} from '@/shared/components/ui/alert-dialog';
 import { availabilityStatusConfig } from '@/shared/lib/utils/availability';
 import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, followersQuery, followRequestStatusQuery } from '@/shared/lib/react-query';
 import { getPosts } from '@/features/posts/server-functions/posts';
@@ -22,6 +34,7 @@ import { LogisticsSection } from '@/features/profile/components/logistics-sectio
 import { LookingForSection } from '@/features/profile/components/looking-for-section';
 import { BioSection } from '@/features/profile/components/bio-section';
 import { UserBandsSection } from '@/features/bands/components/user-bands-section';
+import { useBlockedUsers, useBlockUser, useUnblockUser } from '@/features/settings/hooks/use-settings';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
@@ -82,10 +95,16 @@ function RouteComponent() {
     const { data: currentUserFollowings } = useFollowings(currentUser);
     const { data: followRequestStatus } = useFollowRequestStatus(user.id);
     const { data: profile, isLoading: isProfileLoading } = useProfile(user.id);
+    const { data: blockedUsers } = useBlockedUsers();
+    const { mutate: blockUser, isPending: isBlocking } = useBlockUser();
+    const { mutate: unblockUser, isPending: isUnblocking } = useUnblockUser();
     const queryClient = useQueryClient();
     const router = useRouter();
     const [optimisticStatus, setOptimisticStatus] = useState<'pending' | 'following' | null>(null);
+    const [blockDialogOpen, setBlockDialogOpen] = useState(false);
+    const [unblockDialogOpen, setUnblockDialogOpen] = useState(false);
     const isOwnProfile = currentUser.id === user.id;
+    const isBlocked = blockedUsers?.some((u) => u.id === user.id) ?? false;
 
     useEffect(() => {
         if (followRequestStatus?.status === 'following') {
@@ -138,6 +157,30 @@ function RouteComponent() {
         } catch (error) {
             console.error('Failed to unfollow user:', error);
         }
+    };
+
+    const handleBlockClick = () => {
+        setBlockDialogOpen(true);
+    };
+
+    const handleUnblockClick = () => {
+        setUnblockDialogOpen(true);
+    };
+
+    const handleBlockConfirm = () => {
+        blockUser(user.id, {
+            onSettled: () => {
+                setBlockDialogOpen(false);
+            }
+        });
+    };
+
+    const handleUnblockConfirm = () => {
+        unblockUser(user.id, {
+            onSettled: () => {
+                setUnblockDialogOpen(false);
+            }
+        });
     };
 
     const renderFollowButton = () => {
@@ -203,7 +246,33 @@ function RouteComponent() {
                             <p className="text-muted-foreground text-sm">@{user.id.slice(0, 8)}</p>
                         </div>
 
-                        <div className="flex items-center gap-2">{renderFollowButton()}</div>
+                        <div className="flex items-center gap-2">
+                            {renderFollowButton()}
+                            {!isOwnProfile && (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" aria-label="More options">
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="z-popover">
+                                        {isBlocked ? (
+                                            <DropdownMenuItem onClick={handleUnblockClick} disabled={isUnblocking}>
+                                                {isUnblocking ? 'Unblocking...' : 'Unblock User'}
+                                            </DropdownMenuItem>
+                                        ) : (
+                                            <DropdownMenuItem
+                                                onClick={handleBlockClick}
+                                                disabled={isBlocking}
+                                                className="text-destructive focus:text-destructive"
+                                            >
+                                                {isBlocking ? 'Blocking...' : 'Block User'}
+                                            </DropdownMenuItem>
+                                        )}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            )}
+                        </div>
                     </div>
 
                     <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
@@ -255,6 +324,38 @@ function RouteComponent() {
             ) : null}
 
             <UserBandsSection userId={user.id} isOwnProfile={isOwnProfile} />
+
+            <AlertDialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
+                <AlertDialogContent className="z-dialog">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Block {user.name}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            They won&apos;t be able to see your profile or message you. You can unblock them at any time from your settings.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isBlocking}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleBlockConfirm} disabled={isBlocking} className="bg-destructive hover:bg-destructive/90">
+                            {isBlocking ? 'Blocking...' : 'Block'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={unblockDialogOpen} onOpenChange={setUnblockDialogOpen}>
+                <AlertDialogContent className="z-dialog">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Unblock {user.name}?</AlertDialogTitle>
+                        <AlertDialogDescription>They will be able to see your profile and message you again.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isUnblocking}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleUnblockConfirm} disabled={isUnblocking}>
+                            {isUnblocking ? 'Unblocking...' : 'Unblock'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

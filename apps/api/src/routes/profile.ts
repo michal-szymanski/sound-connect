@@ -23,6 +23,7 @@ import {
     completeUserProfileSetup,
     getUserProfile
 } from '@/api/db/queries/profile-queries';
+import { canViewProfile } from '@/api/db/queries/settings-queries';
 
 const profileRoutes = new Hono<HonoContext>();
 
@@ -148,6 +149,13 @@ profileRoutes.post('/users/profile/complete-setup', async (c) => {
 
 profileRoutes.get('/users/:userId/profile', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
+    const currentUser = c.get('user');
+
+    const allowed = await canViewProfile(currentUser.id, userId);
+
+    if (!allowed) {
+        throw new HTTPException(403, { message: 'Cannot view this profile' });
+    }
 
     const profile = await getUserProfile(userId);
 
