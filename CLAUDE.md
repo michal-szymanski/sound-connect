@@ -128,11 +128,13 @@ Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
 - **User search**: Basic user search functionality
 
 ### Real-time Communication
-- **Direct messaging**:
+- **Direct messaging** at `/messages`:
   - 1:1 conversations
   - Real-time message delivery (Durable Objects)
   - Message history
-  - Conversation list
+  - Conversation list with search
+  - Emoji picker in message input
+  - Quick access via right sidebar "Messages" card
 
 ### Notifications
 - Notification system
