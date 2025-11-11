@@ -2,7 +2,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@/common/constants';
 import { getRoomId } from '@/common/helpers';
 import { ChatMessage, UserDTO } from '@/common/types/models';
-import clsx from 'clsx';
 import { X, Minus, Send, Smile } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
@@ -15,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/
 import { useAuth } from '@/shared/lib/react-query';
 import { useWebSocket } from '@/shared/components/providers/websocket-provider';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
+import { MessageBubble } from './message-bubble';
 
 type Props = {
     user: UserDTO;
@@ -214,19 +214,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                         <div className="text-muted-foreground py-8 text-center text-sm">Start a conversation with {user.name}</div>
                     ) : (
                         messages.map((msg) => (
-                            <div key={msg.id} className={clsx('flex flex-col', msg.senderId === currentUser.id ? 'items-end' : 'items-start')}>
-                                <div
-                                    className={clsx(
-                                        'max-w-[75%] rounded-2xl px-4 py-2 text-sm',
-                                        msg.senderId === currentUser.id
-                                            ? 'bg-primary text-primary-foreground rounded-br-sm'
-                                            : 'bg-muted text-foreground rounded-bl-sm'
-                                    )}
-                                >
-                                    {msg.content}
-                                </div>
-                                <span className="text-muted-foreground mt-1 px-1 text-xs">{formatTimestamp(msg.timestamp)}</span>
-                            </div>
+                            <MessageBubble key={msg.id} message={msg} isCurrentUser={msg.senderId === currentUser.id} formatTimestamp={formatTimestamp} />
                         ))
                     )}
                     <div ref={messagesEndRef} />
