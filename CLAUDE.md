@@ -774,6 +774,12 @@ sound-connect-assets/
 - **Date field types**:
     - **Authentication tables** (users, sessions, accounts, verifications): Use `integer({ mode: 'timestamp' })` for date fields (better-auth expects Date objects)
     - **Application tables** (posts, comments, messages, etc.): Use `text()` for date fields (stores ISO 8601 strings for JSON serialization)
+- **Migrations**:
+    - Schema migrations (CREATE TABLE, ALTER TABLE, etc.) MUST be generated using `pnpm db:generate` command ONLY
+    - NEVER manually create migration files for schema changes
+    - Data migrations (INSERT, UPDATE, DELETE, seed data) can be manually created as SQL files
+    - Example: Seed users in `0001_seed_users.sql` is allowed (data migration)
+    - Example: Adding a new column must use `pnpm db:generate` (schema migration)
 - **After schema changes**, run these commands IN ORDER:
     1. `pnpm db:generate` - Generate migration files
     2. Manually update Zod schemas in `packages/common/src/types/drizzle.ts` to match the database schema
