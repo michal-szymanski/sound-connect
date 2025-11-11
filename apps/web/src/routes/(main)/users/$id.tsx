@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import z from 'zod';
-import { MoreVertical } from 'lucide-react';
+import { MoreVertical, AlertCircle } from 'lucide-react';
 import UserAvatar from '@/shared/components/common/user-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
@@ -213,6 +213,14 @@ function RouteComponent() {
 
     return (
         <div className="w-full space-y-6">
+            {isOwnProfile && (
+                <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+                    {profile?.profileCompletion === 100
+                        ? 'Profile setup complete! You can now be discovered by bands.'
+                        : `Profile ${profile?.profileCompletion}% complete. ${3 - Math.floor((profile?.profileCompletion || 0) / 34)} items remaining.`}
+                </div>
+            )}
+
             <Card className="border-border/40 overflow-hidden">
                 <div className="relative h-48 overflow-hidden sm:h-60">
                     <img
@@ -288,36 +296,66 @@ function RouteComponent() {
                             <span className="text-foreground font-semibold">{followings ? followings.length : 0}</span>
                             <span className="text-muted-foreground ml-1">following</span>
                         </button>
-
-                        {isOwnProfile && profile && (
-                            <div className="text-muted-foreground ml-auto flex items-center gap-2 text-xs">
-                                <div className="bg-accent h-2 w-20 overflow-hidden rounded-full sm:w-24">
-                                    <div
-                                        className="bg-primary h-full transition-all"
-                                        style={{ width: `${profile.profileCompletion}%` }}
-                                        role="progressbar"
-                                        aria-valuenow={profile.profileCompletion}
-                                        aria-valuemin={0}
-                                        aria-valuemax={100}
-                                        aria-label="Profile completion percentage"
-                                    />
-                                </div>
-                                <span>{profile.profileCompletion}%</span>
-                            </div>
-                        )}
                     </div>
                 </div>
             </Card>
+
+            {isOwnProfile && profile && profile.profileCompletion < 100 && (
+                <Card className="bg-accent/50 border-primary/20 p-4">
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                                <h3 className="text-sm font-semibold">Complete Your Profile Setup</h3>
+                                <p className="text-muted-foreground mt-1 text-xs">Add required info to unlock musician discovery and be found by bands.</p>
+                            </div>
+                            <span className="text-primary ml-4 text-2xl font-bold">{profile.profileCompletion}%</span>
+                        </div>
+
+                        <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
+                            <div
+                                className="bg-primary h-full transition-all duration-300"
+                                style={{ width: `${profile.profileCompletion}%` }}
+                                role="progressbar"
+                                aria-valuenow={profile.profileCompletion}
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                                aria-label="Profile setup progress"
+                            />
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                            {!profile.instruments?.primaryInstrument && (
+                                <Badge variant="destructive" className="gap-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    Primary Instrument
+                                </Badge>
+                            )}
+                            {!profile.genres?.primaryGenre && (
+                                <Badge variant="destructive" className="gap-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    Primary Genre
+                                </Badge>
+                            )}
+                            {!profile.logistics?.city && (
+                                <Badge variant="destructive" className="gap-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    Location
+                                </Badge>
+                            )}
+                        </div>
+                    </div>
+                </Card>
+            )}
 
             {isProfileLoading ? (
                 <ProfileSkeleton />
             ) : profile ? (
                 <>
-                    <InstrumentsSection data={profile.instruments} canEdit={isOwnProfile} />
-                    <GenresSection data={profile.genres} canEdit={isOwnProfile} />
+                    <InstrumentsSection data={profile.instruments} canEdit={isOwnProfile} id="instruments-section" />
+                    <GenresSection data={profile.genres} canEdit={isOwnProfile} id="genres-section" />
+                    <LogisticsSection data={profile.logistics} canEdit={isOwnProfile} id="logistics-section" />
                     <AvailabilitySection data={profile.availability} canEdit={isOwnProfile} />
                     <ExperienceSection data={profile.experience} canEdit={isOwnProfile} />
-                    <LogisticsSection data={profile.logistics} canEdit={isOwnProfile} />
                     <LookingForSection data={profile.lookingFor} canEdit={isOwnProfile} />
                     <BioSection data={profile.bio} canEdit={isOwnProfile} />
                 </>

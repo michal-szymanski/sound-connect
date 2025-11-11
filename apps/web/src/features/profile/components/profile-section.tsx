@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Card } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Pencil } from 'lucide-react';
+import { CompletionBadge } from './completion-badge';
 
 type Props = {
     title: string;
@@ -11,9 +12,11 @@ type Props = {
     canEdit: boolean;
     isEmpty?: boolean;
     emptyMessage?: string;
+    completionStatus?: 'complete' | 'incomplete' | 'required';
+    id?: string;
 };
 
-export const ProfileSection = ({ title, icon, children, editForm, canEdit, isEmpty, emptyMessage }: Props) => {
+export const ProfileSection = ({ title, icon, children, editForm, canEdit, isEmpty, emptyMessage, completionStatus, id }: Props) => {
     const [isEditing, setIsEditing] = useState(false);
 
     if (!canEdit && isEmpty) {
@@ -23,11 +26,12 @@ export const ProfileSection = ({ title, icon, children, editForm, canEdit, isEmp
     const closeForm = () => setIsEditing(false);
 
     return (
-        <Card className="p-4 sm:p-6">
+        <Card id={id} className="p-4 sm:p-6" data-completion-status={completionStatus} data-section-required={completionStatus === 'required'}>
             <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
                     {icon}
                     <h2 className="text-lg font-semibold">{title}</h2>
+                    {canEdit && completionStatus && completionStatus !== 'complete' && <CompletionBadge status={completionStatus} />}
                 </div>
                 {canEdit && !isEditing && (
                     <Button

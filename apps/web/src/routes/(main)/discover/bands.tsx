@@ -82,7 +82,7 @@ function BandDiscoveryPage() {
                     <h1 className="text-3xl font-bold">Discover Bands</h1>
                     <p className="text-muted-foreground mt-2">Bands looking for musicians like you</p>
                 </div>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="flex flex-col gap-4">
                     {Array.from({ length: 12 }).map((_, i) => (
                         <BandDiscoveryCardSkeleton key={i} />
                     ))}
@@ -141,7 +141,7 @@ function BandDiscoveryPage() {
                 Showing {(page - 1) * 12 + 1}-{Math.min(page * 12, data.pagination.totalResults)} of {data.pagination.totalResults} matches
             </p>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="flex flex-col gap-4">
                 {data.bands.map((band, index) => (
                     <BandDiscoveryCard key={band.id} result={band} onCardClick={() => handleCardClick(band.id, band.matchScore, index)} />
                 ))}

@@ -14,9 +14,10 @@ import { formatGenre } from '@/features/profile/lib/profile-utils';
 type Props = {
     data: GenresSectionData | null;
     canEdit: boolean;
+    id?: string;
 };
 
-export const GenresSection = ({ data, canEdit }: Props) => {
+export const GenresSection = ({ data, canEdit, id }: Props) => {
     const updateMutation = useUpdateGenres();
     const [formData, setFormData] = useState<UpdateGenres>({
         primaryGenre: data?.primaryGenre || 'rock',
@@ -25,6 +26,12 @@ export const GenresSection = ({ data, canEdit }: Props) => {
     });
 
     const isEmpty = !data?.primaryGenre;
+
+    const getCompletionStatus = (): 'complete' | 'incomplete' | 'required' => {
+        if (!data?.primaryGenre) return 'required';
+        if (data.secondaryGenres.length > 0 || data.influences) return 'complete';
+        return 'incomplete';
+    };
 
     const handleSubmit = (e: React.FormEvent, closeForm: () => void) => {
         e.preventDefault();
@@ -130,6 +137,8 @@ export const GenresSection = ({ data, canEdit }: Props) => {
             isEmpty={isEmpty}
             emptyMessage="Complete your genres to help musicians find you"
             editForm={canEdit ? editForm : undefined}
+            completionStatus={getCompletionStatus()}
+            id={id}
         >
             {data && (
                 <div className="space-y-2">

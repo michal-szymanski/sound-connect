@@ -14,9 +14,10 @@ import { formatInstrument } from '@/features/profile/lib/profile-utils';
 type Props = {
     data: InstrumentsSectionData | null;
     canEdit: boolean;
+    id?: string;
 };
 
-export const InstrumentsSection = ({ data, canEdit }: Props) => {
+export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
     const updateMutation = useUpdateInstruments();
     const [formData, setFormData] = useState<UpdateInstruments>({
         primaryInstrument: data?.primaryInstrument || 'guitar',
@@ -26,6 +27,12 @@ export const InstrumentsSection = ({ data, canEdit }: Props) => {
     });
 
     const isEmpty = !data?.primaryInstrument;
+
+    const getCompletionStatus = (): 'complete' | 'incomplete' | 'required' => {
+        if (!data?.primaryInstrument) return 'required';
+        if (data.additionalInstruments.length > 0 || data.seekingToPlay.length > 0) return 'complete';
+        return 'incomplete';
+    };
 
     const handleSubmit = (e: React.FormEvent, closeForm: () => void) => {
         e.preventDefault();
@@ -193,6 +200,8 @@ export const InstrumentsSection = ({ data, canEdit }: Props) => {
             isEmpty={isEmpty}
             emptyMessage="Complete your instruments to help musicians find you"
             editForm={canEdit ? editForm : undefined}
+            completionStatus={getCompletionStatus()}
+            id={id}
         >
             {data && (
                 <div className="space-y-2">
