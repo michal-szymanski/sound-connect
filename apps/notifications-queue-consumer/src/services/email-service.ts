@@ -47,7 +47,7 @@ export const sendVerificationEmail = async (message: EmailVerificationMessage, r
     );
     const text = getVerificationEmailText(message.verificationUrl, message.name);
 
-    await resend.emails.send({
+    const result = await resend.emails.send({
         from: 'Sound Connect <onboarding@resend.dev>',
         to: message.email,
         subject: 'Verify Your Email - Sound Connect',
@@ -55,7 +55,14 @@ export const sendVerificationEmail = async (message: EmailVerificationMessage, r
         text
     });
 
-    console.log(`[EMAIL] Sent verification email to ${message.email} for user ${message.userId}`);
+    console.log('[EMAIL] Resend API response:', JSON.stringify(result));
+
+    if (result.error) {
+        console.error('[EMAIL] Failed to send verification email:', result.error);
+        throw new Error(`Failed to send verification email: ${result.error.message}`);
+    }
+
+    console.log(`[EMAIL] Successfully sent verification email to ${message.email} for user ${message.userId}, ID: ${result.data?.id}`);
 };
 
 export const sendPasswordResetEmail = async (message: PasswordResetMessage, resendApiKey: string): Promise<void> => {
@@ -69,7 +76,7 @@ export const sendPasswordResetEmail = async (message: PasswordResetMessage, rese
     );
     const text = getPasswordResetEmailText(message.resetUrl, message.name);
 
-    await resend.emails.send({
+    const result = await resend.emails.send({
         from: 'Sound Connect <onboarding@resend.dev>',
         to: message.email,
         subject: 'Reset Your Password - Sound Connect',
@@ -77,5 +84,12 @@ export const sendPasswordResetEmail = async (message: PasswordResetMessage, rese
         text
     });
 
-    console.log(`[EMAIL] Sent password reset email to ${message.email} for user ${message.userId}`);
+    console.log('[EMAIL] Resend API response:', JSON.stringify(result));
+
+    if (result.error) {
+        console.error('[EMAIL] Failed to send password reset email:', result.error);
+        throw new Error(`Failed to send password reset email: ${result.error.message}`);
+    }
+
+    console.log(`[EMAIL] Successfully sent password reset email to ${message.email} for user ${message.userId}, ID: ${result.data?.id}`);
 };
