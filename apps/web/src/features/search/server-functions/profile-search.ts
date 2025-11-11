@@ -39,7 +39,7 @@ export const searchProfiles = createServerFn()
             queryParams.append('page', data.page.toString());
             queryParams.append('limit', data.limit.toString());
 
-            const response = await env.API.fetch(`${env.API_URL}/profiles/search?${queryParams.toString()}`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/search?${queryParams.toString()}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     ...(auth.cookie && { Cookie: auth.cookie })

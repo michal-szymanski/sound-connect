@@ -29,7 +29,7 @@ export const searchBands = createServerFn()
             queryParams.append('page', data.page.toString());
             queryParams.append('limit', data.limit.toString());
 
-            const response = await env.API.fetch(`${env.API_URL}/bands/search?${queryParams.toString()}`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/search?${queryParams.toString()}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     ...(auth.cookie && { Cookie: auth.cookie })

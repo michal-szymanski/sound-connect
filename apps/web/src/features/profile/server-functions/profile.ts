@@ -20,7 +20,7 @@ export const getProfile = createServerFn()
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ context: { env, auth }, data }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/profile`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/profile`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -46,7 +46,7 @@ export const updateInstruments = createServerFn({ method: 'POST' })
     .inputValidator(updateInstrumentsSchema)
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/users/profile/instruments`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/profile/instruments`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ export const updateGenres = createServerFn({ method: 'POST' })
     .inputValidator(updateGenresSchema)
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/users/profile/genres`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/profile/genres`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ export const updateAvailability = createServerFn({ method: 'POST' })
     .inputValidator(updateAvailabilitySchema)
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/users/profile/availability`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/profile/availability`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ export const updateExperience = createServerFn({ method: 'POST' })
     .inputValidator(updateExperienceSchema)
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/users/profile/experience`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/profile/experience`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -154,7 +154,7 @@ export const updateLogistics = createServerFn({ method: 'POST' })
     .inputValidator(updateLogisticsSchema)
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/users/profile/logistics`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/profile/logistics`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -181,7 +181,7 @@ export const updateLookingFor = createServerFn({ method: 'POST' })
     .inputValidator(updateLookingForSchema)
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/users/profile/looking-for`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/profile/looking-for`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -208,7 +208,7 @@ export const updateBio = createServerFn({ method: 'POST' })
     .inputValidator(updateBioSchema)
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/users/profile/bio`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/profile/bio`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -235,7 +235,7 @@ export const completeSetup = createServerFn({ method: 'POST' })
     .inputValidator(completeSetupSchema)
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/users/profile/complete-setup`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/profile/complete-setup`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -13,6 +13,7 @@ import {
 import { createBandApplicationSchema, rejectBandApplicationSchema, applicationStatusEnum } from '@sound-connect/common/types/band-applications';
 import { postQueueMessageSchema } from '@sound-connect/common/types/posts';
 import { notificationQueueMessageSchema } from '@sound-connect/common/types/notifications';
+import { bandSearchParamsSchema } from '@sound-connect/common/types/band-search';
 import {
     createBand,
     getBandById,
@@ -46,9 +47,44 @@ import {
     deleteRejectedApplicationsForBand,
     getBandAdminIds
 } from '@/api/db/queries/band-applications-queries';
+import { searchBands } from '@/api/db/queries/bands-search-queries';
 import { geocodeCity } from '@/api/services/geocoding-service';
 
 const bandsRoutes = new Hono<HonoContext>();
+
+bandsRoutes.get('/bands/search', async (c) => {
+    const db = c.env.DB;
+    const query = c.req.query();
+
+    const rawParams = {
+        genre: query['genre'],
+        city: query['city'],
+        radius: query['radius'],
+        lookingFor: query['lookingFor'],
+        page: query['page'],
+        limit: query['limit']
+    };
+
+    const params = bandSearchParamsSchema.parse(rawParams);
+
+    let geocodedLocation = null;
+    let geocodingFallback = false;
+
+    if (params.city) {
+        geocodedLocation = await geocodeCity(db, { city: params.city });
+        if (!geocodedLocation) {
+            geocodingFallback = true;
+        }
+    }
+
+    const results = await searchBands(db, params, geocodedLocation);
+
+    return c.json({
+        results: results.data,
+        pagination: results.pagination,
+        geocodingFallback
+    });
+});
 
 bandsRoutes.post('/bands', async (c) => {
     const user = c.get('user');

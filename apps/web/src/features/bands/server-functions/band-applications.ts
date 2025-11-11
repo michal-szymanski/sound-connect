@@ -18,7 +18,7 @@ export const submitBandApplication = createServerFn({ method: 'POST' })
         try {
             const { bandId, ...applicationData } = data;
 
-            const response = await env.API.fetch(`${env.API_URL}/bands/${bandId}/applications`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${bandId}/applications`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export const getBandApplications = createServerFn()
             if (params.limit) searchParams.set('limit', params.limit.toString());
             if (params.offset) searchParams.set('offset', params.offset.toString());
 
-            const response = await env.API.fetch(`${env.API_URL}/bands/${bandId}/applications?${searchParams.toString()}`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${bandId}/applications?${searchParams.toString()}`, {
                 method: 'GET',
                 headers: {
                     ...(auth.cookie && { Cookie: auth.cookie })
@@ -85,7 +85,7 @@ export const acceptBandApplication = createServerFn({ method: 'POST' })
         try {
             const { bandId, applicationId } = data;
 
-            const response = await env.API.fetch(`${env.API_URL}/bands/${bandId}/applications/${applicationId}/accept`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${bandId}/applications/${applicationId}/accept`, {
                 method: 'PATCH',
                 headers: {
                     ...(auth.cookie && { Cookie: auth.cookie })
@@ -112,7 +112,7 @@ export const rejectBandApplication = createServerFn({ method: 'POST' })
         try {
             const { bandId, applicationId, feedbackMessage } = data;
 
-            const response = await env.API.fetch(`${env.API_URL}/bands/${bandId}/applications/${applicationId}/reject`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${bandId}/applications/${applicationId}/reject`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ export const getUserApplicationStatus = createServerFn()
         try {
             const { bandId } = data;
 
-            const response = await env.API.fetch(`${env.API_URL}/bands/${bandId}/application-status`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${bandId}/application-status`, {
                 method: 'GET',
                 headers: {
                     ...(auth.cookie && { Cookie: auth.cookie })
