@@ -7,10 +7,8 @@ import { X, Minus, Send } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import UserAvatar from '@/shared/components/common/user-avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card';
-import { Form, FormControl, FormField, FormItem } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { useAuth } from '@/shared/lib/react-query';
@@ -24,14 +22,26 @@ type Props = {
     position: number;
 };
 
+const formatTimestamp = (timestamp: number): string => {
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+};
+
+const BASE_BOTTOM_OFFSET = 24;
+
 export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, position }: Props) => {
     const { data: auth } = useAuth();
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useWebSocket();
 
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [roomId, setRoomId] = useState<string | null>(null);
+    const [isHovered, setIsHovered] = useState(false);
+    const [animationKey, setAnimationKey] = useState(0);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const prevMinimizedRef = useRef(isMinimized);
 
     const formSchema = z.object({
         text: z.string().max(CHAT_MESSAGE_MAX_LENGTH)
@@ -44,8 +54,8 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
         }
     });
 
-    const rightOffset = 20 + position * 320;
-    const bottomOffset = 20 + position * 60;
+    const rightOffset = 24 + position * 360;
+    const bottomOffset = BASE_BOTTOM_OFFSET + position * 56;
 
     useEffect(() => {
         if (auth?.user && user) {
@@ -81,12 +91,26 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    useEffect(() => {
+        if (prevMinimizedRef.current && !isMinimized) {
+            setAnimationKey((prev) => prev + 1);
+        }
+        prevMinimizedRef.current = isMinimized;
+    }, [isMinimized]);
+
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!values.text.trim() || !roomId || !auth?.user) return;
 
         sendMessage(roomId, values.text.trim());
 
         form.reset();
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            form.handleSubmit(onSubmit)();
+        }
     };
 
     if (!auth?.user) return null;
@@ -96,59 +120,30 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     if (isMinimized) {
         return (
             <div
-                className="animate-in fade-in zoom-in group fixed right-5 z-50 flex h-12 w-12 items-center justify-center duration-300"
-                style={{ bottom: `${bottomOffset}px` }}
+                className="z-dialog animate-in fade-in zoom-in fixed duration-300"
+                style={{ bottom: `${bottomOffset}px`, right: `${rightOffset}px` }}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
             >
-                <div
-                    onClick={onToggleMinimize}
-                    className="relative h-12 w-12 transform cursor-pointer rounded-full shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
-                    title={`Chat with ${user.name}`}
-                >
-                    <div className="relative h-full w-full overflow-hidden rounded-full">
-                        <UserAvatar user={user} className="h-full w-full" />
-                    </div>
-                    <div
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onClose();
-                        }}
-                        className="group/close absolute -top-1 -right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-gray-800 opacity-0 group-hover:opacity-100 hover:bg-gray-200"
-                        title="Close chat"
+                <div className="relative">
+                    <button
+                        onClick={onToggleMinimize}
+                        className="bg-card border-border focus-visible:ring-ring flex h-14 w-14 items-center justify-center rounded-full border-2 shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                        title={`Chat with ${user.name}`}
+                        aria-label={`Open chat with ${user.name}`}
+                        tabIndex={0}
                     >
-                        <X className="h-3 w-3 text-white group-hover/close:text-gray-800" />
-                    </div>
-                </div>
-            </div>
-        );
-    }
+                        <Avatar className="h-12 w-12">
+                            <AvatarImage src={user.image || '/placeholder.svg'} alt={user.name} />
+                            <AvatarFallback className="bg-primary text-primary-foreground">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                    </button>
 
-    return (
-        <Card
-            className="fixed bottom-0 z-55 flex h-96 w-80 flex-col border-t border-r border-b-0 border-l shadow-lg transition-all duration-200 ease-in-out"
-            style={{ right: `${rightOffset}px` }}
-        >
-            <CardHeader className="shrink-0 cursor-pointer border-b p-3" onClick={onToggleMinimize}>
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <UserAvatar user={user} />
-                        <span className="truncate text-sm font-medium">{user.name}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
+                    {isHovered && (
                         <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onToggleMinimize();
-                            }}
-                        >
-                            <Minus className="h-3 w-3" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
+                            size="icon"
+                            variant="destructive"
+                            className="animate-in fade-in zoom-in absolute -top-2 -right-2 h-6 w-6 rounded-full shadow-md duration-150"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onClose();
@@ -156,63 +151,80 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                         >
                             <X className="h-3 w-3" />
                         </Button>
+                    )}
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div
+            key={animationKey}
+            className="bg-card border-border z-dialog animate-in slide-in-from-bottom-4 fixed bottom-0 w-[340px] overflow-hidden rounded-t-lg border shadow-2xl duration-300"
+            style={{ right: `${rightOffset}px` }}
+        >
+            <div className="bg-primary text-primary-foreground flex items-center justify-between px-4 py-3">
+                <div className="flex items-center gap-3">
+                    <Avatar className="border-primary-foreground/20 h-8 w-8 border-2">
+                        <AvatarImage src={user.image || '/placeholder.svg'} alt={user.name} />
+                        <AvatarFallback className="bg-primary-foreground text-primary text-xs">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium">{user.name}</span>
+                </div>
+
+                <div className="flex items-center gap-1">
+                    <Button size="icon" variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8" onClick={onToggleMinimize}>
+                        <Minus className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8" onClick={onClose}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+
+            <ScrollArea className="bg-background h-[320px]">
+                <div className="space-y-3 p-4">
+                    {messages.length === 0 ? (
+                        <div className="text-muted-foreground py-8 text-center text-sm">Start a conversation with {user.name}</div>
+                    ) : (
+                        messages.map((msg) => (
+                            <div key={msg.id} className={clsx('flex flex-col', msg.senderId === currentUser.id ? 'items-end' : 'items-start')}>
+                                <div
+                                    className={clsx(
+                                        'max-w-[75%] rounded-2xl px-4 py-2 text-sm',
+                                        msg.senderId === currentUser.id
+                                            ? 'bg-primary text-primary-foreground rounded-br-sm'
+                                            : 'bg-muted text-foreground rounded-bl-sm'
+                                    )}
+                                >
+                                    {msg.content}
+                                </div>
+                                <span className="text-muted-foreground mt-1 px-1 text-xs">{formatTimestamp(msg.timestamp)}</span>
+                            </div>
+                        ))
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
+            </ScrollArea>
+
+            <div className="bg-card border-border border-t p-3">
+                <form onSubmit={form.handleSubmit(onSubmit)}>
+                    <div className="flex items-center gap-2">
+                        <Input
+                            {...form.register('text')}
+                            placeholder="Enter Message"
+                            onKeyPress={handleKeyPress}
+                            className="bg-background border-border flex-1"
+                            maxLength={CHAT_MESSAGE_MAX_LENGTH}
+                            autoComplete="off"
+                        />
+                        {/* eslint-disable-next-line react-hooks/incompatible-library */}
+                        <Button type="submit" size="icon" disabled={!form.watch('text')?.trim()} className="shrink-0">
+                            <Send className="h-4 w-4" />
+                        </Button>
                     </div>
-                </div>
-            </CardHeader>
-
-            <CardContent className="flex min-h-0 flex-1 flex-col p-0">
-                <div className="min-h-0 flex-1">
-                    <ScrollArea className="h-full p-3">
-                        <div className="space-y-2">
-                            {messages.length === 0 ? (
-                                <div className="text-muted-foreground py-8 text-center text-sm">Start a conversation with {user.name}</div>
-                            ) : (
-                                messages.map((msg) => (
-                                    <div key={msg.id} className={clsx('flex', msg.senderId === currentUser.id ? 'justify-end' : 'justify-start')}>
-                                        <div
-                                            className={clsx(
-                                                'max-w-[70%] rounded-lg px-3 py-2 text-sm',
-                                                msg.senderId === currentUser.id ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                                            )}
-                                        >
-                                            {msg.content}
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                            <div ref={messagesEndRef} />
-                        </div>
-                    </ScrollArea>
-                </div>
-
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="shrink-0 border-t p-3">
-                        <div className="flex gap-2">
-                            <FormField
-                                control={form.control}
-                                name="text"
-                                render={({ field }) => (
-                                    <FormItem className="flex-1">
-                                        <FormControl>
-                                            <Input
-                                                {...field}
-                                                placeholder={`Message ${user.name}...`}
-                                                className="text-sm"
-                                                maxLength={CHAT_MESSAGE_MAX_LENGTH}
-                                                autoComplete="off"
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                            {/* eslint-disable-next-line react-hooks/incompatible-library */}
-                            <Button type="submit" size="sm" disabled={!form.watch('text')?.trim()} className="px-3">
-                                <Send className="h-3 w-3" />
-                            </Button>
-                        </div>
-                    </form>
-                </Form>
-            </CardContent>
-        </Card>
+                </form>
+            </div>
+        </div>
     );
 };
