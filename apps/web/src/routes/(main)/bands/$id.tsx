@@ -197,8 +197,8 @@ function RouteComponent() {
                 <>
                     <Tabs defaultValue="about" className="w-full">
                         <TabsList className={`grid w-full ${isUserAdmin ? 'grid-cols-4' : 'grid-cols-3'}`}>
-                            <TabsTrigger value="posts">Posts</TabsTrigger>
                             <TabsTrigger value="about">About</TabsTrigger>
+                            <TabsTrigger value="posts">Posts</TabsTrigger>
                             <TabsTrigger value="members">Members</TabsTrigger>
                             {isUserAdmin && (
                                 <TabsTrigger value="applications">
@@ -213,11 +213,6 @@ function RouteComponent() {
                                 </TabsTrigger>
                             )}
                         </TabsList>
-
-                        <TabsContent value="posts" className="mt-6 space-y-6">
-                            {isUserAdmin && <BandPostComposer bandId={band.id} bandName={band.name} />}
-                            <BandPostFeed bandId={band.id} />
-                        </TabsContent>
 
                         <TabsContent value="about" className="mt-6 space-y-6">
                             {band.description && (
@@ -267,6 +262,11 @@ function RouteComponent() {
                                     </CardContent>
                                 </Card>
                             )}
+                        </TabsContent>
+
+                        <TabsContent value="posts" className="mt-6 space-y-6">
+                            {isUserAdmin && <BandPostComposer bandId={band.id} bandName={band.name} />}
+                            <BandPostFeed bandId={band.id} />
                         </TabsContent>
 
                         <TabsContent value="members" className="mt-6 space-y-6">
