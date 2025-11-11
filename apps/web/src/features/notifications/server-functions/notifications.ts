@@ -8,7 +8,7 @@ import { markNotificationsAsReadSchema } from '@/common/types/notifications';
 export const getNotifications = createServerFn()
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/notifications`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/notifications`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
             },
@@ -34,7 +34,7 @@ export const markNotificationAsSeen = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ notificationId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/notifications/${data.notificationId}/seen`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/notifications/${data.notificationId}/seen`, {
             method: 'PATCH',
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -52,7 +52,7 @@ export const markNotificationAsSeen = createServerFn({ method: 'POST' })
 export const markAllNotificationsAsSeen = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/notifications/seen`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/notifications/seen`, {
             method: 'PATCH',
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -71,7 +71,7 @@ export const markNotificationsAsRead = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(markNotificationsAsReadSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/notifications/mark-read`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/notifications/mark-read`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ export const deleteNotification = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ notificationId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/notifications/${data.notificationId}`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/notifications/${data.notificationId}`, {
             method: 'DELETE',
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })

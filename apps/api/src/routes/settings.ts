@@ -31,7 +31,7 @@ const settingsRoutes = new Hono<HonoContext>();
 
 const { users, accounts, sessions, userProfilesTable, postsTable, commentsTable, messagesTable, bandsMembersTable, usersFollowersTable } = schema;
 
-settingsRoutes.get('/api/users/me/settings/privacy', async (c) => {
+settingsRoutes.get('/users/me/settings/privacy', async (c) => {
     const currentUser = c.get('user');
 
     let settings = await getUserSettings(currentUser.id);
@@ -54,7 +54,7 @@ settingsRoutes.get('/api/users/me/settings/privacy', async (c) => {
     return c.json(response);
 });
 
-settingsRoutes.patch('/api/users/me/settings/privacy', async (c) => {
+settingsRoutes.patch('/users/me/settings/privacy', async (c) => {
     const currentUser = c.get('user');
     const body = await c.req.json();
     const data = updatePrivacySettingsSchema.parse(body);
@@ -108,7 +108,7 @@ settingsRoutes.patch('/api/users/me/settings/privacy', async (c) => {
     });
 });
 
-settingsRoutes.get('/api/users/me/settings/notifications', async (c) => {
+settingsRoutes.get('/users/me/settings/notifications', async (c) => {
     const currentUser = c.get('user');
 
     let settings = await getUserSettings(currentUser.id);
@@ -134,7 +134,7 @@ settingsRoutes.get('/api/users/me/settings/notifications', async (c) => {
     return c.json(response);
 });
 
-settingsRoutes.patch('/api/users/me/settings/notifications', async (c) => {
+settingsRoutes.patch('/users/me/settings/notifications', async (c) => {
     const currentUser = c.get('user');
     const body = await c.req.json();
     const data = updateNotificationSettingsSchema.parse(body);
@@ -171,7 +171,7 @@ settingsRoutes.patch('/api/users/me/settings/notifications', async (c) => {
     });
 });
 
-settingsRoutes.get('/api/users/me/blocked', async (c) => {
+settingsRoutes.get('/users/me/blocked', async (c) => {
     const currentUser = c.get('user');
 
     const blockedUsers = await getBlockedUsers(currentUser.id);
@@ -186,7 +186,7 @@ settingsRoutes.get('/api/users/me/blocked', async (c) => {
     });
 });
 
-settingsRoutes.post('/api/users/:userId/block', async (c) => {
+settingsRoutes.post('/users/:userId/block', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
     const currentUser = c.get('user');
 
@@ -209,7 +209,7 @@ settingsRoutes.post('/api/users/:userId/block', async (c) => {
     return c.json({ message: 'User blocked successfully' });
 });
 
-settingsRoutes.delete('/api/users/:userId/block', async (c) => {
+settingsRoutes.delete('/users/:userId/block', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
     const currentUser = c.get('user');
 
@@ -223,7 +223,7 @@ settingsRoutes.delete('/api/users/:userId/block', async (c) => {
     return c.json({ message: 'User unblocked successfully' });
 });
 
-settingsRoutes.get('/api/users/me/account-info', async (c) => {
+settingsRoutes.get('/users/me/account-info', async (c) => {
     const currentUser = c.get('user');
 
     const [user] = await db.select().from(users).where(eq(users.id, currentUser.id)).limit(1);
@@ -241,7 +241,7 @@ settingsRoutes.get('/api/users/me/account-info', async (c) => {
     return c.json(response);
 });
 
-settingsRoutes.patch('/api/users/me/email', async (c) => {
+settingsRoutes.patch('/users/me/email', async (c) => {
     const currentUser = c.get('user');
     const body = await c.req.json();
     const { email } = updateEmailSchema.parse(body);
@@ -261,7 +261,7 @@ settingsRoutes.patch('/api/users/me/email', async (c) => {
     });
 });
 
-settingsRoutes.patch('/api/users/me/password', async (c) => {
+settingsRoutes.patch('/users/me/password', async (c) => {
     const currentUser = c.get('user');
     const body = await c.req.json();
     updatePasswordSchema.parse(body);
@@ -281,7 +281,7 @@ settingsRoutes.patch('/api/users/me/password', async (c) => {
     });
 });
 
-settingsRoutes.post('/api/users/me/export', async (c) => {
+settingsRoutes.post('/users/me/export', async (c) => {
     const currentUser = c.get('user');
 
     const [user] = await db.select().from(users).where(eq(users.id, currentUser.id)).limit(1);
@@ -348,7 +348,7 @@ settingsRoutes.post('/api/users/me/export', async (c) => {
     });
 });
 
-settingsRoutes.delete('/api/users/me', async (c) => {
+settingsRoutes.delete('/users/me', async (c) => {
     const currentUser = c.get('user');
     const body = await c.req.json();
     deleteAccountSchema.parse(body);

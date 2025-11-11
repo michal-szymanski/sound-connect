@@ -13,9 +13,7 @@ import { mediaRoutes } from '@/api/routes/media';
 import { commentsRoutes } from '@/api/routes/comments';
 import { notificationsRoutes } from '@/api/routes/notifications';
 import { profileRoutes } from '@/api/routes/profile';
-import { profilesSearchRoutes } from '@/api/routes/profiles-search';
 import { bandsRoutes } from '@/api/routes/bands';
-import { bandsSearchRoutes } from '@/api/routes/bands-search';
 import { uploadsRoutes } from '@/api/routes/uploads';
 import { settingsRoutes } from '@/api/routes/settings';
 import * as Sentry from '@sentry/cloudflare';
@@ -41,21 +39,19 @@ app.get('/health', (c) => {
 });
 
 app.route('/', authRoutes);
-app.route('/', usersRoutes);
-app.route('/', postsRoutes);
-app.route('/', searchRoutes);
-app.route('/', chatRoutes);
-app.route('/', websocketRoutes);
-app.route('/', debugRoutes);
-app.route('/', mediaRoutes);
-app.route('/', commentsRoutes);
-app.route('/', notificationsRoutes);
-app.route('/', profileRoutes);
-app.route('/profiles', profilesSearchRoutes);
-app.route('/bands', bandsSearchRoutes);
-app.route('/', bandsRoutes);
-app.route('/', uploadsRoutes);
-app.route('/', settingsRoutes);
+app.route('/api', usersRoutes);
+app.route('/api', postsRoutes);
+app.route('/api', searchRoutes);
+app.route('/api', chatRoutes);
+app.route('/api', websocketRoutes);
+app.route('/api', debugRoutes);
+app.route('/api', mediaRoutes);
+app.route('/api', commentsRoutes);
+app.route('/api', notificationsRoutes);
+app.route('/api', profileRoutes);
+app.route('/api', bandsRoutes);
+app.route('/api', uploadsRoutes);
+app.route('/api', settingsRoutes);
 
 export { ChatDurableObject, UserDurableObject, NotificationsDurableObject } from '@sound-connect/durable-objects';
 

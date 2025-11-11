@@ -8,7 +8,7 @@ import { authMiddleware } from '@/shared/server-functions/middlewares';
 export const getFeed = createServerFn()
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/feed`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/feed`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
             },
@@ -38,7 +38,7 @@ export const getFeedPaginated = createServerFn()
         if (data.limit) searchParams.set('limit', data.limit.toString());
         if (data.offset) searchParams.set('offset', data.offset.toString());
 
-        const response = await env.API.fetch(`${env.API_URL}/feed?${searchParams.toString()}`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/feed?${searchParams.toString()}`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
             },
@@ -64,7 +64,7 @@ export const getPosts = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/posts`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/posts`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
             },
@@ -90,7 +90,7 @@ export const getReactions = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/reactions`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}/reactions`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
             },
@@ -116,7 +116,7 @@ export const addPost = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.instanceof(FormData))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/posts`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/posts`, {
             method: 'POST',
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -136,7 +136,7 @@ export const likePost = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/like`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}/like`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -164,7 +164,7 @@ export const unlikePost = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/like`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}/like`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -192,7 +192,7 @@ export const getPostLikesUsers = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/likes/users`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}/likes/users`, {
             headers: {
                 'Content-Type': 'application/json',
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -219,7 +219,7 @@ export const getPostLikes = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/likes`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}/likes`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
             },
@@ -245,7 +245,7 @@ export const getPost = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
             },

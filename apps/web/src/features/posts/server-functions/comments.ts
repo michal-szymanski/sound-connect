@@ -8,7 +8,7 @@ export const getComments = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}/comments`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}/comments`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
             },
@@ -33,7 +33,7 @@ export const createComment = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(createCommentSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/comments`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/comments`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ export const likeComment = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ commentId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/comments/${data.commentId}/like`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/comments/${data.commentId}/like`, {
             method: 'POST',
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -73,7 +73,7 @@ export const unlikeComment = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ commentId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/comments/${data.commentId}/like`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/comments/${data.commentId}/like`, {
             method: 'DELETE',
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })

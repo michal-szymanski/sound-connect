@@ -23,7 +23,7 @@ import {
 
 const uploadsRoutes = new Hono<HonoContext>();
 
-uploadsRoutes.post('/api/uploads/presigned-url', async (c) => {
+uploadsRoutes.post('/uploads/presigned-url', async (c) => {
     const user = c.get('user');
 
     const body = await c.req.json();
@@ -89,7 +89,7 @@ uploadsRoutes.post('/api/uploads/presigned-url', async (c) => {
     });
 });
 
-uploadsRoutes.post('/api/uploads/upload', async (c) => {
+uploadsRoutes.post('/uploads/upload', async (c) => {
     const user = c.get('user');
 
     const sessionId = c.req.query('sessionId');
@@ -122,7 +122,7 @@ uploadsRoutes.post('/api/uploads/upload', async (c) => {
     return c.json({ success: true });
 });
 
-uploadsRoutes.post('/api/uploads/confirm', async (c) => {
+uploadsRoutes.post('/uploads/confirm', async (c) => {
     const user = c.get('user');
 
     const body = await c.req.json();
@@ -183,7 +183,7 @@ uploadsRoutes.post('/api/uploads/confirm', async (c) => {
     });
 });
 
-uploadsRoutes.post('/api/uploads/confirm-batch', async (c) => {
+uploadsRoutes.post('/uploads/confirm-batch', async (c) => {
     const user = c.get('user');
 
     const body = await c.req.json();
@@ -236,7 +236,7 @@ uploadsRoutes.post('/api/uploads/confirm-batch', async (c) => {
     return c.json({ results });
 });
 
-uploadsRoutes.post('/api/uploads/cleanup', async (c) => {
+uploadsRoutes.post('/uploads/cleanup', async (c) => {
     const before = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
     const expiredSessions = await getExpiredUnconfirmedSessions(before);

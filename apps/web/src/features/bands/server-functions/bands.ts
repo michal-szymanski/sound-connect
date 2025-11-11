@@ -24,7 +24,7 @@ export const createBand = createServerFn({ method: 'POST' })
     .inputValidator(createBandInputSchema)
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/bands`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ export const getBand = createServerFn()
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}`, {
                 method: 'GET',
                 headers: {
                     ...(auth.cookie && { Cookie: auth.cookie })
@@ -78,7 +78,7 @@ export const updateBand = createServerFn({ method: 'POST' })
         try {
             const { bandId, ...updateData } = data;
 
-            const response = await env.API.fetch(`${env.API_URL}/bands/${bandId}`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${bandId}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ export const deleteBand = createServerFn({ method: 'POST' })
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}`, {
                 method: 'DELETE',
                 headers: {
                     ...(auth.cookie && { Cookie: auth.cookie })
@@ -131,7 +131,7 @@ export const addBandMember = createServerFn({ method: 'POST' })
         try {
             const { bandId, userId } = data;
 
-            const response = await env.API.fetch(`${env.API_URL}/bands/${bandId}/members`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${bandId}/members`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -160,7 +160,7 @@ export const removeBandMember = createServerFn({ method: 'POST' })
         try {
             const { bandId, userId } = data;
 
-            const response = await env.API.fetch(`${env.API_URL}/bands/${bandId}/members/${userId}`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${bandId}/members/${userId}`, {
                 method: 'DELETE',
                 headers: {
                     ...(auth.cookie && { Cookie: auth.cookie })
@@ -184,7 +184,7 @@ export const getUserBands = createServerFn()
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/users/${data.userId}/bands`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/bands`, {
                 method: 'GET',
                 headers: {
                     ...(auth.cookie && { Cookie: auth.cookie })
@@ -211,7 +211,7 @@ export const createBandPost = createServerFn({ method: 'POST' })
         try {
             const { bandId, ...postData } = data;
 
-            const response = await env.API.fetch(`${env.API_URL}/bands/${bandId}/posts`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${bandId}/posts`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -242,7 +242,7 @@ export const getBandPosts = createServerFn()
             if (data.page) searchParams.set('page', data.page.toString());
             if (data.limit) searchParams.set('limit', data.limit.toString());
 
-            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}/posts?${searchParams.toString()}`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}/posts?${searchParams.toString()}`, {
                 method: 'GET',
                 headers: {
                     ...(auth.cookie && { Cookie: auth.cookie })
@@ -267,7 +267,7 @@ export const followBand = createServerFn({ method: 'POST' })
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}/follow`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}/follow`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -293,7 +293,7 @@ export const unfollowBand = createServerFn({ method: 'POST' })
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}/follow`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}/follow`, {
                 method: 'DELETE',
                 headers: {
                     ...(auth.cookie && { Cookie: auth.cookie })
@@ -321,7 +321,7 @@ export const getBandFollowers = createServerFn()
             if (data.page) searchParams.set('page', data.page.toString());
             if (data.limit) searchParams.set('limit', data.limit.toString());
 
-            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}/followers?${searchParams.toString()}`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}/followers?${searchParams.toString()}`, {
                 method: 'GET',
                 headers: {
                     ...(auth.cookie && { Cookie: auth.cookie })
@@ -346,7 +346,7 @@ export const getBandFollowerCount = createServerFn()
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}/followers/count`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}/followers/count`, {
                 method: 'GET',
                 headers: {
                     ...(auth.cookie && { Cookie: auth.cookie })
@@ -371,7 +371,7 @@ export const getIsFollowingBand = createServerFn()
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
         try {
-            const response = await env.API.fetch(`${env.API_URL}/bands/${data.bandId}/is-following`, {
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}/is-following`, {
                 method: 'GET',
                 headers: {
                     ...(auth.cookie && { Cookie: auth.cookie })
