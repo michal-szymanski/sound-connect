@@ -28,6 +28,8 @@ export async function searchProfiles(db: D1Database, params: ProfileSearchParams
                 )})`
             );
         }
+
+        whereConditions.push(sql`${users.id} != ${requesterId}`);
     }
 
     if (params.instruments && params.instruments.length > 0) {
