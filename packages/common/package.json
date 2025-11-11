@@ -19,6 +19,7 @@
         "./types/profile-search": "./src/types/profile-search.ts",
         "./types/bands": "./src/types/bands.ts",
         "./types/band-search": "./src/types/band-search.ts",
+        "./types/band-discovery": "./src/types/band-discovery.ts",
         "./types/band-posts": "./src/types/band-posts.ts",
         "./types/band-follows": "./src/types/band-follows.ts",
         "./types/band-applications": "./src/types/band-applications.ts",

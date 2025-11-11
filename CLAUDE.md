@@ -108,6 +108,23 @@ Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
   - Auto-adds accepted applicants as band members
 
 ### Band Discovery
+- **Intelligent band matching** at `/discover/bands`:
+  - Personalized recommendations based on user profile
+  - Smart matching algorithm scores bands by:
+    - Instrument match (50 points for primary instrument, 25 for additional instruments)
+    - Genre match (30 points for primary genre, 15 for secondary genres)
+    - Location proximity (20 points < 10 miles, 10 points < 25 miles, 5 points < 50 miles)
+  - Only shows bands with "looking for" text (actively recruiting)
+  - Minimum match score of 20 required
+  - Results sorted by match score (highest first)
+  - Shows top 2 match reasons per band (instrument, genre, location)
+  - Displays distance in miles, follower count, member count
+  - Pagination (12 results per page)
+  - Analytics tracking (page views, card clicks, profile views)
+  - Graceful handling of incomplete profiles:
+    - Shows friendly Card UI prompting profile completion
+    - Requires: primary instrument, primary genre, city
+    - Button navigates to user's own profile for inline editing
 - **Band search** at `/bands/search`:
   - Filter by genre
   - Filter by location with radius (5, 10, 25, 50, 100 miles)

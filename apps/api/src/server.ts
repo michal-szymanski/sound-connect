@@ -16,6 +16,7 @@ import { profileRoutes } from '@/api/routes/profile';
 import { bandsRoutes } from '@/api/routes/bands';
 import { uploadsRoutes } from '@/api/routes/uploads';
 import { settingsRoutes } from '@/api/routes/settings';
+import { discoverRoutes } from '@/api/routes/discover';
 import * as Sentry from '@sentry/cloudflare';
 
 const app = new Hono<HonoContext>();
@@ -52,6 +53,7 @@ app.route('/api', profileRoutes);
 app.route('/api', bandsRoutes);
 app.route('/api', uploadsRoutes);
 app.route('/api', settingsRoutes);
+app.route('/api', discoverRoutes);
 
 export { ChatDurableObject, UserDurableObject, NotificationsDurableObject } from '@sound-connect/durable-objects';
 
