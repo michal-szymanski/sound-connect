@@ -18,7 +18,7 @@ export const authorTypeEnum = ['user', 'band'] as const;
 export const postsTable = sqliteTable(
     'posts',
     {
-        id: integer('id').primaryKey(),
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         authorType: text('author_type', { enum: authorTypeEnum }).default('user').notNull(),
         userId: text('user_id').notNull(),
         bandId: integer('band_id').references(() => bandsTable.id, { onDelete: 'cascade' }),
@@ -36,7 +36,7 @@ export const postsTable = sqliteTable(
 );
 
 export const postsReactionsTable = sqliteTable('posts_reactions', {
-    id: integer('id').primaryKey(),
+    id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
     userId: text('user_id').notNull(),
     postId: integer('post_id')
         .notNull()
@@ -48,7 +48,7 @@ export const postsReactionsTable = sqliteTable('posts_reactions', {
 export const commentsTable = sqliteTable(
     'comments',
     {
-        id: integer('id').primaryKey(),
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         authorType: text('author_type', { enum: authorTypeEnum }).default('user').notNull(),
         userId: text('user_id').notNull(),
         bandId: integer('band_id').references(() => bandsTable.id, { onDelete: 'cascade' }),
@@ -68,7 +68,7 @@ export const commentsTable = sqliteTable(
 );
 
 export const commentsReactionsTable = sqliteTable('comments_reactions', {
-    id: integer('id').primaryKey(),
+    id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
     userId: text('user_id').notNull(),
     commentId: integer('comment_id')
         .notNull()
@@ -79,7 +79,7 @@ export const commentsReactionsTable = sqliteTable('comments_reactions', {
 export const mediaTypeEnum = ['image', 'video'] as const;
 
 export const mediaTable = sqliteTable('media', {
-    id: integer('id').primaryKey(),
+    id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
     postId: integer('post_id')
         .notNull()
         .references(() => postsTable.id),
@@ -90,7 +90,7 @@ export const mediaTable = sqliteTable('media', {
 export const bandsTable = sqliteTable(
     'bands',
     {
-        id: integer('id').primaryKey(),
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         name: text('name').notNull(),
         description: text('description'),
         primaryGenre: text('primary_genre', { enum: GenreEnum }),
@@ -114,7 +114,7 @@ export const bandsTable = sqliteTable(
 export const bandsMembersTable = sqliteTable(
     'bands_members',
     {
-        id: integer('id').primaryKey(),
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         userId: text('user_id').notNull(),
         bandId: integer('band_id')
             .notNull()
@@ -128,7 +128,7 @@ export const bandsMembersTable = sqliteTable(
 );
 
 export const usersFollowersTable = sqliteTable('users_followers', {
-    id: integer('id').primaryKey(),
+    id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
     followedUserId: text('followed_user_id')
         .notNull()
         .references(() => users.id),
@@ -141,7 +141,7 @@ export const usersFollowersTable = sqliteTable('users_followers', {
 export const bandsFollowersTable = sqliteTable(
     'bands_followers',
     {
-        id: integer('id').primaryKey(),
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         followerId: text('follower_id').notNull(),
         bandId: integer('band_id')
             .notNull()
@@ -155,7 +155,7 @@ export const bandsFollowersTable = sqliteTable(
 );
 
 export const messagesTable = sqliteTable('messages', {
-    id: integer('id').primaryKey(),
+    id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
     senderId: text('sender_id')
         .notNull()
         .references(() => users.id),
@@ -180,7 +180,7 @@ export const notificationTypeEnum = [
 export const entityTypeEnum = ['post', 'comment', 'message', 'band'] as const;
 
 export const notificationsTable = sqliteTable('notifications', {
-    id: integer('id').primaryKey(),
+    id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
     userId: text('user_id')
         .notNull()
         .references(() => users.id, { onDelete: 'cascade' }),
@@ -236,7 +236,7 @@ export const bandsFollowersRelations = relations(bandsFollowersTable, ({ one }) 
 export const userProfilesTable = sqliteTable(
     'user_profiles',
     {
-        id: integer('id').primaryKey(),
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         userId: text('user_id')
             .notNull()
             .unique()
@@ -286,7 +286,7 @@ export const userProfilesTable = sqliteTable(
 export const userAdditionalInstrumentsTable = sqliteTable(
     'user_additional_instruments',
     {
-        id: integer('id').primaryKey(),
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         userId: text('user_id')
             .notNull()
             .references(() => users.id, { onDelete: 'cascade' }),
@@ -317,7 +317,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 export const geocodingCacheTable = sqliteTable(
     'geocoding_cache',
     {
-        id: integer('id').primaryKey(),
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         city: text('city').notNull(),
         state: text('state'),
         country: text('country'),
@@ -337,7 +337,7 @@ export const applicationStatusEnum = ['pending', 'accepted', 'rejected'] as cons
 export const bandApplicationsTable = sqliteTable(
     'band_applications',
     {
-        id: integer('id').primaryKey(),
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         bandId: integer('band_id')
             .notNull()
             .references(() => bandsTable.id, { onDelete: 'cascade' }),
@@ -402,7 +402,7 @@ export const followPermissionEnum = ['anyone', 'approval', 'none'] as const;
 export const userSettingsTable = sqliteTable(
     'user_settings',
     {
-        id: integer('id').primaryKey(),
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         userId: text('user_id')
             .notNull()
             .unique()
@@ -431,7 +431,7 @@ export const userSettingsTable = sqliteTable(
 export const blockedUsersTable = sqliteTable(
     'blocked_users',
     {
-        id: integer('id').primaryKey(),
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         blockerId: text('blocker_id')
             .notNull()
             .references(() => users.id, { onDelete: 'cascade' }),
@@ -460,7 +460,7 @@ export const discoveryEventTypeEnum = ['page_view', 'card_click', 'application',
 export const discoveryAnalyticsTable = sqliteTable(
     'discovery_analytics',
     {
-        id: integer('id').primaryKey(),
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         userId: text('user_id')
             .notNull()
             .references(() => users.id, { onDelete: 'cascade' }),
