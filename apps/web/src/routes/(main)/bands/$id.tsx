@@ -154,24 +154,26 @@ function RouteComponent() {
                 </CardContent>
             </Card>
 
-            <Card className="border-primary/20 bg-primary/5">
-                <CardContent className="p-4">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-primary flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
-                                <UserSearch className="h-5 w-5 text-white" />
+            {isUserMember && (
+                <Card className="border-primary/20 bg-primary/5">
+                    <CardContent className="p-4">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-primary flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full">
+                                    <UserSearch className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-semibold">Looking for musicians?</h3>
+                                    <p className="text-muted-foreground text-xs">Search for musicians in your area with the right skills</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-sm font-semibold">Looking for musicians?</h3>
-                                <p className="text-muted-foreground text-xs">Search for musicians in your area with the right skills</p>
-                            </div>
+                            <Button asChild variant="default" size="sm">
+                                <Link to={buildMusiciansSearchUrl()}>Find Musicians</Link>
+                            </Button>
                         </div>
-                        <Button asChild variant="default" size="sm">
-                            <Link to={buildMusiciansSearchUrl()}>Find Musicians</Link>
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            )}
 
             {isEditing ? (
                 <Card>
