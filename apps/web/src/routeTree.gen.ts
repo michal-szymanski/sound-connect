@@ -17,8 +17,11 @@ import { Route as mainMusiciansRouteImport } from './routes/(main)/musicians'
 import { Route as mainSettingsIndexRouteImport } from './routes/(main)/settings/index'
 import { Route as mainMessagesIndexRouteImport } from './routes/(main)/messages/index'
 import { Route as mainBandsIndexRouteImport } from './routes/(main)/bands/index'
+import { Route as authVerifyEmailIndexRouteImport } from './routes/(auth)/verify-email/index'
 import { Route as authSignUpIndexRouteImport } from './routes/(auth)/sign-up/index'
 import { Route as authSignInIndexRouteImport } from './routes/(auth)/sign-in/index'
+import { Route as authResetPasswordIndexRouteImport } from './routes/(auth)/reset-password/index'
+import { Route as authForgotPasswordIndexRouteImport } from './routes/(auth)/forgot-password/index'
 import { Route as mainUsersIdRouteImport } from './routes/(main)/users/$id'
 import { Route as mainPostsPostIdRouteImport } from './routes/(main)/posts/$postId'
 import { Route as mainDiscoverBandsRouteImport } from './routes/(main)/discover/bands'
@@ -64,6 +67,11 @@ const mainBandsIndexRoute = mainBandsIndexRouteImport.update({
   path: '/bands/',
   getParentRoute: () => mainRouteRoute,
 } as any)
+const authVerifyEmailIndexRoute = authVerifyEmailIndexRouteImport.update({
+  id: '/verify-email/',
+  path: '/verify-email/',
+  getParentRoute: () => authRouteRoute,
+} as any)
 const authSignUpIndexRoute = authSignUpIndexRouteImport.update({
   id: '/sign-up/',
   path: '/sign-up/',
@@ -72,6 +80,16 @@ const authSignUpIndexRoute = authSignUpIndexRouteImport.update({
 const authSignInIndexRoute = authSignInIndexRouteImport.update({
   id: '/sign-in/',
   path: '/sign-in/',
+  getParentRoute: () => authRouteRoute,
+} as any)
+const authResetPasswordIndexRoute = authResetPasswordIndexRouteImport.update({
+  id: '/reset-password/',
+  path: '/reset-password/',
+  getParentRoute: () => authRouteRoute,
+} as any)
+const authForgotPasswordIndexRoute = authForgotPasswordIndexRouteImport.update({
+  id: '/forgot-password/',
+  path: '/forgot-password/',
   getParentRoute: () => authRouteRoute,
 } as any)
 const mainUsersIdRoute = mainUsersIdRouteImport.update({
@@ -115,8 +133,11 @@ export interface FileRoutesByFullPath {
   '/discover/bands': typeof mainDiscoverBandsRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
   '/users/$id': typeof mainUsersIdRoute
+  '/forgot-password': typeof authForgotPasswordIndexRoute
+  '/reset-password': typeof authResetPasswordIndexRoute
   '/sign-in': typeof authSignInIndexRoute
   '/sign-up': typeof authSignUpIndexRoute
+  '/verify-email': typeof authVerifyEmailIndexRoute
   '/bands': typeof mainBandsIndexRoute
   '/messages': typeof mainMessagesIndexRoute
   '/settings': typeof mainSettingsIndexRoute
@@ -131,8 +152,11 @@ export interface FileRoutesByTo {
   '/discover/bands': typeof mainDiscoverBandsRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
   '/users/$id': typeof mainUsersIdRoute
+  '/forgot-password': typeof authForgotPasswordIndexRoute
+  '/reset-password': typeof authResetPasswordIndexRoute
   '/sign-in': typeof authSignInIndexRoute
   '/sign-up': typeof authSignUpIndexRoute
+  '/verify-email': typeof authVerifyEmailIndexRoute
   '/bands': typeof mainBandsIndexRoute
   '/messages': typeof mainMessagesIndexRoute
   '/settings': typeof mainSettingsIndexRoute
@@ -150,8 +174,11 @@ export interface FileRoutesById {
   '/(main)/discover/bands': typeof mainDiscoverBandsRoute
   '/(main)/posts/$postId': typeof mainPostsPostIdRoute
   '/(main)/users/$id': typeof mainUsersIdRoute
+  '/(auth)/forgot-password/': typeof authForgotPasswordIndexRoute
+  '/(auth)/reset-password/': typeof authResetPasswordIndexRoute
   '/(auth)/sign-in/': typeof authSignInIndexRoute
   '/(auth)/sign-up/': typeof authSignUpIndexRoute
+  '/(auth)/verify-email/': typeof authVerifyEmailIndexRoute
   '/(main)/bands/': typeof mainBandsIndexRoute
   '/(main)/messages/': typeof mainMessagesIndexRoute
   '/(main)/settings/': typeof mainSettingsIndexRoute
@@ -168,8 +195,11 @@ export interface FileRouteTypes {
     | '/discover/bands'
     | '/posts/$postId'
     | '/users/$id'
+    | '/forgot-password'
+    | '/reset-password'
     | '/sign-in'
     | '/sign-up'
+    | '/verify-email'
     | '/bands'
     | '/messages'
     | '/settings'
@@ -184,8 +214,11 @@ export interface FileRouteTypes {
     | '/discover/bands'
     | '/posts/$postId'
     | '/users/$id'
+    | '/forgot-password'
+    | '/reset-password'
     | '/sign-in'
     | '/sign-up'
+    | '/verify-email'
     | '/bands'
     | '/messages'
     | '/settings'
@@ -202,8 +235,11 @@ export interface FileRouteTypes {
     | '/(main)/discover/bands'
     | '/(main)/posts/$postId'
     | '/(main)/users/$id'
+    | '/(auth)/forgot-password/'
+    | '/(auth)/reset-password/'
     | '/(auth)/sign-in/'
     | '/(auth)/sign-up/'
+    | '/(auth)/verify-email/'
     | '/(main)/bands/'
     | '/(main)/messages/'
     | '/(main)/settings/'
@@ -273,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof mainBandsIndexRouteImport
       parentRoute: typeof mainRouteRoute
     }
+    '/(auth)/verify-email/': {
+      id: '/(auth)/verify-email/'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof authVerifyEmailIndexRouteImport
+      parentRoute: typeof authRouteRoute
+    }
     '/(auth)/sign-up/': {
       id: '/(auth)/sign-up/'
       path: '/sign-up'
@@ -285,6 +328,20 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof authSignInIndexRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/(auth)/reset-password/': {
+      id: '/(auth)/reset-password/'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof authResetPasswordIndexRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/(auth)/forgot-password/': {
+      id: '/(auth)/forgot-password/'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof authForgotPasswordIndexRouteImport
       parentRoute: typeof authRouteRoute
     }
     '/(main)/users/$id': {
@@ -333,13 +390,19 @@ declare module '@tanstack/react-router' {
 }
 
 interface authRouteRouteChildren {
+  authForgotPasswordIndexRoute: typeof authForgotPasswordIndexRoute
+  authResetPasswordIndexRoute: typeof authResetPasswordIndexRoute
   authSignInIndexRoute: typeof authSignInIndexRoute
   authSignUpIndexRoute: typeof authSignUpIndexRoute
+  authVerifyEmailIndexRoute: typeof authVerifyEmailIndexRoute
 }
 
 const authRouteRouteChildren: authRouteRouteChildren = {
+  authForgotPasswordIndexRoute: authForgotPasswordIndexRoute,
+  authResetPasswordIndexRoute: authResetPasswordIndexRoute,
   authSignInIndexRoute: authSignInIndexRoute,
   authSignUpIndexRoute: authSignUpIndexRoute,
+  authVerifyEmailIndexRoute: authVerifyEmailIndexRoute,
 }
 
 const authRouteRouteWithChildren = authRouteRoute._addFileChildren(

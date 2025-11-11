@@ -141,3 +141,132 @@ export const signUp = createServerFn({
             return failure(null);
         }
     });
+
+export const verifyEmail = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
+    .inputValidator(z.object({ token: z.string() }))
+    .handler(async ({ data, context: { env } }) => {
+        const response = await env.API.fetch(`${env.API_URL}/api/auth/email/verify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token: data.token,
+                callbackURL: env.CLIENT_URL
+            })
+        });
+
+        if (!response.ok) {
+            return await authErrorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = z.object({
+                status: z.boolean(),
+                user: userSchema.optional()
+            });
+
+            return success(schema.parse(json));
+        } catch (error) {
+            console.error(error);
+            return failure(null);
+        }
+    });
+
+export const resendVerificationEmail = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
+    .inputValidator(z.object({ email: z.string().email() }))
+    .handler(async ({ data, context: { env } }) => {
+        const response = await env.API.fetch(`${env.API_URL}/api/auth/email/send-verification-email`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: data.email,
+                callbackURL: env.CLIENT_URL
+            })
+        });
+
+        if (!response.ok) {
+            return await authErrorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = z.object({
+                status: z.boolean()
+            });
+
+            return success(schema.parse(json));
+        } catch (error) {
+            console.error(error);
+            return failure(null);
+        }
+    });
+
+export const forgotPassword = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
+    .inputValidator(z.object({ email: z.string().email() }))
+    .handler(async ({ data, context: { env } }) => {
+        const response = await env.API.fetch(`${env.API_URL}/api/auth/forget-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: data.email,
+                redirectTo: `${env.CLIENT_URL}/reset-password`
+            })
+        });
+
+        if (!response.ok) {
+            return await authErrorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = z.object({
+                status: z.boolean()
+            });
+
+            return success(schema.parse(json));
+        } catch (error) {
+            console.error(error);
+            return failure(null);
+        }
+    });
+
+export const resetPassword = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
+    .inputValidator(z.object({ token: z.string(), password: z.string().min(8) }))
+    .handler(async ({ data, context: { env } }) => {
+        const response = await env.API.fetch(`${env.API_URL}/api/auth/reset-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token: data.token,
+                password: data.password
+            })
+        });
+
+        if (!response.ok) {
+            return await authErrorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            const schema = z.object({
+                status: z.boolean()
+            });
+
+            return success(schema.parse(json));
+        } catch (error) {
+            console.error(error);
+            return failure(null);
+        }
+    });
