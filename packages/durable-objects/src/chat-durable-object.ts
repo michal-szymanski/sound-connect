@@ -1,7 +1,7 @@
 import { ChatMessage, chatMessageSchema, WebSocketMessage } from '@sound-connect/common/types/models';
 import { DurableObject } from 'cloudflare:workers';
 import { drizzle } from 'drizzle-orm/d1';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, or, asc } from 'drizzle-orm';
 import { schema } from '@sound-connect/drizzle';
 
 const MESSAGES_KEY = 'messages';
@@ -26,7 +26,16 @@ export class ChatDurableObject extends DurableObject {
         this.roomId = roomId;
         await this.loadParticipants();
 
+        const roomUserIds = roomId.split(':');
+
         this.participants.add(userId);
+
+        for (const id of roomUserIds) {
+            if (id && id !== userId) {
+                this.participants.add(id);
+            }
+        }
+
         await this.saveParticipants();
 
         await this.broadcastMessage(
@@ -61,6 +70,10 @@ export class ChatDurableObject extends DurableObject {
         await this.loadParticipants();
 
         if (!this.participants.has(senderId)) {
+            console.error('[ChatDO] Sender not in participants - aborting', {
+                senderId,
+                participants: Array.from(this.participants)
+            });
             return;
         }
 
@@ -69,6 +82,7 @@ export class ChatDurableObject extends DurableObject {
         if (recipientId) {
             const canSend = await this.canSendMessage(senderId, recipientId);
             if (!canSend) {
+                console.error('[ChatDO] Permission denied - cannot send message');
                 return;
             }
         }
@@ -132,9 +146,41 @@ export class ChatDurableObject extends DurableObject {
     async getRoomHistory(roomId: string): Promise<ChatMessage[]> {
         this.roomId = roomId;
 
-        const history = (await this.storage.get<ChatMessage[]>(MESSAGES_KEY)) || [];
+        try {
+            const db = drizzle(this.env.DB);
+            const { messagesTable } = schema;
 
-        return history;
+            const [userId1, userId2] = roomId.split(':');
+
+            if (!userId1 || !userId2) {
+                console.error('[ChatDO] Invalid roomId format', { roomId });
+                return [];
+            }
+
+            const messages = await db
+                .select()
+                .from(messagesTable)
+                .where(
+                    or(
+                        and(eq(messagesTable.senderId, userId1), eq(messagesTable.receiverId, userId2)),
+                        and(eq(messagesTable.senderId, userId2), eq(messagesTable.receiverId, userId1))
+                    )
+                )
+                .orderBy(asc(messagesTable.createdAt))
+                .limit(100);
+
+            return messages.map((msg) => ({
+                id: crypto.randomUUID(),
+                type: 'chat' as const,
+                content: msg.content,
+                roomId: roomId,
+                senderId: msg.senderId,
+                timestamp: new Date(msg.createdAt).getTime()
+            }));
+        } catch (error) {
+            console.error('[ChatDO] Failed to retrieve room history:', error);
+            return [];
+        }
     }
 
     private async loadParticipants() {
@@ -156,17 +202,33 @@ export class ChatDurableObject extends DurableObject {
 
         await this.storage.put(MESSAGES_KEY, history);
 
-        const db = drizzle(this.env.DB);
-        const { messagesTable } = schema;
+        try {
+            const db = drizzle(this.env.DB);
+            const { messagesTable } = schema;
 
-        const receiverId = Array.from(this.participants).find((id) => id !== message.senderId);
+            const receiverId = Array.from(this.participants).find((id) => id !== message.senderId);
 
-        if (receiverId) {
+            if (!receiverId) {
+                console.error('[ChatDO] No receiver found for message', {
+                    senderId: message.senderId,
+                    participants: Array.from(this.participants),
+                    roomId: this.roomId
+                });
+                return;
+            }
+
             await db.insert(messagesTable).values({
                 senderId: message.senderId,
                 receiverId: receiverId,
                 content: message.content,
                 createdAt: new Date(message.timestamp).toISOString()
+            });
+        } catch (error) {
+            console.error('[ChatDO] Failed to store message in database:', error);
+            console.error('[ChatDO] Message details:', {
+                senderId: message.senderId,
+                roomId: this.roomId,
+                participants: Array.from(this.participants)
             });
         }
     }

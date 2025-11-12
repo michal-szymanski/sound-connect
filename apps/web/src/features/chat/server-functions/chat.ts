@@ -1,4 +1,3 @@
-import { getRoomId } from '@/common/helpers';
 import { chatMessageSchema } from '@/common/types/models';
 import { conversationsResponseSchema } from '@/common/types/conversations';
 import { createServerFn } from '@tanstack/react-start';
@@ -8,9 +7,9 @@ import { authMiddleware } from '@/shared/server-functions/middlewares';
 
 export const getChatHistory = createServerFn()
     .middleware([authMiddleware])
-    .inputValidator(z.object({ peerId: z.string() }))
+    .inputValidator(z.object({ roomId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        const roomId = getRoomId(auth.user.id, data.peerId);
+        const roomId = data.roomId;
         const response = await env.API.fetch(`${env.API_URL}/api/chat/${roomId}/history`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
