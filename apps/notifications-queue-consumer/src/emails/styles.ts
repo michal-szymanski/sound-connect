@@ -1,13 +1,29 @@
 export const colors = {
-    primaryBlue: '#5A8FD8',
-    primaryDark: '#3B7BC4',
-    textPrimary: '#1F2937',
-    textSecondary: '#6B7280',
-    textMuted: '#9CA3AF',
-    border: '#E5E7EB',
-    backgroundLight: '#F9FAFB',
+    primaryBlue: '#4A90E2',
+    primaryBlueDark: '#3A7BC8',
+    primaryBlueLight: '#E8F2FC',
+    primaryBlueLighter: '#F0F7FE',
+
     successGreen: '#10B981',
-    warningOrange: '#F59E0B',
+    successGreenLight: '#ECFDF5',
+    successGreenDark: '#065F46',
+
+    warningAmber: '#F59E0B',
+    warningAmberLight: '#FEF3E3',
+    warningAmberDark: '#92400E',
+
+    infoBlue: '#3B82F6',
+    infoBlueLight: '#EFF6FF',
+    infoBlueDark: '#1E40AF',
+
+    textPrimary: '#0F172A',
+    textSecondary: '#475569',
+    textMuted: '#94A3B8',
+    border: '#E2E8F0',
+    borderLight: '#F1F5F9',
+
+    backgroundLight: '#F8FAFC',
+    backgroundWhite: '#FFFFFF',
     white: '#FFFFFF'
 } as const;
 
@@ -15,19 +31,26 @@ export const fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto
 
 export const typography = {
     h1: {
-        fontSize: '28px',
+        fontSize: '32px',
         fontWeight: '700',
         lineHeight: '1.2',
+        letterSpacing: '-0.02em',
         margin: '0'
     },
     h2: {
-        fontSize: '24px',
+        fontSize: '26px',
         fontWeight: '600',
         lineHeight: '1.3',
+        letterSpacing: '-0.01em',
         margin: '0'
     },
     body: {
-        fontSize: '15px',
+        fontSize: '16px',
+        fontWeight: '400',
+        lineHeight: '1.6'
+    },
+    bodyLarge: {
+        fontSize: '17px',
         fontWeight: '400',
         lineHeight: '1.6'
     },
@@ -38,20 +61,26 @@ export const typography = {
     tiny: {
         fontSize: '13px',
         lineHeight: '1.4'
+    },
+    tagline: {
+        fontSize: '13px',
+        fontWeight: '600',
+        letterSpacing: '0.05em',
+        textTransform: 'uppercase'
     }
 } as const;
 
 export const spacing = {
-    headerPaddingVertical: '32px',
+    headerPaddingVertical: '36px',
     contentPadding: '40px',
     contentPaddingMobile: '24px',
-    buttonPaddingVertical: '14px',
-    buttonPaddingHorizontal: '32px'
+    buttonPaddingVertical: '16px',
+    buttonPaddingHorizontal: '40px'
 } as const;
 
 export const button = {
-    minHeight: '48px',
-    borderRadius: '8px',
+    minHeight: '52px',
+    borderRadius: '10px',
     backgroundColor: colors.primaryBlue,
     color: colors.white,
     fontSize: '16px',
@@ -61,5 +90,6 @@ export const button = {
     paddingTop: spacing.buttonPaddingVertical,
     paddingBottom: spacing.buttonPaddingVertical,
     paddingLeft: spacing.buttonPaddingHorizontal,
-    paddingRight: spacing.buttonPaddingHorizontal
+    paddingRight: spacing.buttonPaddingHorizontal,
+    boxShadow: '0 4px 12px rgba(74, 144, 226, 0.3)'
 } as const;

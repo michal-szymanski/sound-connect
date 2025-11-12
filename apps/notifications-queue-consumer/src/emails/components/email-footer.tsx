@@ -8,42 +8,39 @@ export function EmailFooter() {
     return (
         <Section
             style={{
+                backgroundColor: colors.backgroundLight,
                 paddingTop: '32px',
                 paddingBottom: '32px',
                 paddingLeft: '20px',
-                paddingRight: '20px'
+                paddingRight: '20px',
+                borderTop: `1px solid ${colors.border}`
             }}
         >
-            <Hr
-                style={{
-                    borderColor: colors.border,
-                    margin: '0 0 24px 0'
-                }}
-            />
             <Text
                 style={{
                     ...typography.small,
-                    color: colors.textMuted,
+                    color: colors.textSecondary,
                     textAlign: 'center',
                     margin: '0 0 16px 0',
-                    fontFamily
+                    fontFamily,
+                    fontWeight: '600'
                 }}
             >
-                Where Musicians Connect 🎵
+                Where Musicians Connect
             </Text>
             <Text
                 style={{
                     ...typography.small,
                     color: colors.textMuted,
                     textAlign: 'center',
-                    margin: '0 0 16px 0',
+                    margin: '0 0 20px 0',
                     fontFamily
                 }}
             >
                 <Link
                     href="https://soundconnect.app"
                     style={{
-                        color: colors.textMuted,
+                        color: colors.primaryBlue,
                         textDecoration: 'none'
                     }}
                 >
@@ -53,7 +50,7 @@ export function EmailFooter() {
                 <Link
                     href="https://soundconnect.app/help"
                     style={{
-                        color: colors.textMuted,
+                        color: colors.primaryBlue,
                         textDecoration: 'none'
                     }}
                 >
@@ -63,7 +60,7 @@ export function EmailFooter() {
                 <Link
                     href="https://soundconnect.app/privacy"
                     style={{
-                        color: colors.textMuted,
+                        color: colors.primaryBlue,
                         textDecoration: 'none'
                     }}
                 >

@@ -122,22 +122,22 @@ export const signUp = createServerFn({
             return await authErrorHandler(response);
         }
 
-        const authCookies = setAuthCookies(response);
-
-        if (authCookies.length !== 2) {
-            return failure(null);
-        }
+        setAuthCookies(response);
 
         try {
             const json = await response.json();
             const schema = z.object({
-                token: z.string(),
+                token: z.string().nullable(),
                 user: userSchema
             });
+            const result = schema.parse(json);
 
-            return success(schema.parse(json));
+            if (result.user) {
+                return success(result);
+            }
+            return failure(null);
         } catch (error) {
-            console.error(error);
+            console.error('Error parsing sign-up response:', error);
             return failure(null);
         }
     });
@@ -179,7 +179,7 @@ export const resendVerificationEmail = createServerFn({ method: 'POST' })
     .middleware([envMiddleware])
     .inputValidator(z.object({ email: z.string().email() }))
     .handler(async ({ data, context: { env } }) => {
-        const response = await env.API.fetch(`${env.API_URL}/api/auth/email/send-verification-email`, {
+        const response = await env.API.fetch(`${env.API_URL}/api/auth/send-verification-email`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -1,10 +1,11 @@
 import React from 'react';
-import { Html, Head, Body, Text, Hr, Section } from '@react-email/components';
+import { Html, Head, Body, Text, Hr } from '@react-email/components';
 import { EmailHeader } from './components/email-header';
 import { EmailFooter } from './components/email-footer';
 import { EmailButton } from './components/email-button';
 import { EmailFallbackLink } from './components/email-fallback-link';
 import { EmailContainer } from './components/email-container';
+import { InfoBox } from './components/info-box';
 import { colors, typography, fontFamily } from './styles';
 
 type Props = {
@@ -30,45 +31,63 @@ export function PasswordResetEmail({ name, resetUrl }: Props) {
                             ...typography.h2,
                             color: colors.textPrimary,
                             marginTop: '0',
-                            marginBottom: '24px',
-                            fontFamily
+                            marginBottom: '12px',
+                            fontFamily,
+                            textAlign: 'center'
                         }}
                     >
-                        Reset Your Password
+                        🔐 Reset Your Password
                     </Text>
                     <Text
                         style={{
                             ...typography.body,
                             color: colors.textSecondary,
-                            margin: '0 0 24px 0',
+                            margin: '0 0 8px 0',
+                            fontFamily,
+                            textAlign: 'center'
+                        }}
+                    >
+                        We received a request to reset your password
+                    </Text>
+                    <Text
+                        style={{
+                            ...typography.body,
+                            color: colors.textSecondary,
+                            margin: '0 0 28px 0',
                             fontFamily
                         }}
                     >
-                        Hi {name}, we received a request to reset your password for your Sound Connect account. Click the button below to create a new password.
+                        Hi {name}, click the button below to create a new password for your Sound Connect account. This link will expire in 1 hour for security purposes.
                     </Text>
-                    <Section
+                    <EmailButton href={resetUrl}>Reset My Password</EmailButton>
+                    <InfoBox variant="info" icon="⏱️">
+                        This link expires in 1 hour
+                    </InfoBox>
+                    <Text
                         style={{
-                            backgroundColor: '#FEF3C7',
-                            border: `1px solid ${colors.warningOrange}`,
-                            borderRadius: '8px',
-                            padding: '16px',
-                            margin: '24px 0'
+                            ...typography.small,
+                            color: colors.textMuted,
+                            margin: '24px 0 8px 0',
+                            fontFamily
                         }}
                     >
-                        <Text
-                            style={{
-                                ...typography.small,
-                                color: colors.textPrimary,
-                                margin: '0',
-                                fontFamily,
-                                fontWeight: '600'
-                            }}
-                        >
-                            ⏱️ This link expires in 1 hour
-                        </Text>
-                    </Section>
-                    <EmailButton href={resetUrl}>Reset Password</EmailButton>
-                    <EmailFallbackLink url={resetUrl} />
+                        If the button doesn't work, copy and paste this link into your browser:
+                    </Text>
+                    <Text
+                        style={{
+                            ...typography.small,
+                            color: colors.primaryBlue,
+                            backgroundColor: colors.backgroundLight,
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            border: `1px solid ${colors.border}`,
+                            wordBreak: 'break-all',
+                            margin: '0 0 32px 0',
+                            fontFamily
+                        }}
+                    >
+                        {resetUrl}
+                    </Text>
                     <Hr
                         style={{
                             borderColor: colors.border,
@@ -77,7 +96,7 @@ export function PasswordResetEmail({ name, resetUrl }: Props) {
                     />
                     <Text
                         style={{
-                            ...typography.tiny,
+                            ...typography.small,
                             color: colors.textMuted,
                             margin: '0 0 16px 0',
                             fontFamily
