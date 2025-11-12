@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@/common/constants';
 import { UserDTO } from '@/common/types/models';
-import { X, Minus, Send, Smile } from 'lucide-react';
+import { X, Minus, Send, Smile, Loader2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -227,8 +227,14 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
 
                 <div className="bg-background h-[320px]" role="log" aria-label={`Conversation with ${user.name}`}>
                     {isLoading ? (
-                        <div className="flex h-full items-center justify-center">
-                            <div className="text-muted-foreground text-sm">Loading messages...</div>
+                        <div
+                            className="animate-in fade-in flex h-full flex-col items-center justify-center gap-3 duration-200"
+                            role="status"
+                            aria-live="polite"
+                            aria-label="Loading messages"
+                        >
+                            <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" aria-hidden="true" />
+                            <span className="text-muted-foreground text-sm">Loading messages...</span>
                         </div>
                     ) : messages.length === 0 ? (
                         <div className="flex h-full items-center justify-center">
