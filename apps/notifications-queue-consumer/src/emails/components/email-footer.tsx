@@ -1,5 +1,5 @@
 import React from 'react';
-import { Section, Text, Link, Hr } from '@react-email/components';
+import { Section, Text, Link } from '@react-email/components';
 import { colors, typography, fontFamily } from '../styles';
 
 export function EmailFooter() {

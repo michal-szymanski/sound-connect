@@ -3,7 +3,6 @@ import { Html, Head, Body, Text, Hr, Section } from '@react-email/components';
 import { EmailHeader } from './components/email-header';
 import { EmailFooter } from './components/email-footer';
 import { EmailButton } from './components/email-button';
-import { EmailFallbackLink } from './components/email-fallback-link';
 import { EmailContainer } from './components/email-container';
 import { colors, typography, fontFamily } from './styles';
 
