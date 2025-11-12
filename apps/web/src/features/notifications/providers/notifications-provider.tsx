@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useEffectEvent, useRef, useState, useCallback } from 'react';
 import type { Notification, User } from '@/common/types/drizzle';
 import { wsNotificationInboundMessageSchema } from '@/common/types/notifications';
 
@@ -51,15 +51,18 @@ export const NotificationsProvider = ({ auth, envs, children }: Props) => {
 
     const unreadCount = notifications.filter((n) => !n.seen).length;
 
+    const getAuth = useEffectEvent(() => auth);
+
     useEffect(() => {
         if (!envs) {
             return;
         }
 
+        const currentAuth = getAuth();
         const { API_URL } = envs;
         const wsUrl = `${API_URL.replace(/^http/, 'ws')}/api/ws/notifications`;
 
-        notificationsWs.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(auth.accessToken)]);
+        notificationsWs.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(currentAuth.accessToken)]);
 
         const handleOpen = () => {
             setNotificationsStatus('open');
@@ -110,7 +113,7 @@ export const NotificationsProvider = ({ auth, envs, children }: Props) => {
             notificationsWs.current = null;
             setNotifications([]);
         };
-    }, [envs, auth.accessToken, auth.user.id, addNotification]);
+    }, [envs, addNotification]);
 
     const contextValue: NotificationsContext = {
         notificationsStatus,

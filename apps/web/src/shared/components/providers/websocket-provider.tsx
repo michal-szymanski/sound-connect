@@ -9,7 +9,7 @@ import {
     unsubscribeMessageSchema
 } from '@/common/types/models';
 import { useQueryClient } from '@tanstack/react-query';
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useEffectEvent, useRef, useState, useCallback } from 'react';
 import z from 'zod';
 import { getChatHistory } from '@/features/chat/server-functions/chat';
 import type { User } from '@/common/types/drizzle';
@@ -117,15 +117,22 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
         [auth]
     );
 
+    const getAuth = useEffectEvent(() => auth);
+
     useEffect(() => {
-        if (!envs || !auth.accessToken) {
+        if (!envs) {
+            return;
+        }
+
+        const currentAuth = getAuth();
+        if (!currentAuth.accessToken) {
             return;
         }
 
         const { API_URL } = envs;
         const wsUrl = `${API_URL.replace(/^http/, 'ws')}/api/ws/user`;
 
-        ws.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(auth.accessToken)]);
+        ws.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(currentAuth.accessToken)]);
 
         const handleOpen = () => {
             setStatus('open');
@@ -227,7 +234,7 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
             setStatuses(new Map());
             setLastMessage(null);
         };
-    }, [envs, auth, clearTimeouts, queryClient]);
+    }, [envs, clearTimeouts, queryClient]);
 
     const contextValue: WebSocketContext = {
         subscribeToRoom,
