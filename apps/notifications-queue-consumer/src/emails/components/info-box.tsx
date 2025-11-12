@@ -48,7 +48,8 @@ export function InfoBox({ children, icon, variant = 'info' }: Props) {
                     fontWeight: '600'
                 }}
             >
-                {icon && `${icon} `}{children}
+                {icon && `${icon} `}
+                {children}
             </Text>
         </Section>
     );

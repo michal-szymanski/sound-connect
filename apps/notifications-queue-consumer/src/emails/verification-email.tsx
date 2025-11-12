@@ -70,7 +70,8 @@ export function VerificationEmail({ name, verificationUrl }: Props) {
                             fontFamily
                         }}
                     >
-                        We're excited to have you join our community of musicians! To get started and unlock all features, please verify your email address by clicking the button below.
+                        We're excited to have you join our community of musicians! To get started and unlock all features, please verify your email address by
+                        clicking the button below.
                     </Text>
                     <EmailButton href={verificationUrl}>Verify My Email</EmailButton>
                     <Hr

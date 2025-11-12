@@ -3,7 +3,6 @@ import { Html, Head, Body, Text, Hr } from '@react-email/components';
 import { EmailHeader } from './components/email-header';
 import { EmailFooter } from './components/email-footer';
 import { EmailButton } from './components/email-button';
-import { EmailFallbackLink } from './components/email-fallback-link';
 import { EmailContainer } from './components/email-container';
 import { InfoBox } from './components/info-box';
 import { colors, typography, fontFamily } from './styles';
@@ -57,7 +56,8 @@ export function PasswordResetEmail({ name, resetUrl }: Props) {
                             fontFamily
                         }}
                     >
-                        Hi {name}, click the button below to create a new password for your Sound Connect account. This link will expire in 1 hour for security purposes.
+                        Hi {name}, click the button below to create a new password for your Sound Connect account. This link will expire in 1 hour for security
+                        purposes.
                     </Text>
                     <EmailButton href={resetUrl}>Reset My Password</EmailButton>
                     <InfoBox variant="info" icon="⏱️">
