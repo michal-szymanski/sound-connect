@@ -2,7 +2,7 @@ import OnlineStatusIcon from '@/shared/components/common/online-status-icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { useAuth } from '@/shared/lib/react-query';
 import { cn } from '@/shared/lib/utils';
-import { useWebSocket } from '@/shared/components/providers/websocket-provider';
+import { useChat } from '@/shared/components/providers/chat-provider';
 
 type Props = {
     user: {
@@ -15,7 +15,7 @@ type Props = {
 };
 
 const UserAvatar = ({ user, className, fallbackClassName }: Props) => {
-    const { statuses } = useWebSocket();
+    const { statuses } = useChat();
     const { data: auth } = useAuth();
     const isCurrentUser = auth?.user?.id === user.id;
 

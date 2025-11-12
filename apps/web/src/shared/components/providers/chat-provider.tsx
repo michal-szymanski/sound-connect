@@ -13,9 +13,9 @@ import z from 'zod';
 import { getChatHistory } from '@/features/chat/server-functions/chat';
 import type { User } from '@/common/types/drizzle';
 
-export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
+export type ChatStatus = 'connecting' | 'open' | 'error' | 'closed';
 
-type WebSocketContext = {
+type ChatContext = {
     subscribeToRoom: (roomId: string) => void;
     unsubscribeFromRoom: (roomId: string) => void;
     sendMessage: (roomId: string, content: string) => void;
@@ -24,12 +24,12 @@ type WebSocketContext = {
     lastMessage: ChatMessage | null;
     roomMessages: Map<string, ChatMessage[]>;
 
-    status: WSStatus;
+    status: ChatStatus;
 
     statuses: Map<string, OnlineStatus>;
 };
 
-const Context = createContext<WebSocketContext | undefined>(undefined);
+const Context = createContext<ChatContext | undefined>(undefined);
 
 type Props = React.PropsWithChildren<{
     auth: {
@@ -42,11 +42,11 @@ type Props = React.PropsWithChildren<{
     } | null;
 }>;
 
-export const WebSocketProvider = ({ children, auth, envs }: Props) => {
+export const ChatProvider = ({ children, auth, envs }: Props) => {
     const ws = useRef<WebSocket | null>(null);
     const userIdRef = useRef(auth.user.id);
 
-    const [status, setStatus] = useState<WSStatus>('connecting');
+    const [status, setStatus] = useState<ChatStatus>('connecting');
     const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
     const [roomMessages, setRoomMessages] = useState<Map<string, ChatMessage[]>>(new Map());
 
@@ -94,7 +94,7 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
             const peerId = roomParticipants.find((id) => id !== currentUserId);
 
             if (!peerId) {
-                console.error(`[UnifiedWS] Could not determine peer ID from room ${roomId}`);
+                console.error(`[Chat] Could not determine peer ID from room ${roomId}`);
                 return;
             }
 
@@ -110,14 +110,14 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
                     return newMessages;
                 });
             } else {
-                console.error(`[UnifiedWS] Failed to load room history for ${roomId}: Server function returned failure`);
+                console.error(`[Chat] Failed to load room history for ${roomId}: Server function returned failure`);
             }
         } catch (error) {
-            console.error(`[UnifiedWS] Error loading room history for ${roomId}:`, error);
+            console.error(`[Chat] Error loading room history for ${roomId}:`, error);
         }
     }, []);
 
-    const setupWebSocket = useEffectEvent(() => {
+    const setupChatWebSocket = useEffectEvent(() => {
         if (!envs || !auth.accessToken) {
             return null;
         }
@@ -132,7 +132,7 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
 
         const handleError = (event: Event) => {
             setStatus('error');
-            console.error('[WS Provider] Connection error', event);
+            console.error('[Chat Provider] Connection error', event);
         };
 
         const handleClose = () => {
@@ -199,7 +199,7 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
                         break;
                 }
             } catch (error) {
-                console.error('[UnifiedWS] Error parsing message:', error);
+                console.error('[Chat] Error parsing message:', error);
             }
         };
 
@@ -229,11 +229,11 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
     });
 
     useEffect(() => {
-        const cleanup = setupWebSocket();
+        const cleanup = setupChatWebSocket();
         return cleanup || undefined;
     }, []);
 
-    const contextValue: WebSocketContext = {
+    const contextValue: ChatContext = {
         subscribeToRoom,
         unsubscribeFromRoom,
         sendMessage,
@@ -247,11 +247,11 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
     return <Context.Provider value={contextValue}>{children}</Context.Provider>;
 };
 
-export const useWebSocket = (): WebSocketContext => {
+export const useChat = (): ChatContext => {
     const context = useContext(Context);
 
     if (!context) {
-        throw new Error('useWebSocket must be used within a WebSocketProvider');
+        throw new Error('useChat must be used within a ChatProvider');
     }
 
     return context;

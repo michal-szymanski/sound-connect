@@ -13,7 +13,7 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { useAuth } from '@/shared/lib/react-query';
-import { useWebSocket } from '@/shared/components/providers/websocket-provider';
+import { useChat } from '@/shared/components/providers/chat-provider';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
 import { MessageBubble } from '@/features/chat/components/message-bubble';
 import { useMessagingContext } from './context';
@@ -30,7 +30,7 @@ const formatTimestamp = (timestamp: number): string => {
 };
 
 function RouteComponent() {
-    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useWebSocket();
+    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useChat();
     const { data: auth } = useAuth();
     const { selectedPeer } = useMessagingContext();
 
