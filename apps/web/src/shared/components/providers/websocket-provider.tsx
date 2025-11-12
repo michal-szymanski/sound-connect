@@ -11,8 +11,8 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import z from 'zod';
-import { useEnvs, useAuth } from '@/shared/lib/react-query';
 import { getChatHistory } from '@/features/chat/server-functions/chat';
+import type { User } from '@/common/types/drizzle';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
 
@@ -32,12 +32,19 @@ type WebSocketContext = {
 
 const Context = createContext<WebSocketContext | undefined>(undefined);
 
-type Props = React.PropsWithChildren;
+type Props = React.PropsWithChildren<{
+    auth: {
+        user: User;
+        accessToken: string;
+    };
+    envs: {
+        API_URL: string;
+        CLIENT_URL: string;
+    } | null;
+}>;
 
-export const WebSocketProvider = ({ children }: Props) => {
+export const WebSocketProvider = ({ children, auth, envs }: Props) => {
     const ws = useRef<WebSocket | null>(null);
-    const { data: envs } = useEnvs();
-    const { data: auth } = useAuth();
 
     const [status, setStatus] = useState<WSStatus>('connecting');
     const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
@@ -78,10 +85,6 @@ export const WebSocketProvider = ({ children }: Props) => {
 
     const loadRoomHistory = useCallback(
         async (roomId: string) => {
-            if (!auth?.user) {
-                return;
-            }
-
             const currentUserId = auth.user.id;
 
             try {
@@ -115,21 +118,16 @@ export const WebSocketProvider = ({ children }: Props) => {
     );
 
     useEffect(() => {
-        console.log('[WS Provider] useEffect running', { hasEnvs: !!envs, hasAccessToken: !!auth?.accessToken });
-
-        if (!envs || !auth?.accessToken) {
-            console.log('[WS Provider] Missing dependencies, skipping WebSocket setup');
+        if (!envs || !auth.accessToken) {
             return;
         }
 
         const { API_URL } = envs;
-        const wsUrl = `${API_URL.replace(/^http/, 'ws')}/ws/user`;
-        console.log('[WS Provider] Creating WebSocket connection to:', wsUrl);
+        const wsUrl = `${API_URL.replace(/^http/, 'ws')}/api/ws/user`;
 
         ws.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(auth.accessToken)]);
 
         const handleOpen = () => {
-            console.log('[WS Provider] Connection opened');
             setStatus('open');
         };
 
@@ -138,10 +136,12 @@ export const WebSocketProvider = ({ children }: Props) => {
             console.error('[WS Provider] Connection error', event);
         };
 
-        const handleClose = (event: CloseEvent) => {
+        const handleClose = () => {
             setStatus('closed');
-            console.log('[WS Provider] Connection closed', { code: event.code, reason: event.reason });
             clearTimeouts();
+            setRoomMessages(new Map());
+            setStatuses(new Map());
+            setLastMessage(null);
         };
 
         const handleMessage = (event: MessageEvent) => {
@@ -217,10 +217,17 @@ export const WebSocketProvider = ({ children }: Props) => {
             ws.current.removeEventListener('close', handleClose);
             ws.current.removeEventListener('message', handleMessage);
 
-            ws.current.close();
+            if (ws.current.readyState !== WebSocket.CLOSED) {
+                ws.current.close();
+            }
+
+            ws.current = null;
             clearTimeouts();
+            setRoomMessages(new Map());
+            setStatuses(new Map());
+            setLastMessage(null);
         };
-    }, [envs, auth?.accessToken, clearTimeouts, queryClient]);
+    }, [envs, auth, clearTimeouts, queryClient]);
 
     const contextValue: WebSocketContext = {
         subscribeToRoom,

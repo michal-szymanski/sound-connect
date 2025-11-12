@@ -1,7 +1,7 @@
 -- Seed test users with pre-hashed passwords (password: aaaaaaaa)
 INSERT INTO users (id, name, email, email_verified, image, created_at, updated_at) VALUES
-  ('qNsCKabaSy0rH16ncmCU73FxnCQR4T4z', 't1', 't1@asd.asd', 0, null, 1762768571594, 1762768571596),
-  ('SCQDH9YOqtVkPZDt7q4yTJEjCkE2YhC4', 't2', 't2@asd.asd', 0, null, 1762768585352, 1762768585352);
+  ('qNsCKabaSy0rH16ncmCU73FxnCQR4T4z', 't1', 't1@asd.asd', 1, null, 1762768571594, 1762768571596),
+  ('SCQDH9YOqtVkPZDt7q4yTJEjCkE2YhC4', 't2', 't2@asd.asd', 1, null, 1762768585352, 1762768585352);
 
 -- Add password accounts with pre-hashed passwords
 INSERT INTO accounts (id, account_id, provider_id, user_id, password, created_at, updated_at) VALUES
@@ -11,8 +11,8 @@ INSERT INTO accounts (id, account_id, provider_id, user_id, password, created_at
   -- Seed Playwright test users (password: Test123!)
 INSERT INTO users (id, name, email, email_verified, created_at, updated_at)
 VALUES
-    ('Ojb9Yu5WQSUwUAWPFgOeOaCyHvu6eU7o', 'Playwright User 1', 'pw1@test.test', 0, 1762768651167, 1762768651167),
-    ('ObTL2d1Sy7xBIKmr5WSo5u7zcP6qk6cK', 'Playwright User 2', 'pw2@test.test', 0, 1762768686703, 1762768686703);
+    ('Ojb9Yu5WQSUwUAWPFgOeOaCyHvu6eU7o', 'Playwright User 1', 'pw1@test.test', 1, 1762768651167, 1762768651167),
+    ('ObTL2d1Sy7xBIKmr5WSo5u7zcP6qk6cK', 'Playwright User 2', 'pw2@test.test', 1, 1762768686703, 1762768686703);
 
 INSERT INTO accounts (id, user_id, account_id, provider_id, password, created_at, updated_at)
 VALUES

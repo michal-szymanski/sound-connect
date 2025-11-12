@@ -7,6 +7,7 @@ import { Toaster } from '@/shared/components/ui/sonner';
 import { getAuth } from '@/features/auth/server-functions/auth';
 import globalsCss from '@/web/styles/globals.css?url';
 import { ThemeProvider } from '@/shared/components/providers/theme-provider';
+import { authQuery } from '@/shared/lib/react-query';
 
 export const Route = createRootRouteWithContext<{
     queryClient: QueryClient;
@@ -32,17 +33,18 @@ export const Route = createRootRouteWithContext<{
         ]
     }),
     component: RootComponent,
-    beforeLoad: async () => {
+    beforeLoad: async ({ context: { queryClient } }) => {
         try {
             const result = await getAuth();
+            const authData = result.success ? result.body : { user: null, accessToken: undefined };
 
-            if (result.success) {
-                return result.body;
-            }
+            await queryClient.prefetchQuery(authQuery(authData));
 
-            return { user: null, accessToken: undefined };
+            return authData;
         } catch {
-            return { user: null, accessToken: undefined };
+            const authData = { user: null, accessToken: undefined };
+            await queryClient.prefetchQuery(authQuery(authData));
+            return authData;
         }
     }
 });

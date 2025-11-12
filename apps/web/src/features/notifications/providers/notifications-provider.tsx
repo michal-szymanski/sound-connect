@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
-import { useEnvs, useAuth } from '@/shared/lib/react-query';
-import type { Notification } from '@/common/types/drizzle';
+import type { Notification, User } from '@/common/types/drizzle';
 import { wsNotificationInboundMessageSchema } from '@/common/types/notifications';
 
 export type WSStatus = 'connecting' | 'open' | 'error' | 'closed';
@@ -17,12 +16,19 @@ type NotificationsContext = {
 
 const Context = createContext<NotificationsContext | undefined>(undefined);
 
-type Props = React.PropsWithChildren;
+type Props = React.PropsWithChildren<{
+    auth: {
+        user: User;
+        accessToken: string;
+    };
+    envs: {
+        API_URL: string;
+        CLIENT_URL: string;
+    } | null;
+}>;
 
-export const NotificationsProvider = ({ children }: Props) => {
+export const NotificationsProvider = ({ auth, envs, children }: Props) => {
     const notificationsWs = useRef<WebSocket | null>(null);
-    const { data: envs } = useEnvs();
-    const { data: auth } = useAuth();
 
     const [notificationsStatus, setNotificationsStatus] = useState<WSStatus>('connecting');
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -46,21 +52,16 @@ export const NotificationsProvider = ({ children }: Props) => {
     const unreadCount = notifications.filter((n) => !n.seen).length;
 
     useEffect(() => {
-        console.log('[NotificationsWS] useEffect running', { hasEnvs: !!envs, hasAccessToken: !!auth?.accessToken });
-
-        if (!envs || !auth?.accessToken) {
-            console.log('[NotificationsWS] Missing dependencies, skipping WebSocket setup');
+        if (!envs) {
             return;
         }
 
         const { API_URL } = envs;
-        const wsUrl = `${API_URL.replace(/^http/, 'ws')}/ws/notifications`;
-        console.log('[NotificationsWS] Creating WebSocket connection to:', wsUrl);
+        const wsUrl = `${API_URL.replace(/^http/, 'ws')}/api/ws/notifications`;
 
         notificationsWs.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(auth.accessToken)]);
 
         const handleOpen = () => {
-            console.log('[NotificationsWS] Connection opened');
             setNotificationsStatus('open');
         };
 
@@ -69,9 +70,9 @@ export const NotificationsProvider = ({ children }: Props) => {
             console.error('[NotificationsWS] Connection error', event);
         };
 
-        const handleClose = (event: CloseEvent) => {
+        const handleClose = () => {
             setNotificationsStatus('closed');
-            console.log('[NotificationsWS] Connection closed', { code: event.code, reason: event.reason });
+            setNotifications([]);
         };
 
         const handleMessage = (event: MessageEvent) => {
@@ -80,10 +81,8 @@ export const NotificationsProvider = ({ children }: Props) => {
                 const message = wsNotificationInboundMessageSchema.parse(parsedData);
 
                 if (message.type === 'initial') {
-                    console.log('[NotificationsWS] Received initial notifications:', message.data.length);
                     setNotifications(message.data);
                 } else if (message.type === 'notification') {
-                    console.log('[NotificationsWS] Received new notification:', message.data);
                     addNotification(message.data);
                 }
             } catch (error) {
@@ -104,9 +103,14 @@ export const NotificationsProvider = ({ children }: Props) => {
             notificationsWs.current.removeEventListener('close', handleClose);
             notificationsWs.current.removeEventListener('message', handleMessage);
 
-            notificationsWs.current.close();
+            if (notificationsWs.current.readyState !== WebSocket.CLOSED) {
+                notificationsWs.current.close();
+            }
+
+            notificationsWs.current = null;
+            setNotifications([]);
         };
-    }, [envs, auth?.accessToken, addNotification]);
+    }, [envs, auth.accessToken, auth.user.id, addNotification]);
 
     const contextValue: NotificationsContext = {
         notificationsStatus,
