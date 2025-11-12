@@ -17,3 +17,15 @@ export const formatElapsedTime = (date: string | Date): string => {
 
     return distance;
 };
+
+export const formatRelativeTime = (timestamp: string): string => {
+    const date = parseISO(timestamp);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    if (diff < 172800000) return 'Yesterday';
+    return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+};

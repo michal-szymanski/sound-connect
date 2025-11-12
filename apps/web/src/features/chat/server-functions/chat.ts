@@ -1,5 +1,6 @@
 import { getRoomId } from '@/common/helpers';
 import { chatMessageSchema } from '@/common/types/models';
+import { conversationsResponseSchema } from '@/common/types/conversations';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { apiErrorHandler, failure, success } from '@/shared/server-functions/helpers';
@@ -29,5 +30,40 @@ export const getChatHistory = createServerFn()
         } catch (error) {
             console.error(error);
             return failure(null);
+        }
+    });
+
+export const getConversations = createServerFn()
+    .middleware([authMiddleware])
+    .inputValidator(
+        z.object({
+            limit: z.number().optional(),
+            offset: z.number().optional()
+        })
+    )
+    .handler(async ({ data, context: { env, auth } }) => {
+        const params = new URLSearchParams();
+        if (data.limit) params.append('limit', data.limit.toString());
+        if (data.offset) params.append('offset', data.offset.toString());
+
+        const url = `${env.API_URL}/api/chat/conversations${params.toString() ? `?${params.toString()}` : ''}`;
+
+        const response = await env.API.fetch(url, {
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await apiErrorHandler(response);
+        }
+
+        try {
+            const json = await response.json();
+            return success(conversationsResponseSchema.parse(json));
+        } catch (error) {
+            console.error(error);
+            return failure('Failed to parse conversations response');
         }
     });

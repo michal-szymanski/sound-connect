@@ -155,6 +155,20 @@ export class ChatDurableObject extends DurableObject {
         }
 
         await this.storage.put(MESSAGES_KEY, history);
+
+        const db = drizzle(this.env.DB);
+        const { messagesTable } = schema;
+
+        const receiverId = Array.from(this.participants).find((id) => id !== message.senderId);
+
+        if (receiverId) {
+            await db.insert(messagesTable).values({
+                senderId: message.senderId,
+                receiverId: receiverId,
+                content: message.content,
+                createdAt: new Date(message.timestamp).toISOString()
+            });
+        }
     }
 
     private async broadcastMessage(message: WebSocketMessage, excludeUserId?: string) {

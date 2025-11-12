@@ -199,6 +199,19 @@ Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
 
 ## Development Rules
 
+### Development Server Management
+
+**IMPORTANT: Never start dev servers automatically**
+
+- NEVER run `pnpm --filter @sound-connect/web dev` or `pnpm --filter @sound-connect/api dev` without explicit user request
+- Before attempting any development work, ALWAYS check if servers are running:
+  - Frontend should be on `http://localhost:3000` (or nearby port if 3000 is taken)
+  - Backend should be on `http://localhost:4000`
+- Check server status using: `lsof -ti:3000,4000` or by checking background Bash processes
+- If servers are NOT running, ask the user: "The dev servers are not running. Would you like me to start them?"
+- ONLY start servers after explicit user confirmation
+- This prevents multiple conflicting server instances and port conflicts
+
 ### Code Quality Enforcement
 
 Code quality is automatically enforced by the `code-quality-enforcer` agent. This agent validates all code changes against the rules below, runs automated checks (Prettier, ESLint, TypeScript), and blocks completion until standards are met. Agents working on code should invoke the code-quality-enforcer AFTER writing code and BEFORE marking tasks complete.

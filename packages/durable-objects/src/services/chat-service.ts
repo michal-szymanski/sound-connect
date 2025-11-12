@@ -56,8 +56,12 @@ export class ChatService {
     }
 
     async handleChatMessage({ roomId, content }: NewChatMessage) {
-        if (!this.subscribedRooms.has(roomId) || !this.userId) {
+        if (!this.userId) {
             return;
+        }
+
+        if (!this.subscribedRooms.has(roomId)) {
+            await this.subscribeToRoom({ type: 'subscribe', roomId });
         }
 
         const senderId = this.userId;
