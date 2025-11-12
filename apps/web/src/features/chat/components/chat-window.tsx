@@ -43,6 +43,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const [isHovered, setIsHovered] = useState(false);
     const [animationKey, setAnimationKey] = useState(0);
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+    const [announcement, setAnnouncement] = useState('');
 
     const prevMinimizedRef = useRef(isMinimized);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +58,12 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
             text: ''
         }
     });
+
+    const { ref: formInputRef, ...registerProps } = form.register('text', {
+        setValueAs: (v) => v
+    });
+
+    const textValue = form.watch('text');
 
     const rightOffset = 24 + position * 360;
     const bottomOffset = BASE_BOTTOM_OFFSET + position * 56;
@@ -74,9 +81,30 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     useEffect(() => {
         if (prevMinimizedRef.current && !isMinimized) {
             setAnimationKey((prev) => prev + 1);
+            setTimeout(() => inputRef.current?.focus(), 100);
         }
         prevMinimizedRef.current = isMinimized;
     }, [isMinimized]);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && !isMinimized) {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onClose, isMinimized]);
+
+    useEffect(() => {
+        if (messages.length > 0 && !isMinimized) {
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage && lastMessage.senderId !== auth?.user?.id) {
+                setAnnouncement(`New message from ${user.name}: ${lastMessage.content}`);
+                setTimeout(() => setAnnouncement(''), 1000);
+            }
+        }
+    }, [messages, auth?.user?.id, user.name, isMinimized]);
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!values.text.trim() || !roomId || !auth?.user) return;
@@ -90,7 +118,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
         form.reset();
     };
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
+    const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             form.handleSubmit(onSubmit)();
@@ -164,91 +192,99 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     }
 
     return (
-        <div
-            key={animationKey}
-            className="bg-card border-border z-dialog animate-in slide-in-from-bottom-4 fixed bottom-0 w-[340px] overflow-hidden rounded-t-lg border shadow-2xl duration-300"
-            style={{ right: `${rightOffset}px` }}
-        >
-            <div className="bg-primary text-primary-foreground flex items-center justify-between px-4 py-3">
-                <div className="flex items-center gap-3">
-                    <Avatar className="border-primary-foreground/20 h-8 w-8 border-2">
-                        <AvatarImage src={user.image || '/placeholder.svg'} alt={user.name} />
-                        <AvatarFallback className="bg-primary-foreground text-primary text-xs">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium">{user.name}</span>
-                </div>
-
-                <div className="flex items-center gap-1">
-                    <Button size="icon" variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8" onClick={onToggleMinimize}>
-                        <Minus className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8" onClick={onClose}>
-                        <X className="h-4 w-4" />
-                    </Button>
-                </div>
+        <>
+            <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+                {announcement}
             </div>
-
-            <div className="bg-background h-[320px]">
-                {isLoading ? (
-                    <div className="flex h-full items-center justify-center">
-                        <div className="text-muted-foreground text-sm">Loading messages...</div>
+            <div
+                key={animationKey}
+                className="bg-card border-border z-dialog animate-in slide-in-from-bottom-4 fixed bottom-0 w-[340px] overflow-hidden rounded-t-lg border shadow-2xl duration-300"
+                style={{ right: `${rightOffset}px` }}
+            >
+                <div className="bg-primary text-primary-foreground flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-3">
+                        <Avatar className="border-primary-foreground/20 h-8 w-8 border-2">
+                            <AvatarImage src={user.image || '/placeholder.svg'} alt={user.name} />
+                            <AvatarFallback className="bg-primary-foreground text-primary text-xs">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium">{user.name}</span>
                     </div>
-                ) : messages.length === 0 ? (
-                    <div className="flex h-full items-center justify-center">
-                        <div className="text-muted-foreground text-sm">Start a conversation with {user.name}</div>
-                    </div>
-                ) : (
-                    <VirtualizedMessageList messages={messages} currentUserId={currentUser.id} formatTimestamp={formatTimestamp} />
-                )}
-            </div>
 
-            <div className="bg-card border-border border-t p-3">
-                <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <div className="flex items-center gap-2">
-                        <Popover open={isEmojiPickerOpen} onOpenChange={setIsEmojiPickerOpen}>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-muted-foreground hover:text-foreground hover:bg-accent min-h-11 min-w-11 shrink-0 md:min-h-10 md:min-w-10"
-                                    aria-label="Open emoji picker"
-                                    aria-expanded={isEmojiPickerOpen}
-                                    aria-haspopup="dialog"
-                                >
-                                    <Smile className="h-5 w-5" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                                className="z-popover w-full max-w-[352px] p-0"
-                                style={{ width: '352px', height: '435px' }}
-                                side="top"
-                                align="start"
-                                sideOffset={8}
-                            >
-                                <EmojiPickerContent onEmojiSelect={insertEmoji} onClose={() => setIsEmojiPickerOpen(false)} />
-                            </PopoverContent>
-                        </Popover>
-                        <Input
-                            {...form.register('text', {
-                                setValueAs: (v) => v
-                            })}
-                            placeholder="Enter Message"
-                            onKeyPress={handleKeyPress}
-                            className="bg-background border-border flex-1 text-base md:text-sm"
-                            maxLength={CHAT_MESSAGE_MAX_LENGTH}
-                            autoComplete="off"
-                            onFocus={(e) => {
-                                inputRef.current = e.target;
-                            }}
-                        />
-                        {/* eslint-disable-next-line react-hooks/incompatible-library */}
-                        <Button type="submit" size="icon" disabled={!form.watch('text')?.trim()} className="shrink-0">
-                            <Send className="h-4 w-4" />
+                    <div className="flex items-center gap-1">
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
+                            onClick={onToggleMinimize}
+                        >
+                            <Minus className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8" onClick={onClose}>
+                            <X className="h-4 w-4" />
                         </Button>
                     </div>
-                </form>
+                </div>
+
+                <div className="bg-background h-[320px]" role="log" aria-label={`Conversation with ${user.name}`}>
+                    {isLoading ? (
+                        <div className="flex h-full items-center justify-center">
+                            <div className="text-muted-foreground text-sm">Loading messages...</div>
+                        </div>
+                    ) : messages.length === 0 ? (
+                        <div className="flex h-full items-center justify-center">
+                            <div className="text-muted-foreground text-sm">Start a conversation with {user.name}</div>
+                        </div>
+                    ) : (
+                        <VirtualizedMessageList messages={messages} currentUserId={currentUser.id} formatTimestamp={formatTimestamp} isInitialLoad={true} />
+                    )}
+                </div>
+
+                <div className="bg-card border-border border-t p-3">
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <div className="flex items-center gap-2">
+                            <Popover open={isEmojiPickerOpen} onOpenChange={setIsEmojiPickerOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="text-muted-foreground hover:text-foreground hover:bg-accent min-h-11 min-w-11 shrink-0 md:min-h-10 md:min-w-10"
+                                        aria-label="Open emoji picker"
+                                        aria-expanded={isEmojiPickerOpen}
+                                        aria-haspopup="dialog"
+                                    >
+                                        <Smile className="h-5 w-5" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent
+                                    className="z-popover w-full max-w-[352px] p-0"
+                                    style={{ width: '352px', height: '435px' }}
+                                    side="top"
+                                    align="start"
+                                    sideOffset={8}
+                                >
+                                    <EmojiPickerContent onEmojiSelect={insertEmoji} onClose={() => setIsEmojiPickerOpen(false)} />
+                                </PopoverContent>
+                            </Popover>
+                            <Input
+                                {...registerProps}
+                                ref={(e) => {
+                                    formInputRef(e);
+                                    inputRef.current = e;
+                                }}
+                                placeholder="Enter Message"
+                                onKeyDown={handleKeyDown}
+                                className="bg-background border-border flex-1 text-base md:text-sm"
+                                maxLength={CHAT_MESSAGE_MAX_LENGTH}
+                                autoComplete="off"
+                            />
+                            <Button type="submit" size="icon" disabled={!textValue?.trim()} className="shrink-0">
+                                <Send className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
+        </>
     );
 };

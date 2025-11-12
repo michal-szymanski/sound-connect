@@ -1,17 +1,26 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import type { ChatMessage } from '@/common/types/models';
 import { MessageBubble } from './message-bubble';
+import { ScrollToBottomButton } from './scroll-to-bottom-button';
 
 type Props = {
     messages: ChatMessage[];
     currentUserId: string;
     formatTimestamp: (timestamp: number) => string;
+    isInitialLoad?: boolean;
 };
 
-export function VirtualizedMessageList({ messages, currentUserId, formatTimestamp }: Props) {
+export function VirtualizedMessageList({ messages, currentUserId, formatTimestamp, isInitialLoad = false }: Props) {
     const parentRef = useRef<HTMLDivElement>(null);
     const scrolledToBottomRef = useRef(true);
+    const isFirstRenderRef = useRef(isInitialLoad);
+    const prevMessageCountRef = useRef(messages.length);
+
+    const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
+    const [showScrollButton, setShowScrollButton] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     const virtualizer = useVirtualizer({
         count: messages.length,
@@ -20,70 +29,131 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
         overscan: 5
     });
 
-    useEffect(() => {
+    const checkScrollPosition = useDebouncedCallback(() => {
         const parent = parentRef.current;
         if (!parent) return;
 
-        const isScrolledToBottom = () => {
-            const threshold = 100;
-            return Math.abs(parent.scrollHeight - parent.scrollTop - parent.clientHeight) < threshold;
-        };
+        const threshold = 100;
+        const distanceFromBottom = Math.abs(parent.scrollHeight - parent.scrollTop - parent.clientHeight);
+        const isAtBottom = distanceFromBottom < threshold;
 
-        scrolledToBottomRef.current = isScrolledToBottom();
-    }, [messages]);
+        scrolledToBottomRef.current = isAtBottom;
+        setShowScrollButton(distanceFromBottom > 150);
 
-    useEffect(() => {
-        const parent = parentRef.current;
-        if (!parent) return;
-
-        if (scrolledToBottomRef.current) {
-            setTimeout(() => {
-                parent.scrollTo({
-                    top: parent.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 0);
+        if (isAtBottom) {
+            setUnreadCount(0);
         }
-    }, [messages]);
+    }, 100);
+
+    useEffect(() => {
+        const parent = parentRef.current;
+        if (!parent) return;
+
+        if (isFirstRenderRef.current) {
+            isFirstRenderRef.current = false;
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    parent.scrollTop = parent.scrollHeight;
+                });
+            });
+
+            prevMessageCountRef.current = messages.length;
+            return;
+        }
+
+        const hasNewMessages = messages.length > prevMessageCountRef.current;
+
+        if (hasNewMessages) {
+            const newMessages = messages.slice(prevMessageCountRef.current);
+            const newIds = new Set(newMessages.map((m) => m.id));
+            setNewMessageIds(newIds);
+
+            setTimeout(() => setNewMessageIds(new Set()), 350);
+
+            if (scrolledToBottomRef.current) {
+                setTimeout(() => {
+                    parent.scrollTo({
+                        top: parent.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 0);
+            } else {
+                const hasMessageFromOthers = newMessages.some((m) => m.senderId !== currentUserId);
+                if (hasMessageFromOthers) {
+                    setUnreadCount((prev) => prev + newMessages.filter((m) => m.senderId !== currentUserId).length);
+                }
+            }
+        }
+
+        prevMessageCountRef.current = messages.length;
+    }, [messages, currentUserId]);
+
+    useEffect(() => {
+        const parent = parentRef.current;
+        if (!parent) return;
+
+        parent.addEventListener('scroll', checkScrollPosition);
+        return () => parent.removeEventListener('scroll', checkScrollPosition);
+    }, [checkScrollPosition]);
+
+    const handleScrollToBottom = () => {
+        const parent = parentRef.current;
+        if (!parent) return;
+
+        parent.scrollTo({
+            top: parent.scrollHeight,
+            behavior: 'smooth'
+        });
+        setUnreadCount(0);
+    };
 
     return (
-        <div
-            ref={parentRef}
-            className="h-full w-full overflow-auto"
-            style={{
-                contain: 'strict'
-            }}
-        >
+        <div className="relative h-full w-full">
             <div
+                ref={parentRef}
+                className="h-full w-full overflow-auto"
                 style={{
-                    height: `${virtualizer.getTotalSize()}px`,
-                    width: '100%',
-                    position: 'relative'
+                    contain: 'strict'
                 }}
             >
-                {virtualizer.getVirtualItems().map((virtualItem) => {
-                    const message = messages[virtualItem.index];
-                    if (!message) return null;
+                <div
+                    style={{
+                        height: `${virtualizer.getTotalSize()}px`,
+                        width: '100%',
+                        position: 'relative'
+                    }}
+                >
+                    {virtualizer.getVirtualItems().map((virtualItem) => {
+                        const message = messages[virtualItem.index];
+                        if (!message) return null;
 
-                    return (
-                        <div
-                            key={message.id}
-                            data-index={virtualItem.index}
-                            ref={virtualizer.measureElement}
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                transform: `translateY(${virtualItem.start}px)`
-                            }}
-                            className="px-4 py-2"
-                        >
-                            <MessageBubble message={message} isCurrentUser={message.senderId === currentUserId} formatTimestamp={formatTimestamp} />
-                        </div>
-                    );
-                })}
+                        return (
+                            <div
+                                key={message.id}
+                                data-index={virtualItem.index}
+                                ref={virtualizer.measureElement}
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    transform: `translateY(${virtualItem.start}px)`
+                                }}
+                                className="px-4 py-2"
+                            >
+                                <MessageBubble
+                                    message={message}
+                                    isCurrentUser={message.senderId === currentUserId}
+                                    formatTimestamp={formatTimestamp}
+                                    isNew={newMessageIds.has(message.id)}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
+            {showScrollButton ? <ScrollToBottomButton onClick={handleScrollToBottom} unreadCount={unreadCount} /> : null}
         </div>
     );
 }
