@@ -15,8 +15,8 @@ type Props = {
 export function VirtualizedMessageList({ messages, currentUserId, formatTimestamp, isInitialLoad = false }: Props) {
     const parentRef = useRef<HTMLDivElement>(null);
     const scrolledToBottomRef = useRef(true);
-    const isFirstRenderRef = useRef(isInitialLoad);
     const prevMessageCountRef = useRef(messages.length);
+    const [shouldScrollOnMount, setShouldScrollOnMount] = useState(isInitialLoad);
 
     const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
     const [showScrollButton, setShowScrollButton] = useState(false);
@@ -46,21 +46,19 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
     }, 100);
 
     useEffect(() => {
+        if (!shouldScrollOnMount || messages.length === 0) return;
+
+        setShouldScrollOnMount(false);
+
+        virtualizer.scrollToIndex(messages.length - 1, {
+            align: 'end',
+            behavior: 'auto'
+        });
+    }, [messages.length, shouldScrollOnMount, virtualizer]);
+
+    useEffect(() => {
         const parent = parentRef.current;
         if (!parent) return;
-
-        if (isFirstRenderRef.current) {
-            isFirstRenderRef.current = false;
-
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    parent.scrollTop = parent.scrollHeight;
-                });
-            });
-
-            prevMessageCountRef.current = messages.length;
-            return;
-        }
 
         const hasNewMessages = messages.length > prevMessageCountRef.current;
 
