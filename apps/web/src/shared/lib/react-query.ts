@@ -19,7 +19,7 @@ export const authQuery = (data?: { user: User | null; accessToken: string | unde
                 return result.body;
             }
 
-            return null;
+            return { user: null, accessToken: undefined };
         }
     });
 

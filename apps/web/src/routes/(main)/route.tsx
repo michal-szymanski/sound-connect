@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, useLocation } from '@tanstack/react-router';
+import { createFileRoute, Outlet, redirect, useLocation, useRouteContext } from '@tanstack/react-router';
 import { Provider as ReduxProvider } from 'react-redux';
 import { useSelector } from 'react-redux';
 import { ChatWindowProvider } from '@/features/chat/components/chat-window-manager';
@@ -12,28 +12,36 @@ import { store } from '@/web/redux/store';
 import { RootState } from '@/web/redux/store';
 import { MessagingProvider, useMessagingContext } from './messages/context';
 import { ConversationsListSidebar } from '@/shared/components/layout/conversations-list-sidebar';
+import { useEnvs } from '@/shared/lib/react-query';
 
 export const Route = createFileRoute('/(main)')({
     component: RouteComponent,
-    beforeLoad: async ({ context: { user } }) => {
-        if (!user) {
+    beforeLoad: async ({ context }) => {
+        if (!context.user || !context.accessToken) {
             const path = '/sign-in';
 
             throw redirect({
                 to: path
             });
         }
+
+        return {
+            user: context.user,
+            accessToken: context.accessToken
+        };
     }
 });
 
 function LayoutContent() {
     const location = useLocation();
+    const context = useRouteContext({ from: '/(main)' });
+    const { data: envs } = useEnvs();
     const isMessagesPage = location.pathname === '/messages';
     const { isSidebarCollapsed: _isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
 
     return (
-        <WebSocketProvider>
-            <NotificationsProvider>
+        <WebSocketProvider auth={{ user: context.user, accessToken: context.accessToken }} envs={envs}>
+            <NotificationsProvider auth={{ user: context.user, accessToken: context.accessToken }} envs={envs}>
                 <ChatWindowProvider>
                     <SidebarProvider>
                         <MessagingProvider>
