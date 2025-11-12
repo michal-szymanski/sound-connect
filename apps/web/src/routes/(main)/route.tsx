@@ -6,7 +6,7 @@ import Header from '@/shared/components/layout/header';
 import LeftSidebarMobile, { LeftSidebarDesktop } from '@/shared/components/layout/left-sidebar';
 import RightSidebar from '@/shared/components/layout/right-sidebar';
 import { SidebarProvider } from '@/shared/components/ui/sidebar';
-import { WebSocketProvider } from '@/shared/components/providers/websocket-provider';
+import { ChatProvider } from '@/shared/components/providers/chat-provider';
 import { NotificationsProvider } from '@/features/notifications/providers/notifications-provider';
 import { store } from '@/web/redux/store';
 import { RootState } from '@/web/redux/store';
@@ -40,7 +40,7 @@ function LayoutContent() {
     const { isSidebarCollapsed: _isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
 
     return (
-        <WebSocketProvider auth={{ user: context.user, accessToken: context.accessToken }} envs={envs}>
+        <ChatProvider auth={{ user: context.user, accessToken: context.accessToken }} envs={envs}>
             <NotificationsProvider auth={{ user: context.user, accessToken: context.accessToken }} envs={envs}>
                 <ChatWindowProvider>
                     <SidebarProvider>
@@ -63,7 +63,7 @@ function LayoutContent() {
                     </SidebarProvider>
                 </ChatWindowProvider>
             </NotificationsProvider>
-        </WebSocketProvider>
+        </ChatProvider>
     );
 }
 

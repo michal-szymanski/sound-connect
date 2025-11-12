@@ -12,7 +12,7 @@ import { Input } from '@/shared/components/ui/input';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { useAuth } from '@/shared/lib/react-query';
-import { useWebSocket } from '@/shared/components/providers/websocket-provider';
+import { useChat } from '@/shared/components/providers/chat-provider';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
 import { MessageBubble } from './message-bubble';
 
@@ -35,7 +35,7 @@ const BASE_BOTTOM_OFFSET = 24;
 
 export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, position }: Props) => {
     const { data: auth } = useAuth();
-    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useWebSocket();
+    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useChat();
 
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [roomId, setRoomId] = useState<string | null>(null);
