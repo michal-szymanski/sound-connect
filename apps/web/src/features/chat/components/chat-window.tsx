@@ -37,7 +37,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage } = useChat();
 
     const roomId = useGetRoomId(auth?.user?.id || '', user.id);
-    const { data: messages = [], isLoading } = useChatMessages({ conversationId: roomId, enabled: !!auth?.user && !!roomId });
+    const { data: messages = [], isLoading } = useChatMessages({ conversationId: roomId, enabled: !!auth?.user });
     const sendMutation = useSendMessage(sendMessage);
 
     const [isHovered, setIsHovered] = useState(false);
@@ -62,14 +62,14 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const bottomOffset = BASE_BOTTOM_OFFSET + position * 56;
 
     useEffect(() => {
-        if (roomId) {
+        if (roomId && auth?.user?.id && !roomId.startsWith(':')) {
             subscribeToRoom(roomId);
 
             return () => {
                 unsubscribeFromRoom(roomId);
             };
         }
-    }, [roomId, subscribeToRoom, unsubscribeFromRoom]);
+    }, [roomId, subscribeToRoom, unsubscribeFromRoom, auth?.user?.id]);
 
     useEffect(() => {
         if (prevMinimizedRef.current && !isMinimized) {

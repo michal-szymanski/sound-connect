@@ -33,7 +33,7 @@ function RouteComponent() {
     const { selectedPeer } = useMessagingContext();
 
     const roomId = useGetRoomId(auth?.user?.id || '', selectedPeer?.id || '');
-    const { data: messages = [], isLoading } = useChatMessages({ conversationId: roomId, enabled: !!selectedPeer && !!roomId });
+    const { data: messages = [], isLoading } = useChatMessages({ conversationId: roomId, enabled: !!selectedPeer });
     const sendMutation = useSendMessage(sendMessage);
 
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
@@ -85,14 +85,14 @@ function RouteComponent() {
     };
 
     useEffect(() => {
-        if (roomId) {
+        if (roomId && auth?.user?.id && selectedPeer?.id && !roomId.startsWith(':')) {
             subscribeToRoom(roomId);
 
             return () => {
                 unsubscribeFromRoom(roomId);
             };
         }
-    }, [roomId, subscribeToRoom, unsubscribeFromRoom]);
+    }, [roomId, subscribeToRoom, unsubscribeFromRoom, auth?.user?.id, selectedPeer?.id]);
 
     if (!selectedPeer) {
         return (

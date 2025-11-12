@@ -57,6 +57,7 @@ export class ChatService {
 
     async handleChatMessage({ roomId, content }: NewChatMessage) {
         if (!this.userId) {
+            console.error('[ChatService] No userId - aborting');
             return;
         }
 
