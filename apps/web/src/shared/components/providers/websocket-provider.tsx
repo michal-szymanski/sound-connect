@@ -8,7 +8,6 @@ import {
     subscribeMessageSchema,
     unsubscribeMessageSchema
 } from '@/common/types/models';
-import { useQueryClient } from '@tanstack/react-query';
 import React, { createContext, useContext, useEffect, useEffectEvent, useRef, useState, useCallback } from 'react';
 import z from 'zod';
 import { getChatHistory } from '@/features/chat/server-functions/chat';
@@ -53,7 +52,6 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
 
     const [statuses, setStatuses] = useState<Map<string, OnlineStatus>>(new Map());
 
-    const queryClient = useQueryClient();
     const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
 
     useEffect(() => {
@@ -119,22 +117,14 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
         }
     }, []);
 
-    const getAuth = useEffectEvent(() => auth);
-
-    useEffect(() => {
-        if (!envs) {
-            return;
+    const setupWebSocket = useEffectEvent(() => {
+        if (!envs || !auth.accessToken) {
+            return null;
         }
 
-        const currentAuth = getAuth();
-        if (!currentAuth.accessToken) {
-            return;
-        }
+        const wsUrl = `${envs.API_URL.replace(/^http/, 'ws')}/api/ws/user`;
 
-        const { API_URL } = envs;
-        const wsUrl = `${API_URL.replace(/^http/, 'ws')}/api/ws/user`;
-
-        ws.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(currentAuth.accessToken)]);
+        ws.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(auth.accessToken)]);
 
         const handleOpen = () => {
             setStatus('open');
@@ -236,7 +226,12 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
             setStatuses(new Map());
             setLastMessage(null);
         };
-    }, [envs, clearTimeouts, queryClient]);
+    });
+
+    useEffect(() => {
+        const cleanup = setupWebSocket();
+        return cleanup || undefined;
+    }, []);
 
     const contextValue: WebSocketContext = {
         subscribeToRoom,
