@@ -1,7 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@/common/constants';
-import { getRoomId } from '@/common/helpers';
-import { ChatMessage } from '@/common/types/models';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -9,13 +7,13 @@ import { z } from 'zod';
 import { MessageCircle, Send, Smile } from 'lucide-react';
 import UserAvatar from '@/shared/components/common/user-avatar';
 import { Button } from '@/shared/components/ui/button';
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { useAuth } from '@/shared/lib/react-query';
 import { useChat } from '@/shared/components/providers/chat-provider';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
-import { MessageBubble } from '@/features/chat/components/message-bubble';
+import { VirtualizedMessageList } from '@/features/chat/components/virtualized-message-list';
+import { useChatMessages, useGetRoomId, useSendMessage } from '@/features/chat/hooks/use-chat-queries';
 import { useMessagingContext } from './context';
 
 export const Route = createFileRoute('/(main)/messages/')({
@@ -30,14 +28,15 @@ const formatTimestamp = (timestamp: number): string => {
 };
 
 function RouteComponent() {
-    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useChat();
+    const { subscribeToRoom, unsubscribeFromRoom, sendMessage } = useChat();
     const { data: auth } = useAuth();
     const { selectedPeer } = useMessagingContext();
 
-    const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const roomId = useGetRoomId(auth?.user?.id || '', selectedPeer?.id || '');
+    const { data: messages = [], isLoading } = useChatMessages({ conversationId: roomId, enabled: !!selectedPeer && !!roomId });
+    const sendMutation = useSendMessage(sendMessage);
+
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
-    const messagesEndRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const formSchema = z.object({
@@ -52,9 +51,13 @@ function RouteComponent() {
     });
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        if (!selectedPeer || !auth?.user || !values.text || !currentRoomId) return;
+        if (!selectedPeer || !auth?.user || !values.text || !roomId) return;
 
-        sendMessage(currentRoomId, values.text);
+        sendMutation.mutate({
+            conversationId: roomId,
+            content: values.text,
+            senderId: auth.user.id
+        });
 
         form.reset();
     };
@@ -82,42 +85,14 @@ function RouteComponent() {
     };
 
     useEffect(() => {
-        if (selectedPeer && auth?.user) {
-            const roomId = getRoomId(auth.user.id, selectedPeer.id);
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setCurrentRoomId(roomId);
-
-            const initializeRoom = async () => {
-                try {
-                    await loadRoomHistory(roomId);
-                } catch (error) {
-                    console.error('Failed to load room history:', error);
-                }
-
-                subscribeToRoom(roomId);
-            };
-
-            initializeRoom();
+        if (roomId) {
+            subscribeToRoom(roomId);
 
             return () => {
                 unsubscribeFromRoom(roomId);
             };
         }
-    }, [selectedPeer, auth, subscribeToRoom, unsubscribeFromRoom, loadRoomHistory]);
-
-    useEffect(() => {
-        if (currentRoomId) {
-            const roomMsgs = roomMessages.get(currentRoomId) || [];
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setMessages(roomMsgs);
-        }
-    }, [roomMessages, currentRoomId]);
-
-    useEffect(() => {
-        setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 50);
-    }, [messages]);
+    }, [roomId, subscribeToRoom, unsubscribeFromRoom]);
 
     if (!selectedPeer) {
         return (
@@ -142,22 +117,19 @@ function RouteComponent() {
                 </Link>
             </header>
 
-            <ScrollArea className="bg-muted/30 flex-1">
-                <div className="space-y-3 px-6 py-4">
-                    {messages.map((msg, index) => {
-                        const isCurrentUser = auth?.user && msg.senderId === auth.user.id;
-                        return (
-                            <MessageBubble
-                                key={msg.id || `${msg.timestamp}-${index}`}
-                                message={msg}
-                                isCurrentUser={!!isCurrentUser}
-                                formatTimestamp={formatTimestamp}
-                            />
-                        );
-                    })}
-                    <div ref={messagesEndRef} />
-                </div>
-            </ScrollArea>
+            <div className="bg-muted/30 flex-1">
+                {isLoading ? (
+                    <div className="flex h-full items-center justify-center">
+                        <div className="text-muted-foreground text-sm">Loading messages...</div>
+                    </div>
+                ) : messages.length === 0 ? (
+                    <div className="flex h-full items-center justify-center">
+                        <div className="text-muted-foreground text-sm">Start a conversation with {selectedPeer.name}</div>
+                    </div>
+                ) : (
+                    <VirtualizedMessageList messages={messages} currentUserId={auth?.user?.id || ''} formatTimestamp={formatTimestamp} />
+                )}
+            </div>
 
             <form onSubmit={form.handleSubmit(onSubmit)} className="bg-background flex-none border-t px-6 py-4">
                 <div className="flex items-center gap-2">
@@ -194,7 +166,7 @@ function RouteComponent() {
                         }}
                         placeholder="Type a message..."
                         className="max-h-32 min-h-[44px] flex-1 resize-none"
-                        disabled={!selectedPeer || !currentRoomId || !auth?.user}
+                        disabled={!selectedPeer || !roomId || !auth?.user}
                         maxLength={CHAT_MESSAGE_MAX_LENGTH}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {

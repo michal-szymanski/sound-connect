@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CHAT_MESSAGE_MAX_LENGTH } from '@/common/constants';
-import { getRoomId } from '@/common/helpers';
-import { ChatMessage, UserDTO } from '@/common/types/models';
+import { UserDTO } from '@/common/types/models';
 import { X, Minus, Send, Smile } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
@@ -9,12 +8,12 @@ import { z } from 'zod';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
-import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { useAuth } from '@/shared/lib/react-query';
 import { useChat } from '@/shared/components/providers/chat-provider';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
-import { MessageBubble } from './message-bubble';
+import { useChatMessages, useGetRoomId, useSendMessage } from '@/features/chat/hooks/use-chat-queries';
+import { VirtualizedMessageList } from './virtualized-message-list';
 
 type Props = {
     user: UserDTO;
@@ -35,15 +34,16 @@ const BASE_BOTTOM_OFFSET = 24;
 
 export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, position }: Props) => {
     const { data: auth } = useAuth();
-    const { subscribeToRoom, unsubscribeFromRoom, sendMessage, loadRoomHistory, roomMessages } = useChat();
+    const { subscribeToRoom, unsubscribeFromRoom, sendMessage } = useChat();
 
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
-    const [roomId, setRoomId] = useState<string | null>(null);
+    const roomId = useGetRoomId(auth?.user?.id || '', user.id);
+    const { data: messages = [], isLoading } = useChatMessages({ conversationId: roomId, enabled: !!auth?.user && !!roomId });
+    const sendMutation = useSendMessage(sendMessage);
+
     const [isHovered, setIsHovered] = useState(false);
     const [animationKey, setAnimationKey] = useState(0);
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
 
-    const messagesEndRef = useRef<HTMLDivElement>(null);
     const prevMinimizedRef = useRef(isMinimized);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -62,38 +62,14 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const bottomOffset = BASE_BOTTOM_OFFSET + position * 56;
 
     useEffect(() => {
-        if (auth?.user && user) {
-            const newRoomId = getRoomId(auth.user.id, user.id);
-            setRoomId(newRoomId);
-
-            const initializeRoom = async () => {
-                try {
-                    await loadRoomHistory(newRoomId);
-                } catch (error) {
-                    console.error('Failed to load room history:', error);
-                }
-
-                subscribeToRoom(newRoomId);
-            };
-
-            initializeRoom();
+        if (roomId) {
+            subscribeToRoom(roomId);
 
             return () => {
-                unsubscribeFromRoom(newRoomId);
+                unsubscribeFromRoom(roomId);
             };
         }
-    }, [auth, user, subscribeToRoom, unsubscribeFromRoom, loadRoomHistory]);
-
-    useEffect(() => {
-        if (roomId) {
-            const roomMsgs = roomMessages.get(roomId) || [];
-            setMessages(roomMsgs);
-        }
-    }, [roomMessages, roomId]);
-
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+    }, [roomId, subscribeToRoom, unsubscribeFromRoom]);
 
     useEffect(() => {
         if (prevMinimizedRef.current && !isMinimized) {
@@ -105,7 +81,11 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!values.text.trim() || !roomId || !auth?.user) return;
 
-        sendMessage(roomId, values.text.trim());
+        sendMutation.mutate({
+            conversationId: roomId,
+            content: values.text.trim(),
+            senderId: auth.user.id
+        });
 
         form.reset();
     };
@@ -208,18 +188,19 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                 </div>
             </div>
 
-            <ScrollArea className="bg-background h-[320px]">
-                <div className="space-y-3 p-4">
-                    {messages.length === 0 ? (
-                        <div className="text-muted-foreground py-8 text-center text-sm">Start a conversation with {user.name}</div>
-                    ) : (
-                        messages.map((msg) => (
-                            <MessageBubble key={msg.id} message={msg} isCurrentUser={msg.senderId === currentUser.id} formatTimestamp={formatTimestamp} />
-                        ))
-                    )}
-                    <div ref={messagesEndRef} />
-                </div>
-            </ScrollArea>
+            <div className="bg-background h-[320px]">
+                {isLoading ? (
+                    <div className="flex h-full items-center justify-center">
+                        <div className="text-muted-foreground text-sm">Loading messages...</div>
+                    </div>
+                ) : messages.length === 0 ? (
+                    <div className="flex h-full items-center justify-center">
+                        <div className="text-muted-foreground text-sm">Start a conversation with {user.name}</div>
+                    </div>
+                ) : (
+                    <VirtualizedMessageList messages={messages} currentUserId={currentUser.id} formatTimestamp={formatTimestamp} />
+                )}
+            </div>
 
             <div className="bg-card border-border border-t p-3">
                 <form onSubmit={form.handleSubmit(onSubmit)}>

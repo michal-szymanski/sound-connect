@@ -25,6 +25,7 @@
         "./types/band-applications": "./src/types/band-applications.ts",
         "./types/uploads": "./src/types/uploads.ts",
         "./types/settings": "./src/types/settings.ts",
+        "./types/conversations": "./src/types/conversations.ts",
         "./utils/profile-completion": "./src/utils/profile-completion.ts",
         "./utils/geo": "./src/utils/geo.ts",
         "./utils/availability": "./src/utils/availability.ts"
