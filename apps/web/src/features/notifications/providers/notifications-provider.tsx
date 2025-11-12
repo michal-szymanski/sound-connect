@@ -51,18 +51,14 @@ export const NotificationsProvider = ({ auth, envs, children }: Props) => {
 
     const unreadCount = notifications.filter((n) => !n.seen).length;
 
-    const getAuth = useEffectEvent(() => auth);
-
-    useEffect(() => {
-        if (!envs) {
-            return;
+    const setupWebSocket = useEffectEvent(() => {
+        if (!envs || !auth.accessToken) {
+            return null;
         }
 
-        const currentAuth = getAuth();
-        const { API_URL } = envs;
-        const wsUrl = `${API_URL.replace(/^http/, 'ws')}/api/ws/notifications`;
+        const wsUrl = `${envs.API_URL.replace(/^http/, 'ws')}/api/ws/notifications`;
 
-        notificationsWs.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(currentAuth.accessToken)]);
+        notificationsWs.current = new WebSocket(wsUrl, ['access_token', encodeURIComponent(auth.accessToken)]);
 
         const handleOpen = () => {
             setNotificationsStatus('open');
@@ -113,7 +109,12 @@ export const NotificationsProvider = ({ auth, envs, children }: Props) => {
             notificationsWs.current = null;
             setNotifications([]);
         };
-    }, [envs, addNotification]);
+    });
+
+    useEffect(() => {
+        const cleanup = setupWebSocket();
+        return cleanup || undefined;
+    }, []);
 
     const contextValue: NotificationsContext = {
         notificationsStatus,
