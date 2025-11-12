@@ -1,4 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { clsx } from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import type { ChatMessage } from '@/common/types/models';
@@ -17,6 +18,7 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
     const scrolledToBottomRef = useRef(true);
     const prevMessageCountRef = useRef(messages.length);
     const [shouldScrollOnMount, setShouldScrollOnMount] = useState(isInitialLoad);
+    const [isReady, setIsReady] = useState(!isInitialLoad);
 
     const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
     const [showScrollButton, setShowScrollButton] = useState(false);
@@ -54,6 +56,10 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
             align: 'end',
             behavior: 'auto'
         });
+
+        setTimeout(() => {
+            setIsReady(true);
+        }, 100);
     }, [messages.length, shouldScrollOnMount, virtualizer]);
 
     useEffect(() => {
@@ -110,7 +116,7 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
         <div className="relative h-full w-full">
             <div
                 ref={parentRef}
-                className="h-full w-full overflow-auto"
+                className={clsx('h-full w-full overflow-auto transition-opacity duration-150', isReady ? 'opacity-100' : 'opacity-0')}
                 style={{
                     contain: 'strict'
                 }}
