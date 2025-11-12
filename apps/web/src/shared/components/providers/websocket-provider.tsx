@@ -45,6 +45,7 @@ type Props = React.PropsWithChildren<{
 
 export const WebSocketProvider = ({ children, auth, envs }: Props) => {
     const ws = useRef<WebSocket | null>(null);
+    const userIdRef = useRef(auth.user.id);
 
     const [status, setStatus] = useState<WSStatus>('connecting');
     const [lastMessage, setLastMessage] = useState<ChatMessage | null>(null);
@@ -54,6 +55,10 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
 
     const queryClient = useQueryClient();
     const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
+
+    useEffect(() => {
+        userIdRef.current = auth.user.id;
+    }, [auth.user.id]);
 
     const clearTimeouts = useCallback(() => {
         for (const timeout of timeoutsRef.current) {
@@ -83,39 +88,36 @@ export const WebSocketProvider = ({ children, auth, envs }: Props) => {
         }
     }, []);
 
-    const loadRoomHistory = useCallback(
-        async (roomId: string) => {
-            const currentUserId = auth.user.id;
+    const loadRoomHistory = useCallback(async (roomId: string) => {
+        const currentUserId = userIdRef.current;
 
-            try {
-                const roomParticipants = roomId.split(':');
-                const peerId = roomParticipants.find((id) => id !== currentUserId);
+        try {
+            const roomParticipants = roomId.split(':');
+            const peerId = roomParticipants.find((id) => id !== currentUserId);
 
-                if (!peerId) {
-                    console.error(`[UnifiedWS] Could not determine peer ID from room ${roomId}`);
-                    return;
-                }
-
-                const result = await getChatHistory({ data: { peerId } });
-
-                if (result.success) {
-                    const history = result.body;
-                    const validMessages = z.array(chatMessageSchema).parse(history);
-
-                    setRoomMessages((prev) => {
-                        const newMessages = new Map(prev);
-                        newMessages.set(roomId, validMessages);
-                        return newMessages;
-                    });
-                } else {
-                    console.error(`[UnifiedWS] Failed to load room history for ${roomId}: Server function returned failure`);
-                }
-            } catch (error) {
-                console.error(`[UnifiedWS] Error loading room history for ${roomId}:`, error);
+            if (!peerId) {
+                console.error(`[UnifiedWS] Could not determine peer ID from room ${roomId}`);
+                return;
             }
-        },
-        [auth]
-    );
+
+            const result = await getChatHistory({ data: { peerId } });
+
+            if (result.success) {
+                const history = result.body;
+                const validMessages = z.array(chatMessageSchema).parse(history);
+
+                setRoomMessages((prev) => {
+                    const newMessages = new Map(prev);
+                    newMessages.set(roomId, validMessages);
+                    return newMessages;
+                });
+            } else {
+                console.error(`[UnifiedWS] Failed to load room history for ${roomId}: Server function returned failure`);
+            }
+        } catch (error) {
+            console.error(`[UnifiedWS] Error loading room history for ${roomId}:`, error);
+        }
+    }, []);
 
     const getAuth = useEffectEvent(() => auth);
 
