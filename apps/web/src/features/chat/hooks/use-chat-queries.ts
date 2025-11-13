@@ -81,7 +81,6 @@ export function useSendMessage(sendMessageFn: (roomId: string, content: string) 
                     return next;
                 });
 
-                let currentMessageId = context.tempId;
                 const startTime = Date.now();
 
                 const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
@@ -113,18 +112,9 @@ export function useSendMessage(sendMessageFn: (roomId: string, content: string) 
                             }
                             return next;
                         });
-                        currentMessageId = latestMessage.id;
                         unsubscribe();
                     }
                 });
-
-                setTimeout(() => {
-                    setMessageStatuses((prev) => {
-                        const next = new Map(prev);
-                        next.delete(currentMessageId);
-                        return next;
-                    });
-                }, 5500);
 
                 setTimeout(() => {
                     queryClient.invalidateQueries({ queryKey: ['chat', 'messages', conversationId] });
