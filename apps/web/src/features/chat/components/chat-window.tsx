@@ -235,7 +235,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                 className="bg-card border-border z-dialog fixed bottom-0 w-[340px] overflow-hidden rounded-t-lg border shadow-2xl"
                 style={{ right: `${rightOffset}px` }}
             >
-                <div className="bg-primary text-primary-foreground flex items-center justify-between px-4 py-3 border-b border-border/30 shadow-sm">
+                <div className="bg-primary text-primary-foreground border-border/30 flex items-center justify-between border-b px-4 py-3 shadow-sm">
                     <div className="flex items-center gap-3">
                         <Avatar className="border-primary-foreground/20 h-8 w-8 border-2">
                             <AvatarImage src={user.image || '/placeholder.svg'} alt={user.name} />
