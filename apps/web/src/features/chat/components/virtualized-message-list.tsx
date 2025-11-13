@@ -3,6 +3,7 @@ import { clsx } from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import type { ChatMessage } from '@/common/types/models';
+import { DateDivider } from './date-divider';
 import { MessageBubble } from './message-bubble';
 import { ScrollToBottomButton } from './scroll-to-bottom-button';
 
@@ -12,6 +13,12 @@ type Props = {
     formatTimestamp: (timestamp: number) => string;
     isInitialLoad?: boolean;
 };
+
+function isSameDay(timestamp1: number, timestamp2: number): boolean {
+    const date1 = new Date(timestamp1);
+    const date2 = new Date(timestamp2);
+    return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
+}
 
 export function VirtualizedMessageList({ messages, currentUserId, formatTimestamp, isInitialLoad = false }: Props) {
     const parentRef = useRef<HTMLDivElement>(null);
@@ -132,6 +139,9 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
                         const message = messages[virtualItem.index];
                         if (!message) return null;
 
+                        const prevMessage = virtualItem.index > 0 ? messages[virtualItem.index - 1] : null;
+                        const showDateDivider = !prevMessage || !isSameDay(message.timestamp, prevMessage.timestamp);
+
                         return (
                             <div
                                 key={message.id}
@@ -144,8 +154,9 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
                                     width: '100%',
                                     transform: `translateY(${virtualItem.start}px)`
                                 }}
-                                className="px-4 py-2"
+                                className="px-4 py-0.5"
                             >
+                                {showDateDivider ? <DateDivider timestamp={message.timestamp} /> : null}
                                 <MessageBubble
                                     message={message}
                                     isCurrentUser={message.senderId === currentUserId}
