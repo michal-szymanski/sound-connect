@@ -1,10 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CHAT_MESSAGE_MAX_LENGTH } from '@/common/constants';
 import { UserDTO } from '@/common/types/models';
 import { X, Minus, Send, Smile, Loader2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
@@ -16,6 +14,9 @@ import { useChatMessages, useGetRoomId, useSendMessage } from '@/features/chat/h
 import { VirtualizedMessageList } from './virtualized-message-list';
 import { useDelayedLoading } from '@/web/hooks/use-delayed-loading';
 import { MessageStatusIndicator } from './message-status-indicator';
+import { formatTimestamp } from '@/features/chat/utils/format-timestamp';
+import { messageFormSchema, type MessageFormValues } from '@/features/chat/schemas/message-form';
+import { CHAT_MESSAGE_MAX_LENGTH } from '@/common/constants';
 
 type Props = {
     user: UserDTO;
@@ -23,37 +24,6 @@ type Props = {
     isMinimized: boolean;
     onToggleMinimize: () => void;
     position: number;
-};
-
-const formatTimestamp = (timestamp: number): string => {
-    const date = new Date(timestamp);
-    const now = new Date();
-
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const startOfMessageDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-    const daysDiff = Math.floor((startOfToday.getTime() - startOfMessageDay.getTime()) / (1000 * 60 * 60 * 24));
-
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const timeStr = `${hours}:${minutes}`;
-
-    if (daysDiff === 0) {
-        return timeStr;
-    }
-
-    if (daysDiff === 1) {
-        return `Yesterday ${timeStr}`;
-    }
-
-    if (daysDiff <= 7) {
-        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
-        return `${dayName} ${timeStr}`;
-    }
-
-    const month = date.toLocaleDateString('en-US', { month: 'short' });
-    const day = date.getDate();
-    return `${month} ${day} ${timeStr}`;
 };
 
 const BASE_BOTTOM_OFFSET = 24;
@@ -76,12 +46,8 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const prevMinimizedRef = useRef(isMinimized);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const formSchema = z.object({
-        text: z.string().max(CHAT_MESSAGE_MAX_LENGTH)
-    });
-
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<MessageFormValues>({
+        resolver: zodResolver(messageFormSchema),
         defaultValues: {
             text: ''
         }
@@ -141,7 +107,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
         }
     }, [messages, auth?.user?.id, user.name, isMinimized]);
 
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const onSubmit = async (values: MessageFormValues) => {
         if (!values.text.trim() || !roomId || !auth?.user) return;
 
         sendMessageMutate({

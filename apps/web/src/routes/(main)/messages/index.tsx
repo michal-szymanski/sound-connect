@@ -3,7 +3,6 @@ import { CHAT_MESSAGE_MAX_LENGTH } from '@/common/constants';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { MessageCircle, Send, Smile } from 'lucide-react';
 import UserAvatar from '@/shared/components/common/user-avatar';
 import { Button } from '@/shared/components/ui/button';
@@ -13,20 +12,16 @@ import { useAuth } from '@/shared/lib/react-query';
 import { useChat } from '@/shared/components/providers/chat-provider';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
 import { VirtualizedMessageList } from '@/features/chat/components/virtualized-message-list';
+import { MessageStatusIndicator } from '@/features/chat/components/message-status-indicator';
 import { useChatMessages, useGetRoomId, useSendMessage } from '@/features/chat/hooks/use-chat-queries';
 import { useMessagingContext } from './context';
 import { useDelayedLoading } from '@/web/hooks/use-delayed-loading';
+import { formatTimestamp } from '@/features/chat/utils/format-timestamp';
+import { messageFormSchema, type MessageFormValues } from '@/features/chat/schemas/message-form';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
 });
-
-const formatTimestamp = (timestamp: number): string => {
-    const date = new Date(timestamp);
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-};
 
 function RouteComponent() {
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage } = useChat();
@@ -35,24 +30,20 @@ function RouteComponent() {
 
     const roomId = useGetRoomId(auth?.user?.id || '', selectedPeer?.id || '');
     const { data: messages = [], isInitialLoading } = useChatMessages({ conversationId: roomId, enabled: !!selectedPeer });
-    const { mutate: sendMessageMutate } = useSendMessage(sendMessage);
+    const { mutate: sendMessageMutate, messageStatuses, retryMessage } = useSendMessage(sendMessage);
     const shouldShowLoading = useDelayedLoading({ isLoading: isInitialLoading });
 
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const formSchema = z.object({
-        text: z.string().max(CHAT_MESSAGE_MAX_LENGTH)
-    });
-
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const form = useForm<MessageFormValues>({
+        resolver: zodResolver(messageFormSchema),
         defaultValues: {
             text: ''
         }
     });
 
-    const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const onSubmit = async (values: MessageFormValues) => {
         if (!selectedPeer || !auth?.user || !values.text || !roomId) return;
 
         sendMessageMutate({
@@ -129,7 +120,28 @@ function RouteComponent() {
                         <div className="text-muted-foreground text-sm">Start a conversation with {selectedPeer.name}</div>
                     </div>
                 ) : (
-                    <VirtualizedMessageList messages={messages} currentUserId={auth?.user?.id || ''} formatTimestamp={formatTimestamp} />
+                    <VirtualizedMessageList
+                        messages={messages}
+                        currentUserId={auth?.user?.id || ''}
+                        formatTimestamp={formatTimestamp}
+                        statusIndicator={(() => {
+                            const latestMessage = messages[messages.length - 1];
+                            const status = latestMessage && messageStatuses.get(latestMessage.id);
+                            const isCurrentUser = latestMessage?.senderId === auth?.user?.id;
+
+                            if (!status || !isCurrentUser) {
+                                return null;
+                            }
+
+                            return (
+                                <MessageStatusIndicator
+                                    key={latestMessage.id}
+                                    status={status}
+                                    onRetry={() => retryMessage(latestMessage.id, latestMessage.roomId, latestMessage.content, latestMessage.senderId)}
+                                />
+                            );
+                        })()}
+                    />
                 )}
             </div>
 
