@@ -43,6 +43,8 @@ function RouteComponent() {
         }
     });
 
+    const textValue = form.watch('text');
+
     const onSubmit = async (values: MessageFormValues) => {
         if (!selectedPeer || !auth?.user || !values.text || !roomId) return;
 
@@ -190,7 +192,7 @@ function RouteComponent() {
                         }}
                     />
 
-                    <Button type="submit" size="icon" disabled={!form.getValues('text')?.trim()} className="shrink-0">
+                    <Button type="submit" size="icon" disabled={!textValue?.trim()} className="shrink-0">
                         <Send className="h-4 w-4" />
                         <span className="sr-only">Send message</span>
                     </Button>

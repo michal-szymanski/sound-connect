@@ -65,7 +65,7 @@ export function ConversationsListSidebar({ selectedPeer, onSelectPeer }: Props) 
                                         className={cn(
                                             'flex w-full items-center gap-3 px-4 py-3 transition-colors',
                                             !isDeleted && 'hover:bg-accent focus-visible:bg-accent focus-visible:outline-none',
-                                            selectedPeer?.id === conversation.partnerId && 'bg-accent border-primary border-l-2',
+                                            selectedPeer?.id === conversation.partnerId ? 'bg-accent border-primary border-l-2' : 'border-l-2 border-transparent',
                                             isDeleted && 'cursor-not-allowed opacity-60'
                                         )}
                                         aria-current={selectedPeer?.id === conversation.partnerId}
