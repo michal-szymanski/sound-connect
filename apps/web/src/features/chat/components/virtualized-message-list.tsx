@@ -92,7 +92,9 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
 
             setTimeout(() => setNewMessageIds(new Set()), 350);
 
-            if (scrolledToBottomRef.current) {
+            const hasMessageFromCurrentUser = newMessages.some((m) => m.senderId === currentUserId);
+
+            if (hasMessageFromCurrentUser || scrolledToBottomRef.current) {
                 virtualizer.measure();
                 requestAnimationFrame(() => {
                     parent.scrollTop = parent.scrollHeight;
