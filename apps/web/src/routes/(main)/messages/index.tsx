@@ -15,6 +15,7 @@ import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
 import { VirtualizedMessageList } from '@/features/chat/components/virtualized-message-list';
 import { useChatMessages, useGetRoomId, useSendMessage } from '@/features/chat/hooks/use-chat-queries';
 import { useMessagingContext } from './context';
+import { useDelayedLoading } from '@/web/hooks/use-delayed-loading';
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent
@@ -33,8 +34,9 @@ function RouteComponent() {
     const { selectedPeer } = useMessagingContext();
 
     const roomId = useGetRoomId(auth?.user?.id || '', selectedPeer?.id || '');
-    const { data: messages = [], isLoading } = useChatMessages({ conversationId: roomId, enabled: !!selectedPeer });
+    const { data: messages = [], isInitialLoading } = useChatMessages({ conversationId: roomId, enabled: !!selectedPeer });
     const sendMutation = useSendMessage(sendMessage);
+    const shouldShowLoading = useDelayedLoading({ isLoading: isInitialLoading });
 
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -118,11 +120,11 @@ function RouteComponent() {
             </header>
 
             <div className="bg-muted/30 flex-1">
-                {isLoading ? (
+                {shouldShowLoading ? (
                     <div className="flex h-full items-center justify-center">
                         <div className="text-muted-foreground text-sm">Loading messages...</div>
                     </div>
-                ) : messages.length === 0 ? (
+                ) : messages.length === 0 && !isInitialLoading ? (
                     <div className="flex h-full items-center justify-center">
                         <div className="text-muted-foreground text-sm">Start a conversation with {selectedPeer.name}</div>
                     </div>

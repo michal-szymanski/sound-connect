@@ -1,6 +1,7 @@
 import { ChatMessage } from '@/common/types/models';
 import clsx from 'clsx';
 import { memo, useState, useEffect } from 'react';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/shared/components/ui/tooltip';
 
 type Props = {
     message: ChatMessage;
@@ -29,15 +30,20 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
                 isSending && 'opacity-60'
             )}
         >
-            <div
-                className={clsx(
-                    'max-w-[75%] rounded-2xl px-4 py-2 text-sm',
-                    isCurrentUser ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-muted text-foreground rounded-bl-sm'
-                )}
-            >
-                {message.content}
-            </div>
-            <span className="text-muted-foreground mt-1 px-1 text-xs">{isSending ? 'Sending...' : formatTimestamp(message.timestamp)}</span>
+            <Tooltip delayDuration={500}>
+                <TooltipTrigger asChild>
+                    <div
+                        className={clsx(
+                            'max-w-[75%] rounded-2xl px-4 py-2 text-sm break-words',
+                            isCurrentUser ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-muted text-foreground rounded-bl-sm'
+                        )}
+                    >
+                        {message.content}
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent side="left">{formatTimestamp(message.timestamp)}</TooltipContent>
+            </Tooltip>
+            {isSending && <span className="text-muted-foreground mt-1 px-1 text-xs">Sending...</span>}
         </div>
     );
 });

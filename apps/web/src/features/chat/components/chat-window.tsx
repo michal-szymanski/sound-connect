@@ -14,6 +14,7 @@ import { useChat } from '@/shared/components/providers/chat-provider';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
 import { useChatMessages, useGetRoomId, useSendMessage } from '@/features/chat/hooks/use-chat-queries';
 import { VirtualizedMessageList } from './virtualized-message-list';
+import { useDelayedLoading } from '@/web/hooks/use-delayed-loading';
 
 type Props = {
     user: UserDTO;
@@ -25,9 +26,33 @@ type Props = {
 
 const formatTimestamp = (timestamp: number): string => {
     const date = new Date(timestamp);
+    const now = new Date();
+
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfMessageDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    const daysDiff = Math.floor((startOfToday.getTime() - startOfMessageDay.getTime()) / (1000 * 60 * 60 * 24));
+
     const hours = date.getHours().toString().padStart(2, '0');
     const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
+    const timeStr = `${hours}:${minutes}`;
+
+    if (daysDiff === 0) {
+        return timeStr;
+    }
+
+    if (daysDiff === 1) {
+        return `Yesterday ${timeStr}`;
+    }
+
+    if (daysDiff <= 7) {
+        const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+        return `${dayName} ${timeStr}`;
+    }
+
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    const day = date.getDate();
+    return `${month} ${day} ${timeStr}`;
 };
 
 const BASE_BOTTOM_OFFSET = 24;
@@ -37,8 +62,9 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage } = useChat();
 
     const roomId = useGetRoomId(auth?.user?.id || '', user.id);
-    const { data: messages = [], isLoading } = useChatMessages({ conversationId: roomId, enabled: !!auth?.user });
+    const { data: messages = [], isInitialLoading } = useChatMessages({ conversationId: roomId, enabled: !!auth?.user });
     const sendMutation = useSendMessage(sendMessage);
+    const shouldShowLoading = useDelayedLoading({ isLoading: isInitialLoading });
 
     const [isHovered, setIsHovered] = useState(false);
     const [animationKey, setAnimationKey] = useState(0);
@@ -226,7 +252,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                 </div>
 
                 <div className="bg-background h-[320px]" role="log" aria-label={`Conversation with ${user.name}`}>
-                    {isLoading ? (
+                    {shouldShowLoading ? (
                         <div
                             className="animate-in fade-in flex h-full flex-col items-center justify-center gap-3 duration-200"
                             role="status"
@@ -236,7 +262,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                             <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" aria-hidden="true" />
                             <span className="text-muted-foreground text-sm">Loading messages...</span>
                         </div>
-                    ) : messages.length === 0 ? (
+                    ) : messages.length === 0 && !isInitialLoading ? (
                         <div className="flex h-full items-center justify-center">
                             <div className="text-muted-foreground text-sm">Start a conversation with {user.name}</div>
                         </div>
