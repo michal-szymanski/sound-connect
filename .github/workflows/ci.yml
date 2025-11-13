@@ -7,7 +7,16 @@ on:
     push:
         branches:
             - master
+        paths-ignore:
+            - '**.md'
+            - 'docs/**'
+            - '.github/**'
+            - '!.github/workflows/**'
     workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 env:
     PNPM_VERSION: 10.18.3
@@ -46,20 +55,10 @@ jobs:
                       e2e/node_modules
                   key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
-    prettier:
-        name: Format Check - ${{ matrix.package }}
+    code-quality:
+        name: Code Quality Checks
         needs: install
         runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                package:
-                    - api
-                    - web
-                    - posts-queue-consumer
-                    - notifications-queue-consumer
-                    - common
-                    - drizzle
-                    - e2e
 
         steps:
             - name: Checkout code
@@ -86,96 +85,18 @@ jobs:
                   key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
                   fail-on-cache-miss: true
 
-            - name: Format Check
-              run: pnpm --filter @sound-connect/${{ matrix.package }} prettier
+            - name: Run Prettier
+              run: pnpm run -r --parallel --aggregate-output prettier
 
-    lint:
-        name: Lint - ${{ matrix.package }}
-        needs: install
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                package:
-                    - api
-                    - web
-                    - posts-queue-consumer
-                    - notifications-queue-consumer
-                    - common
-                    - drizzle
+            - name: Run ESLint
+              run: pnpm lint
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: ${{ env.PNPM_VERSION }}
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
-
-            - name: Restore node_modules
-              uses: actions/cache/restore@v4
-              with:
-                  path: |
-                      node_modules
-                      apps/*/node_modules
-                      packages/*/node_modules
-                      e2e/node_modules
-                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-                  fail-on-cache-miss: true
-
-            - name: Lint
-              run: pnpm --filter @sound-connect/${{ matrix.package }} lint
-
-    typecheck:
-        name: TypeCheck - ${{ matrix.package }}
-        needs: install
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                package:
-                    - api
-                    - web
-                    - posts-queue-consumer
-                    - notifications-queue-consumer
-                    - common
-                    - drizzle
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: ${{ env.PNPM_VERSION }}
-
-            - name: Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
-
-            - name: Restore node_modules
-              uses: actions/cache/restore@v4
-              with:
-                  path: |
-                      node_modules
-                      apps/*/node_modules
-                      packages/*/node_modules
-                      e2e/node_modules
-                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-                  fail-on-cache-miss: true
-
-            - name: TypeCheck
-              run: pnpm --filter @sound-connect/${{ matrix.package }} tsc
+            - name: Run TypeScript
+              run: pnpm tsc
 
     build-api:
         name: Build API
-        needs: [prettier, lint, typecheck]
+        needs: [code-quality]
         runs-on: ubuntu-latest
 
         steps:
@@ -208,7 +129,7 @@ jobs:
 
     build-web:
         name: Build Web
-        needs: [prettier, lint, typecheck]
+        needs: [code-quality]
         runs-on: ubuntu-latest
 
         steps:
@@ -250,7 +171,7 @@ jobs:
 
     build-posts-queue:
         name: Build Posts Queue Consumer
-        needs: [prettier, lint, typecheck]
+        needs: [code-quality]
         runs-on: ubuntu-latest
 
         steps:
@@ -283,7 +204,7 @@ jobs:
 
     build-notifications-queue:
         name: Build Notifications Queue Consumer
-        needs: [prettier, lint, typecheck]
+        needs: [code-quality]
         runs-on: ubuntu-latest
 
         steps:
@@ -344,8 +265,20 @@ jobs:
                   key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
                   fail-on-cache-miss: true
 
+            - name: Cache Playwright browsers
+              id: playwright-cache
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: playwright-${{ runner.os }}-${{ hashFiles('e2e/package.json') }}
+
             - name: Install Playwright browsers
+              if: steps.playwright-cache.outputs.cache-hit != 'true'
               run: pnpm --filter @sound-connect/e2e exec playwright install --with-deps
+
+            - name: Install Playwright system dependencies
+              if: steps.playwright-cache.outputs.cache-hit == 'true'
+              run: pnpm --filter @sound-connect/e2e exec playwright install-deps
 
             - name: Run E2E tests
               id: e2e-tests
@@ -373,7 +306,7 @@ jobs:
 
     deploy-api:
         name: Deploy API
-        needs: [build-api]
+        needs: [build-api, test]
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
@@ -433,7 +366,7 @@ jobs:
 
     deploy-web:
         name: Deploy Web
-        needs: [build-web]
+        needs: [build-web, test]
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
@@ -479,7 +412,7 @@ jobs:
 
     deploy-posts-queue:
         name: Deploy Posts Queue Consumer
-        needs: [build-posts-queue]
+        needs: [build-posts-queue, test]
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
@@ -519,7 +452,7 @@ jobs:
 
     deploy-notifications-queue:
         name: Deploy Notifications Queue Consumer
-        needs: [build-notifications-queue]
+        needs: [build-notifications-queue, test]
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
