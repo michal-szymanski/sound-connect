@@ -55,6 +55,39 @@ jobs:
                       e2e/node_modules
                   key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
+    detect-changes:
+        name: Detect Changed Apps
+        runs-on: ubuntu-latest
+        outputs:
+            api: ${{ steps.filter.outputs.api }}
+            web: ${{ steps.filter.outputs.web }}
+            posts-queue: ${{ steps.filter.outputs.posts-queue }}
+            notifications-queue: ${{ steps.filter.outputs.notifications-queue }}
+            common: ${{ steps.filter.outputs.common }}
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Check for changes
+              uses: dorny/paths-filter@v3
+              id: filter
+              with:
+                  filters: |
+                      api:
+                        - 'apps/api/**'
+                        - 'packages/**'
+                      web:
+                        - 'apps/web/**'
+                        - 'packages/**'
+                      posts-queue:
+                        - 'apps/posts-queue-consumer/**'
+                        - 'packages/**'
+                      notifications-queue:
+                        - 'apps/notifications-queue-consumer/**'
+                        - 'packages/**'
+                      common:
+                        - 'packages/**'
+
     code-quality:
         name: Code Quality Checks
         needs: install
@@ -96,7 +129,8 @@ jobs:
 
     build-api:
         name: Build API
-        needs: [code-quality]
+        needs: [code-quality, detect-changes]
+        if: needs.detect-changes.outputs.api == 'true'
         runs-on: ubuntu-latest
 
         steps:
@@ -129,7 +163,8 @@ jobs:
 
     build-web:
         name: Build Web
-        needs: [code-quality]
+        needs: [code-quality, detect-changes]
+        if: needs.detect-changes.outputs.web == 'true'
         runs-on: ubuntu-latest
 
         steps:
@@ -171,7 +206,8 @@ jobs:
 
     build-posts-queue:
         name: Build Posts Queue Consumer
-        needs: [code-quality]
+        needs: [code-quality, detect-changes]
+        if: needs.detect-changes.outputs.posts-queue == 'true'
         runs-on: ubuntu-latest
 
         steps:
@@ -204,7 +240,8 @@ jobs:
 
     build-notifications-queue:
         name: Build Notifications Queue Consumer
-        needs: [code-quality]
+        needs: [code-quality, detect-changes]
+        if: needs.detect-changes.outputs.notifications-queue == 'true'
         runs-on: ubuntu-latest
 
         steps:
@@ -238,8 +275,11 @@ jobs:
 
     deploy-api:
         name: Deploy API
-        needs: [build-api]
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
+        needs: [build-api, detect-changes]
+        if: |
+            needs.detect-changes.outputs.api == 'true' &&
+            (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+            github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
             contents: read
@@ -298,8 +338,11 @@ jobs:
 
     deploy-web:
         name: Deploy Web
-        needs: [build-web]
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
+        needs: [build-web, detect-changes]
+        if: |
+            needs.detect-changes.outputs.web == 'true' &&
+            (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+            github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
             contents: read
@@ -344,8 +387,11 @@ jobs:
 
     deploy-posts-queue:
         name: Deploy Posts Queue Consumer
-        needs: [build-posts-queue]
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
+        needs: [build-posts-queue, detect-changes]
+        if: |
+            needs.detect-changes.outputs.posts-queue == 'true' &&
+            (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+            github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
             contents: read
@@ -384,8 +430,11 @@ jobs:
 
     deploy-notifications-queue:
         name: Deploy Notifications Queue Consumer
-        needs: [build-notifications-queue]
-        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
+        needs: [build-notifications-queue, detect-changes]
+        if: |
+            needs.detect-changes.outputs.notifications-queue == 'true' &&
+            (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+            github.ref == 'refs/heads/master'
         runs-on: ubuntu-latest
         permissions:
             contents: read
