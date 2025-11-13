@@ -71,6 +71,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const [animationKey, setAnimationKey] = useState(0);
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const [announcement, setAnnouncement] = useState('');
+    const [showMessages, setShowMessages] = useState(!isMinimized);
 
     const prevMinimizedRef = useRef(isMinimized);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -108,7 +109,14 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     useEffect(() => {
         if (prevMinimizedRef.current && !isMinimized) {
             setAnimationKey((prev) => prev + 1);
-            setTimeout(() => inputRef.current?.focus(), 100);
+            setShowMessages(false);
+            setTimeout(() => {
+                setShowMessages(true);
+                inputRef.current?.focus();
+            }, 50);
+        }
+        if (isMinimized) {
+            setShowMessages(false);
         }
         prevMinimizedRef.current = isMinimized;
     }, [isMinimized]);
@@ -224,8 +232,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                 {announcement}
             </div>
             <div
-                key={animationKey}
-                className="bg-card border-border z-dialog animate-in slide-in-from-bottom-4 fixed bottom-0 w-[340px] overflow-hidden rounded-t-lg border shadow-2xl duration-300"
+                className="bg-card border-border z-dialog fixed bottom-0 w-[340px] overflow-hidden rounded-t-lg border shadow-2xl"
                 style={{ right: `${rightOffset}px` }}
             >
                 <div className="bg-primary text-primary-foreground flex items-center justify-between px-4 py-3">
@@ -267,14 +274,13 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                         <div className="flex h-full items-center justify-center">
                             <div className="text-muted-foreground text-sm">Start a conversation with {user.name}</div>
                         </div>
-                    ) : (
+                    ) : showMessages ? (
                         <>
                             <VirtualizedMessageList
                                 messages={messages}
                                 currentUserId={currentUser.id}
                                 formatTimestamp={formatTimestamp}
                                 isInitialLoad={messages.length === 0}
-                                key={animationKey}
                             />
 
                             {(() => {
@@ -295,7 +301,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                                 );
                             })()}
                         </>
-                    )}
+                    ) : null}
                 </div>
 
                 <div className="bg-card border-border border-t p-3">

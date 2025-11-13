@@ -12,6 +12,7 @@ type Props = {
     currentUserId: string;
     formatTimestamp: (timestamp: number) => string;
     isInitialLoad?: boolean;
+    shouldScrollToBottom?: boolean;
 };
 
 function isSameDay(timestamp1: number, timestamp2: number): boolean {
@@ -20,22 +21,16 @@ function isSameDay(timestamp1: number, timestamp2: number): boolean {
     return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
 }
 
-export function VirtualizedMessageList({ messages, currentUserId, formatTimestamp, isInitialLoad = false }: Props) {
+export function VirtualizedMessageList({ messages, currentUserId, formatTimestamp, isInitialLoad = false, shouldScrollToBottom = true }: Props) {
     const parentRef = useRef<HTMLDivElement>(null);
     const scrolledToBottomRef = useRef(true);
     const prevMessageCountRef = useRef(messages.length);
     const hasUserScrolledRef = useRef(false);
     const isProgrammaticScrollRef = useRef(false);
-    const [shouldScrollOnMount, setShouldScrollOnMount] = useState(true);
-    const [isReady, setIsReady] = useState(!isInitialLoad);
+    const shouldScrollOnMountRef = useRef(true);
+    const [isReady, setIsReady] = useState(true);
 
     const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
-
-    useEffect(() => {
-        if (messages.length > 0 && !isReady) {
-            setIsReady(true);
-        }
-    }, [messages.length, isReady]);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
 
@@ -68,9 +63,9 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
     }, 100);
 
     useEffect(() => {
-        if (!shouldScrollOnMount || messages.length === 0) return;
+        if (!shouldScrollOnMountRef.current || messages.length === 0) return;
 
-        setShouldScrollOnMount(false);
+        shouldScrollOnMountRef.current = false;
 
         isProgrammaticScrollRef.current = true;
 
@@ -85,9 +80,27 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
                 isProgrammaticScrollRef.current = true;
                 parent.scrollTop = parent.scrollHeight;
             }
-            setIsReady(true);
         }, 100);
-    }, [shouldScrollOnMount, messages.length]);
+    }, [messages.length]);
+
+    useEffect(() => {
+        if (shouldScrollToBottom && messages.length > 0) {
+            const parent = parentRef.current;
+            if (parent) {
+                isProgrammaticScrollRef.current = true;
+                virtualizer.scrollToIndex(messages.length - 1, {
+                    align: 'end',
+                    behavior: 'auto'
+                });
+                setTimeout(() => {
+                    if (parent) {
+                        isProgrammaticScrollRef.current = true;
+                        parent.scrollTop = parent.scrollHeight;
+                    }
+                }, 100);
+            }
+        }
+    }, [shouldScrollToBottom]);
 
     useEffect(() => {
         const parent = parentRef.current;
@@ -154,7 +167,7 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
         <div className="relative h-full w-full">
             <div
                 ref={parentRef}
-                className={clsx('h-full w-full overflow-auto transition-opacity duration-150', isReady ? 'opacity-100' : 'opacity-0')}
+                className="h-full w-full overflow-auto"
                 style={{
                     contain: 'strict'
                 }}
