@@ -275,32 +275,30 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                             <div className="text-muted-foreground text-sm">Start a conversation with {user.name}</div>
                         </div>
                     ) : showMessages ? (
-                        <>
-                            <VirtualizedMessageList
-                                messages={messages}
-                                currentUserId={currentUser.id}
-                                formatTimestamp={formatTimestamp}
-                                isInitialLoad={messages.length === 0}
-                            />
-
-                            {(() => {
+                        <VirtualizedMessageList
+                            messages={messages}
+                            currentUserId={currentUser.id}
+                            formatTimestamp={formatTimestamp}
+                            isInitialLoad={messages.length === 0}
+                            statusIndicator={(() => {
                                 const latestMessage = messages[messages.length - 1];
                                 const status = latestMessage && messageStatuses.get(latestMessage.id);
                                 const isCurrentUser = latestMessage?.senderId === currentUser.id;
 
-                                if (!status || !isCurrentUser) return null;
+                                if (!status || !isCurrentUser) {
+                                    return null;
+                                }
 
                                 return (
-                                    <div className="absolute right-6 bottom-2 z-10 h-6">
-                                        <MessageStatusIndicator
-                                            status={status}
-                                            onRetry={() => retryMessage(latestMessage.id, latestMessage.roomId, latestMessage.content, latestMessage.senderId)}
-                                            messageId={latestMessage.id}
-                                        />
-                                    </div>
+                                    <MessageStatusIndicator
+                                        key={latestMessage.id}
+                                        status={status}
+                                        onRetry={() => retryMessage(latestMessage.id, latestMessage.roomId, latestMessage.content, latestMessage.senderId)}
+                                        messageId={latestMessage.id}
+                                    />
                                 );
                             })()}
-                        </>
+                        />
                     ) : null}
                 </div>
 
