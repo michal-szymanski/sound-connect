@@ -26,7 +26,7 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
     const prevMessageCountRef = useRef(messages.length);
     const hasUserScrolledRef = useRef(false);
     const isProgrammaticScrollRef = useRef(false);
-    const [shouldScrollOnMount, setShouldScrollOnMount] = useState(isInitialLoad);
+    const [shouldScrollOnMount, setShouldScrollOnMount] = useState(true);
     const [isReady, setIsReady] = useState(!isInitialLoad);
 
     const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
@@ -105,16 +105,19 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
             const hasMessageFromCurrentUser = newMessages.some((m) => m.senderId === currentUserId);
 
             if ((hasMessageFromCurrentUser || scrolledToBottomRef.current) && hasUserScrolledRef.current) {
-                virtualizer.measure();
                 isProgrammaticScrollRef.current = true;
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        if (parent) {
-                            isProgrammaticScrollRef.current = true;
-                            parent.scrollTop = parent.scrollHeight;
-                        }
-                    });
+
+                virtualizer.scrollToIndex(messages.length - 1, {
+                    align: 'end',
+                    behavior: 'auto'
                 });
+
+                setTimeout(() => {
+                    if (parent) {
+                        isProgrammaticScrollRef.current = true;
+                        parent.scrollTop = parent.scrollHeight;
+                    }
+                }, 100);
             } else {
                 const hasMessageFromOthers = newMessages.some((m) => m.senderId !== currentUserId);
                 if (hasMessageFromOthers) {
@@ -158,9 +161,10 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
             >
                 <div
                     style={{
-                        height: `${virtualizer.getTotalSize() + 24}px`,
+                        minHeight: `${virtualizer.getTotalSize()}px`,
                         width: '100%',
-                        position: 'relative'
+                        position: 'relative',
+                        paddingBottom: messages.length > 0 ? '80px' : '0'
                     }}
                 >
                     {virtualizer.getVirtualItems().map((virtualItem) => {
@@ -190,7 +194,7 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
                                     message={message}
                                     isCurrentUser={message.senderId === currentUserId}
                                     formatTimestamp={formatTimestamp}
-                                    isNew={newMessageIds.has(message.id)}
+                                    isNew={newMessageIds.has(message.id) && message.senderId !== currentUserId}
                                 />
                             </div>
                         );

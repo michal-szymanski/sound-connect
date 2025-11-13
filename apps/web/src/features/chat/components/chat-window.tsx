@@ -274,6 +274,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                                 currentUserId={currentUser.id}
                                 formatTimestamp={formatTimestamp}
                                 isInitialLoad={messages.length === 0}
+                                key={animationKey}
                             />
 
                             {(() => {
