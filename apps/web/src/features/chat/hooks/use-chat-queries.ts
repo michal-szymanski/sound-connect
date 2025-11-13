@@ -3,6 +3,7 @@ import type { ChatMessage } from '@/common/types/models';
 import { getChatHistory } from '@/features/chat/server-functions/chat';
 import { toast } from 'sonner';
 import { getRoomId } from '@/common/helpers';
+import { useState } from 'react';
 
 type UseChatMessagesProps = {
     conversationId: string;
@@ -39,8 +40,9 @@ type SendMessageInput = {
 
 export function useSendMessage(sendMessageFn: (roomId: string, content: string) => void) {
     const queryClient = useQueryClient();
+    const [messageStatuses, setMessageStatuses] = useState<Map<string, 'sending' | 'sent' | 'error'>>(new Map());
 
-    return useMutation({
+    const mutation = useMutation({
         mutationFn: async ({ conversationId, content, senderId }: SendMessageInput) => {
             sendMessageFn(conversationId, content);
 
@@ -63,28 +65,66 @@ export function useSendMessage(sendMessageFn: (roomId: string, content: string) 
 
             queryClient.setQueryData<ChatMessage[]>(['chat', 'messages', conversationId], (old = []) => [...old, optimisticMessage]);
 
-            const timeoutId = setTimeout(() => {
-                queryClient.invalidateQueries({ queryKey: ['chat', 'messages', conversationId] });
-            }, 2000);
+            setMessageStatuses((prev) => {
+                const next = new Map(prev);
+                next.set(tempId, 'sending');
+                return next;
+            });
 
-            return { previousMessages, tempId, timeoutId };
+            return { previousMessages, tempId };
+        },
+        onSuccess: (_data, { conversationId }, context) => {
+            if (context?.tempId) {
+                setMessageStatuses((prev) => {
+                    const next = new Map(prev);
+                    next.set(context.tempId, 'sent');
+                    return next;
+                });
+
+                setTimeout(() => {
+                    setMessageStatuses((prev) => {
+                        const next = new Map(prev);
+                        next.delete(context.tempId);
+                        return next;
+                    });
+                }, 5000);
+
+                setTimeout(() => {
+                    queryClient.invalidateQueries({ queryKey: ['chat', 'messages', conversationId] });
+                }, 5200);
+            }
         },
         onError: (_error, { conversationId }, context) => {
-            if (context?.timeoutId) {
-                clearTimeout(context.timeoutId);
+            if (context?.tempId) {
+                setMessageStatuses((prev) => {
+                    const next = new Map(prev);
+                    next.set(context.tempId, 'error');
+                    return next;
+                });
             }
 
             if (context?.previousMessages) {
                 queryClient.setQueryData(['chat', 'messages', conversationId], context.previousMessages);
             }
             toast.error('Failed to send message');
-        },
-        onSettled: (_data, _error, _variables, context) => {
-            if (context?.timeoutId) {
-                clearTimeout(context.timeoutId);
-            }
         }
     });
+
+    const retryMessage = (messageId: string, conversationId: string, content: string, senderId: string) => {
+        setMessageStatuses((prev) => {
+            const next = new Map(prev);
+            next.delete(messageId);
+            return next;
+        });
+
+        mutation.mutate({ conversationId, content, senderId });
+    };
+
+    return {
+        ...mutation,
+        messageStatuses,
+        retryMessage
+    };
 }
 
 export function useInvalidateChatMessages() {

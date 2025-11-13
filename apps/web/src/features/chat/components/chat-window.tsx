@@ -15,6 +15,7 @@ import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
 import { useChatMessages, useGetRoomId, useSendMessage } from '@/features/chat/hooks/use-chat-queries';
 import { VirtualizedMessageList } from './virtualized-message-list';
 import { useDelayedLoading } from '@/web/hooks/use-delayed-loading';
+import { MessageStatusIndicator } from './message-status-indicator';
 
 type Props = {
     user: UserDTO;
@@ -62,9 +63,9 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage } = useChat();
 
     const roomId = useGetRoomId(auth?.user?.id || '', user.id);
-    const { data: messages = [], isInitialLoading } = useChatMessages({ conversationId: roomId, enabled: !!auth?.user });
-    const sendMutation = useSendMessage(sendMessage);
-    const shouldShowLoading = useDelayedLoading({ isLoading: isInitialLoading });
+    const { data: messages = [], isLoading } = useChatMessages({ conversationId: roomId, enabled: !!auth?.user });
+    const { mutate: sendMessageMutate, messageStatuses, retryMessage } = useSendMessage(sendMessage);
+    const shouldShowLoading = useDelayedLoading({ isLoading });
 
     const [isHovered, setIsHovered] = useState(false);
     const [animationKey, setAnimationKey] = useState(0);
@@ -135,7 +136,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!values.text.trim() || !roomId || !auth?.user) return;
 
-        sendMutation.mutate({
+        sendMessageMutate({
             conversationId: roomId,
             content: values.text.trim(),
             senderId: auth.user.id
@@ -251,7 +252,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                     </div>
                 </div>
 
-                <div className="bg-background h-[320px]" role="log" aria-label={`Conversation with ${user.name}`}>
+                <div className="bg-background relative h-[320px]" role="log" aria-label={`Conversation with ${user.name}`}>
                     {shouldShowLoading ? (
                         <div
                             className="animate-in fade-in flex h-full flex-col items-center justify-center gap-3 duration-200"
@@ -262,12 +263,37 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                             <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" aria-hidden="true" />
                             <span className="text-muted-foreground text-sm">Loading messages...</span>
                         </div>
-                    ) : messages.length === 0 && !isInitialLoading ? (
+                    ) : messages.length === 0 && !isLoading ? (
                         <div className="flex h-full items-center justify-center">
                             <div className="text-muted-foreground text-sm">Start a conversation with {user.name}</div>
                         </div>
                     ) : (
-                        <VirtualizedMessageList messages={messages} currentUserId={currentUser.id} formatTimestamp={formatTimestamp} isInitialLoad={true} />
+                        <>
+                            <VirtualizedMessageList
+                                messages={messages}
+                                currentUserId={currentUser.id}
+                                formatTimestamp={formatTimestamp}
+                                isInitialLoad={messages.length === 0}
+                            />
+
+                            {(() => {
+                                const latestMessage = messages[messages.length - 1];
+                                const status = latestMessage && messageStatuses.get(latestMessage.id);
+                                const isCurrentUser = latestMessage?.senderId === currentUser.id;
+
+                                if (!status || !isCurrentUser) return null;
+
+                                return (
+                                    <div className="absolute right-6 bottom-2 z-10 h-6">
+                                        <MessageStatusIndicator
+                                            status={status}
+                                            onRetry={() => retryMessage(latestMessage.id, latestMessage.roomId, latestMessage.content, latestMessage.senderId)}
+                                            messageId={latestMessage.id}
+                                        />
+                                    </div>
+                                );
+                            })()}
+                        </>
                     )}
                 </div>
 

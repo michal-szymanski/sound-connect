@@ -35,7 +35,7 @@ function RouteComponent() {
 
     const roomId = useGetRoomId(auth?.user?.id || '', selectedPeer?.id || '');
     const { data: messages = [], isInitialLoading } = useChatMessages({ conversationId: roomId, enabled: !!selectedPeer });
-    const sendMutation = useSendMessage(sendMessage);
+    const { mutate: sendMessageMutate } = useSendMessage(sendMessage);
     const shouldShowLoading = useDelayedLoading({ isLoading: isInitialLoading });
 
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
@@ -55,7 +55,7 @@ function RouteComponent() {
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (!selectedPeer || !auth?.user || !values.text || !roomId) return;
 
-        sendMutation.mutate({
+        sendMessageMutate({
             conversationId: roomId,
             content: values.text,
             senderId: auth.user.id
