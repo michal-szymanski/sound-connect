@@ -208,7 +208,7 @@ export function VirtualizedMessageList({
                                     transform: `translateY(${virtualItem.start}px)`,
                                     overflow: 'visible'
                                 }}
-                                className="px-4 py-2"
+                                className="px-4 py-1"
                             >
                                 {showDateDivider ? <DateDivider timestamp={message.timestamp} /> : null}
                                 <MessageBubble
