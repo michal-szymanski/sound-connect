@@ -8,10 +8,9 @@ type Props = {
     isCurrentUser: boolean;
     formatTimestamp: (timestamp: number) => string;
     isNew?: boolean;
-    isSending?: boolean;
 };
 
-export const MessageBubble = memo(function MessageBubble({ message, isCurrentUser, formatTimestamp, isNew = false, isSending = false }: Props) {
+export const MessageBubble = memo(function MessageBubble({ message, isCurrentUser, formatTimestamp, isNew = false }: Props) {
     const [shouldAnimate, setShouldAnimate] = useState(isNew);
 
     useEffect(() => {
@@ -26,8 +25,7 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
             className={clsx(
                 'flex flex-col',
                 isCurrentUser ? 'items-end' : 'items-start',
-                shouldAnimate && 'animate-in slide-in-from-bottom-2 fade-in duration-300',
-                isSending && 'opacity-60'
+                shouldAnimate && 'animate-in slide-in-from-bottom-4 fade-in duration-300'
             )}
         >
             <Tooltip delayDuration={500}>
@@ -43,7 +41,6 @@ export const MessageBubble = memo(function MessageBubble({ message, isCurrentUse
                 </TooltipTrigger>
                 <TooltipContent side="left">{formatTimestamp(message.timestamp)}</TooltipContent>
             </Tooltip>
-            {isSending && <span className="text-muted-foreground mt-1 px-1 text-xs">Sending...</span>}
         </div>
     );
 });

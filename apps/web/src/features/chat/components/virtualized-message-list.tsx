@@ -28,13 +28,19 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
     const [isReady, setIsReady] = useState(!isInitialLoad);
 
     const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
+
+    useEffect(() => {
+        if (messages.length > 0 && !isReady) {
+            setIsReady(true);
+        }
+    }, [messages.length, isReady]);
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
 
     const virtualizer = useVirtualizer({
         count: messages.length,
         getScrollElement: () => parentRef.current,
-        estimateSize: () => 80,
+        estimateSize: () => 100,
         overscan: 5
     });
 
@@ -65,9 +71,13 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
         });
 
         setTimeout(() => {
+            const parent = parentRef.current;
+            if (parent) {
+                parent.scrollTop = parent.scrollHeight;
+            }
             setIsReady(true);
         }, 100);
-    }, [messages.length, shouldScrollOnMount, virtualizer]);
+    }, [shouldScrollOnMount]);
 
     useEffect(() => {
         const parent = parentRef.current;
@@ -83,12 +93,10 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
             setTimeout(() => setNewMessageIds(new Set()), 350);
 
             if (scrolledToBottomRef.current) {
-                setTimeout(() => {
-                    parent.scrollTo({
-                        top: parent.scrollHeight,
-                        behavior: 'smooth'
-                    });
-                }, 0);
+                virtualizer.measure();
+                requestAnimationFrame(() => {
+                    parent.scrollTop = parent.scrollHeight;
+                });
             } else {
                 const hasMessageFromOthers = newMessages.some((m) => m.senderId !== currentUserId);
                 if (hasMessageFromOthers) {
@@ -108,14 +116,15 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
         return () => parent.removeEventListener('scroll', checkScrollPosition);
     }, [checkScrollPosition]);
 
+    useEffect(() => {
+        virtualizer.measure();
+    }, [virtualizer]);
+
     const handleScrollToBottom = () => {
         const parent = parentRef.current;
         if (!parent) return;
 
-        parent.scrollTo({
-            top: parent.scrollHeight,
-            behavior: 'smooth'
-        });
+        parent.scrollTop = parent.scrollHeight;
         setUnreadCount(0);
     };
 
@@ -152,9 +161,10 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
                                     top: 0,
                                     left: 0,
                                     width: '100%',
-                                    transform: `translateY(${virtualItem.start}px)`
+                                    transform: `translateY(${virtualItem.start}px)`,
+                                    overflow: 'visible'
                                 }}
-                                className="px-4 py-0.5"
+                                className="px-4 py-2"
                             >
                                 {showDateDivider ? <DateDivider timestamp={message.timestamp} /> : null}
                                 <MessageBubble
