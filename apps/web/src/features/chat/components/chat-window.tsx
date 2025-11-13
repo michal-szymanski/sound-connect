@@ -294,7 +294,6 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                                         key={latestMessage.id}
                                         status={status}
                                         onRetry={() => retryMessage(latestMessage.id, latestMessage.roomId, latestMessage.content, latestMessage.senderId)}
-                                        messageId={latestMessage.id}
                                     />
                                 );
                             })()}
