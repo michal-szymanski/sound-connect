@@ -68,7 +68,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const shouldShowLoading = useDelayedLoading({ isLoading });
 
     const [isHovered, setIsHovered] = useState(false);
-    const [animationKey, setAnimationKey] = useState(0);
+    const [_animationKey, setAnimationKey] = useState(0);
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const [announcement, setAnnouncement] = useState('');
     const [showMessages, setShowMessages] = useState(!isMinimized);

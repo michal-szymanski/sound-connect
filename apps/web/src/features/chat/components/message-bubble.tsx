@@ -12,13 +12,7 @@ type Props = {
 
 export const MessageBubble = memo(function MessageBubble({ message, isCurrentUser, formatTimestamp, isNew = false }: Props) {
     return (
-        <div
-            className={clsx(
-                'flex flex-col',
-                isCurrentUser ? 'items-end' : 'items-start',
-                isNew && 'animate-in slide-in-from-bottom-4 fade-in duration-300'
-            )}
-        >
+        <div className={clsx('flex flex-col', isCurrentUser ? 'items-end' : 'items-start', isNew && 'animate-in slide-in-from-bottom-4 fade-in duration-300')}>
             <Tooltip delayDuration={500}>
                 <TooltipTrigger asChild>
                     <div
