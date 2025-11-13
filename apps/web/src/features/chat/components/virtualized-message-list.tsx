@@ -24,6 +24,8 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
     const parentRef = useRef<HTMLDivElement>(null);
     const scrolledToBottomRef = useRef(true);
     const prevMessageCountRef = useRef(messages.length);
+    const hasUserScrolledRef = useRef(false);
+    const isProgrammaticScrollRef = useRef(false);
     const [shouldScrollOnMount, setShouldScrollOnMount] = useState(isInitialLoad);
     const [isReady, setIsReady] = useState(!isInitialLoad);
 
@@ -48,6 +50,11 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
         const parent = parentRef.current;
         if (!parent) return;
 
+        if (!isProgrammaticScrollRef.current) {
+            hasUserScrolledRef.current = true;
+        }
+        isProgrammaticScrollRef.current = false;
+
         const threshold = 100;
         const distanceFromBottom = Math.abs(parent.scrollHeight - parent.scrollTop - parent.clientHeight);
         const isAtBottom = distanceFromBottom < threshold;
@@ -65,6 +72,8 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
 
         setShouldScrollOnMount(false);
 
+        isProgrammaticScrollRef.current = true;
+
         virtualizer.scrollToIndex(messages.length - 1, {
             align: 'end',
             behavior: 'auto'
@@ -73,11 +82,12 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
         setTimeout(() => {
             const parent = parentRef.current;
             if (parent) {
+                isProgrammaticScrollRef.current = true;
                 parent.scrollTop = parent.scrollHeight;
             }
             setIsReady(true);
         }, 100);
-    }, [shouldScrollOnMount]);
+    }, [shouldScrollOnMount, messages.length]);
 
     useEffect(() => {
         const parent = parentRef.current;
@@ -90,14 +100,20 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
             const newIds = new Set(newMessages.map((m) => m.id));
             setNewMessageIds(newIds);
 
-            setTimeout(() => setNewMessageIds(new Set()), 350);
+            setTimeout(() => setNewMessageIds(new Set()), 500);
 
             const hasMessageFromCurrentUser = newMessages.some((m) => m.senderId === currentUserId);
 
-            if (hasMessageFromCurrentUser || scrolledToBottomRef.current) {
+            if ((hasMessageFromCurrentUser || scrolledToBottomRef.current) && hasUserScrolledRef.current) {
                 virtualizer.measure();
+                isProgrammaticScrollRef.current = true;
                 requestAnimationFrame(() => {
-                    parent.scrollTop = parent.scrollHeight;
+                    requestAnimationFrame(() => {
+                        if (parent) {
+                            isProgrammaticScrollRef.current = true;
+                            parent.scrollTop = parent.scrollHeight;
+                        }
+                    });
                 });
             } else {
                 const hasMessageFromOthers = newMessages.some((m) => m.senderId !== currentUserId);
@@ -126,6 +142,7 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
         const parent = parentRef.current;
         if (!parent) return;
 
+        isProgrammaticScrollRef.current = true;
         parent.scrollTop = parent.scrollHeight;
         setUnreadCount(0);
     };

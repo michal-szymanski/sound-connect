@@ -1,6 +1,6 @@
 import { ChatMessage } from '@/common/types/models';
 import clsx from 'clsx';
-import { memo, useState, useEffect } from 'react';
+import { memo } from 'react';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/shared/components/ui/tooltip';
 
 type Props = {
@@ -11,21 +11,12 @@ type Props = {
 };
 
 export const MessageBubble = memo(function MessageBubble({ message, isCurrentUser, formatTimestamp, isNew = false }: Props) {
-    const [shouldAnimate, setShouldAnimate] = useState(isNew);
-
-    useEffect(() => {
-        if (isNew) {
-            const timer = setTimeout(() => setShouldAnimate(false), 300);
-            return () => clearTimeout(timer);
-        }
-    }, [isNew]);
-
     return (
         <div
             className={clsx(
                 'flex flex-col',
                 isCurrentUser ? 'items-end' : 'items-start',
-                shouldAnimate && 'animate-in slide-in-from-bottom-4 fade-in duration-300'
+                isNew && 'animate-in slide-in-from-bottom-4 fade-in duration-300'
             )}
         >
             <Tooltip delayDuration={500}>
