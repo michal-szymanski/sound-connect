@@ -1,21 +1,28 @@
 import { Clock, Check, AlertCircle, RotateCcw } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import clsx from 'clsx';
 
 type Props = {
     status: 'sending' | 'sent' | 'error';
     onRetry?: () => void;
-    messageId: string;
 };
 
-export function MessageStatusIndicator({ status, onRetry, messageId }: Props) {
+export function MessageStatusIndicator({ status, onRetry }: Props) {
     const [hidePhase, setHidePhase] = useState<'visible' | 'fading' | 'hidden'>('visible');
+    const fadeInitiatedRef = useRef(false);
 
     useEffect(() => {
         if (status !== 'sent') {
+            fadeInitiatedRef.current = false;
             return;
         }
+
+        if (fadeInitiatedRef.current) {
+            return;
+        }
+
+        fadeInitiatedRef.current = true;
 
         const fadeOutTimer = setTimeout(() => {
             setHidePhase('fading');
@@ -29,9 +36,9 @@ export function MessageStatusIndicator({ status, onRetry, messageId }: Props) {
             clearTimeout(fadeOutTimer);
             clearTimeout(unmountTimer);
         };
-    }, [status, messageId]);
+    }, [status]);
 
-    if (hidePhase === 'hidden') {
+    if (status === 'sent' && hidePhase === 'hidden') {
         return null;
     }
 
