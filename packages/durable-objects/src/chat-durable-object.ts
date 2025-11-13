@@ -1,7 +1,7 @@
 import { ChatMessage, chatMessageSchema, WebSocketMessage } from '@sound-connect/common/types/models';
 import { DurableObject } from 'cloudflare:workers';
 import { drizzle } from 'drizzle-orm/d1';
-import { eq, and, or, asc } from 'drizzle-orm';
+import { eq, and, or, desc } from 'drizzle-orm';
 import { schema } from '@sound-connect/drizzle';
 
 const MESSAGES_KEY = 'messages';
@@ -166,10 +166,10 @@ export class ChatDurableObject extends DurableObject {
                         and(eq(messagesTable.senderId, userId2), eq(messagesTable.receiverId, userId1))
                     )
                 )
-                .orderBy(asc(messagesTable.createdAt))
+                .orderBy(desc(messagesTable.createdAt))
                 .limit(100);
 
-            return messages.map((msg) => ({
+            return messages.reverse().map((msg) => ({
                 id: crypto.randomUUID(),
                 type: 'chat' as const,
                 content: msg.content,
