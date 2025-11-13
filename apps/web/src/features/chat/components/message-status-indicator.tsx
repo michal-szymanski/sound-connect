@@ -9,25 +9,31 @@ type Props = {
     messageId: string;
 };
 
-export function MessageStatusIndicator({ status, onRetry, messageId: _messageId }: Props) {
-    const [shouldHide, setShouldHide] = useState(false);
+export function MessageStatusIndicator({ status, onRetry, messageId }: Props) {
+    const [hidePhase, setHidePhase] = useState<'visible' | 'fading' | 'hidden'>('visible');
 
     useEffect(() => {
         if (status !== 'sent') {
             return;
         }
 
-        const timer = setTimeout(() => {
-            setShouldHide(true);
+        const fadeOutTimer = setTimeout(() => {
+            setHidePhase('fading');
         }, 5000);
 
-        return () => {
-            clearTimeout(timer);
-            setShouldHide(false);
-        };
-    }, [status]);
+        const unmountTimer = setTimeout(() => {
+            setHidePhase('hidden');
+        }, 5300);
 
-    if (shouldHide) return null;
+        return () => {
+            clearTimeout(fadeOutTimer);
+            clearTimeout(unmountTimer);
+        };
+    }, [status, messageId]);
+
+    if (hidePhase === 'hidden') {
+        return null;
+    }
 
     if (status === 'sending') {
         return (
@@ -50,12 +56,13 @@ export function MessageStatusIndicator({ status, onRetry, messageId: _messageId 
                 aria-live="polite"
                 aria-atomic="true"
                 className={clsx(
-                    'text-muted-foreground/70 mt-1 flex items-center gap-1.5 px-1 text-xs',
-                    shouldHide ? 'animate-out fade-out duration-300' : 'animate-in fade-in duration-200'
+                    'text-muted-foreground/70 mt-1 flex items-center gap-1.5 px-1 text-xs transition-opacity',
+                    hidePhase === 'visible' ? 'animate-in fade-in duration-200' : '',
+                    hidePhase === 'fading' ? 'opacity-0 duration-300' : 'opacity-100'
                 )}
             >
                 <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="sr-only">Message sent successfully</span>
+                <span>Sent</span>
             </div>
         );
     }

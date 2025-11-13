@@ -81,17 +81,54 @@ export function useSendMessage(sendMessageFn: (roomId: string, content: string) 
                     return next;
                 });
 
+                let currentMessageId = context.tempId;
+                const startTime = Date.now();
+
+                const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
+                    if (
+                        event.type !== 'updated' ||
+                        event.query.queryKey[0] !== 'chat' ||
+                        event.query.queryKey[1] !== 'messages' ||
+                        event.query.queryKey[2] !== conversationId
+                    ) {
+                        return;
+                    }
+
+                    if (Date.now() - startTime > 1000) {
+                        unsubscribe();
+                        return;
+                    }
+
+                    const messages = event.query.state.data as ChatMessage[] | undefined;
+                    if (!messages) return;
+
+                    const latestMessage = messages[messages.length - 1];
+                    if (latestMessage && !latestMessage.id.startsWith('temp-')) {
+                        setMessageStatuses((prev) => {
+                            const next = new Map(prev);
+                            const status = next.get(context.tempId);
+                            if (status) {
+                                next.delete(context.tempId);
+                                next.set(latestMessage.id, status);
+                            }
+                            return next;
+                        });
+                        currentMessageId = latestMessage.id;
+                        unsubscribe();
+                    }
+                });
+
                 setTimeout(() => {
                     setMessageStatuses((prev) => {
                         const next = new Map(prev);
-                        next.delete(context.tempId);
+                        next.delete(currentMessageId);
                         return next;
                     });
-                }, 5000);
+                }, 5500);
 
                 setTimeout(() => {
                     queryClient.invalidateQueries({ queryKey: ['chat', 'messages', conversationId] });
-                }, 5200);
+                }, 5700);
             }
         },
         onError: (_error, { conversationId }, context) => {

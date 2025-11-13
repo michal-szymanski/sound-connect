@@ -12,6 +12,7 @@ type Props = {
     formatTimestamp: (timestamp: number) => string;
     isInitialLoad?: boolean;
     shouldScrollToBottom?: boolean;
+    statusIndicator?: React.ReactNode;
 };
 
 function isSameDay(timestamp1: number, timestamp2: number): boolean {
@@ -25,7 +26,8 @@ export function VirtualizedMessageList({
     currentUserId,
     formatTimestamp,
     isInitialLoad: _isInitialLoad = false,
-    shouldScrollToBottom = true
+    shouldScrollToBottom = true,
+    statusIndicator
 }: Props) {
     const parentRef = useRef<HTMLDivElement>(null);
     const scrolledToBottomRef = useRef(true);
@@ -182,7 +184,7 @@ export function VirtualizedMessageList({
                         minHeight: `${virtualizer.getTotalSize()}px`,
                         width: '100%',
                         position: 'relative',
-                        paddingBottom: messages.length > 0 ? '80px' : '0'
+                        paddingBottom: messages.length > 0 ? '16px' : '0'
                     }}
                 >
                     {virtualizer.getVirtualItems().map((virtualItem) => {
@@ -191,6 +193,7 @@ export function VirtualizedMessageList({
 
                         const prevMessage = virtualItem.index > 0 ? messages[virtualItem.index - 1] : null;
                         const showDateDivider = !prevMessage || !isSameDay(message.timestamp, prevMessage.timestamp);
+                        const isLastMessage = virtualItem.index === messages.length - 1;
 
                         return (
                             <div
@@ -214,6 +217,7 @@ export function VirtualizedMessageList({
                                     formatTimestamp={formatTimestamp}
                                     isNew={newMessageIds.has(message.id) && message.senderId !== currentUserId}
                                 />
+                                {isLastMessage ? <div className="flex h-7 justify-end">{statusIndicator ? statusIndicator : null}</div> : null}
                             </div>
                         );
                     })}
