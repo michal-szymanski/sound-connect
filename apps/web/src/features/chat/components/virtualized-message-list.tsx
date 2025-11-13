@@ -130,7 +130,7 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
             >
                 <div
                     style={{
-                        height: `${virtualizer.getTotalSize()}px`,
+                        height: `${virtualizer.getTotalSize() + 24}px`,
                         width: '100%',
                         position: 'relative'
                     }}
