@@ -1,5 +1,4 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { clsx } from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import type { ChatMessage } from '@/common/types/models';
@@ -21,14 +20,20 @@ function isSameDay(timestamp1: number, timestamp2: number): boolean {
     return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
 }
 
-export function VirtualizedMessageList({ messages, currentUserId, formatTimestamp, isInitialLoad = false, shouldScrollToBottom = true }: Props) {
+export function VirtualizedMessageList({
+    messages,
+    currentUserId,
+    formatTimestamp,
+    isInitialLoad: _isInitialLoad = false,
+    shouldScrollToBottom = true
+}: Props) {
     const parentRef = useRef<HTMLDivElement>(null);
     const scrolledToBottomRef = useRef(true);
     const prevMessageCountRef = useRef(messages.length);
     const hasUserScrolledRef = useRef(false);
     const isProgrammaticScrollRef = useRef(false);
     const shouldScrollOnMountRef = useRef(true);
-    const [isReady, setIsReady] = useState(true);
+    const [_isReady, _setIsReady] = useState(true);
 
     const [newMessageIds, setNewMessageIds] = useState<Set<string>>(new Set());
     const [showScrollButton, setShowScrollButton] = useState(false);
@@ -81,7 +86,7 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
                 parent.scrollTop = parent.scrollHeight;
             }
         }, 100);
-    }, [messages.length]);
+    }, [messages.length, virtualizer]);
 
     useEffect(() => {
         if (shouldScrollToBottom && messages.length > 0) {
@@ -100,7 +105,7 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
                 }, 100);
             }
         }
-    }, [shouldScrollToBottom]);
+    }, [shouldScrollToBottom, messages.length, virtualizer]);
 
     useEffect(() => {
         const parent = parentRef.current;
@@ -140,7 +145,7 @@ export function VirtualizedMessageList({ messages, currentUserId, formatTimestam
         }
 
         prevMessageCountRef.current = messages.length;
-    }, [messages, currentUserId]);
+    }, [messages, currentUserId, virtualizer]);
 
     useEffect(() => {
         const parent = parentRef.current;
