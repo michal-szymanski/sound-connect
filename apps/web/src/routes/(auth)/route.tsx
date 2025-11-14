@@ -26,8 +26,8 @@ const AnimatedHeroContent = memo(function AnimatedHeroContent() {
             <div
                 className={
                     animate
-                        ? 'opacity-0 animate-fade-in-zoom delay-[1500ms] flex items-center gap-2 transition-opacity hover:opacity-80'
-                        : 'opacity-100 flex items-center gap-2 transition-opacity hover:opacity-80'
+                        ? 'animate-fade-in-zoom flex items-center gap-2 opacity-0 transition-opacity delay-[1500ms] hover:opacity-80'
+                        : 'flex items-center gap-2 opacity-100 transition-opacity hover:opacity-80'
                 }
             >
                 <div className="bg-primary/20 rounded-full p-2 backdrop-blur-sm">
@@ -40,40 +40,16 @@ const AnimatedHeroContent = memo(function AnimatedHeroContent() {
                 <h1
                     className={
                         animate
-                            ? 'opacity-0 animate-fade-in-slide delay-[2500ms] text-3xl font-bold tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] sm:text-4xl md:text-5xl'
-                            : 'opacity-100 text-3xl font-bold tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] sm:text-4xl md:text-5xl'
+                            ? 'animate-fade-in-slide text-3xl font-bold tracking-tight opacity-0 drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] delay-[2500ms] sm:text-4xl md:text-5xl'
+                            : 'text-3xl font-bold tracking-tight opacity-100 drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] sm:text-4xl md:text-5xl'
                     }
                 >
                     Find your next bandmate
                 </h1>
                 <p className="flex flex-wrap gap-x-2 text-2xl leading-relaxed text-white/95 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
-                    <span
-                        className={
-                            animate
-                                ? 'opacity-0 animate-fade-in-slide delay-[3000ms]'
-                                : 'opacity-100'
-                        }
-                    >
-                        Connect with musicians.
-                    </span>
-                    <span
-                        className={
-                            animate
-                                ? 'opacity-0 animate-fade-in-slide delay-[4000ms]'
-                                : 'opacity-100'
-                        }
-                    >
-                        Collaborate.
-                    </span>
-                    <span
-                        className={
-                            animate
-                                ? 'opacity-0 animate-fade-in-slide delay-[5500ms]'
-                                : 'opacity-100'
-                        }
-                    >
-                        Create.
-                    </span>
+                    <span className={animate ? 'animate-fade-in-slide opacity-0 delay-[3000ms]' : 'opacity-100'}>Connect with musicians.</span>
+                    <span className={animate ? 'animate-fade-in-slide opacity-0 delay-[4000ms]' : 'opacity-100'}>Collaborate.</span>
+                    <span className={animate ? 'animate-fade-in-slide opacity-0 delay-[5500ms]' : 'opacity-100'}>Create.</span>
                 </p>
             </div>
         </div>
