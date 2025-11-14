@@ -49,7 +49,7 @@ const AnimatedHeroContent = memo(function AnimatedHeroContent() {
                 <p className="flex flex-wrap gap-x-2 text-2xl leading-relaxed text-white/95 drop-shadow-[0_1px_4px_rgba(0,0,0,0.6)]">
                     <span className={animate ? 'animate-fade-in-slide opacity-0 delay-[3000ms]' : 'opacity-100'}>Connect with musicians.</span>
                     <span className={animate ? 'animate-fade-in-slide opacity-0 delay-[4000ms]' : 'opacity-100'}>Collaborate.</span>
-                    <span className={animate ? 'animate-fade-in-slide opacity-0 delay-[5500ms]' : 'opacity-100'}>Create.</span>
+                    <span className={animate ? 'animate-fade-in-slide opacity-0 delay-[5000ms]' : 'opacity-100'}>Create.</span>
                 </p>
             </div>
         </div>
