@@ -2,6 +2,8 @@
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant motion-safe (@media (prefers-reduced-motion: no-preference));
+@custom-variant motion-reduce (@media (prefers-reduced-motion: reduce));
 
 :root {
     --background: oklch(0.99 0.005 240);
@@ -213,4 +215,62 @@
 
 .animate-heartbeat {
     animation: heartbeat 0.3s ease-out;
+}
+
+@keyframes fadeInZoom {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeInSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(1rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-zoom {
+    animation: fadeInZoom 0.7s ease-out forwards;
+}
+
+.animate-fade-in-slide {
+    animation: fadeInSlideUp 0.8s ease-out forwards;
+}
+
+.delay-\[2000ms\] {
+    animation-delay: 2000ms;
+}
+
+.delay-\[3000ms\] {
+    animation-delay: 3000ms;
+}
+
+.delay-\[3500ms\] {
+    animation-delay: 3500ms;
+}
+
+.delay-\[4000ms\] {
+    animation-delay: 4000ms;
+}
+
+.delay-\[4500ms\] {
+    animation-delay: 4500ms;
+}
+
+.delay-\[5000ms\] {
+    animation-delay: 5000ms;
+}
+
+.delay-\[6000ms\] {
+    animation-delay: 6000ms;
 }
