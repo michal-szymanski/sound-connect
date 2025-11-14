@@ -26,7 +26,7 @@ const AnimatedHeroContent = memo(function AnimatedHeroContent() {
             <div
                 className={
                     animate
-                        ? 'opacity-0 animate-fade-in-zoom delay-[2000ms] flex items-center gap-2 transition-opacity hover:opacity-80'
+                        ? 'opacity-0 animate-fade-in-zoom delay-[1500ms] flex items-center gap-2 transition-opacity hover:opacity-80'
                         : 'opacity-100 flex items-center gap-2 transition-opacity hover:opacity-80'
                 }
             >
@@ -40,7 +40,7 @@ const AnimatedHeroContent = memo(function AnimatedHeroContent() {
                 <h1
                     className={
                         animate
-                            ? 'opacity-0 animate-fade-in-slide delay-[3000ms] text-3xl font-bold tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] sm:text-4xl md:text-5xl'
+                            ? 'opacity-0 animate-fade-in-slide delay-[2500ms] text-3xl font-bold tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] sm:text-4xl md:text-5xl'
                             : 'opacity-100 text-3xl font-bold tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)] sm:text-4xl md:text-5xl'
                     }
                 >
@@ -50,7 +50,7 @@ const AnimatedHeroContent = memo(function AnimatedHeroContent() {
                     <span
                         className={
                             animate
-                                ? 'opacity-0 animate-fade-in-slide delay-[3500ms]'
+                                ? 'opacity-0 animate-fade-in-slide delay-[3000ms]'
                                 : 'opacity-100'
                         }
                     >
@@ -59,7 +59,7 @@ const AnimatedHeroContent = memo(function AnimatedHeroContent() {
                     <span
                         className={
                             animate
-                                ? 'opacity-0 animate-fade-in-slide delay-[4500ms]'
+                                ? 'opacity-0 animate-fade-in-slide delay-[4000ms]'
                                 : 'opacity-100'
                         }
                     >
@@ -68,7 +68,7 @@ const AnimatedHeroContent = memo(function AnimatedHeroContent() {
                     <span
                         className={
                             animate
-                                ? 'opacity-0 animate-fade-in-slide delay-[6000ms]'
+                                ? 'opacity-0 animate-fade-in-slide delay-[5500ms]'
                                 : 'opacity-100'
                         }
                     >

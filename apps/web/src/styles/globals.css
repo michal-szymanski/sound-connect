@@ -247,8 +247,16 @@
     animation: fadeInSlideUp 0.8s ease-out forwards;
 }
 
+.delay-\[1500ms\] {
+    animation-delay: 1500ms;
+}
+
 .delay-\[2000ms\] {
     animation-delay: 2000ms;
+}
+
+.delay-\[2500ms\] {
+    animation-delay: 2500ms;
 }
 
 .delay-\[3000ms\] {
@@ -269,6 +277,10 @@
 
 .delay-\[5000ms\] {
     animation-delay: 5000ms;
+}
+
+.delay-\[5500ms\] {
+    animation-delay: 5500ms;
 }
 
 .delay-\[6000ms\] {
