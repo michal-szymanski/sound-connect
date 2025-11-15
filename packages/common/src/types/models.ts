@@ -36,6 +36,7 @@ export const chatMessageSchema = z.object({
     content: z.string().max(CHAT_MESSAGE_MAX_LENGTH),
     roomId: z.string(),
     senderId: z.string(),
+    senderName: z.string().optional(),
     timestamp: z.number()
 });
 

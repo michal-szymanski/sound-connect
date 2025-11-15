@@ -41,6 +41,8 @@ export function VirtualizedMessageList({
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
 
+    const isBandChat = messages.length > 0 && Boolean(messages[0]?.roomId.startsWith('band:'));
+
     const virtualizer = useVirtualizer({
         count: messages.length,
         getScrollElement: () => parentRef.current,
@@ -216,6 +218,8 @@ export function VirtualizedMessageList({
                                     isCurrentUser={message.senderId === currentUserId}
                                     formatTimestamp={formatTimestamp}
                                     isNew={newMessageIds.has(message.id) && message.senderId !== currentUserId}
+                                    isBandChat={isBandChat}
+                                    senderName={message.senderName}
                                 />
                                 {isLastMessage ? <div className="flex h-7 justify-end">{statusIndicator ? statusIndicator : null}</div> : null}
                             </div>

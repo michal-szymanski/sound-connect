@@ -356,6 +356,7 @@ export const messageSchema = z.object({
     id: z.string(),
     chatRoomId: z.string(),
     senderId: z.string().nullable(),
+    senderName: z.string().optional(),
     messageType: messageTypeEnum,
     content: z.string(),
     createdAt: z.string()

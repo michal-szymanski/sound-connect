@@ -21,8 +21,7 @@ import { useMessagingContext } from './context';
 import { useDelayedLoading } from '@/web/hooks/use-delayed-loading';
 import { formatTimestamp } from '@/features/chat/utils/format-timestamp';
 import { messageFormSchema, type MessageFormValues } from '@/features/chat/schemas/message-form';
-import { getUser } from '@/shared/server-functions/users';
-import { getBand } from '@/features/bands/server-functions/bands';
+import { useConversationMetadata, fetchConversationMetadata } from '@/features/chat/hooks/use-conversation-metadata';
 
 const messagesSearchSchema = z.object({
     room: z.string().optional()
@@ -30,7 +29,22 @@ const messagesSearchSchema = z.object({
 
 export const Route = createFileRoute('/(main)/messages/')({
     component: RouteComponent,
-    validateSearch: messagesSearchSchema
+    validateSearch: messagesSearchSchema,
+    async beforeLoad({ search, context }) {
+        if (!search.room || !context.user?.id) {
+            return;
+        }
+
+        const queryClient = context.queryClient;
+        const roomId = search.room;
+        const currentUserId = context.user.id;
+
+        await queryClient.prefetchQuery({
+            queryKey: ['chat', 'conversation-metadata', roomId, currentUserId],
+            queryFn: () => fetchConversationMetadata({ roomId, currentUserId }),
+            staleTime: 5 * 60 * 1000
+        });
+    }
 });
 
 function RouteComponent() {
@@ -38,6 +52,31 @@ function RouteComponent() {
     const { data: auth } = useAuth();
     const { room } = Route.useSearch();
     const { selectedPeer, setSelectedPeer, selectedBand, setSelectedBand } = useMessagingContext();
+
+    const { data: conversationMetadata, error: conversationError } = useConversationMetadata({
+        roomId: room || '',
+        currentUserId: auth?.user?.id || '',
+        enabled: !!room && !!auth?.user?.id
+    });
+
+    useEffect(() => {
+        if (!conversationMetadata || conversationError) {
+            if (conversationError) {
+                toast.error('Failed to load conversation');
+            }
+            return;
+        }
+
+        if (conversationMetadata.type === 'user') {
+            if (selectedPeer?.id !== conversationMetadata.data.id) {
+                setSelectedPeer(conversationMetadata.data);
+            }
+        } else if (conversationMetadata.type === 'band') {
+            if (selectedBand?.id !== conversationMetadata.data.id) {
+                setSelectedBand(conversationMetadata.data);
+            }
+        }
+    }, [conversationMetadata, conversationError, setSelectedPeer, setSelectedBand, selectedPeer?.id, selectedBand?.id]);
 
     const dmRoomId = useGetRoomId(auth?.user?.id || '', selectedPeer?.id || '');
     const roomId = selectedPeer ? dmRoomId : selectedBand ? `band:${selectedBand.id}` : '';
@@ -90,57 +129,6 @@ function RouteComponent() {
             textarea.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
         }, 0);
     };
-
-    useEffect(() => {
-        const loadFromRoom = async () => {
-            if (!room || !auth?.user?.id) return;
-
-            if (room.startsWith('dm:')) {
-                const [, identifier] = room.split(':');
-                if (!identifier) return;
-
-                const userIds = identifier.split('-');
-                if (userIds.length !== 2) return;
-
-                const [userId1, userId2] = userIds;
-                const peerUserId = userId1 === auth.user.id ? userId2 : userId2 === auth.user.id ? userId1 : null;
-
-                if (!peerUserId || peerUserId === auth.user.id) return;
-                if (selectedPeer?.id === peerUserId) return;
-
-                try {
-                    const result = await getUser({ data: { userId: peerUserId } });
-                    if (result.success) {
-                        setSelectedPeer(result.body);
-                    } else {
-                        toast.error('User not found');
-                    }
-                } catch {
-                    toast.error('Failed to load user');
-                }
-            } else if (room.startsWith('band:')) {
-                const [, bandIdStr] = room.split(':');
-                if (!bandIdStr) return;
-
-                const bandId = parseInt(bandIdStr, 10);
-                if (!bandId || isNaN(bandId)) return;
-                if (selectedBand?.id === bandId) return;
-
-                try {
-                    const result = await getBand({ data: { bandId } });
-                    if (result.success) {
-                        setSelectedBand(result.body);
-                    } else {
-                        toast.error('Band not found');
-                    }
-                } catch {
-                    toast.error('Failed to load band');
-                }
-            }
-        };
-
-        loadFromRoom();
-    }, [room, auth?.user?.id, setSelectedPeer, selectedPeer?.id, setSelectedBand, selectedBand?.id]);
 
     useEffect(() => {
         if (roomId && auth?.user?.id && (selectedPeer?.id || selectedBand?.id) && (roomId.startsWith('dm:') || roomId.startsWith('band:'))) {

@@ -4,7 +4,8 @@ import { drizzle } from 'drizzle-orm/d1';
 import { eq, and, desc, gte } from 'drizzle-orm';
 import { schema } from '@sound-connect/drizzle';
 
-const { userSettingsTable, blockedUsersTable, usersFollowersTable, messagesTable, chatRoomParticipantsTable, chatRoomsTable, bandsMembersTable } = schema;
+const { userSettingsTable, blockedUsersTable, usersFollowersTable, messagesTable, chatRoomParticipantsTable, chatRoomsTable, bandsMembersTable, users } =
+    schema;
 
 export class ChatDurableObject extends DurableObject {
     private storage: DurableObjectStorage;
@@ -99,12 +100,20 @@ export class ChatDurableObject extends DurableObject {
             }
         }
 
+        let senderName: string | undefined;
+        if (isBandRoom) {
+            const db = drizzle(this.env.DB);
+            const [sender] = await db.select({ name: users.name }).from(users).where(eq(users.id, senderId)).limit(1);
+            senderName = sender?.name;
+        }
+
         const message = chatMessageSchema.parse({
             id: crypto.randomUUID(),
             type: 'chat',
             content,
             roomId: this.roomId,
             senderId,
+            senderName,
             timestamp: Date.now()
         });
 
@@ -167,8 +176,9 @@ export class ChatDurableObject extends DurableObject {
             }
 
             let joinedAt: string;
+            const isBandRoom = roomId.startsWith('band:');
 
-            if (roomId.startsWith('band:')) {
+            if (isBandRoom) {
                 const [, identifier] = roomId.split(':');
 
                 if (!identifier) {
@@ -208,6 +218,33 @@ export class ChatDurableObject extends DurableObject {
                 }
 
                 joinedAt = participant.joinedAt;
+            }
+
+            if (isBandRoom) {
+                const messages = await db
+                    .select({
+                        id: messagesTable.id,
+                        messageType: messagesTable.messageType,
+                        content: messagesTable.content,
+                        senderId: messagesTable.senderId,
+                        senderName: users.name,
+                        createdAt: messagesTable.createdAt
+                    })
+                    .from(messagesTable)
+                    .leftJoin(users, eq(messagesTable.senderId, users.id))
+                    .where(and(eq(messagesTable.chatRoomId, roomId), gte(messagesTable.createdAt, joinedAt)))
+                    .orderBy(desc(messagesTable.createdAt))
+                    .limit(100);
+
+                return messages.reverse().map((msg) => ({
+                    id: msg.id,
+                    type: msg.messageType === 'system' ? ('system' as const) : ('chat' as const),
+                    content: msg.content,
+                    roomId: roomId,
+                    senderId: msg.senderId || 'system',
+                    senderName: msg.senderName || undefined,
+                    timestamp: new Date(msg.createdAt).getTime()
+                }));
             }
 
             const messages = await db
