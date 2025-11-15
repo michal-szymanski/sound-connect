@@ -12,15 +12,26 @@ import { cn } from '@/shared/lib/utils';
 import { useChatWindows } from '@/features/chat/components/chat-window-manager';
 import type { ConversationDTO, UserConversationDTO, BandConversationDTO } from '@/common/types/conversations';
 import type { UserDTO } from '@/common/types/models';
+import { useMarkMessagesAsRead } from '@/features/chat/hooks/use-chat-queries';
+import { useAuth } from '@/shared/lib/react-query';
+import { getRoomId } from '@/common/helpers';
 
 export default function RightSidebar() {
     const { data, isLoading } = useConversations();
     const { openChatWindow } = useChatWindows();
+    const { mutate: markAsRead } = useMarkMessagesAsRead();
+    const { data: auth } = useAuth();
 
     const conversations = data?.conversations ?? [];
 
     const handleUserConversationClick = (conversation: UserConversationDTO) => {
-        if (!conversation.partner) return;
+        if (!conversation.partner || !auth?.user?.id) return;
+
+        const roomId = getRoomId(auth.user.id, conversation.partnerId);
+
+        if (conversation.unreadCount > 0) {
+            markAsRead({ roomId, currentUserId: auth.user.id });
+        }
 
         const partnerAsUser: UserDTO = {
             id: conversation.partner.id,
@@ -33,7 +44,13 @@ export default function RightSidebar() {
     };
 
     const handleBandConversationClick = (conversation: BandConversationDTO) => {
-        if (!conversation.band) return;
+        if (!conversation.band || !auth?.user?.id) return;
+
+        const roomId = `band:${conversation.bandId}`;
+
+        if (conversation.unreadCount > 0) {
+            markAsRead({ roomId, currentUserId: auth.user.id });
+        }
 
         const bandAsUser: UserDTO = {
             id: `band-${conversation.band.id}`,
@@ -121,7 +138,7 @@ export default function RightSidebar() {
                                                     <div className="flex items-center gap-2">
                                                         <p className="text-foreground truncate text-sm font-medium">{name}</p>
                                                         {conversation.unreadCount > 0 && (
-                                                            <Badge variant="default" className="ml-auto bg-primary text-primary-foreground shrink-0 text-xs">
+                                                            <Badge variant="default" className="bg-primary text-primary-foreground ml-auto shrink-0 text-xs">
                                                                 {conversation.unreadCount}
                                                             </Badge>
                                                         )}
@@ -161,7 +178,7 @@ export default function RightSidebar() {
                                                     <div className="flex items-center gap-2">
                                                         <p className="text-foreground truncate text-sm font-medium">{band.name}</p>
                                                         {conversation.unreadCount > 0 && (
-                                                            <Badge variant="default" className="ml-auto bg-primary text-primary-foreground shrink-0 text-xs">
+                                                            <Badge variant="default" className="bg-primary text-primary-foreground ml-auto shrink-0 text-xs">
                                                                 {conversation.unreadCount}
                                                             </Badge>
                                                         )}
