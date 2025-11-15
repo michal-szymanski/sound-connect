@@ -34,24 +34,26 @@ Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
 ## Implemented Features
 
 ### Authentication & User Management
+
 - Sign up / Sign in (better-auth)
 - Session management
 - User accounts
 
 ### User Profiles
+
 - **Rich musician profiles** with 30+ fields:
-  - **Instruments**: Primary instrument, years playing, up to 4 additional instruments, "seeking to play" preferences
-  - **Genres**: Primary genre, secondary genres (44 genre options)
-  - **Availability Status**: 4-tier system with color-coded indicators
-    - Actively Looking (green, with expiration date)
-    - Open to Offers (blue)
-    - Not Looking (gray)
-    - Just Browsing (yellow)
-  - **Experience**: Years playing, commitment level (hobbyist/serious amateur/professional), past bands, studio experience, gigging level
-  - **Location**: City, state, country (geocoded with lat/long), travel radius
-  - **Availability**: Weekly availability schedule, rehearsal frequency preference
-  - **Logistics**: Rehearsal space, transportation
-  - **Goals**: Bio, musical influences, seeking, can offer, deal breakers, musical goals, age range
+    - **Instruments**: Primary instrument, years playing, up to 4 additional instruments, "seeking to play" preferences
+    - **Genres**: Primary genre, secondary genres (44 genre options)
+    - **Availability Status**: 4-tier system with color-coded indicators
+        - Actively Looking (green, with expiration date)
+        - Open to Offers (blue)
+        - Not Looking (gray)
+        - Just Browsing (yellow)
+    - **Experience**: Years playing, commitment level (hobbyist/serious amateur/professional), past bands, studio experience, gigging level
+    - **Location**: City, state, country (geocoded with lat/long), travel radius
+    - **Availability**: Weekly availability schedule, rehearsal frequency preference
+    - **Logistics**: Rehearsal space, transportation
+    - **Goals**: Bio, musical influences, seeking, can offer, deal breakers, musical goals, age range
 - **Profile completion tracking**: 0-100% score with visual progress indicator
 - **Inline profile editing**: All sections editable directly on profile page
 - Follow/unfollow users
@@ -59,137 +61,147 @@ Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
 - Follow request system
 
 ### Musician Discovery
+
 - **Advanced search** at `/musicians`:
-  - Filter by instruments (multi-select, searches primary + additional)
-  - Filter by genres (multi-select, searches primary + secondary)
-  - Filter by location with radius (5, 10, 25, 50, 100 miles)
-  - Filter by availability status (multi-select)
-  - Geocoding with fallback to city name matching
-  - Distance calculation (haversine formula)
-  - Results sorted by instrument match + last active
-  - Pagination (12 results per page)
+    - Filter by instruments (multi-select, searches primary + additional)
+    - Filter by genres (multi-select, searches primary + secondary)
+    - Filter by location with radius (5, 10, 25, 50, 100 miles)
+    - Filter by availability status (multi-select)
+    - Geocoding with fallback to city name matching
+    - Distance calculation (haversine formula)
+    - Results sorted by instrument match + last active
+    - Pagination (12 results per page)
 - Profile cards showing key musician info
 - User detail pages with full profile information
 
 ### Band/Group Management
+
 - **Create bands** (`/bands/new`) with profile information:
-  - Name, bio, profile image
-  - Primary genre
-  - Location (geocoded)
-  - "Looking for" section (prominently displayed)
+    - Name, bio, profile image
+    - Primary genre
+    - Location (geocoded)
+    - "Looking for" section (prominently displayed)
 - **Band profile pages** (`/bands/:id`) with tabbed interface:
-  - Posts tab: Band posts feed, post composer (admin only)
-  - About tab: Bio, "Looking for" section (highlighted), delete band (admin only)
-  - Members tab: Member grid with roles, add/remove members (admin only)
+    - Posts tab: Band posts feed, post composer (admin only)
+    - About tab: Bio, "Looking for" section (highlighted), delete band (admin only)
+    - Members tab: Member grid with roles, add/remove members (admin only)
 - **Member management**:
-  - Add/remove members (admin only)
-  - Admin role system (multiple admins per band)
-  - Protection: Last admin cannot be removed
-  - Member cards showing name, profile image, admin badge
+    - Add/remove members (admin only)
+    - Admin role system (multiple admins per band)
+    - Protection: Last admin cannot be removed
+    - Member cards showing name, profile image, admin badge
 - **Band posts**: Admins can create posts on behalf of band
 - **Follow bands**: Follow/unfollow button on band profiles
 - **Band followers**:
-  - Follower count display on profile
-  - Followers modal showing list of followers
-  - Message band button (starts conversation with band admins)
+    - Follower count display on profile
+    - Followers modal showing list of followers
+    - Message band button (starts conversation with band admins)
 - **My Bands page** (`/bands`): View all bands user belongs to (sorted by admin status)
 - **"Find Musicians" CTA**: Band profiles have quick link to musician search pre-filled with band's location and genre
 - **Band applications**:
-  - Musicians can apply to join bands with "looking for" section
-  - Application form with message, position (optional), and music link (optional)
-  - Applications tab on band page (visible to admins only) with pending count badge
-  - Accept/reject workflow with confirmation dialogs
-  - Rejection feedback message (optional)
-  - Prevents re-application after rejection during current recruitment period
-  - Prevents duplicate applications (one pending per band)
-  - Notifications sent to band admins when application received
-  - Notifications sent to applicants when accepted/rejected
-  - Apply button shows status: "Apply", "Application Pending", or "Application Declined"
-  - Auto-adds accepted applicants as band members
+    - Musicians can apply to join bands with "looking for" section
+    - Application form with message, position (optional), and music link (optional)
+    - Applications tab on band page (visible to admins only) with pending count badge
+    - Accept/reject workflow with confirmation dialogs
+    - Rejection feedback message (optional)
+    - Prevents re-application after rejection during current recruitment period
+    - Prevents duplicate applications (one pending per band)
+    - Notifications sent to band admins when application received
+    - Notifications sent to applicants when accepted/rejected
+    - Apply button shows status: "Apply", "Application Pending", or "Application Declined"
+    - Auto-adds accepted applicants as band members
 
 ### Band Discovery
+
 - **Intelligent band matching** at `/discover/bands`:
-  - Personalized recommendations based on user profile
-  - Smart matching algorithm scores bands by:
-    - Instrument match (50 points for primary instrument, 25 for additional instruments)
-    - Genre match (30 points for primary genre, 15 for secondary genres)
-    - Location proximity (20 points < 10 miles, 10 points < 25 miles, 5 points < 50 miles)
-  - Only shows bands with "looking for" text (actively recruiting)
-  - Minimum match score of 20 required
-  - Results sorted by match score (highest first)
-  - Shows top 2 match reasons per band (instrument, genre, location)
-  - Displays distance in miles, follower count, member count
-  - Pagination (12 results per page)
-  - Analytics tracking (page views, card clicks, profile views)
-  - Graceful handling of incomplete profiles:
-    - Shows friendly Card UI prompting profile completion
-    - Requires: primary instrument, primary genre, city
-    - Button navigates to user's own profile for inline editing
+    - Personalized recommendations based on user profile
+    - Smart matching algorithm scores bands by:
+        - Instrument match (50 points for primary instrument, 25 for additional instruments)
+        - Genre match (30 points for primary genre, 15 for secondary genres)
+        - Location proximity (20 points < 10 miles, 10 points < 25 miles, 5 points < 50 miles)
+    - Only shows bands with "looking for" text (actively recruiting)
+    - Minimum match score of 20 required
+    - Results sorted by match score (highest first)
+    - Shows top 2 match reasons per band (instrument, genre, location)
+    - Displays distance in miles, follower count, member count
+    - Pagination (12 results per page)
+    - Analytics tracking (page views, card clicks, profile views)
+    - Graceful handling of incomplete profiles:
+        - Shows friendly Card UI prompting profile completion
+        - Requires: primary instrument, primary genre, city
+        - Button navigates to user's own profile for inline editing
 - **Band search** at `/bands/search`:
-  - Filter by genre
-  - Filter by location with radius (5, 10, 25, 50, 100 miles)
-  - Filter by "looking for" text search
-  - Distance calculation
-  - Shows member count
-  - Pagination (12 results per page)
+    - Filter by genre
+    - Filter by location with radius (5, 10, 25, 50, 100 miles)
+    - Filter by "looking for" text search
+    - Distance calculation
+    - Shows member count
+    - Pagination (12 results per page)
 - My Bands page (`/bands`) showing all bands user belongs to
 
 ### Social Features
+
 - **Posts**:
-  - Create posts (text, images, videos)
-  - Posts by users or bands (author_type: 'user' | 'band')
-  - View post detail pages
-  - Social feed on home page
+    - Create posts (text, images, videos)
+    - Posts by users or bands (author_type: 'user' | 'band')
+    - View post detail pages
+    - Social feed on home page
 - **Reactions**: React to posts
 - **Comments**: Comment on posts
 - **User search**: Basic user search functionality
 
 ### Real-time Communication
+
 - **Direct messaging** at `/messages`:
-  - 1:1 conversations
-  - Real-time message delivery (Durable Objects)
-  - Message history
-  - Conversation list with search
-  - Emoji picker in message input
-  - Quick access via right sidebar "Messages" card
+    - 1:1 conversations
+    - Real-time message delivery (Durable Objects)
+    - Message history
+    - Conversation list with search
+    - Emoji picker in message input
+    - Quick access via right sidebar "Messages" card
 
 ### Notifications
+
 - Notification system
 - Queue-based notification processing (Cloudflare Queues)
 
 ### Content Moderation
+
 - Queue-based content moderation for posts (Cloudflare Queues)
 
 ### User Settings
+
 - **Settings page** at `/settings` with tabbed interface:
-  - **Account tab**: Update email address, change password, view account creation date
-  - **Privacy tab**:
-    - Profile visibility control (public, followers only, private)
-    - Search visibility toggle (appear in musician search)
-    - Who can message me (anyone, followers only, no one)
-    - Who can follow me (anyone, approval required, no one)
-    - Block/unblock users with blocked users list management
-  - **Notifications tab**:
-    - Global email notifications toggle
-    - Granular controls per notification type (follows, comments, reactions, mentions, band applications)
-    - In-app notifications always enabled
-  - **Data & Account tab**:
-    - Export all user data in JSON format (profile, posts, comments, messages, bands)
-    - Delete account with password confirmation
+    - **Account tab**: Update email address, change password, view account creation date
+    - **Privacy tab**:
+        - Profile visibility control (public, followers only, private)
+        - Search visibility toggle (appear in musician search)
+        - Who can message me (anyone, followers only, no one)
+        - Who can follow me (anyone, approval required, no one)
+        - Block/unblock users with blocked users list management
+    - **Notifications tab**:
+        - Global email notifications toggle
+        - Granular controls per notification type (follows, comments, reactions, mentions, band applications)
+        - In-app notifications always enabled
+    - **Data & Account tab**:
+        - Export all user data in JSON format (profile, posts, comments, messages, bands)
+        - Delete account with password confirmation
 - **Privacy enforcement**:
-  - Profile visibility respected across the platform
-  - Search visibility excludes users from musician search results when disabled
-  - Blocked users cannot view profile, send messages, or see content in feed
-  - Messaging and follow permissions enforced on all interactions
+    - Profile visibility respected across the platform
+    - Search visibility excludes users from musician search results when disabled
+    - Blocked users cannot view profile, send messages, or see content in feed
+    - Messaging and follow permissions enforced on all interactions
 
 ## Known Gaps / Future Features
 
 ### High Priority (Affects Activation & Retention)
+
 - **Onboarding flow**: No guided profile setup for new users after sign-up
 - **Discovery feed**: No personalized "For You" feed - users must manually search
 - **Saved profiles**: Cannot bookmark musicians/bands for later
 
 ### Medium Priority
+
 - Profile views analytics
 - Recommendations engine
 - Advanced messaging (group chats, read receipts)
@@ -205,8 +217,8 @@ Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
 
 - NEVER run `pnpm --filter @sound-connect/web dev` or `pnpm --filter @sound-connect/api dev` without explicit user request
 - Before attempting any development work, ALWAYS check if servers are running:
-  - Frontend should be on `http://localhost:3000` (or nearby port if 3000 is taken)
-  - Backend should be on `http://localhost:4000`
+    - Frontend should be on `http://localhost:3000` (or nearby port if 3000 is taken)
+    - Backend should be on `http://localhost:4000`
 - Check server status using: `lsof -ti:3000,4000` or by checking background Bash processes
 - If servers are NOT running, ask the user: "The dev servers are not running. Would you like me to start them?"
 - ONLY start servers after explicit user confirmation
@@ -354,12 +366,12 @@ What type of work are you doing?
 - Infrastructure configuration (wrangler.jsonc, deployment settings)
 - Requires user approval for ALL operations
 - **MUST be invoked for:**
-  - Any changes to `.github/workflows/*.yml` files
-  - Any changes to `wrangler.jsonc` files
-  - Production deployments or rollbacks
-  - Creating/updating/deleting Cloudflare secrets
-  - Database migrations in production
-  - Queue, Durable Object, or R2 bucket configuration changes
+    - Any changes to `.github/workflows/*.yml` files
+    - Any changes to `wrangler.jsonc` files
+    - Production deployments or rollbacks
+    - Creating/updating/deleting Cloudflare secrets
+    - Database migrations in production
+    - Queue, Durable Object, or R2 bucket configuration changes
 - Use when: Deployment, operational, or infrastructure tasks
 
 **test-expert**
@@ -382,6 +394,7 @@ What type of work are you doing?
 Some tasks require consultation with an advisory agent followed by automatic implementation:
 
 **UI/UX Improvements Workflow:**
+
 1. User requests UI improvement → Invoke **designer** agent
 2. Designer provides comprehensive recommendations
 3. **Assistant asks**: "Should I implement these improvements?"
@@ -389,6 +402,7 @@ Some tasks require consultation with an advisory agent followed by automatic imp
 5. Frontend agent implements the recommendations
 
 **Database Schema Changes Workflow:**
+
 1. User requests database changes → Invoke **database-architect** agent
 2. Database-architect provides schema design and migration plan
 3. **Assistant asks**: "Should I implement these changes?"
@@ -396,6 +410,7 @@ Some tasks require consultation with an advisory agent followed by automatic imp
 5. Backend agent implements migrations
 
 **Critical Rules for Two-Step Workflows:**
+
 - After advisory agent completes, ALWAYS proactively ask user if they want implementation
 - Detect user **intent**, not specific keywords - any affirmative response triggers implementation
 - If user says "no" or asks questions → wait for clarification, don't implement
@@ -404,10 +419,12 @@ Some tasks require consultation with an advisory agent followed by automatic imp
 - DON'T start implementing with direct tool use (Edit, Write) - always use the appropriate implementation agent
 
 **Advisory Agents:**
+
 - `designer` → provides UI/UX guidance → followed by `frontend` implementation
 - `database-architect` → provides schema design → followed by `backend` implementation
 
 **Implementation Agents:**
+
 - `frontend` → implements UI changes, React components, Tanstack Start features
 - `backend` → implements API routes, database migrations, Durable Objects
 
@@ -535,6 +552,7 @@ To speed up feature implementation, invoke agents **in parallel** when they don'
 
 **How to Invoke Agents in Parallel:**
 Use multiple Task tool calls in a **single message**:
+
 ```
 Task(system-architect, "Create shared types")
 Task(database-architect, "Design schema")
@@ -562,15 +580,17 @@ Total: ~25 minutes (vs 35+ sequential)
 ```
 
 **Dependency Rules:**
+
 - **Phase 2 agents** (system-architect, database-architect, designer) can run in parallel - they produce independent outputs
 - **Phase 3 agents** (backend, frontend) can run in parallel IF:
-  - They both need system-architect's types → wait for Phase 2
-  - They coordinate via shared types (no direct file conflicts)
+    - They both need system-architect's types → wait for Phase 2
+    - They coordinate via shared types (no direct file conflicts)
 - **Phase 4 agents** (test-expert, code-quality-enforcer) can run in parallel - they validate completed code
 
 **Example Sequential vs Parallel:**
 
-*Sequential (old way):*
+_Sequential (old way):_
+
 ```
 1. feature-spec-writer → 5 min
 2. system-architect → 3 min
@@ -581,7 +601,8 @@ Total: ~25 minutes (vs 35+ sequential)
 Total: 34 minutes
 ```
 
-*Parallel (new way):*
+_Parallel (new way):_
+
 ```
 1. feature-spec-writer → 5 min
 2. system-architect + database-architect + designer → 5 min (parallel)
@@ -590,6 +611,7 @@ Total: 20 minutes (41% faster!)
 ```
 
 **When NOT to Parallelize:**
+
 - frontend/backend agents editing the same files (rare, but possible)
 - Agent B needs Agent A's output immediately (create dependency chain)
 - Advisory agents (designer, database-architect) that inform implementation decisions
@@ -602,30 +624,35 @@ When user requests a feature, proactively identify parallel opportunities and in
 **ABSOLUTE RULE: You must NEVER directly edit code files in `apps/web/`, `apps/api/`, `apps/*-queue-consumer/` using Edit, Write, or other tools.**
 
 When you identify an issue or need to implement a feature:
+
 1. **Frontend issues** (`apps/web/**`): ALWAYS invoke `frontend` agent
-   - Server functions, React hooks, components, routing, Tanstack Query
-   - Even for "simple" fixes like adding a parameter or fixing a condition
+    - Server functions, React hooks, components, routing, Tanstack Query
+    - Even for "simple" fixes like adding a parameter or fixing a condition
 2. **Backend issues** (`apps/api/**`, `apps/*-queue-consumer/**`): ALWAYS invoke `backend` agent
-   - API routes, database queries, Durable Objects, queue consumers
-   - Even for "simple" fixes like adding validation or fixing logic
+    - API routes, database queries, Durable Objects, queue consumers
+    - Even for "simple" fixes like adding validation or fixing logic
 
 **Why this matters:**
+
 - Specialized agents have deep domain knowledge and access to specialized MCPs
 - They automatically run code quality checks
 - They follow framework-specific best practices
 - They maintain consistency across the codebase
 
 **When direct editing IS allowed:**
+
 - Documentation files (`.md`)
 - Configuration files (only when not part of feature implementation)
 - Shared code in `packages/common` (only when coordinating with system-architect)
 
 **Examples of what NOT to do:**
+
 - ❌ "Let me fix this React Query hook configuration" → Edit tool
 - ❌ "I'll add the missing method parameter" → Edit tool
 - ❌ "Let me update this API route" → Edit tool
 
 **Examples of what TO do:**
+
 - ✅ "Let me invoke the frontend agent to fix this React Query hook configuration" → Task(frontend)
 - ✅ "Let me invoke the frontend agent to add the missing method parameter" → Task(frontend)
 - ✅ "Let me invoke the backend agent to update this API route" → Task(backend)
@@ -649,13 +676,14 @@ When you identify an issue or need to implement a feature:
 
 #### Frontend (`apps/web`)
 
-- NEVER modify files in `src/components/ui/` - these are ShadCN auto-generated components
+- NEVER modify files in `src/shared/components/ui/` - these are ShadCN auto-generated components
 
 **Z-Index System:**
 
 Sound Connect uses a centralized z-index system defined in Tailwind configuration to ensure consistent layering across the application.
 
 **Available Tokens:**
+
 - `z-base` (0) - Default layer for normal content
 - `z-dropdown` (1) - Dropdown menus (not popovers)
 - `z-sticky` (10) - Sticky headers and navigation
@@ -665,18 +693,21 @@ Sound Connect uses a centralized z-index system defined in Tailwind configuratio
 - `z-tooltip` (120) - Tooltip overlays (highest priority)
 
 **Usage:**
+
 ```tsx
 <div className="z-popover">...</div>
 <div className="z-tooltip">...</div>
 ```
 
 **Rules:**
+
 - ALWAYS use semantic z-index tokens (e.g., `z-popover`) instead of numeric values (e.g., `z-[110]`)
 - NEVER use arbitrary z-index values like `z-[999]` or `z-50` unless adding to the token system
 - Tooltips must use `pointer-events-none` to prevent hover interference
 - If a new layering level is needed, add it to the Tailwind config and document it here
 
 **Defined in:**
+
 - CSS variables: `apps/web/src/styles/globals.css:170-177`
 - Tailwind config: `apps/web/tailwind.config.ts` (theme.extend.zIndex)
 
@@ -687,6 +718,7 @@ Sound Connect uses a centralized z-index system defined in Tailwind configuratio
 #### R2 Asset Storage (`sound-connect-assets`)
 
 **Current Setup:**
+
 - Bucket name: `sound-connect-assets`
 - Binding: `ASSETS` (accessible via `c.env.ASSETS` in API and queue consumers)
 - Public URL: `https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev`
@@ -694,30 +726,33 @@ Sound Connect uses a centralized z-index system defined in Tailwind configuratio
 
 **Upload Flow (Hybrid Approach):**
 
-*Modern Flow (Presigned URLs - Recommended):*
+_Modern Flow (Presigned URLs - Recommended):_
+
 1. **Request:** Client calls `POST /api/uploads/presigned-url` with file metadata
-   - Backend validates auth, file type, size limits
-   - Creates `upload_session` in database
-   - Returns: uploadUrl, sessionId, tempKey, expiresAt
+    - Backend validates auth, file type, size limits
+    - Creates `upload_session` in database
+    - Returns: uploadUrl, sessionId, tempKey, expiresAt
 2. **Upload:** Client uploads directly to `POST /api/uploads/upload?sessionId={id}`
-   - File streams to R2 `temp/` folder (bypasses Worker for file transfer)
-   - Progress tracking on client
-   - Presigned URL expires in 15 minutes
+    - File streams to R2 `temp/` folder (bypasses Worker for file transfer)
+    - Progress tracking on client
+    - Presigned URL expires in 15 minutes
 3. **Confirm:** Client calls `POST /api/uploads/confirm` with sessionId and key
-   - Backend validates file exists, matches size/type
-   - Validates file type via magic numbers (JPEG, PNG, WebP, GIF, MP4, WebM, MOV)
-   - Moves from `temp/{userId}/{timestamp}-{uuid}.{ext}` to permanent location
-   - Returns publicUrl and permanent key
+    - Backend validates file exists, matches size/type
+    - Validates file type via magic numbers (JPEG, PNG, WebP, GIF, MP4, WebM, MOV)
+    - Moves from `temp/{userId}/{timestamp}-{uuid}.{ext}` to permanent location
+    - Returns publicUrl and permanent key
 4. **Cleanup:** R2 lifecycle rule auto-deletes `temp/` files after 24 hours
 
-*Legacy Flow (Through-API - For backward compatibility):*
+_Legacy Flow (Through-API - For backward compatibility):_
+
 - Client uploads via `POST /posts` (with media) or `PUT /media`
 - API receives file and uploads to R2 using `c.env.ASSETS.put(key, file)`
 - Optional: Queue consumer processes for moderation (future AI moderation)
 
-*Result:* Files publicly accessible at `https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev/{key}`
+_Result:_ Files publicly accessible at `https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev/{key}`
 
 **Folder Structure:**
+
 ```
 sound-connect-assets/
 ├── temp/           # Temporary uploads (lifecycle: auto-delete after 24hrs)
@@ -727,6 +762,7 @@ sound-connect-assets/
 ```
 
 **Upload API Endpoints:**
+
 - `POST /api/uploads/presigned-url` - Request upload session (returns uploadUrl, sessionId, key)
 - `POST /api/uploads/upload?sessionId={id}` - Streaming proxy upload to R2
 - `POST /api/uploads/confirm` - Validate and move single file to permanent location
@@ -734,12 +770,14 @@ sound-connect-assets/
 - `POST /api/uploads/cleanup` - Cron endpoint to cleanup expired sessions
 
 **Frontend Upload Components:**
+
 - `ProfileImageUpload` - Circular avatar upload with preview (`apps/web/src/features/profile/components/`)
 - `BandImageUpload` - Square band image upload (`apps/web/src/features/bands/components/`)
 - `PostMediaUpload` - Multi-file grid upload, up to 5 files (`apps/web/src/features/posts/components/`)
 - Hooks: `usePresignedUpload` (single file), `useBatchPresignedUpload` (multiple files)
 
 **Key Patterns:**
+
 - Use `crypto.randomUUID()` for generating unique object keys
 - Store R2 object keys in database (not full URLs)
 - Construct public URLs when needed: `${PUBLIC_R2_URL}/${key}`
@@ -749,6 +787,7 @@ sound-connect-assets/
 - Upload sessions expire after 15 minutes (presigned URL) or 1 hour (upload window)
 
 **Cost:**
+
 - Storage: $0.015/GB/month
 - Class A operations (PUT): $4.50/million
 - Class B operations (GET): $0.50/million
@@ -756,6 +795,7 @@ sound-connect-assets/
 - Estimated cost for 10k DAU: ~$3-5/month
 
 **Implemented Features:**
+
 - ✅ Presigned URL uploads (streaming proxy to R2)
 - ✅ Upload session tracking in database
 - ✅ File validation (size, type, magic numbers)
@@ -764,18 +804,21 @@ sound-connect-assets/
 - ✅ Batch uploads for post media (up to 5 files)
 
 **Future Enhancements:**
+
 - AI-based content moderation in queue consumer (validate uploads before moving to permanent location)
 - Image optimization and resizing (create thumbnails, convert to WebP)
 - Video transcoding (convert to optimized formats)
 - Resumable uploads for large files (multipart uploads)
 
 **Database:**
+
 - `upload_sessions` table tracks presigned URL requests and confirmations
 - Columns: id, user_id, upload_type, band_id, file_name, file_size, content_type, temp_key, expires_at, created_at, confirmed_at
 - Indexed on user_id, expires_at, confirmed_at for efficient queries
 - Migration: `0010_add_upload_sessions.sql`
 
 **Legacy:**
+
 - Old bucket `users-bucket` (binding: `UsersBucket`) - kept as backup, not used in code
 - Migration completed: 2025-11-10
 - Presigned upload system implemented: 2025-11-10
