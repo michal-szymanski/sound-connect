@@ -30,6 +30,8 @@ export const ChatProvider = ({ children, auth, envs }: Props) => {
     const ws = useRef<WebSocket | null>(null);
     const userIdRef = useRef(auth.user.id);
     const queryClient = useQueryClient();
+    const pendingSubscriptions = useRef<Set<string>>(new Set());
+    const pendingUnsubscriptions = useRef<Set<string>>(new Set());
 
     const [status, setStatus] = useState<ChatStatus>('connecting');
 
@@ -37,17 +39,43 @@ export const ChatProvider = ({ children, auth, envs }: Props) => {
         userIdRef.current = auth.user.id;
     }, [auth.user.id]);
 
+    const flushPendingSubscriptions = useCallback(() => {
+        if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
+            return;
+        }
+
+        pendingSubscriptions.current.forEach((roomId) => {
+            const message = subscribeMessageSchema.parse({ type: 'subscribe', roomId });
+            ws.current!.send(JSON.stringify(message));
+        });
+        pendingSubscriptions.current.clear();
+
+        pendingUnsubscriptions.current.forEach((roomId) => {
+            const message = unsubscribeMessageSchema.parse({ type: 'unsubscribe', roomId });
+            ws.current!.send(JSON.stringify(message));
+        });
+        pendingUnsubscriptions.current.clear();
+    }, []);
+
     const subscribeToRoom = useCallback((roomId: string) => {
+        pendingUnsubscriptions.current.delete(roomId);
+
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
             const message = subscribeMessageSchema.parse({ type: 'subscribe', roomId });
             ws.current.send(JSON.stringify(message));
+        } else {
+            pendingSubscriptions.current.add(roomId);
         }
     }, []);
 
     const unsubscribeFromRoom = useCallback((roomId: string) => {
+        pendingSubscriptions.current.delete(roomId);
+
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
             const message = unsubscribeMessageSchema.parse({ type: 'unsubscribe', roomId });
             ws.current.send(JSON.stringify(message));
+        } else {
+            pendingUnsubscriptions.current.add(roomId);
         }
     }, []);
 
@@ -69,6 +97,7 @@ export const ChatProvider = ({ children, auth, envs }: Props) => {
 
         const handleOpen = () => {
             setStatus('open');
+            flushPendingSubscriptions();
         };
 
         const handleError = (event: Event) => {
