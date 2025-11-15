@@ -6,7 +6,7 @@ import { getConversations } from '@/api/db/queries/conversations-queries';
 import { checkMessagingPermissionRequestSchema, checkMessagingPermissionResponseSchema } from '@sound-connect/common/types/messaging';
 import { drizzle } from 'drizzle-orm/d1';
 import { schema } from '@sound-connect/drizzle';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 
 const chatRoutes = new Hono<HonoContext>();
 
@@ -162,6 +162,60 @@ chatRoutes.get('/chat/:roomId/history', async (c) => {
     const history = await stub.getRoomHistory(roomId, user.id);
 
     return c.json(history);
+});
+
+chatRoutes.post('/chat/:roomId/mark-read', async (c) => {
+    const { roomId } = c.req.param();
+    const user = c.get('user');
+
+    if (!user) {
+        throw new HTTPException(401, { message: 'Unauthorized' });
+    }
+
+    if (roomId.startsWith('dm:')) {
+        if (!roomId.includes(user.id)) {
+            throw new HTTPException(403, { message: 'Forbidden: You are not part of this room' });
+        }
+    } else if (roomId.startsWith('band:')) {
+        const bandIdStr = roomId.split(':')[1];
+        if (!bandIdStr) {
+            throw new HTTPException(400, { message: 'Invalid band room ID' });
+        }
+        const bandId = parseInt(bandIdStr, 10);
+        if (isNaN(bandId)) {
+            throw new HTTPException(400, { message: 'Invalid band room ID' });
+        }
+
+        const db = drizzle(c.env.DB);
+        const { bandsMembersTable } = schema;
+
+        const [membership] = await db
+            .select()
+            .from(bandsMembersTable)
+            .where(and(eq(bandsMembersTable.bandId, bandId), eq(bandsMembersTable.userId, user.id)))
+            .limit(1);
+
+        if (!membership) {
+            throw new HTTPException(403, { message: 'Forbidden: You are not a member of this band' });
+        }
+    } else {
+        throw new HTTPException(400, { message: 'Invalid room ID format' });
+    }
+
+    const db = drizzle(c.env.DB);
+    const { messagesTable } = schema;
+
+    console.log('[mark-read] Marking messages as read:', { roomId, userId: user.id });
+
+    const result = await db
+        .update(messagesTable)
+        .set({ seen: true })
+        .where(and(eq(messagesTable.chatRoomId, roomId), eq(messagesTable.seen, false), sql`${messagesTable.senderId} != ${user.id}`))
+        .returning({ id: messagesTable.id });
+
+    console.log('[mark-read] Updated messages:', result.length);
+
+    return c.json({ success: true, updated: result.length });
 });
 
 export { chatRoutes };

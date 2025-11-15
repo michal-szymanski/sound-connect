@@ -16,7 +16,7 @@ import { useChat } from '@/shared/components/providers/chat-provider';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
 import { VirtualizedMessageList } from '@/features/chat/components/virtualized-message-list';
 import { MessageStatusIndicator } from '@/features/chat/components/message-status-indicator';
-import { useChatMessages, useGetRoomId, useSendMessage } from '@/features/chat/hooks/use-chat-queries';
+import { useChatMessages, useGetRoomId, useSendMessage, useMarkMessagesAsRead } from '@/features/chat/hooks/use-chat-queries';
 import { useMessagingContext } from './context';
 import { useDelayedLoading } from '@/web/hooks/use-delayed-loading';
 import { formatTimestamp } from '@/features/chat/utils/format-timestamp';
@@ -82,6 +82,7 @@ function RouteComponent() {
     const roomId = selectedPeer ? dmRoomId : selectedBand ? `band:${selectedBand.id}` : '';
     const { data: messages = [], isInitialLoading } = useChatMessages({ conversationId: roomId, enabled: !!(selectedPeer || selectedBand) });
     const { mutate: sendMessageMutate, messageStatuses, retryMessage } = useSendMessage(sendMessage);
+    const { mutate: markAsRead } = useMarkMessagesAsRead();
     const shouldShowLoading = useDelayedLoading({ isLoading: isInitialLoading });
 
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
@@ -139,6 +140,12 @@ function RouteComponent() {
             };
         }
     }, [roomId, subscribeToRoom, unsubscribeFromRoom, auth?.user?.id, selectedPeer?.id, selectedBand?.id]);
+
+    useEffect(() => {
+        if (roomId && (selectedPeer || selectedBand) && messages.length > 0) {
+            markAsRead(roomId);
+        }
+    }, [roomId, selectedPeer, selectedBand, messages.length, markAsRead]);
 
     if (!selectedPeer && !selectedBand) {
         return (

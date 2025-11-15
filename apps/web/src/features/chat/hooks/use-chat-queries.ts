@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ChatMessage } from '@/common/types/models';
-import { getChatHistory } from '@/features/chat/server-functions/chat';
+import { getChatHistory, markMessagesAsRead } from '@/features/chat/server-functions/chat';
 import { toast } from 'sonner';
 import { getRoomId } from '@/common/helpers';
 import { useState } from 'react';
@@ -164,4 +164,18 @@ export function useInvalidateChatMessages() {
 
 export function useGetRoomId(userId: string, peerId: string): string {
     return getRoomId(userId, peerId);
+}
+
+export function useMarkMessagesAsRead() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (roomId: string) => {
+            return await markMessagesAsRead({ data: { roomId } });
+        },
+        onSuccess: (_data, roomId) => {
+            queryClient.invalidateQueries({ queryKey: ['chat', 'conversations'] });
+            queryClient.invalidateQueries({ queryKey: ['chat', 'messages', roomId] });
+        }
+    });
 }

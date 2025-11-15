@@ -31,14 +31,16 @@ export const userConversationDTOSchema = z.object({
     partnerId: z.string(),
     partner: conversationPartnerSchema,
     lastMessage: conversationLastMessageSchema,
-    isMutualFollow: z.boolean()
+    isMutualFollow: z.boolean(),
+    unreadCount: z.number()
 });
 
 export const bandConversationDTOSchema = z.object({
     type: z.literal('band'),
     bandId: z.number(),
     band: bandConversationInfoSchema,
-    lastMessage: conversationLastMessageSchema
+    lastMessage: conversationLastMessageSchema,
+    unreadCount: z.number()
 });
 
 export const conversationDTOSchema = z.discriminatedUnion('type', [userConversationDTOSchema, bandConversationDTOSchema]);

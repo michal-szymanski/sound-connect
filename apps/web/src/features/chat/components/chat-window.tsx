@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UserDTO } from '@/common/types/models';
 import { X, Minus, Send, Smile, Loader2 } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
@@ -10,7 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/
 import { useAuth } from '@/shared/lib/react-query';
 import { useChat } from '@/shared/components/providers/chat-provider';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
-import { useChatMessages, useGetRoomId, useSendMessage } from '@/features/chat/hooks/use-chat-queries';
+import { useChatMessages, useSendMessage, useMarkMessagesAsRead } from '@/features/chat/hooks/use-chat-queries';
+import { getRoomId } from '@sound-connect/common/helpers';
 import { VirtualizedMessageList } from './virtualized-message-list';
 import { useDelayedLoading } from '@/web/hooks/use-delayed-loading';
 import { MessageStatusIndicator } from './message-status-indicator';
@@ -32,9 +33,19 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const { data: auth } = useAuth();
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage } = useChat();
 
-    const roomId = useGetRoomId(auth?.user?.id || '', user.id);
+    const roomId = useMemo(() => {
+        if (!auth?.user?.id) return '';
+
+        if (user.id.startsWith('band-')) {
+            const bandId = user.id.replace('band-', '');
+            return `band:${bandId}`;
+        }
+
+        return getRoomId(auth.user.id, user.id);
+    }, [auth?.user?.id, user.id]);
     const { data: messages = [], isLoading } = useChatMessages({ conversationId: roomId, enabled: !!auth?.user });
     const { mutate: sendMessageMutate, messageStatuses, retryMessage } = useSendMessage(sendMessage);
+    const { mutate: markAsRead } = useMarkMessagesAsRead();
     const shouldShowLoading = useDelayedLoading({ isLoading });
 
     const [isHovered, setIsHovered] = useState(false);
@@ -71,6 +82,12 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
             };
         }
     }, [roomId, subscribeToRoom, unsubscribeFromRoom, auth?.user?.id]);
+
+    useEffect(() => {
+        if (roomId && !isMinimized && messages.length > 0) {
+            markAsRead(roomId);
+        }
+    }, [roomId, isMinimized, messages.length, markAsRead]);
 
     useEffect(() => {
         if (prevMinimizedRef.current && !isMinimized) {

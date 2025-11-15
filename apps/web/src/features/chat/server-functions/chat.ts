@@ -66,3 +66,22 @@ export const getConversations = createServerFn()
             return failure('Failed to parse conversations response');
         }
     });
+
+export const markMessagesAsRead = createServerFn()
+    .middleware([authMiddleware])
+    .inputValidator(z.object({ roomId: z.string() }))
+    .handler(async ({ data, context: { env, auth } }) => {
+        const response = await env.API.fetch(`${env.API_URL}/api/chat/${data.roomId}/mark-read`, {
+            method: 'POST',
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await apiErrorHandler(response);
+        }
+
+        return success(null);
+    });
