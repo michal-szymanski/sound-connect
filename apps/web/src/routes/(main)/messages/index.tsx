@@ -142,10 +142,10 @@ function RouteComponent() {
     }, [roomId, subscribeToRoom, unsubscribeFromRoom, auth?.user?.id, selectedPeer?.id, selectedBand?.id]);
 
     useEffect(() => {
-        if (roomId && (selectedPeer || selectedBand) && messages.length > 0) {
-            markAsRead(roomId);
+        if (roomId && (selectedPeer || selectedBand) && auth?.user?.id) {
+            markAsRead({ roomId, currentUserId: auth.user.id });
         }
-    }, [roomId, selectedPeer, selectedBand, messages.length, markAsRead]);
+    }, [roomId, selectedPeer, selectedBand, markAsRead, auth?.user?.id]);
 
     if (!selectedPeer && !selectedBand) {
         return (

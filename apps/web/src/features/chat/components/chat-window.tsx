@@ -81,10 +81,10 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     }, [roomId, subscribeToRoom, unsubscribeFromRoom, auth?.user?.id]);
 
     useEffect(() => {
-        if (roomId && !isMinimized && messages.length > 0) {
-            markAsRead(roomId);
+        if (roomId && !isMinimized && messages.length > 0 && auth?.user?.id) {
+            markAsRead({ roomId, currentUserId: auth.user.id });
         }
-    }, [roomId, isMinimized, messages.length, markAsRead]);
+    }, [roomId, isMinimized, messages.length, markAsRead, auth?.user?.id]);
 
     useEffect(() => {
         if (!isMinimized) {

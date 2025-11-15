@@ -4,6 +4,7 @@ import { getChatHistory, markMessagesAsRead } from '@/features/chat/server-funct
 import { toast } from 'sonner';
 import { getRoomId } from '@/common/helpers';
 import { useState } from 'react';
+import type { ConversationsResponseDTO } from '@/common/types/conversations';
 
 type Props = {
     conversationId: string;
@@ -166,16 +167,57 @@ export function useGetRoomId(userId: string, peerId: string): string {
     return getRoomId(userId, peerId);
 }
 
+type MarkAsReadInput = {
+    roomId: string;
+    currentUserId: string;
+};
+
 export function useMarkMessagesAsRead() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (roomId: string) => {
+        mutationFn: async ({ roomId }: MarkAsReadInput) => {
             return await markMessagesAsRead({ data: { roomId } });
         },
-        onSuccess: (_data, roomId) => {
+        onMutate: async ({ roomId, currentUserId }) => {
+            await queryClient.cancelQueries({ queryKey: ['chat', 'conversations'] });
+
+            const previousConversations = queryClient.getQueryData(['chat', 'conversations']);
+
+            queryClient.setQueryData<ConversationsResponseDTO>(['chat', 'conversations'], (old) => {
+                if (!old?.conversations) return old;
+
+                return {
+                    ...old,
+                    conversations: old.conversations.map((conversation) => {
+                        let conversationRoomId: string;
+
+                        if (conversation.type === 'user') {
+                            conversationRoomId = getRoomId(currentUserId, conversation.partnerId);
+                        } else {
+                            conversationRoomId = `band:${conversation.bandId}`;
+                        }
+
+                        if (conversationRoomId === roomId) {
+                            return { ...conversation, unreadCount: 0 };
+                        }
+
+                        return conversation;
+                    })
+                };
+            });
+
+            return { previousConversations };
+        },
+        onSuccess: (_data, { roomId }) => {
             queryClient.invalidateQueries({ queryKey: ['chat', 'conversations'] });
             queryClient.invalidateQueries({ queryKey: ['chat', 'messages', roomId] });
+        },
+        onError: (_error, _variables, context) => {
+            if (context?.previousConversations) {
+                queryClient.setQueryData(['chat', 'conversations'], context.previousConversations);
+            }
+            toast.error('Failed to mark messages as read');
         }
     });
 }
