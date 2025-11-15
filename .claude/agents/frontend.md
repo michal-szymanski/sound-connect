@@ -90,180 +90,26 @@ Task({
 
 **NEVER mark complete without invoking code-quality-enforcer first.**
 
-## Tanstack Start Patterns
+## Technical Implementation
 
-### Server Functions
+For all implementation patterns, use these comprehensive skills:
 
-Always include:
-- `.inputValidator()` with Zod schema
-- `.middleware([authMiddleware])` for protected endpoints
-- Try-catch with error handling
-- Validate API responses with Zod
+- **Skill(react)** - Component architecture, hooks, state management, optimistic updates, memoization
+- **Skill(tanstack-router)** - File-based routing, loaders, protected routes, navigation, search params
+- **Skill(tanstack-query)** - Queries, mutations, infinite queries, cache invalidation, optimistic updates
+- **Skill(tanstack-start)** - Server functions, middleware, SSR, file uploads, environment variables
+- **Skill(shadcn-ui)** - UI components, forms, dialogs, accessibility, theme integration
+- **Skill(tailwind-css)** - Styling, z-index tokens, responsive design, dark mode
 
-**Pattern:**
-```typescript
-export const editPost = createServerFn()
-    .middleware([authMiddleware])
-    .inputValidator(editPostSchema)
-    .handler(async ({ data, context: { env, auth } }) => {
-        try {
-            const response = await env.API.fetch(`${env.API_URL}/posts/${data.postId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', ...(auth.cookie && { Cookie: auth.cookie }) },
-                body: JSON.stringify({ content: data.content }),
-                credentials: 'include'
-            });
-            if (!response.ok) return await apiErrorHandler(response);
-            return success(postSchema.parse(await response.json()));
-        } catch (error) {
-            console.error('editPost error:', error);
-            return failure('Unexpected error');
-        }
-    });
-```
+**All patterns follow Sound Connect conventions documented in these skills.**
 
-See existing server functions for examples.
+### Quick References
 
-### Tanstack Query Hooks
-
-**Mutation with optimistic updates:**
-```typescript
-export function useEditPost() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (data: EditPostInput) => {
-            const result = await editPost(data);
-            if (!result.success) throw new Error(result.error);
-            return result.data;
-        },
-        onMutate: async (variables) => {
-            await queryClient.cancelQueries({ queryKey: ['post', variables.postId] });
-            const previousPost = queryClient.getQueryData(['post', variables.postId]);
-            queryClient.setQueryData(['post', variables.postId], (old: any) => ({ ...old, content: variables.content }));
-            return { previousPost };
-        },
-        onError: (error, variables, context) => {
-            if (context?.previousPost) queryClient.setQueryData(['post', variables.postId], context.previousPost);
-            toast.error(error.message);
-        },
-        onSettled: (data, error, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['post', variables.postId] });
-            queryClient.invalidateQueries({ queryKey: ['posts'] });
-        }
-    });
-}
-```
-
-**Query hook:**
-```typescript
-export function usePosts() {
-    return useQuery({
-        queryKey: ['posts'],
-        queryFn: async () => {
-            const result = await getPosts();
-            if (!result.success) throw new Error(result.error);
-            return result.data;
-        },
-        staleTime: 5 * 60 * 1000
-    });
-}
-```
-
-**Infinite query:**
-```typescript
-export function useInfinitePosts() {
-    return useInfiniteQuery({
-        queryKey: ['posts', 'infinite'],
-        queryFn: async ({ pageParam = 0 }) => {
-            const result = await getPosts({ limit: 20, offset: pageParam });
-            if (!result.success) throw new Error(result.error);
-            return result.data;
-        },
-        getNextPageParam: (lastPage, allPages) => lastPage.length === 20 ? allPages.length * 20 : undefined,
-        initialPageParam: 0
-    });
-}
-```
-
-### React Components
-
-**Structure:**
-```typescript
-import { useState } from 'react';
-import { useEditPost } from '@/web/hooks/use-edit-post';
-import { Button } from '@/web/components/ui/button';
-import type { Post } from '@sound-connect/common/types/post';
-
-type Props = {
-    post: Post;
-    onSuccess?: () => void;
-};
-
-export function EditPostForm({ post, onSuccess }: Props) {
-    const [content, setContent] = useState(post.content);
-    const editPost = useEditPost();
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        editPost.mutate({ postId: post.id, content }, { onSuccess });
-    };
-
-    return (
-        <form onSubmit={handleSubmit}>
-            <Textarea value={content} onChange={(e) => setContent(e.target.value)} maxLength={5000} />
-            <Button type="submit" disabled={editPost.isPending || content === post.content}>
-                {editPost.isPending ? 'Saving...' : 'Save'}
-            </Button>
-            {editPost.error && <p className="text-destructive">{editPost.error.message}</p>}
-        </form>
-    );
-}
-```
-
-## Common Patterns
-
-**Loading States:**
-```tsx
-if (isLoading) return <Skeleton />;
-if (error) return <ErrorMessage error={error.message} />;
-if (!data) return null;
-```
-
-**Form Validation:**
-```tsx
-const validate = (data: FormData) => {
-    const result = schema.safeParse(data);
-    if (!result.success) {
-        const fieldErrors: Record<string, string> = {};
-        result.error.issues.forEach(issue => { fieldErrors[issue.path[0]] = issue.message; });
-        setErrors(fieldErrors);
-        return false;
-    }
-    return true;
-};
-```
-
-**Error Handling:**
-```tsx
-{mutation.error && (
-    <Alert variant="destructive">
-        <AlertDescription>{mutation.error.message}</AlertDescription>
-    </Alert>
-)}
-```
-
-**Optimistic Updates:**
-```tsx
-onMutate: async (variables) => {
-    await queryClient.cancelQueries({ queryKey: [...] });
-    const previous = queryClient.getQueryData([...]);
-    queryClient.setQueryData([...], (old) => ...optimistic update...);
-    return { previous };
-},
-onError: (err, variables, context) => {
-    queryClient.setQueryData([...], context?.previous);
-}
-```
+**When creating server functions:** Use Skill(tanstack-start) for middleware and validation patterns
+**When building queries/mutations:** Use Skill(tanstack-query) for optimistic updates and cache management
+**When creating components:** Use Skill(react) for component structure and Props naming
+**When using UI components:** Use Skill(shadcn-ui) for composition and accessibility
+**When styling:** Use Skill(tailwind-css) for semantic z-index tokens and responsive design
 
 ## File Organization
 
