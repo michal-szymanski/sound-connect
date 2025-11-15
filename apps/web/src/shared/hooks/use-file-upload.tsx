@@ -88,33 +88,3 @@ const useFileUpload = (options?: { accept?: string; multiple?: boolean }) => {
 };
 
 export default useFileUpload;
-
-// Usage
-// function PostCreator() {
-//     const { selectFiles, FileInput, uploadedFiles, removeFile, clearAllFiles, onFileSelect } = useFileUpload({
-//         accept: 'image/*,video/*',
-//         multiple: true
-//     });
-//
-//     const handleUpload = async (files: FileList) => {
-//         console.log('Files selected:', files);
-//         // Upload logic here
-//     };
-
-//     return (
-//         <div>
-//             <FileInput />
-//             <button onClick={selectFiles}>📷 Select Media</button>
-//             <button onClick={() => onFileSelect(handleUpload)}>Upload Selected</button>
-//             <button onClick={clearAllFiles}>Clear All</button>
-//
-//             {uploadedFiles.map(fileWithPreview => (
-//                 <div key={fileWithPreview.id}>
-//                     <img src={fileWithPreview.previewUrl} alt={fileWithPreview.file.name} />
-//                     <span>{fileWithPreview.file.name}</span>
-//                     <button onClick={() => removeFile(fileWithPreview.id)}>Remove</button>
-//                 </div>
-//             ))}
-//         </div>
-//     );
-// }

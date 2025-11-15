@@ -5,12 +5,12 @@ import { toast } from 'sonner';
 import { getRoomId } from '@/common/helpers';
 import { useState } from 'react';
 
-type UseChatMessagesProps = {
+type Props = {
     conversationId: string;
     enabled?: boolean;
 };
 
-export function useChatMessages({ conversationId, enabled = true }: UseChatMessagesProps) {
+export function useChatMessages({ conversationId, enabled = true }: Props) {
     return useQuery({
         queryKey: ['chat', 'messages', conversationId],
         queryFn: async () => {

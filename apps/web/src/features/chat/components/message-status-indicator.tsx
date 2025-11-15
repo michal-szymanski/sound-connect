@@ -10,32 +10,34 @@ type Props = {
 
 export function MessageStatusIndicator({ status, onRetry }: Props) {
     const [hidePhase, setHidePhase] = useState<'visible' | 'fading' | 'hidden'>('visible');
-    const fadeInitiatedRef = useRef(false);
+    const timersRef = useRef<{ fadeOut: NodeJS.Timeout | null; unmount: NodeJS.Timeout | null }>({ fadeOut: null, unmount: null });
 
     useEffect(() => {
         if (status !== 'sent') {
-            fadeInitiatedRef.current = false;
+            if (timersRef.current.fadeOut) {
+                clearTimeout(timersRef.current.fadeOut);
+                timersRef.current.fadeOut = null;
+            }
+            if (timersRef.current.unmount) {
+                clearTimeout(timersRef.current.unmount);
+                timersRef.current.unmount = null;
+            }
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setHidePhase('visible');
             return;
         }
 
-        if (fadeInitiatedRef.current) {
+        if (timersRef.current.fadeOut !== null) {
             return;
         }
 
-        fadeInitiatedRef.current = true;
-
-        const fadeOutTimer = setTimeout(() => {
+        timersRef.current.fadeOut = setTimeout(() => {
             setHidePhase('fading');
         }, 5000);
 
-        const unmountTimer = setTimeout(() => {
+        timersRef.current.unmount = setTimeout(() => {
             setHidePhase('hidden');
         }, 5300);
-
-        return () => {
-            clearTimeout(fadeOutTimer);
-            clearTimeout(unmountTimer);
-        };
     }, [status]);
 
     if (status === 'sent' && hidePhase === 'hidden') {

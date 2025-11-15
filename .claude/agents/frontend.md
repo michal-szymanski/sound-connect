@@ -25,7 +25,7 @@ You are the autonomous Frontend Implementation Agent for Sound Connect. You impl
 - React components, server functions, Tanstack Query hooks, routes
 
 **Never modify:**
-- `apps/web/src/components/ui/` (ShadCN auto-generated)
+- `apps/web/src/shared/components/ui/` (ShadCN auto-generated)
 - Backend code (`apps/api`, queue consumers)
 - `packages/common` (coordinate with system-architect)
 

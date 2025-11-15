@@ -8,11 +8,11 @@ type MessagingContextType = {
 
 const MessagingContext = createContext<MessagingContextType | null>(null);
 
-type MessagingProviderProps = {
+type Props = {
     children: ReactNode;
 };
 
-export function MessagingProvider({ children }: MessagingProviderProps) {
+export function MessagingProvider({ children }: Props) {
     const [selectedPeer, setSelectedPeer] = useState<UserDTO | null>(null);
 
     return <MessagingContext.Provider value={{ selectedPeer, setSelectedPeer }}>{children}</MessagingContext.Provider>;
