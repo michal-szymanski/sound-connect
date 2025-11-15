@@ -1,12 +1,4 @@
-import { ONLINE_STATUS_INTERVAL } from '@/common/constants';
-import {
-    OnlineStatus,
-    webSocketMessageSchema,
-    chatMessageSchema,
-    subscribeMessageSchema,
-    unsubscribeMessageSchema,
-    newChatMessageSchema
-} from '@/common/types/models';
+import { webSocketMessageSchema, chatMessageSchema, subscribeMessageSchema, unsubscribeMessageSchema, newChatMessageSchema } from '@/common/types/models';
 import React, { createContext, useContext, useEffect, useEffectEvent, useRef, useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { User } from '@/common/types/drizzle';
@@ -19,8 +11,6 @@ type ChatContext = {
     sendMessage: (roomId: string, content: string) => void;
 
     status: ChatStatus;
-
-    statuses: Map<string, OnlineStatus>;
 };
 
 const Context = createContext<ChatContext | undefined>(undefined);
@@ -42,20 +32,10 @@ export const ChatProvider = ({ children, auth, envs }: Props) => {
     const queryClient = useQueryClient();
 
     const [status, setStatus] = useState<ChatStatus>('connecting');
-    const [statuses, setStatuses] = useState<Map<string, OnlineStatus>>(new Map());
-
-    const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
 
     useEffect(() => {
         userIdRef.current = auth.user.id;
     }, [auth.user.id]);
-
-    const clearTimeouts = useCallback(() => {
-        for (const timeout of timeoutsRef.current) {
-            clearTimeout(timeout);
-        }
-        timeoutsRef.current = [];
-    }, []);
 
     const subscribeToRoom = useCallback((roomId: string) => {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
@@ -98,8 +78,6 @@ export const ChatProvider = ({ children, auth, envs }: Props) => {
 
         const handleClose = () => {
             setStatus('closed');
-            clearTimeouts();
-            setStatuses(new Map());
         };
 
         const handleMessage = (event: MessageEvent) => {
@@ -112,27 +90,6 @@ export const ChatProvider = ({ children, auth, envs }: Props) => {
                         const chatMessage = chatMessageSchema.parse(message);
                         queryClient.invalidateQueries({ queryKey: ['chat', 'messages', chatMessage.roomId] });
                         queryClient.invalidateQueries({ queryKey: ['chat', 'conversations'] });
-                        break;
-                    }
-
-                    case 'online-status': {
-                        clearTimeouts();
-
-                        setStatuses((prevStatuses) => {
-                            const newStatuses = new Map(prevStatuses);
-                            newStatuses.set(message.userId, message.status);
-                            return newStatuses;
-                        });
-
-                        const timeout = setTimeout(() => {
-                            setStatuses((prev) => {
-                                const newStatuses = new Map(prev);
-                                newStatuses.set(message.userId, 'offline');
-                                return newStatuses;
-                            });
-                        }, ONLINE_STATUS_INTERVAL + 5000);
-
-                        timeoutsRef.current.push(timeout);
                         break;
                     }
 
@@ -167,8 +124,6 @@ export const ChatProvider = ({ children, auth, envs }: Props) => {
             }
 
             ws.current = null;
-            clearTimeouts();
-            setStatuses(new Map());
         };
     });
 
@@ -181,8 +136,7 @@ export const ChatProvider = ({ children, auth, envs }: Props) => {
         subscribeToRoom,
         unsubscribeFromRoom,
         sendMessage,
-        status,
-        statuses
+        status
     };
 
     return <Context.Provider value={contextValue}>{children}</Context.Provider>;

@@ -62,7 +62,12 @@ export class ChatService {
         }
 
         if (!this.subscribedRooms.has(roomId)) {
-            await this.subscribeToRoom({ type: 'subscribe', roomId });
+            console.error('[ChatService] Not subscribed to room - cannot send message', {
+                userId: this.userId,
+                roomId,
+                subscribedRooms: Array.from(this.subscribedRooms)
+            });
+            return;
         }
 
         const senderId = this.userId;

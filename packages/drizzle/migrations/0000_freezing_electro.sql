@@ -66,6 +66,23 @@ CREATE TABLE `blocked_users` (
 --> statement-breakpoint
 CREATE INDEX `idx_blocked_users_blocker` ON `blocked_users` (`blocker_id`);--> statement-breakpoint
 CREATE INDEX `idx_blocked_users_blocked` ON `blocked_users` (`blocked_id`);--> statement-breakpoint
+CREATE INDEX `idx_blocked_users_blocker_blocked` ON `blocked_users` (`blocker_id`,`blocked_id`);--> statement-breakpoint
+CREATE TABLE `chat_room_participants` (
+	`chat_room_id` text NOT NULL,
+	`user_id` text NOT NULL,
+	`joined_at` text NOT NULL,
+	PRIMARY KEY(`chat_room_id`, `user_id`),
+	FOREIGN KEY (`chat_room_id`) REFERENCES `chat_rooms`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE INDEX `idx_chat_room_participants_user` ON `chat_room_participants` (`user_id`);--> statement-breakpoint
+CREATE TABLE `chat_rooms` (
+	`id` text PRIMARY KEY NOT NULL,
+	`type` text NOT NULL,
+	`created_at` text NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE `comments_reactions` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`user_id` text NOT NULL,
@@ -135,16 +152,17 @@ CREATE TABLE `media` (
 );
 --> statement-breakpoint
 CREATE TABLE `messages` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`sender_id` text NOT NULL,
-	`receiver_id` text NOT NULL,
+	`id` text PRIMARY KEY NOT NULL,
+	`chat_room_id` text NOT NULL,
+	`sender_id` text,
+	`message_type` text NOT NULL,
 	`content` text NOT NULL,
 	`created_at` text NOT NULL,
-	`updated_at` text,
-	FOREIGN KEY (`sender_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`receiver_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`chat_room_id`) REFERENCES `chat_rooms`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`sender_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
+CREATE INDEX `idx_messages_room_time` ON `messages` (`chat_room_id`,`created_at`);--> statement-breakpoint
 CREATE TABLE `notifications` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`user_id` text NOT NULL,

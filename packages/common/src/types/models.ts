@@ -14,7 +14,7 @@ import {
 
 export { userDTOSchema, type UserDTO };
 
-export const webSocketMessageTypes = z.enum(['chat', 'online-status', 'subscribe', 'unsubscribe', 'user-joined', 'user-left']);
+export const webSocketMessageTypes = z.enum(['chat', 'system', 'online-status', 'subscribe', 'unsubscribe', 'user-joined', 'user-left']);
 
 export type WebSocketMessageType = z.infer<typeof webSocketMessageTypes>;
 
@@ -40,6 +40,17 @@ export const chatMessageSchema = z.object({
 });
 
 export type ChatMessage = z.infer<typeof chatMessageSchema>;
+
+export const systemMessageSchema = z.object({
+    id: z.string().uuid().optional(),
+    type: z.literal(webSocketMessageTypes.enum.system),
+    content: z.string(),
+    roomId: z.string(),
+    userId: z.string().optional(),
+    timestamp: z.number()
+});
+
+export type SystemMessage = z.infer<typeof systemMessageSchema>;
 
 export const newChatMessageSchema = chatMessageSchema.omit({ id: true, senderId: true, timestamp: true });
 
@@ -71,6 +82,7 @@ export const webSocketMessageSchema = z.union([
     subscribeMessageSchema,
     unsubscribeMessageSchema,
     chatMessageSchema,
+    systemMessageSchema,
     newChatMessageSchema,
     roomNotificationSchema,
     onlineStatusMessageSchema

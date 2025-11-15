@@ -308,26 +308,62 @@ export const bandFollowerSchema = z.object({
 export type CreateBandFollower = z.infer<typeof createBandFollowerSchema>;
 export type BandFollower = z.infer<typeof bandFollowerSchema>;
 
+export const chatRoomTypeEnum = z.enum(['direct', 'band']);
+
+export const createChatRoomSchema = z.object({
+    id: z.string(),
+    type: chatRoomTypeEnum,
+    createdAt: z.string()
+});
+
+export const chatRoomSchema = z.object({
+    id: z.string(),
+    type: chatRoomTypeEnum,
+    createdAt: z.string()
+});
+
+export type CreateChatRoom = z.infer<typeof createChatRoomSchema>;
+export type ChatRoom = z.infer<typeof chatRoomSchema>;
+export type ChatRoomType = z.infer<typeof chatRoomTypeEnum>;
+
+export const createChatRoomParticipantSchema = z.object({
+    chatRoomId: z.string(),
+    userId: z.string(),
+    joinedAt: z.string()
+});
+
+export const chatRoomParticipantSchema = z.object({
+    chatRoomId: z.string(),
+    userId: z.string(),
+    joinedAt: z.string()
+});
+
+export type CreateChatRoomParticipant = z.infer<typeof createChatRoomParticipantSchema>;
+export type ChatRoomParticipant = z.infer<typeof chatRoomParticipantSchema>;
+
+export const messageTypeEnum = z.enum(['message', 'system']);
+
 export const createMessageSchema = z.object({
-    id: z.number(),
-    senderId: z.string(),
-    receiverId: z.string(),
+    id: z.string(),
+    chatRoomId: z.string(),
+    senderId: z.string().nullable(),
+    messageType: messageTypeEnum,
     content: z.string(),
-    createdAt: z.string(),
-    updatedAt: z.string().nullable()
+    createdAt: z.string()
 });
 
 export const messageSchema = z.object({
-    id: z.number(),
-    senderId: z.string(),
-    receiverId: z.string(),
+    id: z.string(),
+    chatRoomId: z.string(),
+    senderId: z.string().nullable(),
+    messageType: messageTypeEnum,
     content: z.string(),
-    createdAt: z.string(),
-    updatedAt: z.string().nullable()
+    createdAt: z.string()
 });
 
 export type CreateMessage = z.infer<typeof createMessageSchema>;
 export type Message = z.infer<typeof messageSchema>;
+export type MessageType = z.infer<typeof messageTypeEnum>;
 
 export const notificationTypeEnum = z.enum([
     'follow_request',

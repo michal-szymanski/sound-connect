@@ -79,7 +79,7 @@ function StandardLayout() {
 }
 
 function MessagesLayout() {
-    const { selectedPeer, setSelectedPeer } = useMessagingContext();
+    const { selectedPeer, setSelectedPeer, selectedBand, setSelectedBand } = useMessagingContext();
 
     return (
         <>
@@ -87,7 +87,12 @@ function MessagesLayout() {
                 <Outlet />
             </div>
             <div className="hidden lg:col-span-3 lg:block">
-                <ConversationsListSidebar selectedPeer={selectedPeer} onSelectPeer={setSelectedPeer} />
+                <ConversationsListSidebar
+                    selectedPeer={selectedPeer}
+                    onSelectPeer={setSelectedPeer}
+                    selectedBand={selectedBand}
+                    onSelectBand={setSelectedBand}
+                />
             </div>
         </>
     );

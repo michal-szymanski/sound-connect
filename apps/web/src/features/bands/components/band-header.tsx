@@ -86,12 +86,8 @@ export function BandHeader({ band, isUserAdmin, isUserMember, onEdit }: Props) {
                             Edit Band
                         </Button>
                     )}
-                    {!isUserBandMember && (
-                        <>
-                            <BandFollowButton bandId={band.id} />
-                            <BandMessageButton bandId={band.id} bandName={band.name} bandMembers={band.members} />
-                        </>
-                    )}
+                    {!isUserBandMember && <BandFollowButton bandId={band.id} />}
+                    <BandMessageButton bandId={band.id} bandName={band.name} bandMembers={band.members} />
                 </div>
             </div>
 

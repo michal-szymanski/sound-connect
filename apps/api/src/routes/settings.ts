@@ -29,7 +29,18 @@ import { getUserById } from '@/api/db/queries/users-queries';
 
 const settingsRoutes = new Hono<HonoContext>();
 
-const { users, accounts, sessions, userProfilesTable, postsTable, commentsTable, messagesTable, bandsMembersTable, usersFollowersTable } = schema;
+const {
+    users,
+    accounts,
+    sessions,
+    userProfilesTable,
+    postsTable,
+    commentsTable,
+    messagesTable,
+    bandsMembersTable,
+    usersFollowersTable,
+    chatRoomParticipantsTable
+} = schema;
 
 settingsRoutes.get('/users/me/settings/privacy', async (c) => {
     const currentUser = c.get('user');
@@ -296,9 +307,28 @@ settingsRoutes.post('/users/me/export', async (c) => {
 
     const comments = await db.select().from(commentsTable).where(eq(commentsTable.userId, currentUser.id));
 
-    const sentMessages = await db.select().from(messagesTable).where(eq(messagesTable.senderId, currentUser.id));
+    const userChatRooms = await db
+        .select({ chatRoomId: chatRoomParticipantsTable.chatRoomId })
+        .from(chatRoomParticipantsTable)
+        .where(eq(chatRoomParticipantsTable.userId, currentUser.id));
 
-    const receivedMessages = await db.select().from(messagesTable).where(eq(messagesTable.receiverId, currentUser.id));
+    const chatRoomIds = userChatRooms.map((room) => room.chatRoomId);
+
+    const allMessages =
+        chatRoomIds.length > 0
+            ? await db
+                  .select()
+                  .from(messagesTable)
+                  .where(
+                      sql`${messagesTable.chatRoomId} IN (${sql.join(
+                          chatRoomIds.map((id) => sql`${id}`),
+                          sql`, `
+                      )})`
+                  )
+            : [];
+
+    const sentMessages = allMessages.filter((msg) => msg.senderId === currentUser.id);
+    const receivedMessages = allMessages.filter((msg) => msg.senderId !== currentUser.id);
 
     const bandMemberships = await db.select().from(bandsMembersTable).where(eq(bandsMembersTable.userId, currentUser.id));
 

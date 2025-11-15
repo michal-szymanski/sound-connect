@@ -3,7 +3,7 @@ import { eq, desc, and, sql } from 'drizzle-orm';
 import type { CreateBandInput, UpdateBandInput, Band, BandWithMembers, BandMembership } from '@sound-connect/common/types/bands';
 import { db } from '../index';
 
-const { bandsTable, bandsMembersTable, users } = schema;
+const { bandsTable, bandsMembersTable, users, chatRoomParticipantsTable, chatRoomsTable } = schema;
 
 export const createBand = async (data: CreateBandInput & { latitude: number; longitude: number }, userId: string): Promise<Band> => {
     const now = new Date().toISOString();
@@ -34,6 +34,19 @@ export const createBand = async (data: CreateBandInput & { latitude: number; lon
         userId,
         bandId: band.id,
         isAdmin: true,
+        joinedAt: now
+    });
+
+    const chatRoomId = `band-${band.id}`;
+    await db.insert(chatRoomsTable).values({
+        id: chatRoomId,
+        type: 'band',
+        createdAt: now
+    });
+
+    await db.insert(chatRoomParticipantsTable).values({
+        chatRoomId,
+        userId,
         joinedAt: now
     });
 
@@ -134,6 +147,13 @@ export const addBandMember = async (
         joinedAt: now
     });
 
+    const chatRoomId = `band-${bandId}`;
+    await db.insert(chatRoomParticipantsTable).values({
+        chatRoomId,
+        userId,
+        joinedAt: now
+    });
+
     const [user] = await db
         .select({
             id: users.id,
@@ -159,6 +179,9 @@ export const addBandMember = async (
 
 export const removeBandMember = async (bandId: number, userId: string): Promise<void> => {
     await db.delete(bandsMembersTable).where(and(eq(bandsMembersTable.bandId, bandId), eq(bandsMembersTable.userId, userId)));
+
+    const chatRoomId = `band-${bandId}`;
+    await db.delete(chatRoomParticipantsTable).where(and(eq(chatRoomParticipantsTable.chatRoomId, chatRoomId), eq(chatRoomParticipantsTable.userId, userId)));
 };
 
 export const isBandMember = async (bandId: number, userId: string): Promise<boolean> => {

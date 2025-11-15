@@ -7,6 +7,8 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 import { Progress } from '@/shared/components/ui/progress';
 import { availabilityStatusConfig } from '@/shared/lib/utils/availability';
 import type { ProfileSearchResult } from '@sound-connect/common/types/profile-search';
+import { useAuth } from '@/shared/lib/react-query';
+import { getRoomId } from '@sound-connect/common/helpers';
 
 type Props = {
     result: ProfileSearchResult;
@@ -14,6 +16,7 @@ type Props = {
 
 export function ProfileSearchCard({ result }: Props) {
     const navigate = useNavigate();
+    const { data: auth } = useAuth();
 
     const initials = result.name
         .split(' ')
@@ -112,7 +115,13 @@ export function ProfileSearchCard({ result }: Props) {
                                 variant="default"
                                 size="sm"
                                 className="flex-1"
-                                onClick={() => navigate({ to: '/messages', search: { userId: result.userId } })}
+                                onClick={() => {
+                                    if (auth?.user) {
+                                        const roomId = getRoomId(auth.user.id, result.userId);
+                                        navigate({ to: '/messages', search: { room: roomId } });
+                                    }
+                                }}
+                                disabled={!auth?.user}
                             >
                                 Message
                             </Button>

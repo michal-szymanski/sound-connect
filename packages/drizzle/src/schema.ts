@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { sqliteTable, integer, text, index } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer, text, index, primaryKey } from 'drizzle-orm/sqlite-core';
 import {
     InstrumentEnum,
     GenreEnum,
@@ -154,18 +154,49 @@ export const bandsFollowersTable = sqliteTable(
     })
 );
 
-export const messagesTable = sqliteTable('messages', {
-    id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
-    senderId: text('sender_id')
-        .notNull()
-        .references(() => users.id),
-    receiverId: text('receiver_id')
-        .notNull()
-        .references(() => users.id),
-    content: text('content').notNull(),
-    createdAt: text('created_at').notNull(),
-    updatedAt: text('updated_at')
+export const chatRoomTypeEnum = ['direct', 'band'] as const;
+
+export const chatRoomsTable = sqliteTable('chat_rooms', {
+    id: text('id').primaryKey(),
+    type: text('type', { enum: chatRoomTypeEnum }).notNull(),
+    createdAt: text('created_at').notNull()
 });
+
+export const chatRoomParticipantsTable = sqliteTable(
+    'chat_room_participants',
+    {
+        chatRoomId: text('chat_room_id')
+            .notNull()
+            .references(() => chatRoomsTable.id, { onDelete: 'cascade' }),
+        userId: text('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        joinedAt: text('joined_at').notNull()
+    },
+    (table) => ({
+        pk: primaryKey({ columns: [table.chatRoomId, table.userId] }),
+        userIdIdx: index('idx_chat_room_participants_user').on(table.userId)
+    })
+);
+
+export const messageTypeEnum = ['message', 'system'] as const;
+
+export const messagesTable = sqliteTable(
+    'messages',
+    {
+        id: text('id').primaryKey(),
+        chatRoomId: text('chat_room_id')
+            .notNull()
+            .references(() => chatRoomsTable.id, { onDelete: 'cascade' }),
+        senderId: text('sender_id').references(() => users.id, { onDelete: 'set null' }),
+        messageType: text('message_type', { enum: messageTypeEnum }).notNull(),
+        content: text('content').notNull(),
+        createdAt: text('created_at').notNull()
+    },
+    (table) => ({
+        roomTimeIdx: index('idx_messages_room_time').on(table.chatRoomId, table.createdAt)
+    })
+);
 
 export const notificationTypeEnum = [
     'follow_request',
@@ -231,6 +262,33 @@ export const bandsMembersRelations = relations(bandsMembersTable, ({ one }) => (
 
 export const bandsFollowersRelations = relations(bandsFollowersTable, ({ one }) => ({
     band: one(bandsTable, { fields: [bandsFollowersTable.bandId], references: [bandsTable.id] })
+}));
+
+export const chatRoomsRelations = relations(chatRoomsTable, ({ many }) => ({
+    participants: many(chatRoomParticipantsTable),
+    messages: many(messagesTable)
+}));
+
+export const chatRoomParticipantsRelations = relations(chatRoomParticipantsTable, ({ one }) => ({
+    room: one(chatRoomsTable, {
+        fields: [chatRoomParticipantsTable.chatRoomId],
+        references: [chatRoomsTable.id]
+    }),
+    user: one(users, {
+        fields: [chatRoomParticipantsTable.userId],
+        references: [users.id]
+    })
+}));
+
+export const messagesRelations = relations(messagesTable, ({ one }) => ({
+    room: one(chatRoomsTable, {
+        fields: [messagesTable.chatRoomId],
+        references: [chatRoomsTable.id]
+    }),
+    sender: one(users, {
+        fields: [messagesTable.senderId],
+        references: [users.id]
+    })
 }));
 
 export const userProfilesTable = sqliteTable(
@@ -441,8 +499,9 @@ export const blockedUsersTable = sqliteTable(
         blockedAt: text('blocked_at').notNull()
     },
     (table) => ({
-        blockerBlockedIdx: index('idx_blocked_users_blocker').on(table.blockerId),
-        blockedIdx: index('idx_blocked_users_blocked').on(table.blockedId)
+        blockerIdx: index('idx_blocked_users_blocker').on(table.blockerId),
+        blockedIdx: index('idx_blocked_users_blocked').on(table.blockedId),
+        blockerBlockedIdx: index('idx_blocked_users_blocker_blocked').on(table.blockerId, table.blockedId)
     })
 );
 

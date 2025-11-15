@@ -14,6 +14,8 @@ import { createBandApplicationSchema, rejectBandApplicationSchema, applicationSt
 import { postQueueMessageSchema } from '@sound-connect/common/types/posts';
 import { notificationQueueMessageSchema } from '@sound-connect/common/types/notifications';
 import { bandSearchParamsSchema } from '@sound-connect/common/types/band-search';
+import { sendBandMessageSchema, chatHistoryResponseSchema } from '@sound-connect/common/types/messaging';
+import { messageSchema } from '@sound-connect/common/types/drizzle';
 import {
     createBand,
     getBandById,
@@ -49,6 +51,9 @@ import {
 } from '@/api/db/queries/band-applications-queries';
 import { searchBands } from '@/api/db/queries/bands-search-queries';
 import { geocodeCity } from '@/api/services/geocoding-service';
+import { drizzle } from 'drizzle-orm/d1';
+import { schema } from '@sound-connect/drizzle';
+import { eq, and, desc, gte } from 'drizzle-orm';
 
 const bandsRoutes = new Hono<HonoContext>();
 
@@ -643,6 +648,112 @@ bandsRoutes.patch('/bands/:bandId/applications/:applicationId/reject', async (c)
     await c.env.NotificationsQueue.send(queueMessage);
 
     return c.json({ success: true, application: updatedApplication });
+});
+
+bandsRoutes.get('/bands/:bandId/chat/history', async (c) => {
+    const { bandId } = z.object({ bandId: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const exists = await bandExists(bandId);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const isMember = await isBandMember(bandId, user.id);
+    if (!isMember) {
+        throw new HTTPException(403, { message: 'You must be a band member to view chat history' });
+    }
+
+    const { limit = 100, offset = 0 } = z
+        .object({
+            limit: z.coerce.number().int().positive().max(500).default(100),
+            offset: z.coerce.number().int().min(0).default(0)
+        })
+        .parse({
+            limit: c.req.query('limit'),
+            offset: c.req.query('offset')
+        });
+
+    const db = drizzle(c.env.DB);
+    const { messagesTable, bandsMembersTable } = schema;
+
+    const [member] = await db
+        .select({ joinedAt: bandsMembersTable.joinedAt })
+        .from(bandsMembersTable)
+        .where(and(eq(bandsMembersTable.bandId, bandId), eq(bandsMembersTable.userId, user.id)))
+        .limit(1);
+
+    if (!member) {
+        throw new HTTPException(403, { message: 'You are not a member of this band' });
+    }
+
+    const chatRoomId = `band:${bandId}`;
+
+    const messages = await db
+        .select({
+            id: messagesTable.id,
+            chatRoomId: messagesTable.chatRoomId,
+            messageType: messagesTable.messageType,
+            content: messagesTable.content,
+            senderId: messagesTable.senderId,
+            createdAt: messagesTable.createdAt
+        })
+        .from(messagesTable)
+        .where(and(eq(messagesTable.chatRoomId, chatRoomId), gte(messagesTable.createdAt, member.joinedAt)))
+        .orderBy(desc(messagesTable.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+    return c.json(chatHistoryResponseSchema.parse(messages.reverse()));
+});
+
+bandsRoutes.post('/bands/:bandId/chat/send', async (c) => {
+    const { bandId } = z.object({ bandId: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const exists = await bandExists(bandId);
+    if (!exists) {
+        throw new HTTPException(404, { message: 'Band not found' });
+    }
+
+    const isMember = await isBandMember(bandId, user.id);
+    if (!isMember) {
+        throw new HTTPException(403, { message: 'You must be a band member to send messages' });
+    }
+
+    const body = await c.req.json();
+    const { content } = sendBandMessageSchema.parse(body);
+
+    const db = drizzle(c.env.DB);
+    const { messagesTable } = schema;
+
+    const roomId = `band:${bandId}`;
+    const messageId = crypto.randomUUID();
+
+    const [message] = await db
+        .insert(messagesTable)
+        .values({
+            id: messageId,
+            chatRoomId: roomId,
+            senderId: user.id,
+            messageType: 'message',
+            content,
+            createdAt: new Date().toISOString()
+        })
+        .returning();
+
+    const chatDOId = c.env.ChatDO.idFromName(`room:${roomId}`);
+    const chatStub = c.env.ChatDO.get(chatDOId);
+
+    try {
+        await chatStub.sendMessage(user.id, roomId, content);
+    } catch (error) {
+        console.error('[BandChatAPI] Failed to broadcast message via ChatDO:', error);
+    }
+
+    return c.json(messageSchema.parse(message), 201);
 });
 
 export { bandsRoutes };

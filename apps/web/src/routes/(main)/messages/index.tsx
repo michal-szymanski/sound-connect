@@ -4,10 +4,13 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { MessageCircle, Send, Smile } from 'lucide-react';
+import { z } from 'zod';
+import { toast } from 'sonner';
 import UserAvatar from '@/shared/components/common/user-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
+import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar';
 import { useAuth } from '@/shared/lib/react-query';
 import { useChat } from '@/shared/components/providers/chat-provider';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
@@ -18,18 +21,26 @@ import { useMessagingContext } from './context';
 import { useDelayedLoading } from '@/web/hooks/use-delayed-loading';
 import { formatTimestamp } from '@/features/chat/utils/format-timestamp';
 import { messageFormSchema, type MessageFormValues } from '@/features/chat/schemas/message-form';
+import { getUser } from '@/shared/server-functions/users';
+import { getBand } from '@/features/bands/server-functions/bands';
+
+const messagesSearchSchema = z.object({
+    room: z.string().optional()
+});
 
 export const Route = createFileRoute('/(main)/messages/')({
-    component: RouteComponent
+    component: RouteComponent,
+    validateSearch: messagesSearchSchema
 });
 
 function RouteComponent() {
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage } = useChat();
     const { data: auth } = useAuth();
-    const { selectedPeer } = useMessagingContext();
+    const { room } = Route.useSearch();
+    const { selectedPeer, setSelectedPeer, selectedBand, setSelectedBand } = useMessagingContext();
 
-    const roomId = useGetRoomId(auth?.user?.id || '', selectedPeer?.id || '');
-    const { data: messages = [], isInitialLoading } = useChatMessages({ conversationId: roomId, enabled: !!selectedPeer });
+    const roomId = selectedPeer ? useGetRoomId(auth?.user?.id || '', selectedPeer.id) : selectedBand ? `band:${selectedBand.id}` : '';
+    const { data: messages = [], isInitialLoading } = useChatMessages({ conversationId: roomId, enabled: !!(selectedPeer || selectedBand) });
     const { mutate: sendMessageMutate, messageStatuses, retryMessage } = useSendMessage(sendMessage);
     const shouldShowLoading = useDelayedLoading({ isLoading: isInitialLoading });
 
@@ -46,7 +57,7 @@ function RouteComponent() {
     const textValue = form.watch('text');
 
     const onSubmit = async (values: MessageFormValues) => {
-        if (!selectedPeer || !auth?.user || !values.text || !roomId) return;
+        if ((!selectedPeer && !selectedBand) || !auth?.user || !values.text || !roomId) return;
 
         sendMessageMutate({
             conversationId: roomId,
@@ -80,16 +91,69 @@ function RouteComponent() {
     };
 
     useEffect(() => {
-        if (roomId && auth?.user?.id && selectedPeer?.id && !roomId.startsWith(':')) {
+        const loadFromRoom = async () => {
+            if (!room || !auth?.user?.id) return;
+
+            if (room.startsWith('dm:')) {
+                const [, identifier] = room.split(':');
+                if (!identifier) return;
+
+                const userIds = identifier.split('-');
+                if (userIds.length !== 2) return;
+
+                const [userId1, userId2] = userIds;
+                const peerUserId = userId1 === auth.user.id ? userId2 : userId2 === auth.user.id ? userId1 : null;
+
+                if (!peerUserId || peerUserId === auth.user.id) return;
+                if (selectedPeer?.id === peerUserId) return;
+
+                try {
+                    const result = await getUser({ data: { userId: peerUserId } });
+                    if (result.success) {
+                        setSelectedPeer(result.body);
+                        setSelectedBand(null);
+                    } else {
+                        toast.error('User not found');
+                    }
+                } catch {
+                    toast.error('Failed to load user');
+                }
+            } else if (room.startsWith('band:')) {
+                const [, bandIdStr] = room.split(':');
+                if (!bandIdStr) return;
+
+                const bandId = parseInt(bandIdStr, 10);
+                if (!bandId || isNaN(bandId)) return;
+                if (selectedBand?.id === bandId) return;
+
+                try {
+                    const result = await getBand({ data: { bandId } });
+                    if (result.success) {
+                        setSelectedBand(result.body);
+                        setSelectedPeer(null);
+                    } else {
+                        toast.error('Band not found');
+                    }
+                } catch {
+                    toast.error('Failed to load band');
+                }
+            }
+        };
+
+        loadFromRoom();
+    }, [room, auth?.user?.id, setSelectedPeer, selectedPeer?.id, setSelectedBand, selectedBand?.id]);
+
+    useEffect(() => {
+        if (roomId && auth?.user?.id && (selectedPeer?.id || selectedBand?.id) && (roomId.startsWith('dm:') || roomId.startsWith('band:'))) {
             subscribeToRoom(roomId);
 
             return () => {
                 unsubscribeFromRoom(roomId);
             };
         }
-    }, [roomId, subscribeToRoom, unsubscribeFromRoom, auth?.user?.id, selectedPeer?.id]);
+    }, [roomId, subscribeToRoom, unsubscribeFromRoom, auth?.user?.id, selectedPeer?.id, selectedBand?.id]);
 
-    if (!selectedPeer) {
+    if (!selectedPeer && !selectedBand) {
         return (
             <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center">
                 <div className="text-center">
@@ -104,12 +168,24 @@ function RouteComponent() {
     return (
         <div className="flex h-[calc(100vh-10rem)] flex-col overflow-hidden rounded-lg border">
             <header className="bg-background flex-none border-b px-6 py-4">
-                <Link to="/users/$id" params={{ id: selectedPeer.id }} className="flex items-center gap-3 transition-opacity hover:opacity-80">
-                    <UserAvatar user={selectedPeer} className="h-10 w-10" />
-                    <div>
-                        <div className="font-semibold">{selectedPeer.name}</div>
-                    </div>
-                </Link>
+                {selectedPeer ? (
+                    <Link to="/users/$id" params={{ id: selectedPeer.id }} className="flex items-center gap-3 transition-opacity hover:opacity-80">
+                        <UserAvatar user={selectedPeer} className="h-10 w-10" />
+                        <div>
+                            <div className="font-semibold">{selectedPeer.name}</div>
+                        </div>
+                    </Link>
+                ) : selectedBand ? (
+                    <Link to="/bands/$id" params={{ id: selectedBand.id.toString() }} className="flex items-center gap-3 transition-opacity hover:opacity-80">
+                        <Avatar className="h-10 w-10">
+                            <AvatarImage src={selectedBand.profileImageUrl || undefined} />
+                            <AvatarFallback>{selectedBand.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <div className="font-semibold">{selectedBand.name}</div>
+                        </div>
+                    </Link>
+                ) : null}
             </header>
 
             <div className="bg-muted/30 flex-1">
@@ -119,7 +195,7 @@ function RouteComponent() {
                     </div>
                 ) : messages.length === 0 && !isInitialLoading ? (
                     <div className="flex h-full items-center justify-center">
-                        <div className="text-muted-foreground text-sm">Start a conversation with {selectedPeer.name}</div>
+                        <div className="text-muted-foreground text-sm">Start a conversation with {selectedPeer ? selectedPeer.name : selectedBand?.name}</div>
                     </div>
                 ) : (
                     <VirtualizedMessageList
@@ -182,7 +258,7 @@ function RouteComponent() {
                         }}
                         placeholder="Type a message..."
                         className="max-h-32 min-h-[44px] flex-1 resize-none"
-                        disabled={!selectedPeer || !roomId || !auth?.user}
+                        disabled={(!selectedPeer && !selectedBand) || !roomId || !auth?.user}
                         maxLength={CHAT_MESSAGE_MAX_LENGTH}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {

@@ -63,7 +63,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const bottomOffset = BASE_BOTTOM_OFFSET + position * 56;
 
     useEffect(() => {
-        if (roomId && auth?.user?.id && !roomId.startsWith(':')) {
+        if (roomId && auth?.user?.id && (roomId.startsWith('dm:') || roomId.startsWith('band:'))) {
             subscribeToRoom(roomId);
 
             return () => {

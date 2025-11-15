@@ -1,3 +1,3 @@
 export const getRoomId = (senderId: string, peerId: string): string => {
-    return [senderId, peerId].sort().join(':');
+    return `dm:${[senderId, peerId].sort().join('-')}`;
 };

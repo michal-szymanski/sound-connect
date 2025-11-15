@@ -5,16 +5,23 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1762894727346,
-      "tag": "0000_noisy_logan",
+      "when": 1763231578840,
+      "tag": "0000_freezing_electro",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "6",
-      "when": 1762894727347,
-      "tag": "0001_seed_users",
-      "breakpoints": false
+      "when": 1763231578841,
+      "tag": "0001_create_users_fts",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1763231578842,
+      "tag": "0002_add_fts_triggers",
+      "breakpoints": true
     }
   ]
 }

@@ -26,6 +26,8 @@
     "wipe": "zsh -c 'rm -rf apps/api/.wrangler'",
     "db:generate": "pnpm --filter @sound-connect/drizzle db:generate",
     "db:studio": "pnpm --filter @sound-connect/drizzle db:studio",
+    "db:seed:local": "pnpm --filter @sound-connect/drizzle seed",
+    "db:seed:remote": "pnpm --filter @sound-connect/drizzle seed:remote",
     "test": "pnpm --filter @sound-connect/e2e test",
     "test:ui": "pnpm --filter @sound-connect/e2e test:ui",
     "test:debug": "pnpm --filter @sound-connect/e2e test:debug",
