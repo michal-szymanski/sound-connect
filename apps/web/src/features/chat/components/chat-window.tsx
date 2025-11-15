@@ -49,7 +49,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const shouldShowLoading = useDelayedLoading({ isLoading });
 
     const [isHovered, setIsHovered] = useState(false);
-    const [_animationKey, setAnimationKey] = useState(0);
+    const [animationKey, setAnimationKey] = useState(0);
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const [announcement, setAnnouncement] = useState('');
     const [showMessages, setShowMessages] = useState(!isMinimized);
@@ -215,7 +215,8 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                 {announcement}
             </div>
             <div
-                className="bg-card border-border z-dialog fixed bottom-0 w-[340px] overflow-hidden rounded-t-lg border shadow-2xl"
+                key={animationKey}
+                className="animate-in slide-in-from-bottom-4 fade-in bg-card border-border fixed bottom-0 z-[105] w-[340px] overflow-hidden rounded-t-lg border shadow-2xl duration-300"
                 style={{ right: `${rightOffset}px` }}
             >
                 <div className="bg-primary text-primary-foreground border-border/30 flex items-center justify-between border-b px-4 py-3 shadow-sm">

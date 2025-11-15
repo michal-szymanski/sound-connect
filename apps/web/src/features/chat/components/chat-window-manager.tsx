@@ -3,6 +3,8 @@ import { UserDTO } from '@/common/types/models';
 import { useLocation } from '@tanstack/react-router';
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { ChatWindow } from './chat-window';
+import { MinimizedChatButton } from './minimized-chat-button';
+import { SummaryButton } from './summary-button';
 
 type ChatWindowState = {
     user: UserDTO;
@@ -30,6 +32,7 @@ export const useChatWindows = () => {
 type Props = React.PropsWithChildren;
 
 const STORAGE_KEY = `${APP_NAME_NORMALIZED}:chat-windows-state`;
+const MAX_INDIVIDUAL_CHATS = 5;
 
 type StoredChatState = {
     user: UserDTO;
@@ -80,7 +83,6 @@ export const ChatWindowProvider = ({ children }: Props) => {
 
             if (newWindows.has(user.id)) {
                 const existingWindow = newWindows.get(user.id)!;
-                newWindows.delete(user.id);
                 newWindows.set(user.id, { ...existingWindow, isMinimized: false });
             } else {
                 newWindows.set(user.id, { user, isMinimized: false });
@@ -128,20 +130,50 @@ export const ChatWindowProvider = ({ children }: Props) => {
         saveToStorage(openWindows);
     }, [openWindows]);
 
+    const minimizedWindows = windowsArray.filter(([_, state]) => state.isMinimized);
+    const visibleIndividualChats = minimizedWindows.slice(0, MAX_INDIVIDUAL_CHATS);
+    const hiddenChats = minimizedWindows.slice(MAX_INDIVIDUAL_CHATS);
+    const showSummaryButton = hiddenChats.length > 0;
+
     return (
         <Context.Provider value={contextValue}>
             {children}
-            {!isOnMessagesPage &&
-                windowsArray.map(([userId, windowState], index) => (
-                    <ChatWindow
-                        key={userId}
-                        user={windowState.user}
-                        isMinimized={windowState.isMinimized}
-                        position={index}
-                        onClose={() => closeChatWindow(userId)}
-                        onToggleMinimize={() => toggleMinimize(userId)}
-                    />
-                ))}
+            {!isOnMessagesPage && (
+                <>
+                    {windowsArray
+                        .filter(([_, state]) => !state.isMinimized)
+                        .map(([userId, windowState], index) => (
+                            <ChatWindow
+                                key={userId}
+                                user={windowState.user}
+                                isMinimized={windowState.isMinimized}
+                                position={index}
+                                onClose={() => closeChatWindow(userId)}
+                                onToggleMinimize={() => toggleMinimize(userId)}
+                            />
+                        ))}
+
+                    {visibleIndividualChats.map(([userId, windowState], index) => (
+                        <MinimizedChatButton
+                            key={userId}
+                            user={windowState.user}
+                            position={index}
+                            onRestore={() => toggleMinimize(userId)}
+                            onClose={() => closeChatWindow(userId)}
+                        />
+                    ))}
+
+                    {showSummaryButton && (
+                        <SummaryButton
+                            hiddenCount={hiddenChats.length}
+                            hiddenWindows={hiddenChats.map(([_, state]) => state)}
+                            position={MAX_INDIVIDUAL_CHATS}
+                            onRestoreChat={(userId) => toggleMinimize(userId)}
+                            onCloseChat={(userId) => closeChatWindow(userId)}
+                        />
+                    )}
+                </>
+            )}
         </Context.Provider>
     );
 };
