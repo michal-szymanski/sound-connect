@@ -10,26 +10,30 @@ type Props = {
 
 export function MessageStatusIndicator({ status, onRetry }: Props) {
     const [hidePhase, setHidePhase] = useState<'visible' | 'fading' | 'hidden'>('visible');
+    const [hasAnimated, setHasAnimated] = useState(false);
     const timersRef = useRef<{ fadeOut: NodeJS.Timeout | null; unmount: NodeJS.Timeout | null }>({ fadeOut: null, unmount: null });
 
     useEffect(() => {
+        const fadeOutTimer = timersRef.current.fadeOut;
+        const unmountTimer = timersRef.current.unmount;
+
         if (status !== 'sent') {
-            if (timersRef.current.fadeOut) {
-                clearTimeout(timersRef.current.fadeOut);
-                timersRef.current.fadeOut = null;
-            }
-            if (timersRef.current.unmount) {
-                clearTimeout(timersRef.current.unmount);
-                timersRef.current.unmount = null;
-            }
+            if (fadeOutTimer) clearTimeout(fadeOutTimer);
+            if (unmountTimer) clearTimeout(unmountTimer);
+            timersRef.current.fadeOut = null;
+            timersRef.current.unmount = null;
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setHidePhase('visible');
+            setHasAnimated(false);
             return;
         }
 
         if (timersRef.current.fadeOut !== null) {
             return;
         }
+
+        setHidePhase('visible');
+        setHasAnimated(true);
 
         timersRef.current.fadeOut = setTimeout(() => {
             setHidePhase('fading');
@@ -38,6 +42,11 @@ export function MessageStatusIndicator({ status, onRetry }: Props) {
         timersRef.current.unmount = setTimeout(() => {
             setHidePhase('hidden');
         }, 5300);
+
+        return () => {
+            if (fadeOutTimer) clearTimeout(fadeOutTimer);
+            if (unmountTimer) clearTimeout(unmountTimer);
+        };
     }, [status]);
 
     if (status === 'sent' && hidePhase === 'hidden') {
@@ -66,7 +75,7 @@ export function MessageStatusIndicator({ status, onRetry }: Props) {
                 aria-atomic="true"
                 className={clsx(
                     'text-muted-foreground/70 mt-1 flex items-center gap-1.5 px-1 text-xs transition-opacity',
-                    hidePhase === 'visible' ? 'animate-in fade-in duration-200' : '',
+                    !hasAnimated && hidePhase === 'visible' ? 'animate-in fade-in duration-200' : '',
                     hidePhase === 'fading' ? 'opacity-0 duration-300' : 'opacity-100'
                 )}
             >
