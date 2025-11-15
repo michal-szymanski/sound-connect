@@ -49,12 +49,9 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     const shouldShowLoading = useDelayedLoading({ isLoading });
 
     const [isHovered, setIsHovered] = useState(false);
-    const [animationKey, setAnimationKey] = useState(0);
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const [announcement, setAnnouncement] = useState('');
-    const [showMessages, setShowMessages] = useState(!isMinimized);
 
-    const prevMinimizedRef = useRef(isMinimized);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const form = useForm<MessageFormValues>({
@@ -90,18 +87,9 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
     }, [roomId, isMinimized, messages.length, markAsRead]);
 
     useEffect(() => {
-        if (prevMinimizedRef.current && !isMinimized) {
-            setAnimationKey((prev) => prev + 1);
-            setShowMessages(false);
-            setTimeout(() => {
-                setShowMessages(true);
-                inputRef.current?.focus();
-            }, 50);
+        if (!isMinimized) {
+            inputRef.current?.focus();
         }
-        if (isMinimized) {
-            setShowMessages(false);
-        }
-        prevMinimizedRef.current = isMinimized;
     }, [isMinimized]);
 
     useEffect(() => {
@@ -214,12 +202,9 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
             <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
                 {announcement}
             </div>
-            <div
-                key={animationKey}
-                className="animate-in slide-in-from-bottom-4 fade-in bg-card border-border fixed bottom-0 z-[105] w-[340px] overflow-hidden rounded-t-lg border shadow-2xl duration-300"
-                style={{ right: `${rightOffset}px` }}
-            >
-                <div className="bg-primary text-primary-foreground border-border/30 flex items-center justify-between border-b px-4 py-3 shadow-sm">
+            <div className="fixed bottom-0 z-[105] w-[340px] animate-in slide-in-from-bottom-4 duration-300" style={{ right: `${rightOffset}px` }}>
+                <div className="bg-card border border-border rounded-t-lg shadow-2xl overflow-hidden">
+                    <div className="bg-primary text-primary-foreground border-border/30 flex items-center justify-between border-b px-4 py-3 shadow-sm">
                     <div className="flex items-center gap-3">
                         <Avatar className="border-primary-foreground/20 h-8 w-8 border-2">
                             <AvatarImage src={user.image || '/placeholder.svg'} alt={user.name} />
@@ -258,7 +243,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                         <div className="flex h-full items-center justify-center">
                             <div className="text-muted-foreground text-sm">Start a conversation with {user.name}</div>
                         </div>
-                    ) : showMessages ? (
+                    ) : (
                         <VirtualizedMessageList
                             messages={messages}
                             currentUserId={currentUser.id}
@@ -282,7 +267,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                                 );
                             })()}
                         />
-                    ) : null}
+                    )}
                 </div>
 
                 <div className="bg-card border-border border-t p-3">
@@ -329,6 +314,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                             </Button>
                         </div>
                     </form>
+                </div>
                 </div>
             </div>
         </>
