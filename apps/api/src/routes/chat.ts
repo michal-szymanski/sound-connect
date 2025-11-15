@@ -205,15 +205,11 @@ chatRoutes.post('/chat/:roomId/mark-read', async (c) => {
     const db = drizzle(c.env.DB);
     const { messagesTable } = schema;
 
-    console.log('[mark-read] Marking messages as read:', { roomId, userId: user.id });
-
     const result = await db
         .update(messagesTable)
         .set({ seen: true })
         .where(and(eq(messagesTable.chatRoomId, roomId), eq(messagesTable.seen, false), sql`${messagesTable.senderId} != ${user.id}`))
         .returning({ id: messagesTable.id });
-
-    console.log('[mark-read] Updated messages:', result.length);
 
     return c.json({ success: true, updated: result.length });
 });
