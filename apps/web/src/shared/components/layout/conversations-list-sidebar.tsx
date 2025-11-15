@@ -15,6 +15,7 @@ import { useConversations } from '@/features/chat/hooks/use-conversations';
 import { useAuth } from '@/shared/lib/react-query';
 import { formatRelativeTime } from '@/shared/lib/utils/date';
 import { cn } from '@/shared/lib/utils';
+import { usePrefillConversationMetadata } from '@/features/chat/hooks/use-conversation-metadata';
 
 type Props = {
     selectedPeer: UserDTO | null;
@@ -28,6 +29,7 @@ export function ConversationsListSidebar({ selectedPeer, onSelectPeer: _onSelect
     const { data: auth } = useAuth();
     const { data, isLoading } = useConversations();
     const [searchQuery, setSearchQuery] = useState('');
+    const { prefillUser } = usePrefillConversationMetadata();
 
     const conversations = data?.conversations ?? [];
 
@@ -69,8 +71,9 @@ export function ConversationsListSidebar({ selectedPeer, onSelectPeer: _onSelect
                                         <button
                                             key={conversation.partnerId}
                                             onClick={() => {
-                                                if (isDeleted || !auth?.user) return;
+                                                if (isDeleted || !auth?.user || !partner) return;
                                                 const roomId = getRoomId(auth.user.id, partner.id);
+                                                prefillUser(roomId, auth.user.id, partner);
                                                 navigate({ to: '/messages', search: { room: roomId }, replace: true });
                                             }}
                                             disabled={isDeleted}

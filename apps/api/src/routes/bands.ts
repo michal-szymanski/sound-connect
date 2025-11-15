@@ -676,7 +676,7 @@ bandsRoutes.get('/bands/:bandId/chat/history', async (c) => {
         });
 
     const db = drizzle(c.env.DB);
-    const { messagesTable, bandsMembersTable } = schema;
+    const { messagesTable, bandsMembersTable, users } = schema;
 
     const [member] = await db
         .select({ joinedAt: bandsMembersTable.joinedAt })
@@ -697,9 +697,11 @@ bandsRoutes.get('/bands/:bandId/chat/history', async (c) => {
             messageType: messagesTable.messageType,
             content: messagesTable.content,
             senderId: messagesTable.senderId,
+            senderName: users.name,
             createdAt: messagesTable.createdAt
         })
         .from(messagesTable)
+        .leftJoin(users, eq(messagesTable.senderId, users.id))
         .where(and(eq(messagesTable.chatRoomId, chatRoomId), gte(messagesTable.createdAt, member.joinedAt)))
         .orderBy(desc(messagesTable.createdAt))
         .limit(limit)
