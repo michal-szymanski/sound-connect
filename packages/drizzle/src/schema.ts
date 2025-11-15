@@ -191,6 +191,7 @@ export const messagesTable = sqliteTable(
         senderId: text('sender_id').references(() => users.id, { onDelete: 'set null' }),
         messageType: text('message_type', { enum: messageTypeEnum }).notNull(),
         content: text('content').notNull(),
+        seen: integer('seen', { mode: 'boolean' }).notNull().default(false),
         createdAt: text('created_at').notNull()
     },
     (table) => ({

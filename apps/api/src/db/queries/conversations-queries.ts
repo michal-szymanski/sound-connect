@@ -79,7 +79,14 @@ export const getConversations = async ({ userId, limit, offset }: GetConversatio
                         )
                 )
                 ELSE 0
-            END as is_mutual_follow
+            END as is_mutual_follow,
+            (
+                SELECT COUNT(*)
+                FROM messages m_unseen
+                WHERE m_unseen.chat_room_id = ur.room_id
+                    AND m_unseen.seen = 0
+                    AND m_unseen.sender_id != '${userId}'
+            ) as unread_count
         FROM user_rooms ur
         LEFT JOIN users u ON ur.room_type = 'direct' AND u.id = (
             SELECT crp2.user_id
@@ -166,6 +173,7 @@ export const getConversations = async ({ userId, limit, offset }: GetConversatio
             last_message_sender_name: string | null;
             last_message_created_at: string;
             is_mutual_follow: number;
+            unread_count: number;
         }>
     ).map((row) => {
         if (row.conversation_type === 'direct') {
@@ -185,7 +193,8 @@ export const getConversations = async ({ userId, limit, offset }: GetConversatio
                     senderId: row.last_message_sender_id,
                     createdAt: row.last_message_created_at
                 },
-                isMutualFollow: row.is_mutual_follow === 1
+                isMutualFollow: row.is_mutual_follow === 1,
+                unreadCount: row.unread_count
             };
         }
         return {
@@ -202,7 +211,8 @@ export const getConversations = async ({ userId, limit, offset }: GetConversatio
                 senderId: row.last_message_sender_id,
                 senderName: row.last_message_sender_name ?? undefined,
                 createdAt: row.last_message_created_at
-            }
+            },
+            unreadCount: row.unread_count
         };
     });
 
