@@ -103,6 +103,11 @@ export function ConversationsListSidebar({ selectedPeer, onSelectPeer: _onSelect
                                                             Mutual
                                                         </Badge>
                                                     )}
+                                                    {conversation.unreadCount > 0 && (
+                                                        <Badge variant="default" className="bg-primary text-primary-foreground ml-auto shrink-0">
+                                                            {conversation.unreadCount}
+                                                        </Badge>
+                                                    )}
                                                 </div>
                                                 <div className="text-muted-foreground flex items-center gap-2 text-xs">
                                                     <span className="line-clamp-1 truncate">{conversation.lastMessage.content}</span>
@@ -145,6 +150,11 @@ export function ConversationsListSidebar({ selectedPeer, onSelectPeer: _onSelect
                                                     <Badge variant="outline" className="shrink-0 text-xs">
                                                         {band.memberCount} {band.memberCount === 1 ? 'member' : 'members'}
                                                     </Badge>
+                                                    {conversation.unreadCount > 0 && (
+                                                        <Badge variant="default" className="bg-primary text-primary-foreground ml-auto shrink-0">
+                                                            {conversation.unreadCount}
+                                                        </Badge>
+                                                    )}
                                                 </div>
                                                 <div className="text-muted-foreground flex items-center gap-2 text-xs">
                                                     <span className="line-clamp-1 truncate">

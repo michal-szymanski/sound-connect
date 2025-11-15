@@ -202,119 +202,119 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
             <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
                 {announcement}
             </div>
-            <div className="fixed bottom-0 z-[105] w-[340px] animate-in slide-in-from-bottom-4 duration-300" style={{ right: `${rightOffset}px` }}>
-                <div className="bg-card border border-border rounded-t-lg shadow-2xl overflow-hidden">
+            <div className="animate-in slide-in-from-bottom-4 fixed bottom-0 z-[105] w-[340px] duration-300" style={{ right: `${rightOffset}px` }}>
+                <div className="bg-card border-border overflow-hidden rounded-t-lg border shadow-2xl">
                     <div className="bg-primary text-primary-foreground border-border/30 flex items-center justify-between border-b px-4 py-3 shadow-sm">
-                    <div className="flex items-center gap-3">
-                        <Avatar className="border-primary-foreground/20 h-8 w-8 border-2">
-                            <AvatarImage src={user.image || '/placeholder.svg'} alt={user.name} />
-                            <AvatarFallback className="bg-primary-foreground text-primary text-xs">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium">{user.name}</span>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                        <Button
-                            size="icon"
-                            variant="ghost"
-                            className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
-                            onClick={onToggleMinimize}
-                        >
-                            <Minus className="h-4 w-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8" onClick={onClose}>
-                            <X className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </div>
-
-                <div className="bg-background relative h-[320px]" role="log" aria-label={`Conversation with ${user.name}`}>
-                    {shouldShowLoading ? (
-                        <div
-                            className="animate-in fade-in flex h-full flex-col items-center justify-center gap-3 duration-200"
-                            role="status"
-                            aria-live="polite"
-                            aria-label="Loading messages"
-                        >
-                            <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" aria-hidden="true" />
-                            <span className="text-muted-foreground text-sm">Loading messages...</span>
+                        <div className="flex items-center gap-3">
+                            <Avatar className="border-primary-foreground/20 h-8 w-8 border-2">
+                                <AvatarImage src={user.image || '/placeholder.svg'} alt={user.name} />
+                                <AvatarFallback className="bg-primary-foreground text-primary text-xs">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm font-medium">{user.name}</span>
                         </div>
-                    ) : messages.length === 0 && !isLoading ? (
-                        <div className="flex h-full items-center justify-center">
-                            <div className="text-muted-foreground text-sm">Start a conversation with {user.name}</div>
-                        </div>
-                    ) : (
-                        <VirtualizedMessageList
-                            messages={messages}
-                            currentUserId={currentUser.id}
-                            formatTimestamp={formatTimestamp}
-                            isInitialLoad={messages.length === 0}
-                            statusIndicator={(() => {
-                                const latestMessage = messages[messages.length - 1];
-                                const status = latestMessage && messageStatuses.get(latestMessage.id);
-                                const isCurrentUser = latestMessage?.senderId === currentUser.id;
 
-                                if (!status || !isCurrentUser) {
-                                    return null;
-                                }
-
-                                return (
-                                    <MessageStatusIndicator
-                                        key={latestMessage.id}
-                                        status={status}
-                                        onRetry={() => retryMessage(latestMessage.id, latestMessage.roomId, latestMessage.content, latestMessage.senderId)}
-                                    />
-                                );
-                            })()}
-                        />
-                    )}
-                </div>
-
-                <div className="bg-card border-border border-t p-3">
-                    <form onSubmit={form.handleSubmit(onSubmit)}>
-                        <div className="flex items-center gap-2">
-                            <Popover open={isEmojiPickerOpen} onOpenChange={setIsEmojiPickerOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-muted-foreground hover:text-foreground hover:bg-accent min-h-11 min-w-11 shrink-0 md:min-h-10 md:min-w-10"
-                                        aria-label="Open emoji picker"
-                                        aria-expanded={isEmojiPickerOpen}
-                                        aria-haspopup="dialog"
-                                    >
-                                        <Smile className="h-5 w-5" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent
-                                    className="z-popover w-full max-w-[352px] p-0"
-                                    style={{ width: '352px', height: '435px' }}
-                                    side="top"
-                                    align="start"
-                                    sideOffset={8}
-                                >
-                                    <EmojiPickerContent onEmojiSelect={insertEmoji} onClose={() => setIsEmojiPickerOpen(false)} />
-                                </PopoverContent>
-                            </Popover>
-                            <Input
-                                {...registerProps}
-                                ref={(e) => {
-                                    formInputRef(e);
-                                    inputRef.current = e;
-                                }}
-                                placeholder="Enter Message"
-                                onKeyDown={handleKeyDown}
-                                className="bg-background border-border flex-1 text-base md:text-sm"
-                                maxLength={CHAT_MESSAGE_MAX_LENGTH}
-                                autoComplete="off"
-                            />
-                            <Button type="submit" size="icon" disabled={!textValue?.trim()} className="shrink-0">
-                                <Send className="h-4 w-4" />
+                        <div className="flex items-center gap-1">
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8"
+                                onClick={onToggleMinimize}
+                            >
+                                <Minus className="h-4 w-4" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="text-primary-foreground hover:bg-primary-foreground/10 h-8 w-8" onClick={onClose}>
+                                <X className="h-4 w-4" />
                             </Button>
                         </div>
-                    </form>
-                </div>
+                    </div>
+
+                    <div className="bg-background relative h-[320px]" role="log" aria-label={`Conversation with ${user.name}`}>
+                        {shouldShowLoading ? (
+                            <div
+                                className="animate-in fade-in flex h-full flex-col items-center justify-center gap-3 duration-200"
+                                role="status"
+                                aria-live="polite"
+                                aria-label="Loading messages"
+                            >
+                                <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" aria-hidden="true" />
+                                <span className="text-muted-foreground text-sm">Loading messages...</span>
+                            </div>
+                        ) : messages.length === 0 && !isLoading ? (
+                            <div className="flex h-full items-center justify-center">
+                                <div className="text-muted-foreground text-sm">Start a conversation with {user.name}</div>
+                            </div>
+                        ) : (
+                            <VirtualizedMessageList
+                                messages={messages}
+                                currentUserId={currentUser.id}
+                                formatTimestamp={formatTimestamp}
+                                isInitialLoad={messages.length === 0}
+                                statusIndicator={(() => {
+                                    const latestMessage = messages[messages.length - 1];
+                                    const status = latestMessage && messageStatuses.get(latestMessage.id);
+                                    const isCurrentUser = latestMessage?.senderId === currentUser.id;
+
+                                    if (!status || !isCurrentUser) {
+                                        return null;
+                                    }
+
+                                    return (
+                                        <MessageStatusIndicator
+                                            key={latestMessage.id}
+                                            status={status}
+                                            onRetry={() => retryMessage(latestMessage.id, latestMessage.roomId, latestMessage.content, latestMessage.senderId)}
+                                        />
+                                    );
+                                })()}
+                            />
+                        )}
+                    </div>
+
+                    <div className="bg-card border-border border-t p-3">
+                        <form onSubmit={form.handleSubmit(onSubmit)}>
+                            <div className="flex items-center gap-2">
+                                <Popover open={isEmojiPickerOpen} onOpenChange={setIsEmojiPickerOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            className="text-muted-foreground hover:text-foreground hover:bg-accent min-h-11 min-w-11 shrink-0 md:min-h-10 md:min-w-10"
+                                            aria-label="Open emoji picker"
+                                            aria-expanded={isEmojiPickerOpen}
+                                            aria-haspopup="dialog"
+                                        >
+                                            <Smile className="h-5 w-5" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                        className="z-popover w-full max-w-[352px] p-0"
+                                        style={{ width: '352px', height: '435px' }}
+                                        side="top"
+                                        align="start"
+                                        sideOffset={8}
+                                    >
+                                        <EmojiPickerContent onEmojiSelect={insertEmoji} onClose={() => setIsEmojiPickerOpen(false)} />
+                                    </PopoverContent>
+                                </Popover>
+                                <Input
+                                    {...registerProps}
+                                    ref={(e) => {
+                                        formInputRef(e);
+                                        inputRef.current = e;
+                                    }}
+                                    placeholder="Enter Message"
+                                    onKeyDown={handleKeyDown}
+                                    className="bg-background border-border flex-1 text-base md:text-sm"
+                                    maxLength={CHAT_MESSAGE_MAX_LENGTH}
+                                    autoComplete="off"
+                                />
+                                <Button type="submit" size="icon" disabled={!textValue?.trim()} className="shrink-0">
+                                    <Send className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </>

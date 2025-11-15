@@ -121,7 +121,7 @@ export default function RightSidebar() {
                                                     <div className="flex items-center gap-2">
                                                         <p className="text-foreground truncate text-sm font-medium">{name}</p>
                                                         {conversation.unreadCount > 0 && (
-                                                            <Badge variant="default" className="bg-primary text-primary-foreground shrink-0 text-xs">
+                                                            <Badge variant="default" className="ml-auto bg-primary text-primary-foreground shrink-0 text-xs">
                                                                 {conversation.unreadCount}
                                                             </Badge>
                                                         )}
@@ -161,7 +161,7 @@ export default function RightSidebar() {
                                                     <div className="flex items-center gap-2">
                                                         <p className="text-foreground truncate text-sm font-medium">{band.name}</p>
                                                         {conversation.unreadCount > 0 && (
-                                                            <Badge variant="default" className="bg-primary text-primary-foreground shrink-0 text-xs">
+                                                            <Badge variant="default" className="ml-auto bg-primary text-primary-foreground shrink-0 text-xs">
                                                                 {conversation.unreadCount}
                                                             </Badge>
                                                         )}
