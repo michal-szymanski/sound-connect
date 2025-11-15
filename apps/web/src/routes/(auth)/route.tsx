@@ -4,6 +4,7 @@ import { Music } from 'lucide-react';
 import { memo } from 'react';
 import { useAnimateOnce } from '@/features/auth/hooks/use-animate-once';
 import { APP_NAME } from '@/common/constants';
+import ThemeToggle from '@/shared/components/common/theme-toggle';
 
 export const Route = createFileRoute('/(auth)')({
     component: RouteComponent,
@@ -59,6 +60,9 @@ const AnimatedHeroContent = memo(function AnimatedHeroContent() {
 function RouteComponent() {
     return (
         <div className="relative container hidden h-full flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+            <div className="fixed top-2.5 right-6 z-50">
+                <ThemeToggle />
+            </div>
             <VideoBackground
                 videoSrc="/videos/login-hero.mp4"
                 posterSrc="/images/login-hero-poster.jpg"
