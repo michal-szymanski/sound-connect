@@ -1,13 +1,11 @@
 import { DurableObject } from 'cloudflare:workers';
-import { ONLINE_STATUS_INTERVAL } from '@sound-connect/common/constants';
-import { WebSocketMessage, webSocketMessageSchema, onlineStatusMessageSchema, UserDTO } from '@sound-connect/common/types/models';
+import { WebSocketMessage, webSocketMessageSchema } from '@sound-connect/common/types/models';
 import { ChatService } from './services/chat-service';
 import z from 'zod';
 
 export class UserDurableObject extends DurableObject {
     private websocket: WebSocket | null = null;
     private storage: DurableObjectStorage;
-    private subscribers: Set<string> = new Set();
     private userId: string | null = null;
     private chatService: ChatService;
 
@@ -38,8 +36,6 @@ export class UserDurableObject extends DurableObject {
 
             await this.handleConnection(server);
             await this.chatService.initializeRooms();
-            await this.subscribeOthersToCurrentUser();
-            await this.storage.setAlarm(Date.now() + ONLINE_STATUS_INTERVAL);
 
             const responseHeaders = new Headers();
             const protocol = request.headers.get('sec-websocket-protocol');
@@ -59,26 +55,6 @@ export class UserDurableObject extends DurableObject {
         }
 
         return new Response('Not Found', { status: 404 });
-    }
-
-    override async alarm() {
-        if (!this.userId) {
-            return;
-        }
-
-        const subscribers = Array.from(this.subscribers);
-
-        for (const userId of subscribers) {
-            const id = this.env.UserDO.idFromName(`user:${userId}`);
-            const stub = this.env.UserDO.get(id);
-            const success = await stub.notifyOnline(this.userId);
-
-            if (!success) {
-                this.unsubscribe(userId);
-            }
-        }
-
-        await this.storage.setAlarm(Date.now() + ONLINE_STATUS_INTERVAL);
     }
 
     async getStorageForDebug() {
@@ -101,28 +77,6 @@ export class UserDurableObject extends DurableObject {
         }
     }
 
-    async notifyOnline(userId: string | null) {
-        if (!userId || !this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
-            await this.storage.deleteAlarm();
-            return false;
-        }
-
-        const message = onlineStatusMessageSchema.parse({
-            type: 'online-status',
-            userId,
-            status: 'online'
-        });
-
-        this.sendMessage(message);
-
-        return true;
-    }
-
-    async clearAllSubscribers() {
-        this.subscribers.clear();
-        return true;
-    }
-
     async clearChatRooms() {
         await this.storage.delete('chat-rooms');
         return true;
@@ -130,32 +84,7 @@ export class UserDurableObject extends DurableObject {
 
     async resetUserState() {
         await this.storage.delete('chat-rooms');
-        this.subscribers.clear();
         return true;
-    }
-
-    initializeSubscribers(users: UserDTO[]) {
-        this.subscribers = new Set(users.map((user) => user.id));
-    }
-
-    private async subscribeOthersToCurrentUser() {
-        if (!this.userId) return;
-
-        const subscribers = Array.from(this.subscribers);
-
-        for (const userId of subscribers) {
-            const id = this.env.UserDO.idFromName(`user:${userId}`);
-            const stub = this.env.UserDO.get(id);
-            await stub.subscribe(this.userId);
-        }
-    }
-
-    async subscribe(userId: string) {
-        this.subscribers.add(userId);
-    }
-
-    private unsubscribe(userId: string) {
-        this.subscribers.delete(userId);
     }
 
     private async handleConnection(webSocket: WebSocket) {

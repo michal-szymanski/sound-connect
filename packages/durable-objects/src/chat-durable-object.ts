@@ -1,13 +1,10 @@
-import { ChatMessage, chatMessageSchema, WebSocketMessage } from '@sound-connect/common/types/models';
+import { ChatMessage, chatMessageSchema, WebSocketMessage, SystemMessage, systemMessageSchema } from '@sound-connect/common/types/models';
 import { DurableObject } from 'cloudflare:workers';
 import { drizzle } from 'drizzle-orm/d1';
-import { eq, and, or, desc } from 'drizzle-orm';
+import { eq, and, desc, gte } from 'drizzle-orm';
 import { schema } from '@sound-connect/drizzle';
 
-const MESSAGES_KEY = 'messages';
-const PARTICIPANTS_KEY = 'participants';
-
-const { userSettingsTable, blockedUsersTable, usersFollowersTable } = schema;
+const { userSettingsTable, blockedUsersTable, usersFollowersTable, messagesTable, chatRoomParticipantsTable, chatRoomsTable, bandsMembersTable } = schema;
 
 export class ChatDurableObject extends DurableObject {
     private storage: DurableObjectStorage;
@@ -24,19 +21,24 @@ export class ChatDurableObject extends DurableObject {
 
     async subscribeUser(userId: string, roomId: string): Promise<void> {
         this.roomId = roomId;
-        await this.loadParticipants();
-
-        const roomUserIds = roomId.split(':');
 
         this.participants.add(userId);
 
-        for (const id of roomUserIds) {
-            if (id && id !== userId) {
-                this.participants.add(id);
+        const [type, identifier] = roomId.split(':');
+
+        if (type === 'dm' && identifier) {
+            const roomUserIds = identifier.split('-');
+
+            for (const id of roomUserIds) {
+                if (id && id !== userId) {
+                    this.participants.add(id);
+                }
             }
+        } else if (type === 'band' && identifier) {
+            this.participants.add(identifier);
         }
 
-        await this.saveParticipants();
+        await this.ensureRoomExists(roomId);
 
         await this.broadcastMessage(
             {
@@ -50,10 +52,8 @@ export class ChatDurableObject extends DurableObject {
 
     async unsubscribeUser(userId: string, roomId: string): Promise<void> {
         this.roomId = roomId;
-        await this.loadParticipants();
 
         this.participants.delete(userId);
-        await this.saveParticipants();
 
         await this.broadcastMessage(
             {
@@ -67,23 +67,35 @@ export class ChatDurableObject extends DurableObject {
 
     async sendMessage(senderId: string, roomId: string, content: string): Promise<void> {
         this.roomId = roomId;
-        await this.loadParticipants();
 
         if (!this.participants.has(senderId)) {
-            console.error('[ChatDO] Sender not in participants - aborting', {
-                senderId,
-                participants: Array.from(this.participants)
-            });
-            return;
+            console.error('[ChatDO] Sender not in participants - attempting to add from database');
+
+            await this.ensureParticipantsLoaded(roomId, senderId);
+
+            if (!this.participants.has(senderId)) {
+                console.error('[ChatDO] Sender still not in participants after DB check - aborting');
+                return;
+            }
         }
 
-        const recipientId = Array.from(this.participants).find((id) => id !== senderId);
+        const isBandRoom = roomId.startsWith('band:');
 
-        if (recipientId) {
-            const canSend = await this.canSendMessage(senderId, recipientId);
-            if (!canSend) {
-                console.error('[ChatDO] Permission denied - cannot send message');
+        if (isBandRoom) {
+            const isMember = await this.isParticipant(senderId, roomId);
+            if (!isMember) {
+                console.error('[ChatDO] User not a room participant - aborting');
                 return;
+            }
+        } else {
+            const recipientId = Array.from(this.participants).find((id) => id !== senderId);
+
+            if (recipientId) {
+                const canSend = await this.canSendMessage(senderId, recipientId);
+                if (!canSend) {
+                    console.error('[ChatDO] Permission denied - cannot send message');
+                    return;
+                }
             }
         }
 
@@ -143,38 +155,74 @@ export class ChatDurableObject extends DurableObject {
         return true;
     }
 
-    async getRoomHistory(roomId: string): Promise<ChatMessage[]> {
+    async getRoomHistory(roomId: string, userId?: string): Promise<(ChatMessage | SystemMessage)[]> {
         this.roomId = roomId;
 
         try {
             const db = drizzle(this.env.DB);
-            const { messagesTable } = schema;
 
-            const [userId1, userId2] = roomId.split(':');
-
-            if (!userId1 || !userId2) {
-                console.error('[ChatDO] Invalid roomId format', { roomId });
+            if (!userId) {
+                console.error('[ChatDO] userId required for room history');
                 return [];
+            }
+
+            let joinedAt: string;
+
+            if (roomId.startsWith('band:')) {
+                const [, identifier] = roomId.split(':');
+
+                if (!identifier) {
+                    console.error('[ChatDO] Invalid band room ID format:', roomId);
+                    return [];
+                }
+
+                const bandId = parseInt(identifier, 10);
+
+                if (isNaN(bandId)) {
+                    console.error('[ChatDO] Invalid band ID in room:', roomId);
+                    return [];
+                }
+
+                const [member] = await db
+                    .select({ joinedAt: bandsMembersTable.joinedAt })
+                    .from(bandsMembersTable)
+                    .where(and(eq(bandsMembersTable.userId, userId), eq(bandsMembersTable.bandId, bandId)))
+                    .limit(1);
+
+                if (!member) {
+                    console.error('[ChatDO] User not a band member');
+                    return [];
+                }
+
+                joinedAt = member.joinedAt;
+            } else {
+                const [participant] = await db
+                    .select({ joinedAt: chatRoomParticipantsTable.joinedAt })
+                    .from(chatRoomParticipantsTable)
+                    .where(and(eq(chatRoomParticipantsTable.chatRoomId, roomId), eq(chatRoomParticipantsTable.userId, userId)))
+                    .limit(1);
+
+                if (!participant) {
+                    console.error('[ChatDO] User not a participant');
+                    return [];
+                }
+
+                joinedAt = participant.joinedAt;
             }
 
             const messages = await db
                 .select()
                 .from(messagesTable)
-                .where(
-                    or(
-                        and(eq(messagesTable.senderId, userId1), eq(messagesTable.receiverId, userId2)),
-                        and(eq(messagesTable.senderId, userId2), eq(messagesTable.receiverId, userId1))
-                    )
-                )
+                .where(and(eq(messagesTable.chatRoomId, roomId), gte(messagesTable.createdAt, joinedAt)))
                 .orderBy(desc(messagesTable.createdAt))
                 .limit(100);
 
             return messages.reverse().map((msg) => ({
-                id: crypto.randomUUID(),
-                type: 'chat' as const,
+                id: msg.id,
+                type: msg.messageType === 'system' ? ('system' as const) : ('chat' as const),
                 content: msg.content,
                 roomId: roomId,
-                senderId: msg.senderId,
+                senderId: msg.senderId || 'system',
                 timestamp: new Date(msg.createdAt).getTime()
             }));
         } catch (error) {
@@ -183,50 +231,24 @@ export class ChatDurableObject extends DurableObject {
         }
     }
 
-    private async loadParticipants() {
-        const storedParticipants = (await this.storage.get<string[]>(PARTICIPANTS_KEY)) || [];
-        this.participants = new Set(storedParticipants);
-    }
-
-    private async saveParticipants() {
-        await this.storage.put(PARTICIPANTS_KEY, Array.from(this.participants));
-    }
-
-    private async storeMessage(message: ChatMessage) {
-        const history = (await this.storage.get<ChatMessage[]>(MESSAGES_KEY)) || [];
-        history.push(message);
-
-        if (history.length > 1000) {
-            history.splice(0, history.length - 1000);
-        }
-
-        await this.storage.put(MESSAGES_KEY, history);
-
+    private async storeMessage(message: ChatMessage | SystemMessage) {
         try {
             const db = drizzle(this.env.DB);
-            const { messagesTable } = schema;
 
-            const receiverId = Array.from(this.participants).find((id) => id !== message.senderId);
-
-            if (!receiverId) {
-                console.error('[ChatDO] No receiver found for message', {
-                    senderId: message.senderId,
-                    participants: Array.from(this.participants),
-                    roomId: this.roomId
-                });
-                return;
-            }
+            await this.ensureRoomExists(this.roomId!);
 
             await db.insert(messagesTable).values({
-                senderId: message.senderId,
-                receiverId: receiverId,
+                id: crypto.randomUUID(),
+                chatRoomId: this.roomId!,
+                senderId: message.type === 'system' ? null : message.senderId,
+                messageType: message.type === 'system' ? 'system' : 'message',
                 content: message.content,
                 createdAt: new Date(message.timestamp).toISOString()
             });
         } catch (error) {
             console.error('[ChatDO] Failed to store message in database:', error);
             console.error('[ChatDO] Message details:', {
-                senderId: message.senderId,
+                senderId: message.type === 'system' ? 'system' : message.senderId,
                 roomId: this.roomId,
                 participants: Array.from(this.participants)
             });
@@ -247,7 +269,126 @@ export class ChatDurableObject extends DurableObject {
                 await stub.sendMessage(message);
             } catch {
                 this.participants.delete(participantId);
-                await this.saveParticipants();
+            }
+        }
+    }
+
+    private async isParticipant(userId: string, chatRoomId: string): Promise<boolean> {
+        const db = drizzle(this.env.DB);
+
+        if (chatRoomId.startsWith('band:')) {
+            const [, identifier] = chatRoomId.split(':');
+
+            if (!identifier) {
+                console.error('[ChatDO] Invalid band room ID format:', chatRoomId);
+                return false;
+            }
+
+            const bandId = parseInt(identifier, 10);
+
+            if (isNaN(bandId)) {
+                console.error('[ChatDO] Invalid band ID in room:', chatRoomId);
+                return false;
+            }
+
+            const [member] = await db
+                .select()
+                .from(bandsMembersTable)
+                .where(and(eq(bandsMembersTable.userId, userId), eq(bandsMembersTable.bandId, bandId)))
+                .limit(1);
+
+            return member !== undefined;
+        }
+
+        const [participant] = await db
+            .select()
+            .from(chatRoomParticipantsTable)
+            .where(and(eq(chatRoomParticipantsTable.userId, userId), eq(chatRoomParticipantsTable.chatRoomId, chatRoomId)))
+            .limit(1);
+
+        return participant !== undefined;
+    }
+
+    async removeMember(bandId: number, userId: string): Promise<void> {
+        const roomId = `band:${bandId}`;
+        this.roomId = roomId;
+
+        this.participants.delete(userId);
+
+        const systemMessage = systemMessageSchema.parse({
+            type: 'system',
+            content: 'User left the band',
+            roomId: roomId,
+            userId,
+            timestamp: Date.now()
+        });
+
+        await this.storeMessage(systemMessage);
+        await this.broadcastMessage(systemMessage);
+    }
+
+    private async ensureParticipantsLoaded(chatRoomId: string, _requestingUserId: string): Promise<void> {
+        const [type, identifier] = chatRoomId.split(':');
+
+        if (type === 'dm' && identifier) {
+            const roomUserIds = identifier.split('-');
+
+            for (const id of roomUserIds) {
+                if (id) {
+                    this.participants.add(id);
+                }
+            }
+        } else if (type === 'band' && identifier) {
+            const db = drizzle(this.env.DB);
+
+            const bandId = parseInt(identifier, 10);
+            if (isNaN(bandId)) {
+                console.error('[ChatDO] Invalid band ID in room:', chatRoomId);
+                return;
+            }
+
+            const participants = await db.select({ userId: bandsMembersTable.userId }).from(bandsMembersTable).where(eq(bandsMembersTable.bandId, bandId));
+
+            for (const participant of participants) {
+                this.participants.add(participant.userId);
+            }
+        }
+    }
+
+    private async ensureRoomExists(chatRoomId: string): Promise<void> {
+        const db = drizzle(this.env.DB);
+
+        const [existingRoom] = await db.select().from(chatRoomsTable).where(eq(chatRoomsTable.id, chatRoomId)).limit(1);
+
+        if (existingRoom) {
+            return;
+        }
+
+        const isBandRoom = chatRoomId.startsWith('band:');
+        const roomType = isBandRoom ? 'band' : 'direct';
+
+        await db.insert(chatRoomsTable).values({
+            id: chatRoomId,
+            type: roomType,
+            createdAt: new Date().toISOString()
+        });
+
+        if (!isBandRoom) {
+            const participants = Array.from(this.participants);
+            for (const participantId of participants) {
+                const [existingParticipant] = await db
+                    .select()
+                    .from(chatRoomParticipantsTable)
+                    .where(and(eq(chatRoomParticipantsTable.chatRoomId, chatRoomId), eq(chatRoomParticipantsTable.userId, participantId)))
+                    .limit(1);
+
+                if (!existingParticipant) {
+                    await db.insert(chatRoomParticipantsTable).values({
+                        chatRoomId,
+                        userId: participantId,
+                        joinedAt: new Date().toISOString()
+                    });
+                }
             }
         }
     }

@@ -3,6 +3,7 @@ import { MessageCircle } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import type { BandMember } from '@sound-connect/common/types/bands';
 import { toast } from 'sonner';
+import { useAuth } from '@/shared/lib/react-query';
 
 type Props = {
     bandId: number;
@@ -10,25 +11,18 @@ type Props = {
     bandMembers: BandMember[];
 };
 
-export function BandMessageButton({ bandMembers }: Props) {
+export function BandMessageButton({ bandId }: Props) {
     const navigate = useNavigate();
+    const { data: auth } = useAuth();
 
     const handleClick = () => {
-        const admins = bandMembers.filter((member) => member.isAdmin);
-
-        if (admins.length === 0) {
-            toast.error('This band has no admins. Cannot send message.');
+        if (!auth?.user) {
+            toast.error('You must be logged in to send a message.');
             return;
         }
 
-        const firstAdmin = admins.sort((a, b) => new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime())[0];
-
-        if (!firstAdmin) {
-            toast.error('Could not find band admin.');
-            return;
-        }
-
-        navigate({ to: '/messages', search: { userId: firstAdmin.userId } });
+        const roomId = `band:${bandId}`;
+        navigate({ to: '/messages', search: { room: roomId } });
     };
 
     return (

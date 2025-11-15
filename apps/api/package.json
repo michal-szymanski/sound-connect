@@ -4,10 +4,9 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "start": "pnpm db:seed && tsx src/server.ts",
-        "db:migrate:remote": "wrangler d1 migrations apply sound-connect-db --remote --config wrangler.jsonc",
-        "db:migrate:local": "wrangler d1 migrations apply sound-connect-db --local --config wrangler.jsonc",
-        "db:seed": "tsx src/db/seed.ts",
+        "start": "tsx src/server.ts",
+        "db:migrate:remote": "wrangler d1 migrations apply sound-connect-db --remote --config wrangler.jsonc && pnpm --filter @sound-connect/drizzle seed:remote",
+        "db:migrate:local": "wrangler d1 migrations apply sound-connect-db --local --config wrangler.jsonc && pnpm --filter @sound-connect/drizzle seed",
         "dev": "pnpm db:migrate:local && wrangler dev --local --port 4000 -c wrangler.jsonc -c ../posts-queue-consumer/wrangler.jsonc -c ../notifications-queue-consumer/wrangler.jsonc --persist-to .wrangler/state",
         "deploy": "wrangler deploy --env production --minify src/server.ts --outdir dist --upload-source-maps --var SENTRY_RELEASE:$(git rev-parse HEAD)",
         "types": "wrangler types --env-interface CloudflareBindings",

@@ -14,6 +14,7 @@ export default defineConfig({
         table: 'migrations',
         schema: 'public'
     },
+    schemaFilter: ['!migrations/*'],
     verbose: true,
     strict: true
 });

@@ -23,6 +23,7 @@
         "./types/band-posts": "./src/types/band-posts.ts",
         "./types/band-follows": "./src/types/band-follows.ts",
         "./types/band-applications": "./src/types/band-applications.ts",
+        "./types/messaging": "./src/types/messaging.ts",
         "./types/uploads": "./src/types/uploads.ts",
         "./types/settings": "./src/types/settings.ts",
         "./types/conversations": "./src/types/conversations.ts",

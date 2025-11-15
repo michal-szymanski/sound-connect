@@ -35,6 +35,7 @@ import { LookingForSection } from '@/features/profile/components/looking-for-sec
 import { BioSection } from '@/features/profile/components/bio-section';
 import { UserBandsSection } from '@/features/bands/components/user-bands-section';
 import { useBlockedUsers, useBlockUser, useUnblockUser } from '@/features/settings/hooks/use-settings';
+import { MessageButton } from '@/features/chat/components/message-button';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
@@ -256,6 +257,7 @@ function RouteComponent() {
 
                         <div className="flex items-center gap-2">
                             {renderFollowButton()}
+                            {!isOwnProfile && <MessageButton user={user} />}
                             {!isOwnProfile && (
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>

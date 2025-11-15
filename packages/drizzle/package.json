@@ -10,6 +10,8 @@
     "scripts": {
         "db:generate": "drizzle-kit generate",
         "db:studio": "drizzle-kit studio",
+        "seed": "tsx src/seed.ts",
+        "seed:remote": "tsx src/seed.ts --remote",
         "tsc": "tsc --noEmit",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
@@ -23,10 +25,16 @@
     },
     "devDependencies": {
         "@cloudflare/workers-types": "catalog:",
+        "@types/better-sqlite3": "^7.6.13",
         "@types/node": "catalog:",
+        "better-auth": "catalog:",
+        "better-sqlite3": "^12.4.1",
         "drizzle-kit": "^0.31.5",
+        "drizzle-seed": "^0.3.1",
         "eslint": "catalog:",
         "prettier": "catalog:",
-        "typescript": "catalog:"
+        "tsx": "^4.20.6",
+        "typescript": "catalog:",
+        "wrangler": "catalog:"
     }
 }

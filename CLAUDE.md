@@ -24,12 +24,14 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 
 ### Test Users
 
-| Email      | Password | Name |
-| ---------- | -------- | ---- |
-| t1@asd.asd | aaaaaaaa | t1   |
-| t2@asd.asd | aaaaaaaa | t2   |
+| Email           | Password | Name              |
+| --------------- | -------- | ----------------- |
+| t1@asd.asd      | aaaaaaaa | t1                |
+| t2@asd.asd      | aaaaaaaa | t2                |
+| pw1@test.test   | Test123! | Playwright User 1 |
+| pw2@test.test   | Test123! | Playwright User 2 |
 
-Defined in: `packages/drizzle/migrations/0001_seed_users.sql`
+Seeded via: `pnpm db:seed:local` (defined in `packages/drizzle/src/seed.ts`)
 
 ## Implemented Features
 
@@ -833,13 +835,22 @@ sound-connect-assets/
 - **Migrations**:
     - Schema migrations (CREATE TABLE, ALTER TABLE, etc.) MUST be generated using `pnpm db:generate` command ONLY
     - NEVER manually create migration files for schema changes
-    - Data migrations (INSERT, UPDATE, DELETE, seed data) can be manually created as SQL files
-    - Example: Seed users in `0001_seed_users.sql` is allowed (data migration)
     - Example: Adding a new column must use `pnpm db:generate` (schema migration)
+- **Seeding**:
+    - Use type-safe TypeScript seed script: `packages/drizzle/src/seed.ts`
+    - **Local seeding**: `pnpm db:seed:local` - Seeds local D1 database via Drizzle ORM + better-sqlite3
+    - **Remote seeding**: `pnpm db:seed:remote` - Seeds production D1 database via Wrangler CLI
+    - **Automatic seeding**: Both `db:migrate:local` and `db:migrate:remote` automatically run seed scripts after migrations
+    - Seed script is idempotent (safe to run multiple times - checks for existing users)
+    - Uses Drizzle ORM for type-safe inserts (local) and raw SQL via Wrangler (remote)
+    - Seeds 4 test users: t1, t2, pw1 (Playwright User 1), pw2 (Playwright User 2) with pre-hashed passwords
+    - **FTS synchronization**: `users_fts` table is automatically kept in sync with `users` table via database triggers (INSERT, UPDATE, DELETE)
 - **After schema changes**, run these commands IN ORDER:
     1. `pnpm db:generate` - Generate migration files
     2. Manually update Zod schemas in `packages/common/src/types/drizzle.ts` to match the database schema
-    3. `pnpm --filter @sound-connect/api db:migrate:local` - Apply migrations locally
+    3. `pnpm --filter @sound-connect/api db:migrate:local` - Apply migrations locally (automatically seeds test users)
+
+    Note: `db:migrate:local` automatically runs `pnpm db:seed:local` after applying migrations, so test users are always available in local development.
 - Always specify explicit column names for all fields
 - Use proper foreign key references with `onDelete` actions
 - Mark all required fields with `.notNull()`
