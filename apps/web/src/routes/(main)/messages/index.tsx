@@ -39,7 +39,8 @@ function RouteComponent() {
     const { room } = Route.useSearch();
     const { selectedPeer, setSelectedPeer, selectedBand, setSelectedBand } = useMessagingContext();
 
-    const roomId = selectedPeer ? useGetRoomId(auth?.user?.id || '', selectedPeer.id) : selectedBand ? `band:${selectedBand.id}` : '';
+    const dmRoomId = useGetRoomId(auth?.user?.id || '', selectedPeer?.id || '');
+    const roomId = selectedPeer ? dmRoomId : selectedBand ? `band:${selectedBand.id}` : '';
     const { data: messages = [], isInitialLoading } = useChatMessages({ conversationId: roomId, enabled: !!(selectedPeer || selectedBand) });
     const { mutate: sendMessageMutate, messageStatuses, retryMessage } = useSendMessage(sendMessage);
     const shouldShowLoading = useDelayedLoading({ isLoading: isInitialLoading });
@@ -111,7 +112,6 @@ function RouteComponent() {
                     const result = await getUser({ data: { userId: peerUserId } });
                     if (result.success) {
                         setSelectedPeer(result.body);
-                        setSelectedBand(null);
                     } else {
                         toast.error('User not found');
                     }
@@ -130,7 +130,6 @@ function RouteComponent() {
                     const result = await getBand({ data: { bandId } });
                     if (result.success) {
                         setSelectedBand(result.body);
-                        setSelectedPeer(null);
                     } else {
                         toast.error('Band not found');
                     }

@@ -71,7 +71,7 @@ export function ConversationsListSidebar({ selectedPeer, onSelectPeer: _onSelect
                                             onClick={() => {
                                                 if (isDeleted || !auth?.user) return;
                                                 const roomId = getRoomId(auth.user.id, partner.id);
-                                                navigate({ to: '/messages', search: { room: roomId } });
+                                                navigate({ to: '/messages', search: { room: roomId }, replace: true });
                                             }}
                                             disabled={isDeleted}
                                             className={cn(
@@ -118,7 +118,7 @@ export function ConversationsListSidebar({ selectedPeer, onSelectPeer: _onSelect
                                             key={`band-${conversation.bandId}`}
                                             onClick={() => {
                                                 const roomId = `band:${band.id}`;
-                                                navigate({ to: '/messages', search: { room: roomId } });
+                                                navigate({ to: '/messages', search: { room: roomId }, replace: true });
                                             }}
                                             className={cn(
                                                 'flex w-full items-center gap-3 px-4 py-3 transition-colors',
