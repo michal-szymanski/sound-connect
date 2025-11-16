@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
+import { redirect } from '@tanstack/react-router';
 import { z } from 'zod';
 import {
     createBandInputSchema,
@@ -23,6 +24,8 @@ export const createBand = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(createBandInputSchema)
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/bands`, {
                 method: 'POST',
@@ -50,6 +53,8 @@ export const getBand = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}`, {
                 method: 'GET',
@@ -75,6 +80,8 @@ export const updateBand = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateBandInputSchema.extend({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const { bandId, ...updateData } = data;
 
@@ -104,6 +111,8 @@ export const deleteBand = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}`, {
                 method: 'DELETE',
@@ -128,6 +137,8 @@ export const addBandMember = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(addBandMemberInputSchema.extend({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const { bandId, userId } = data;
 
@@ -157,6 +168,8 @@ export const removeBandMember = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number(), userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const { bandId, userId } = data;
 
@@ -183,6 +196,8 @@ export const getUserBands = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/bands`, {
                 method: 'GET',
@@ -208,6 +223,8 @@ export const createBandPost = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(createBandPostInputSchema.extend({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const { bandId, ...postData } = data;
 
@@ -237,6 +254,8 @@ export const getBandPosts = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number(), page: z.number().optional(), limit: z.number().optional() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const searchParams = new URLSearchParams();
             if (data.page) searchParams.set('page', data.page.toString());
@@ -266,6 +285,8 @@ export const followBand = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}/follow`, {
                 method: 'POST',
@@ -292,6 +313,8 @@ export const unfollowBand = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}/follow`, {
                 method: 'DELETE',
@@ -316,6 +339,8 @@ export const getBandFollowers = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number(), page: z.number().optional(), limit: z.number().optional() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const searchParams = new URLSearchParams();
             if (data.page) searchParams.set('page', data.page.toString());
@@ -345,6 +370,8 @@ export const getBandFollowerCount = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}/followers/count`, {
                 method: 'GET',
@@ -370,6 +397,8 @@ export const getIsFollowingBand = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}/is-following`, {
                 method: 'GET',

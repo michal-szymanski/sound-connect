@@ -27,8 +27,9 @@ export const authMiddleware = createMiddleware()
         const sessionData = await getSessionData(env);
 
         if (!sessionData) {
-            console.error('[Auth Middleware] Unauthorized: No valid session found');
-            throw new Error('UNAUTHORIZED');
+            return await next({
+                context: { env, auth: null as Auth | null }
+            });
         }
 
         const cookie = getSessionCookie();

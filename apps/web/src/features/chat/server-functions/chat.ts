@@ -1,6 +1,7 @@
 import { chatMessageSchema } from '@/common/types/models';
 import { conversationsResponseSchema } from '@/common/types/conversations';
 import { createServerFn } from '@tanstack/react-start';
+import { redirect } from '@tanstack/react-router';
 import { z } from 'zod';
 import { apiErrorHandler, failure, success } from '@/shared/server-functions/helpers';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
@@ -9,6 +10,8 @@ export const getChatHistory = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ roomId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         const roomId = data.roomId;
         const response = await env.API.fetch(`${env.API_URL}/api/chat/${roomId}/history`, {
             headers: {
@@ -41,6 +44,8 @@ export const getConversations = createServerFn()
         })
     )
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         const params = new URLSearchParams();
         if (data.limit) params.append('limit', data.limit.toString());
         if (data.offset) params.append('offset', data.offset.toString());
@@ -71,6 +76,8 @@ export const markMessagesAsRead = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ roomId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         const response = await env.API.fetch(`${env.API_URL}/api/chat/${data.roomId}/mark-read`, {
             method: 'POST',
             headers: {

@@ -3,11 +3,14 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { apiErrorHandler, failure, success } from '@/shared/server-functions/helpers';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
+import { redirect } from '@tanstack/react-router';
 
 export const getFollowers = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/followers`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -34,6 +37,8 @@ export const getFollowings = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/followings`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -60,6 +65,8 @@ export const getUser = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -85,6 +92,8 @@ export const followUser = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/follow`, {
             method: 'POST',
             headers: {
@@ -105,6 +114,8 @@ export const unfollowUser = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/unfollow`, {
             method: 'POST',
             headers: {
@@ -125,6 +136,8 @@ export const getMutualFollowers = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/contacts`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -151,6 +164,8 @@ export const search = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ query: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         const response = await env.API.fetch(`${env.API_URL}/api/search?query=${data.query}`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -178,6 +193,8 @@ export const getFollowRequestStatus = createServerFn({ method: 'GET' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/follow-request-status`, {
             method: 'GET',
             headers: {
