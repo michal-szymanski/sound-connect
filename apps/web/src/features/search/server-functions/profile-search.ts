@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
+import { redirect } from '@tanstack/react-router';
 import { profileSearchParamsSchema, profileSearchResponseSchema } from '@sound-connect/common/types/profile-search';
 import { apiErrorHandler, failure, success } from '@/shared/server-functions/helpers';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
@@ -7,6 +8,8 @@ export const searchProfiles = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(profileSearchParamsSchema)
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const queryParams = new URLSearchParams();
 

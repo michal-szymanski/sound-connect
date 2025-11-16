@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
+import { redirect } from '@tanstack/react-router';
 import { z } from 'zod';
 import { chatHistoryResponseSchema } from '@sound-connect/common/types/messaging';
 import { messageSchema } from '@sound-connect/common/types/drizzle';
@@ -15,6 +16,8 @@ export const getBandChatHistory = createServerFn()
         })
     )
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const params = new URLSearchParams();
             if (data.limit) params.append('limit', data.limit.toString());
@@ -50,6 +53,8 @@ export const sendBandMessage = createServerFn()
         })
     )
     .handler(async ({ data, context: { env, auth } }) => {
+        if (!auth) throw redirect({ to: '/sign-in' });
+
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/bands/${data.bandId}/chat/send`, {
                 method: 'POST',
