@@ -1,12 +1,8 @@
 import { Link, useLocation } from '@tanstack/react-router';
 import { House, LucideIcon, Mail, Users, Music, Compass } from 'lucide-react';
-import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import AccountButton from '@/shared/components/common/account-button';
 import { UserQuickInfoCard } from '@/shared/components/layout/user-quick-info-card';
 import { useAuth } from '@/shared/lib/react-query';
-import { collapseSidebar } from '@/web/redux/slices/ui-slice';
-import { RootState } from '@/web/redux/store';
 import {
     Sidebar,
     SidebarContent,
@@ -100,8 +96,6 @@ export function LeftSidebarDesktop() {
 
 const LeftSidebarMobile = () => {
     const { data: auth } = useAuth();
-    const { isSidebarVisible, isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
-    const dispatch = useDispatch();
     const location = useLocation();
 
     const isMessagesPage = location.pathname === '/messages';
@@ -116,13 +110,13 @@ const LeftSidebarMobile = () => {
                     to={item.url}
                     preload={false}
                     className={`flex min-h-12 items-center transition-all duration-300 [&>svg]:size-6 ${
-                        isSidebarCollapsed ? 'w-16 justify-center' : 'w-full justify-center px-3 xl:justify-start'
+                        isMessagesPage ? 'w-16 justify-center' : 'w-full justify-center px-3 xl:justify-start'
                     } ${isActive ? 'bg-primary/10 text-primary' : ''}`}
                 >
                     <item.icon className="flex-shrink-0" />
                     <span
                         className={`truncate transition-all duration-300 ${
-                            isSidebarCollapsed ? 'w-0 overflow-hidden opacity-0' : 'ml-2 hidden w-auto opacity-100 xl:block'
+                            isMessagesPage ? 'w-0 overflow-hidden opacity-0' : 'ml-2 hidden w-auto opacity-100 xl:block'
                         }`}
                     >
                         {item.title}
@@ -132,27 +126,22 @@ const LeftSidebarMobile = () => {
         );
     };
 
-    useEffect(() => {
-        const shouldCollapse = isMessagesPage;
-        dispatch(collapseSidebar(shouldCollapse));
-    }, [isMessagesPage, dispatch]);
-
     return (
         <div className="lg:hidden">
             <div className="relative flex">
                 <Sidebar
                     collapsible="none"
-                    data-state={!isSidebarVisible ? 'closed' : 'open'}
+                    data-state="open"
                     className={`fixed inset-y-0 left-0 z-40 overflow-hidden text-white transition-all duration-300 data-[state=closed]:-translate-x-full data-[state=open]:translate-x-0 ${
-                        isSidebarCollapsed ? 'w-16' : 'w-16 xl:w-64'
+                        isMessagesPage ? 'w-16' : 'w-16 xl:w-64'
                     }`}
                 >
-                    <SidebarContent className={`flex-none overflow-hidden lg:flex-1 ${isSidebarCollapsed ? 'w-16' : 'w-full'}`}>
-                        <SidebarGroup className={`overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'w-16 px-0' : 'w-full px-2'}`}>
+                    <SidebarContent className={`flex-none overflow-hidden lg:flex-1 ${isMessagesPage ? 'w-16' : 'w-full'}`}>
+                        <SidebarGroup className={`overflow-hidden transition-all duration-300 ${isMessagesPage ? 'w-16 px-0' : 'w-full px-2'}`}>
                             <SidebarGroupContent className="overflow-hidden">
-                                <SidebarMenu className={`flex-col space-y-1 overflow-hidden ${isSidebarCollapsed ? 'w-16' : 'w-full'}`}>
+                                <SidebarMenu className={`flex-col space-y-1 overflow-hidden ${isMessagesPage ? 'w-16' : 'w-full'}`}>
                                     {items.map((item) => (
-                                        <SidebarMenuItem key={item.title} className={`overflow-hidden ${isSidebarCollapsed ? 'w-16' : 'w-full'}`}>
+                                        <SidebarMenuItem key={item.title} className={`overflow-hidden ${isMessagesPage ? 'w-16' : 'w-full'}`}>
                                             {renderMenuButton(item)}
                                         </SidebarMenuItem>
                                     ))}
@@ -160,10 +149,10 @@ const LeftSidebarMobile = () => {
                             </SidebarGroupContent>
                         </SidebarGroup>
                     </SidebarContent>
-                    <SidebarFooter className={`overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'w-16 px-0' : 'w-full px-2'}`}>
+                    <SidebarFooter className={`overflow-hidden transition-all duration-300 ${isMessagesPage ? 'w-16 px-0' : 'w-full px-2'}`}>
                         <SidebarMenu className="overflow-hidden">
-                            <SidebarMenuItem className={`overflow-hidden ${isSidebarCollapsed ? 'w-16' : 'w-full'}`}>
-                                <AccountButton isCollapsed={isSidebarCollapsed} />
+                            <SidebarMenuItem className={`overflow-hidden ${isMessagesPage ? 'w-16' : 'w-full'}`}>
+                                <AccountButton isCollapsed={isMessagesPage} />
                             </SidebarMenuItem>
                         </SidebarMenu>
                     </SidebarFooter>

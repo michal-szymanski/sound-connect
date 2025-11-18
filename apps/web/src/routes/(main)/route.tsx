@@ -1,15 +1,11 @@
 import { createFileRoute, Outlet, redirect, useLocation, useRouteContext } from '@tanstack/react-router';
-import { Provider as ReduxProvider } from 'react-redux';
-import { useSelector } from 'react-redux';
 import { ChatWindowProvider } from '@/features/chat/components/chat-window-manager';
 import Header from '@/shared/components/layout/header';
 import LeftSidebarMobile, { LeftSidebarDesktop } from '@/shared/components/layout/left-sidebar';
 import RightSidebar from '@/shared/components/layout/right-sidebar';
-import { SidebarProvider } from '@/shared/components/ui/sidebar';
+import { SidebarProvider as ShadcnSidebarProvider } from '@/shared/components/ui/sidebar';
 import { ChatProvider } from '@/shared/components/providers/chat-provider';
 import { NotificationsProvider } from '@/features/notifications/providers/notifications-provider';
-import { store } from '@/web/redux/store';
-import { RootState } from '@/web/redux/store';
 import { MessagingProvider, useMessagingContext } from './messages/context';
 import { ConversationsListSidebar } from '@/shared/components/layout/conversations-list-sidebar';
 import { useEnvs } from '@/shared/lib/react-query';
@@ -37,13 +33,12 @@ function LayoutContent() {
     const context = useRouteContext({ from: '/(main)' });
     const { data: envs } = useEnvs();
     const isMessagesPage = location.pathname === '/messages';
-    const { isSidebarCollapsed: _isSidebarCollapsed } = useSelector((state: RootState) => state.ui);
 
     return (
         <ChatProvider auth={{ user: context.user, accessToken: context.accessToken }} envs={envs}>
             <NotificationsProvider auth={{ user: context.user, accessToken: context.accessToken }} envs={envs}>
                 <ChatWindowProvider>
-                    <SidebarProvider>
+                    <ShadcnSidebarProvider>
                         <MessagingProvider>
                             <a
                                 href="#main-content"
@@ -60,7 +55,7 @@ function LayoutContent() {
                                 </div>
                             </main>
                         </MessagingProvider>
-                    </SidebarProvider>
+                    </ShadcnSidebarProvider>
                 </ChatWindowProvider>
             </NotificationsProvider>
         </ChatProvider>
@@ -99,9 +94,5 @@ function MessagesLayout() {
 }
 
 function RouteComponent() {
-    return (
-        <ReduxProvider store={store}>
-            <LayoutContent />
-        </ReduxProvider>
-    );
+    return <LayoutContent />;
 }
