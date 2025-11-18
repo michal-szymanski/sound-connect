@@ -7,7 +7,6 @@ import { X, ImagePlus } from 'lucide-react';
 import { VisuallyHidden } from 'radix-ui';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useDispatch } from 'react-redux';
 import { toast } from 'sonner';
 import z from 'zod';
 import { EmojiPicker } from '@/web/components/emoji-picker';
@@ -19,13 +18,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormField, FormItem } from '@/shared/components/ui/form';
 import { Textarea } from '@/shared/components/ui/textarea';
 import useFileUpload from '@/shared/hooks/use-file-upload';
-import { showSidebar } from '@/web/redux/slices/ui-slice';
 import { addPost } from '@/features/posts/server-functions/posts';
 
 const AddPostDialog = () => {
     const text = `What's on your mind?`;
     const [open, setOpen] = useState(false);
-    const dispatch = useDispatch();
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const queryClient = useQueryClient();
 
@@ -79,10 +76,6 @@ const AddPostDialog = () => {
         clearAllFiles();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [form.formState.isSubmitSuccessful, clearAllFiles]);
-
-    useEffect(() => {
-        dispatch(showSidebar(!open));
-    }, [open, dispatch]);
 
     useEffect(() => {
         if (open && textareaRef.current) {
