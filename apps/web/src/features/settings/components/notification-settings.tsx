@@ -91,32 +91,6 @@ export function NotificationSettings() {
 
                         <div className="flex items-center justify-between">
                             <div className="space-y-0.5">
-                                <Label htmlFor="reaction-notifications">Reactions to my content</Label>
-                                <p className="text-muted-foreground text-sm">When someone reacts to your posts or comments</p>
-                            </div>
-                            <Checkbox
-                                id="reaction-notifications"
-                                checked={settings?.reactionNotifications ?? true}
-                                onCheckedChange={(checked) => handleSettingChange('reactionNotifications', checked as boolean)}
-                                disabled={!emailEnabled || updateSettings.isPending}
-                            />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
-                                <Label htmlFor="mention-notifications">Mentions in posts or comments</Label>
-                                <p className="text-muted-foreground text-sm">When someone mentions you in a post or comment</p>
-                            </div>
-                            <Checkbox
-                                id="mention-notifications"
-                                checked={settings?.mentionNotifications ?? true}
-                                onCheckedChange={(checked) => handleSettingChange('mentionNotifications', checked as boolean)}
-                                disabled={!emailEnabled || updateSettings.isPending}
-                            />
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-0.5">
                                 <Label htmlFor="band-application-notifications">Band applications received</Label>
                                 <p className="text-muted-foreground text-sm">When someone applies to join your band (band admins only)</p>
                             </div>
