@@ -1,5 +1,4 @@
 import { createServerFn } from '@tanstack/react-start';
-import { redirect } from '@tanstack/react-router';
 import { bandDiscoveryParamsSchema, bandDiscoveryResponseSchema, discoveryAnalyticsEventSchema } from '@sound-connect/common/types/band-discovery';
 import { apiErrorHandler, failure, success } from '@/shared/server-functions/helpers';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
@@ -8,8 +7,6 @@ export const getBandDiscovery = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(bandDiscoveryParamsSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const queryParams = new URLSearchParams();
             queryParams.append('page', data.page.toString());
@@ -39,8 +36,6 @@ export const trackDiscoveryAnalytics = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(discoveryAnalyticsEventSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/discover/analytics/track`, {
                 method: 'POST',

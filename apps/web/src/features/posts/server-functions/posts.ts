@@ -1,7 +1,6 @@
 import { feedItemSchema, postLikeDataSchema, userDTOSchema } from '@/common/types/models';
 import { postReactionSchema, postSchema } from '@/common/types/drizzle';
 import { createServerFn } from '@tanstack/react-start';
-import { redirect } from '@tanstack/react-router';
 import { z } from 'zod';
 import { apiErrorHandler, failure, success } from '@/shared/server-functions/helpers';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
@@ -9,8 +8,6 @@ import { authMiddleware } from '@/shared/server-functions/middlewares';
 export const getFeed = createServerFn()
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         const response = await env.API.fetch(`${env.API_URL}/api/feed`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -37,8 +34,6 @@ export const getFeedPaginated = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ limit: z.number().optional(), offset: z.number().optional() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         const searchParams = new URLSearchParams();
         if (data.limit) searchParams.set('limit', data.limit.toString());
         if (data.offset) searchParams.set('offset', data.offset.toString());
@@ -69,8 +64,6 @@ export const getPosts = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/posts`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -97,8 +90,6 @@ export const getReactions = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}/reactions`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -125,8 +116,6 @@ export const addPost = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.instanceof(FormData))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         const response = await env.API.fetch(`${env.API_URL}/api/posts`, {
             method: 'POST',
             headers: {
@@ -147,8 +136,6 @@ export const likePost = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}/like`, {
             method: 'POST',
             headers: {
@@ -177,8 +164,6 @@ export const unlikePost = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}/like`, {
             method: 'DELETE',
             headers: {
@@ -207,8 +192,6 @@ export const getPostLikesUsers = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}/likes/users`, {
             headers: {
                 'Content-Type': 'application/json',
@@ -236,8 +219,6 @@ export const getPostLikes = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}/likes`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })
@@ -264,8 +245,6 @@ export const getPost = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ postId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}`, {
             headers: {
                 ...(auth.cookie && { Cookie: auth.cookie })

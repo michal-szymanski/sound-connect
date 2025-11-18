@@ -1,5 +1,4 @@
 import { createServerFn } from '@tanstack/react-start';
-import { redirect } from '@tanstack/react-router';
 import { z } from 'zod';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
 import { success, failure, apiErrorHandler } from '@/shared/server-functions/helpers';
@@ -26,8 +25,6 @@ import {
 export const getAccountInfo = createServerFn()
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/me/account-info`, {
                 method: 'GET',
@@ -54,8 +51,6 @@ export const updateEmail = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateEmailSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/me/email`, {
                 method: 'PATCH',
@@ -83,8 +78,6 @@ export const updatePassword = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updatePasswordSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/me/password`, {
                 method: 'PATCH',
@@ -111,8 +104,6 @@ export const updatePassword = createServerFn({ method: 'POST' })
 export const getPrivacySettings = createServerFn()
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/me/settings/privacy`, {
                 method: 'GET',
@@ -139,8 +130,6 @@ export const updatePrivacySettings = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updatePrivacySettingsSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/me/settings/privacy`, {
                 method: 'PATCH',
@@ -167,8 +156,6 @@ export const updatePrivacySettings = createServerFn({ method: 'POST' })
 export const getNotificationSettings = createServerFn()
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/me/settings/notifications`, {
                 method: 'GET',
@@ -195,8 +182,6 @@ export const updateNotificationSettings = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateNotificationSettingsSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/me/settings/notifications`, {
                 method: 'PATCH',
@@ -223,8 +208,6 @@ export const updateNotificationSettings = createServerFn({ method: 'POST' })
 export const getBlockedUsers = createServerFn()
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/me/blocked`, {
                 method: 'GET',
@@ -251,8 +234,6 @@ export const blockUser = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/block`, {
                 method: 'POST',
@@ -279,8 +260,6 @@ export const unblockUser = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/block`, {
                 method: 'DELETE',
@@ -306,8 +285,6 @@ export const unblockUser = createServerFn({ method: 'POST' })
 export const exportData = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .handler(async ({ context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/me/export`, {
                 method: 'POST',
@@ -334,8 +311,6 @@ export const deleteAccount = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(deleteAccountSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/me`, {
                 method: 'DELETE',

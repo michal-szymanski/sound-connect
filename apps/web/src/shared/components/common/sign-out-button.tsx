@@ -1,24 +1,22 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from '@tanstack/react-router';
 import { LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 import { DropdownMenuItem } from '@/shared/components/ui/dropdown-menu';
 import { signOut } from '@/features/auth/server-functions/auth';
 
 const SignOutButton = () => {
-    const router = useRouter();
-    const queryClient = useQueryClient();
-
     const handleSignOut = async () => {
-        const result = await signOut();
+        try {
+            const result = await signOut();
 
-        if (result.success) {
-            queryClient.clear();
-            await router.invalidate();
-        } else if (result.body) {
-            toast.error('Could not sign out', {
-                description: result.body.message
-            });
+            if (result.success) {
+                window.location.href = '/sign-in';
+            } else if (result.body) {
+                toast.error('Could not sign out', {
+                    description: result.body.message
+                });
+            }
+        } catch {
+            window.location.href = '/sign-in';
         }
     };
 
