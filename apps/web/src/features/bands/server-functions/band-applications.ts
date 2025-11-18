@@ -1,5 +1,4 @@
 import { createServerFn } from '@tanstack/react-start';
-import { redirect } from '@tanstack/react-router';
 import { z } from 'zod';
 import {
     createBandApplicationSchema,
@@ -16,8 +15,6 @@ export const submitBandApplication = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(createBandApplicationSchema.extend({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const { bandId, ...applicationData } = data;
 
@@ -54,8 +51,6 @@ export const getBandApplications = createServerFn()
         })
     )
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const { bandId, ...params } = data;
             const searchParams = new URLSearchParams();
@@ -87,8 +82,6 @@ export const acceptBandApplication = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number(), applicationId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const { bandId, applicationId } = data;
 
@@ -116,8 +109,6 @@ export const rejectBandApplication = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(rejectBandApplicationSchema.extend({ bandId: z.number(), applicationId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const { bandId, applicationId, feedbackMessage } = data;
 
@@ -147,8 +138,6 @@ export const getUserApplicationStatus = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ bandId: z.number() }))
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const { bandId } = data;
 

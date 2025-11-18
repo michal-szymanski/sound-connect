@@ -27,9 +27,7 @@ export const authMiddleware = createMiddleware()
         const sessionData = await getSessionData(env);
 
         if (!sessionData) {
-            return await next({
-                context: { env, auth: null as Auth | null }
-            });
+            throw new Error('UNAUTHORIZED');
         }
 
         const cookie = getSessionCookie();

@@ -1,5 +1,4 @@
 import { createServerFn } from '@tanstack/react-start';
-import { redirect } from '@tanstack/react-router';
 import { z } from 'zod';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
 import { success, failure, apiErrorHandler } from '@/shared/server-functions/helpers';
@@ -20,8 +19,6 @@ export const getProfile = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(z.object({ userId: z.string() }))
     .handler(async ({ context: { env, auth }, data }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/${data.userId}/profile`, {
                 method: 'GET',
@@ -48,8 +45,6 @@ export const updateInstruments = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateInstrumentsSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/profile/instruments`, {
                 method: 'PATCH',
@@ -77,8 +72,6 @@ export const updateGenres = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateGenresSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/profile/genres`, {
                 method: 'PATCH',
@@ -106,8 +99,6 @@ export const updateAvailability = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateAvailabilitySchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/profile/availability`, {
                 method: 'PATCH',
@@ -135,8 +126,6 @@ export const updateExperience = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateExperienceSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/profile/experience`, {
                 method: 'PATCH',
@@ -164,8 +153,6 @@ export const updateLogistics = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateLogisticsSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/profile/logistics`, {
                 method: 'PATCH',
@@ -193,8 +180,6 @@ export const updateLookingFor = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateLookingForSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/profile/looking-for`, {
                 method: 'PATCH',
@@ -222,8 +207,6 @@ export const updateBio = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(updateBioSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/profile/bio`, {
                 method: 'PATCH',
@@ -251,8 +234,6 @@ export const completeSetup = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(completeSetupSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/users/profile/complete-setup`, {
                 method: 'POST',

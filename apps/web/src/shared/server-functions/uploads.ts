@@ -1,5 +1,4 @@
 import { createServerFn } from '@tanstack/react-start';
-import { redirect } from '@tanstack/react-router';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
 import { success, failure, apiErrorHandler } from '@/shared/server-functions/helpers';
 import {
@@ -15,8 +14,6 @@ export const requestPresignedUrl = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(presignedUrlRequestSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/uploads/presigned-url`, {
                 method: 'POST',
@@ -77,8 +74,6 @@ export const confirmUpload = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(uploadConfirmRequestSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/uploads/confirm`, {
                 method: 'POST',
@@ -106,8 +101,6 @@ export const confirmBatchUpload = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(batchConfirmRequestSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/uploads/confirm-batch`, {
                 method: 'POST',

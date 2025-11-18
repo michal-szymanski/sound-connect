@@ -1,5 +1,4 @@
 import { createServerFn } from '@tanstack/react-start';
-import { redirect } from '@tanstack/react-router';
 import { checkMessagingPermissionRequestSchema, checkMessagingPermissionResponseSchema } from '@sound-connect/common/types/messaging';
 import { apiErrorHandler, failure, success } from '@/shared/server-functions/helpers';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
@@ -8,8 +7,6 @@ export const checkMessagingPermission = createServerFn()
     .middleware([authMiddleware])
     .inputValidator(checkMessagingPermissionRequestSchema)
     .handler(async ({ data, context: { env, auth } }) => {
-        if (!auth) throw redirect({ to: '/sign-in' });
-
         try {
             const response = await env.API.fetch(`${env.API_URL}/api/chat/check-messaging-permission`, {
                 method: 'POST',
