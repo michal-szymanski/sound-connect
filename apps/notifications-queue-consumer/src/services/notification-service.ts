@@ -1,8 +1,16 @@
-import { notificationsTable, userSettingsTable } from '@/drizzle/schema';
+import { notificationsTable, userSettingsTable, usersTable } from '@/drizzle/schema';
 import type { NotificationQueueMessage, SocialNotificationMessage } from '@sound-connect/common/types/notifications';
 import { db } from '../db';
 import { eq } from 'drizzle-orm';
-import { sendVerificationEmail, sendPasswordResetEmail } from './email-service';
+import {
+    sendVerificationEmail,
+    sendPasswordResetEmail,
+    sendFollowerEmail,
+    sendCommentEmail,
+    sendBandApplicationReceivedEmail,
+    sendBandApplicationAcceptedEmail,
+    sendBandApplicationRejectedEmail
+} from './email-service';
 
 type UserSettingsRow = typeof userSettingsTable.$inferSelect;
 
@@ -13,10 +21,6 @@ const getNotificationSettingField = (notificationType: string): keyof UserSettin
             return 'followNotifications';
         case 'comment':
             return 'commentNotifications';
-        case 'reaction':
-            return 'reactionNotifications';
-        case 'mention':
-            return 'mentionNotifications';
         case 'band_application_received':
             return 'bandApplicationNotifications';
         case 'band_application_accepted':
@@ -27,11 +31,54 @@ const getNotificationSettingField = (notificationType: string): keyof UserSettin
     }
 };
 
-const sendEmailNotification = async (userId: string, notificationType: string, content: string, actorName: string): Promise<void> => {
-    console.log(`[EMAIL] Would send email to user ${userId}:`);
-    console.log(`  Type: ${notificationType}`);
-    console.log(`  From: ${actorName}`);
-    console.log(`  Content: ${content}`);
+const sendEmailNotification = async (message: SocialNotificationMessage, env: CloudflareBindings): Promise<void> => {
+    const user = await db.select().from(usersTable).where(eq(usersTable.id, message.userId)).limit(1);
+
+    if (!user || !user[0]?.email) {
+        console.warn(`[EMAIL] No email found for user ${message.userId}`);
+        return;
+    }
+
+    const userEmail = user[0].email;
+    const baseUrl = 'https://sound-connect.com';
+
+    try {
+        switch (message.type) {
+            case 'follow_request': {
+                const actorProfileUrl = `${baseUrl}/profile/${message.actorId}`;
+                await sendFollowerEmail(userEmail, message.actorName, actorProfileUrl, env.RESEND_API_KEY);
+                break;
+            }
+            case 'comment': {
+                const commentUrl = `${baseUrl}/posts/${message.entityId}`;
+                const postContent = message.content.length > 100 ? message.content.substring(0, 100) : message.content;
+                await sendCommentEmail(userEmail, message.actorName, postContent, commentUrl, env.RESEND_API_KEY);
+                break;
+            }
+            case 'band_application_received': {
+                const applicationUrl = `${baseUrl}/bands/${message.entityId}/applications`;
+                const bandName = message.content.split(' has applied to join ')[1]?.split('.')[0] || 'your band';
+                await sendBandApplicationReceivedEmail(userEmail, message.actorName, bandName, applicationUrl, env.RESEND_API_KEY);
+                break;
+            }
+            case 'band_application_accepted': {
+                const bandUrl = `${baseUrl}/bands/${message.entityId}`;
+                const bandName = message.content.split('Your application to join ')[1]?.split(' has been accepted')[0] || 'the band';
+                await sendBandApplicationAcceptedEmail(userEmail, bandName, bandUrl, env.RESEND_API_KEY);
+                break;
+            }
+            case 'band_application_rejected': {
+                const discoverBandsUrl = `${baseUrl}/discover/bands`;
+                const bandName = message.content.split('Your application to join ')[1]?.split(' was')[0] || 'the band';
+                await sendBandApplicationRejectedEmail(userEmail, bandName, undefined, discoverBandsUrl, env.RESEND_API_KEY);
+                break;
+            }
+            default:
+                console.warn(`[EMAIL] No email template for notification type: ${message.type}`);
+        }
+    } catch (error) {
+        console.error('[EMAIL] Failed to send notification email:', error);
+    }
 };
 
 const processSocialNotification = async (message: SocialNotificationMessage, env: CloudflareBindings): Promise<void> => {
@@ -85,7 +132,7 @@ const processSocialNotification = async (message: SocialNotificationMessage, env
             updatedAt: new Date().toISOString()
         });
 
-        await sendEmailNotification(message.userId, message.type, message.content, message.actorName);
+        await sendEmailNotification(message, env);
 
         console.log(`Email notification sent to user ${message.userId} (default settings)`);
         return;
@@ -104,7 +151,7 @@ const processSocialNotification = async (message: SocialNotificationMessage, env
         return;
     }
 
-    await sendEmailNotification(message.userId, message.type, message.content, message.actorName);
+    await sendEmailNotification(message, env);
 
     console.log(`Email notification sent to user ${message.userId}`);
 };

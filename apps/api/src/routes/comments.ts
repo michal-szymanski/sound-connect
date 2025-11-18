@@ -5,6 +5,7 @@ import { createCommentSchema } from '@/common/types/models';
 import { getCommentsByPostId, createComment, likeComment, unlikeComment, getCommentLikesData } from '@/api/db/queries/comments-queries';
 import { getPostById } from '@/api/db/queries/posts-queries';
 import { isBandAdmin } from '@/api/db/queries/bands-queries';
+import { notificationQueueMessageSchema } from '@sound-connect/common/types/notifications';
 
 const commentsRoutes = new Hono<HonoContext>();
 
@@ -39,6 +40,22 @@ commentsRoutes.post('/comments', async (c) => {
     }
 
     const comment = await createComment(user.id, postId, content, parentCommentId, authorType, bandId);
+
+    if (post.post.userId !== user.id) {
+        const postPreview = post.post.content.length > 100 ? post.post.content.substring(0, 100) : post.post.content;
+
+        const queueMessage = notificationQueueMessageSchema.parse({
+            userId: post.post.userId,
+            type: 'comment',
+            actorId: user.id,
+            actorName: user.name,
+            entityId: String(postId),
+            entityType: 'post',
+            content: postPreview
+        });
+
+        await c.env.NotificationsQueue.send(queueMessage);
+    }
 
     return c.json(comment);
 });

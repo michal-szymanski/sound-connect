@@ -473,8 +473,6 @@ export const userSettingsTable = sqliteTable(
         emailEnabled: integer('email_enabled', { mode: 'boolean' }).notNull().default(true),
         followNotifications: integer('follow_notifications', { mode: 'boolean' }).notNull().default(true),
         commentNotifications: integer('comment_notifications', { mode: 'boolean' }).notNull().default(true),
-        reactionNotifications: integer('reaction_notifications', { mode: 'boolean' }).notNull().default(true),
-        mentionNotifications: integer('mention_notifications', { mode: 'boolean' }).notNull().default(true),
         bandApplicationNotifications: integer('band_application_notifications', { mode: 'boolean' }).notNull().default(true),
         bandResponseNotifications: integer('band_response_notifications', { mode: 'boolean' }).notNull().default(true),
         createdAt: text('created_at').notNull(),

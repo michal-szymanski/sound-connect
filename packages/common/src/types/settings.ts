@@ -50,8 +50,6 @@ export const notificationSettingsSchema = z.object({
     emailEnabled: z.boolean(),
     followNotifications: z.boolean(),
     commentNotifications: z.boolean(),
-    reactionNotifications: z.boolean(),
-    mentionNotifications: z.boolean(),
     bandApplicationNotifications: z.boolean(),
     bandResponseNotifications: z.boolean()
 });
