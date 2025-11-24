@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { AddPostDialog, Post, PostSkeleton, feedQuery, useFeed } from '@/features/posts';
 import { EmptyFeed } from '@/shared/components/empty-states/empty-feed';
-import UserAvatar from '@/shared/components/common/user-avatar';
+import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { envsQuery, followersQuery, followingsQuery, authQuery, useAuth } from '@/shared/lib/react-query';
 
@@ -47,7 +47,7 @@ function RouteComponent() {
             <Card className="border-border/40 w-full">
                 <CardContent className="w-full">
                     <div className="inline-flex w-full items-center justify-center gap-5">
-                        <UserAvatar user={userDTOSchema.parse(auth?.user)} />
+                        <ProfileAvatar profile={userDTOSchema.parse(auth?.user)} type="user" />
                         <AddPostDialog />
                     </div>
                 </CardContent>

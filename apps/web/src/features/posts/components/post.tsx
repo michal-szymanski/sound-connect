@@ -4,7 +4,7 @@ import { Heart, MoreHorizontal, MessageCircle, Share2 } from 'lucide-react';
 import { useState } from 'react';
 import { LikesDialog } from '../index';
 import { PostModal } from './post-modal';
-import UserAvatar from '@/shared/components/common/user-avatar';
+import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardFooter } from '@/shared/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/shared/components/ui/dropdown-menu';
@@ -61,21 +61,16 @@ export function Post({ item }: Props) {
         <Card className="border-border/40 bg-card w-full overflow-hidden transition-shadow hover:shadow-md hover:shadow-black/5">
             <div className="flex items-start justify-between px-4 py-3">
                 <div className="flex items-center gap-2">
-                    {isBandPost ? (
-                        <Link to="/bands/$id" params={{ id: String(post.bandId!) }}>
-                            {authorImage ? (
-                                <img src={authorImage} alt={authorName} className="h-10 w-10 rounded-full object-cover" />
-                            ) : (
-                                <div className="bg-muted flex h-10 w-10 items-center justify-center rounded-full">
-                                    <span className="text-sm font-semibold">{authorName.charAt(0)}</span>
-                                </div>
-                            )}
-                        </Link>
-                    ) : (
-                        <Link to="/users/$id" params={{ id: post.userId }}>
-                            <UserAvatar user={user ?? { id: post.userId, name: 'User', image: null, lastActiveAt: null }} />
-                        </Link>
-                    )}
+                    <ProfileAvatar
+                        profile={{
+                            id: isBandPost ? String(post.bandId!) : post.userId,
+                            name: authorName,
+                            image: authorImage
+                        }}
+                        type={isBandPost ? 'band' : 'user'}
+                        className="h-10 w-10"
+                        linkToProfile
+                    />
                     <div className="flex flex-col">
                         {isBandPost ? (
                             <Link

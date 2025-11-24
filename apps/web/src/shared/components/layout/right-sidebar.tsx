@@ -1,9 +1,8 @@
-import { TrendingUp, Maximize2, MessageCircle, Users } from 'lucide-react';
+import { TrendingUp, Maximize2, MessageCircle } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
-import UserAvatar from '@/shared/components/common/user-avatar';
+import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Skeleton } from '@/shared/components/ui/skeleton';
 import { Badge } from '@/shared/components/ui/badge';
 import { useConversations } from '@/features/chat/hooks/use-conversations';
@@ -125,13 +124,15 @@ export default function RightSidebar() {
                                                 aria-label={`Open conversation with ${name}`}
                                             >
                                                 <div className="shrink-0">
-                                                    <UserAvatar
-                                                        user={
+                                                    <ProfileAvatar
+                                                        profile={
                                                             partner
                                                                 ? { id: partner.id, name: partner.name, image: partner.image }
                                                                 : { id: 'deleted', name: 'Deleted User', image: null }
                                                         }
+                                                        type="user"
                                                         className="h-10 w-10"
+                                                        linkToProfile
                                                     />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
@@ -167,12 +168,12 @@ export default function RightSidebar() {
                                                 aria-label={`Open conversation with ${band.name}`}
                                             >
                                                 <div className="shrink-0">
-                                                    <Avatar className="h-10 w-10 rounded-md">
-                                                        <AvatarImage src={band.image || undefined} alt={band.name} />
-                                                        <AvatarFallback className="bg-primary text-primary-foreground rounded-md">
-                                                            <Users className="h-5 w-5" />
-                                                        </AvatarFallback>
-                                                    </Avatar>
+                                                    <ProfileAvatar
+                                                        profile={{ id: band.id.toString(), name: band.name, image: band.image }}
+                                                        type="band"
+                                                        className="h-10 w-10"
+                                                        linkToProfile
+                                                    />
                                                 </div>
                                                 <div className="min-w-0 flex-1">
                                                     <div className="flex items-center gap-2">

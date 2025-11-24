@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import UserAvatar from '@/shared/components/common/user-avatar';
+import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { useCommentLikeToggle } from '../hooks/use-posts';
 import { useElapsedTime } from '@/shared/lib/utils';
 import type { UserDTO, BandInfo } from '@/common/types/models';
@@ -49,26 +49,16 @@ export function CommentItem({ commentData, currentUser, postId, onReply, isReply
 
     return (
         <div className="flex gap-2">
-            <Link to={linkTo} params={linkParams}>
-                {isBandComment ? (
-                    commentData.band?.profileImageUrl ? (
-                        <img
-                            src={commentData.band.profileImageUrl}
-                            alt={authorName}
-                            className={`rounded-full object-cover ${isReply ? 'h-7 w-7' : 'h-8 w-8'}`}
-                        />
-                    ) : (
-                        <div className={`bg-muted flex items-center justify-center rounded-full ${isReply ? 'h-7 w-7' : 'h-8 w-8'}`}>
-                            <span className="text-xs font-semibold">{authorName.charAt(0)}</span>
-                        </div>
-                    )
-                ) : (
-                    <UserAvatar
-                        user={commentData.user ?? { id: commentData.comment.userId, name: 'User', image: null }}
-                        className={isReply ? 'h-7 w-7' : 'h-8 w-8'}
-                    />
-                )}
-            </Link>
+            <ProfileAvatar
+                profile={
+                    isBandComment
+                        ? { id: String(commentData.comment.bandId!), name: authorName, image: commentData.band?.profileImageUrl ?? null }
+                        : (commentData.user ?? { id: commentData.comment.userId, name: 'User', image: null })
+                }
+                type={isBandComment ? 'band' : 'user'}
+                className={isReply ? 'h-7 w-7' : 'h-8 w-8'}
+                linkToProfile
+            />
             <div className="flex-1">
                 <div className="flex items-center gap-2">
                     <Link to={linkTo} params={linkParams} className="text-foreground text-sm font-semibold hover:underline">

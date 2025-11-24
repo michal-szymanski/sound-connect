@@ -5,7 +5,7 @@ import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-
 import { useState, useEffect } from 'react';
 import z from 'zod';
 import { MoreVertical, AlertCircle } from 'lucide-react';
-import UserAvatar from '@/shared/components/common/user-avatar';
+import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
@@ -234,8 +234,9 @@ function RouteComponent() {
 
                 <div className="px-4 pb-4 sm:px-6 sm:pb-6">
                     <div className="-mt-12 mb-4 sm:-mt-16">
-                        <UserAvatar
-                            user={user}
+                        <ProfileAvatar
+                            profile={user}
+                            type="user"
                             className="border-card h-24 w-24 border-4 sm:h-32 sm:w-32"
                             fallbackClassName="bg-primary text-primary-foreground text-4xl sm:text-6xl"
                         />

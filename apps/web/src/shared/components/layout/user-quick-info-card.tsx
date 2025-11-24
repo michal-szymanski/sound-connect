@@ -2,7 +2,7 @@ import { Link, useRouter } from '@tanstack/react-router';
 import { MoreVertical, User, Settings, LogOut } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import UserAvatar from '@/shared/components/common/user-avatar';
+import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { useAuth, useFollowers, useFollowings } from '@/shared/lib/react-query';
@@ -74,7 +74,7 @@ export function UserQuickInfoCard() {
                 </div>
                 <Link to="/users/$id" params={{ id: auth.user.id }} className="group block">
                     <div className="flex items-center gap-3">
-                        <UserAvatar user={auth.user} className="h-12 w-12" />
+                        <ProfileAvatar profile={auth.user} type="user" className="h-12 w-12" />
                         <div className="min-w-0 flex-1 pr-8">
                             <p className="truncate text-sm font-semibold group-hover:underline">{auth.user.name}</p>
                             <p className="text-muted-foreground truncate text-xs">@{username}</p>

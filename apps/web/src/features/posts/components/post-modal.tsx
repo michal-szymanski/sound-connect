@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { Heart, MessageCircle, Share2, Send } from 'lucide-react';
 import { useState, useRef } from 'react';
-import UserAvatar from '@/shared/components/common/user-avatar';
+import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Dialog, DialogContent } from '@/shared/components/ui/dialog';
 import { Input } from '@/shared/components/ui/input';
@@ -108,9 +108,7 @@ export function PostModal({ open, onOpenChange, postId, author, content, image, 
                     {/* Post Header */}
                     <div className="border-border flex flex-shrink-0 items-center border-b p-3">
                         <div className="flex items-center gap-2">
-                            <Link to="/users/$id" params={{ id: author.id }}>
-                                <UserAvatar user={{ id: author.id, name: author.name, image: author.avatar }} className="h-9 w-9" />
-                            </Link>
+                            <ProfileAvatar profile={{ id: author.id, name: author.name, image: author.avatar }} type="user" className="h-9 w-9" linkToProfile />
                             <div className="flex flex-col">
                                 <Link to="/users/$id" params={{ id: author.id }} className="text-foreground text-sm font-semibold hover:underline">
                                     {author.name}
@@ -123,9 +121,7 @@ export function PostModal({ open, onOpenChange, postId, author, content, image, 
                     {/* Post Content */}
                     <div className="border-border flex-shrink-0 border-b p-3">
                         <div className="flex gap-2">
-                            <Link to="/users/$id" params={{ id: author.id }}>
-                                <UserAvatar user={{ id: author.id, name: author.name, image: author.avatar }} className="h-9 w-9" />
-                            </Link>
+                            <ProfileAvatar profile={{ id: author.id, name: author.name, image: author.avatar }} type="user" className="h-9 w-9" linkToProfile />
                             <div className="flex-1">
                                 <div className="flex items-center gap-2">
                                     <Link to="/users/$id" params={{ id: author.id }} className="text-foreground text-sm font-semibold hover:underline">

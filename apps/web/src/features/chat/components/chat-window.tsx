@@ -3,7 +3,7 @@ import { UserDTO } from '@/common/types/models';
 import { X, Minus, Send, Smile, Loader2 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import UserAvatar from '@/shared/components/common/user-avatar';
+import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
@@ -174,7 +174,11 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                         aria-label={`Open chat with ${user.name}`}
                         tabIndex={0}
                     >
-                        <UserAvatar user={{ id: user.id, name: user.name, image: user.image }} className="h-12 w-12" />
+                        <ProfileAvatar
+                            profile={{ id: user.id, name: user.name, image: user.image }}
+                            type={user.id.startsWith('band-') ? 'band' : 'user'}
+                            className="h-12 w-12"
+                        />
                     </button>
 
                     {isHovered && (
@@ -204,10 +208,12 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                 <div className="bg-card border-border overflow-hidden rounded-t-lg border shadow-2xl">
                     <div className="bg-primary text-primary-foreground border-border/30 flex items-center justify-between border-b px-4 py-3 shadow-sm">
                         <div className="flex items-center gap-3">
-                            <UserAvatar
-                                user={{ id: user.id, name: user.name, image: user.image }}
+                            <ProfileAvatar
+                                profile={{ id: user.id, name: user.name, image: user.image }}
+                                type={user.id.startsWith('band-') ? 'band' : 'user'}
                                 className="h-8 w-8 border-2 border-white/50"
                                 fallbackClassName="bg-primary text-primary-foreground text-xs"
+                                linkToProfile
                             />
                             <span className="text-sm font-medium">{user.name}</span>
                         </div>

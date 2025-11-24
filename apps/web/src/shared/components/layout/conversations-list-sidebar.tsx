@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { MessageCircle, Users } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { getRoomId } from '@sound-connect/common/helpers';
 import type { UserDTO } from '@/common/types/models';
 import type { ConversationDTO } from '@/common/types/conversations';
 import type { BandWithMembers } from '@sound-connect/common/types/bands';
-import UserAvatar from '@/shared/components/common/user-avatar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
+import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Input } from '@/shared/components/ui/input';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Skeleton } from '@/shared/components/ui/skeleton';
@@ -87,14 +86,16 @@ export function ConversationsListSidebar({ selectedPeer, onSelectPeer: _onSelect
                                             )}
                                             aria-current={selectedPeer?.id === conversation.partnerId}
                                         >
-                                            <UserAvatar
-                                                user={
+                                            <ProfileAvatar
+                                                profile={
                                                     partner
                                                         ? { id: partner.id, name: partner.name, image: partner.image }
                                                         : { id: 'deleted', name: 'Deleted User', image: null }
                                                 }
+                                                type="user"
                                                 className="h-10 w-10"
                                                 fallbackClassName="bg-primary text-primary-foreground"
+                                                linkToProfile
                                             />
                                             <div className="min-w-0 flex-1 text-left">
                                                 <div className="flex items-center gap-2">
@@ -139,12 +140,12 @@ export function ConversationsListSidebar({ selectedPeer, onSelectPeer: _onSelect
                                             aria-label={`Open band chat: ${band.name}`}
                                             aria-current={selectedBand?.id === conversation.bandId}
                                         >
-                                            <Avatar className="h-10 w-10 rounded-md">
-                                                <AvatarImage src={band.image || undefined} alt={band.name} />
-                                                <AvatarFallback className="bg-primary text-primary-foreground rounded-md">
-                                                    <Users className="h-5 w-5" />
-                                                </AvatarFallback>
-                                            </Avatar>
+                                            <ProfileAvatar
+                                                profile={{ id: band.id.toString(), name: band.name, image: band.image }}
+                                                type="band"
+                                                className="h-10 w-10"
+                                                linkToProfile
+                                            />
                                             <div className="min-w-0 flex-1 text-left">
                                                 <div className="flex items-center gap-2">
                                                     <span className="truncate text-sm font-medium">{band.name}</span>

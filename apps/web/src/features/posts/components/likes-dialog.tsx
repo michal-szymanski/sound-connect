@@ -3,7 +3,7 @@ import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import UserAvatar from '@/shared/components/common/user-avatar';
+import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { getPostLikesUsers } from '@/features/posts/server-functions/posts';
 import { followUser } from '@/shared/server-functions/users';
 import { Button } from '@/shared/components/ui/button';
@@ -79,7 +79,7 @@ const LikesDialog = ({ isOpen, onClose, postId }: Props) => {
                                         className="hover:bg-muted/50 flex flex-1 items-center space-x-3 rounded-lg p-2 transition-colors"
                                         onClick={onClose}
                                     >
-                                        <UserAvatar user={user} />
+                                        <ProfileAvatar profile={user} type="user" />
                                         <span className="font-medium">{user.name}</span>
                                     </Link>
                                     {canFollow(user.id) && (

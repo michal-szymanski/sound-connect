@@ -6,11 +6,10 @@ import { useForm } from 'react-hook-form';
 import { MessageCircle, Send, Smile } from 'lucide-react';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import UserAvatar from '@/shared/components/common/user-avatar';
+import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
-import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar';
 import { useAuth } from '@/shared/lib/react-query';
 import { useChat } from '@/shared/components/providers/chat-provider';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
@@ -164,17 +163,18 @@ function RouteComponent() {
             <header className="bg-background flex-none border-b px-6 py-4">
                 {selectedPeer ? (
                     <Link to="/users/$id" params={{ id: selectedPeer.id }} className="flex items-center gap-3 transition-opacity hover:opacity-80">
-                        <UserAvatar user={selectedPeer} className="h-10 w-10" />
+                        <ProfileAvatar profile={selectedPeer} type="user" className="h-10 w-10" />
                         <div>
                             <div className="font-semibold">{selectedPeer.name}</div>
                         </div>
                     </Link>
                 ) : selectedBand ? (
                     <Link to="/bands/$id" params={{ id: selectedBand.id.toString() }} className="flex items-center gap-3 transition-opacity hover:opacity-80">
-                        <Avatar className="h-10 w-10">
-                            <AvatarImage src={selectedBand.profileImageUrl || undefined} />
-                            <AvatarFallback className="bg-primary text-primary-foreground">{selectedBand.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
+                        <ProfileAvatar
+                            profile={{ id: selectedBand.id.toString(), name: selectedBand.name, image: selectedBand.profileImageUrl }}
+                            type="band"
+                            className="h-10 w-10"
+                        />
                         <div>
                             <div className="font-semibold">{selectedBand.name}</div>
                         </div>

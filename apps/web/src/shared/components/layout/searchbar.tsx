@@ -3,7 +3,7 @@ import { useRouter } from '@tanstack/react-router';
 import { ChevronsUpDownIcon } from 'lucide-react';
 import { useState } from 'react';
 import Loader from '@/shared/components/common/loader';
-import UserAvatar from '@/shared/components/common/user-avatar';
+import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/shared/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
@@ -61,7 +61,7 @@ const SearchBar = () => {
                                         }}
                                     >
                                         <div className="inline-flex items-center gap-2">
-                                            <UserAvatar user={user} />
+                                            <ProfileAvatar profile={user} type="user" />
                                             <span>{user.name}</span>
                                         </div>
                                     </CommandItem>
