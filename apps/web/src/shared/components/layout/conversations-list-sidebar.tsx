@@ -94,6 +94,7 @@ export function ConversationsListSidebar({ selectedPeer, onSelectPeer: _onSelect
                                                         : { id: 'deleted', name: 'Deleted User', image: null }
                                                 }
                                                 className="h-10 w-10"
+                                                fallbackClassName="bg-primary text-primary-foreground"
                                             />
                                             <div className="min-w-0 flex-1 text-left">
                                                 <div className="flex items-center gap-2">

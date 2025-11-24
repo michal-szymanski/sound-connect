@@ -173,7 +173,7 @@ function RouteComponent() {
                     <Link to="/bands/$id" params={{ id: selectedBand.id.toString() }} className="flex items-center gap-3 transition-opacity hover:opacity-80">
                         <Avatar className="h-10 w-10">
                             <AvatarImage src={selectedBand.profileImageUrl || undefined} />
-                            <AvatarFallback>{selectedBand.name.charAt(0)}</AvatarFallback>
+                            <AvatarFallback className="bg-primary text-primary-foreground">{selectedBand.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
                             <div className="font-semibold">{selectedBand.name}</div>

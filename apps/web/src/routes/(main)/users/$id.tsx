@@ -234,7 +234,11 @@ function RouteComponent() {
 
                 <div className="px-4 pb-4 sm:px-6 sm:pb-6">
                     <div className="-mt-12 mb-4 sm:-mt-16">
-                        <UserAvatar user={user} className="border-card h-24 w-24 border-4 sm:h-32 sm:w-32" fallbackClassName="text-4xl sm:text-6xl" />
+                        <UserAvatar
+                            user={user}
+                            className="border-card h-24 w-24 border-4 sm:h-32 sm:w-32"
+                            fallbackClassName="bg-primary text-primary-foreground text-4xl sm:text-6xl"
+                        />
                     </div>
 
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

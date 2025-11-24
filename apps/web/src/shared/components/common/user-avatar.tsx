@@ -11,7 +11,7 @@ type Props = {
     fallbackClassName?: string;
 };
 
-const UserAvatar = ({ user, className, fallbackClassName }: Props) => {
+const UserAvatar = ({ user, className, fallbackClassName = 'bg-primary text-primary-foreground' }: Props) => {
     return (
         <Avatar className={cn('relative top-0', className)}>
             <AvatarImage src={user.image ?? undefined} alt={user.name} />

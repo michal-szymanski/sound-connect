@@ -83,6 +83,7 @@ export const ChatWindowProvider = ({ children }: Props) => {
 
             if (newWindows.has(user.id)) {
                 const existingWindow = newWindows.get(user.id)!;
+                newWindows.delete(user.id);
                 newWindows.set(user.id, { ...existingWindow, isMinimized: false });
             } else {
                 newWindows.set(user.id, { user, isMinimized: false });
@@ -105,7 +106,12 @@ export const ChatWindowProvider = ({ children }: Props) => {
             const newWindows = new Map(prev);
             const window = newWindows.get(userId);
             if (window) {
-                newWindows.set(userId, { ...window, isMinimized: !window.isMinimized });
+                const newMinimizedState = !window.isMinimized;
+                // If maximizing (changing from minimized to not minimized), move to end
+                if (window.isMinimized && !newMinimizedState) {
+                    newWindows.delete(userId);
+                }
+                newWindows.set(userId, { ...window, isMinimized: newMinimizedState });
             }
             return newWindows;
         });
@@ -148,6 +154,7 @@ export const ChatWindowProvider = ({ children }: Props) => {
                                 user={windowState.user}
                                 isMinimized={windowState.isMinimized}
                                 position={index}
+                                minimizedCount={visibleIndividualChats.length}
                                 onClose={() => closeChatWindow(userId)}
                                 onToggleMinimize={() => toggleMinimize(userId)}
                             />

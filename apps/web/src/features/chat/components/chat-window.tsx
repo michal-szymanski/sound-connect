@@ -3,7 +3,7 @@ import { UserDTO } from '@/common/types/models';
 import { X, Minus, Send, Smile, Loader2 } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
+import UserAvatar from '@/shared/components/common/user-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
@@ -25,11 +25,12 @@ type Props = {
     isMinimized: boolean;
     onToggleMinimize: () => void;
     position: number;
+    minimizedCount: number;
 };
 
 const BASE_BOTTOM_OFFSET = 24;
 
-export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, position }: Props) => {
+export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, position, minimizedCount }: Props) => {
     const { data: auth } = useAuth();
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage } = useChat();
 
@@ -67,7 +68,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
 
     const textValue = form.watch('text');
 
-    const rightOffset = 24 + position * 360;
+    const rightOffset = 24 + position * 360 + (isMinimized ? 0 : minimizedCount * 70);
     const bottomOffset = BASE_BOTTOM_OFFSET + position * 56;
 
     useEffect(() => {
@@ -173,10 +174,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                         aria-label={`Open chat with ${user.name}`}
                         tabIndex={0}
                     >
-                        <Avatar className="h-12 w-12">
-                            <AvatarImage src={user.image || '/placeholder.svg'} alt={user.name} />
-                            <AvatarFallback className="bg-primary text-primary-foreground">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
-                        </Avatar>
+                        <UserAvatar user={{ id: user.id, name: user.name, image: user.image }} className="h-12 w-12" />
                     </button>
 
                     {isHovered && (
@@ -206,10 +204,11 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                 <div className="bg-card border-border overflow-hidden rounded-t-lg border shadow-2xl">
                     <div className="bg-primary text-primary-foreground border-border/30 flex items-center justify-between border-b px-4 py-3 shadow-sm">
                         <div className="flex items-center gap-3">
-                            <Avatar className="border-primary-foreground/20 h-8 w-8 border-2">
-                                <AvatarImage src={user.image || '/placeholder.svg'} alt={user.name} />
-                                <AvatarFallback className="bg-primary-foreground text-primary text-xs">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
-                            </Avatar>
+                            <UserAvatar
+                                user={{ id: user.id, name: user.name, image: user.image }}
+                                className="h-8 w-8 border-2 border-white/50"
+                                fallbackClassName="bg-primary text-primary-foreground text-xs"
+                            />
                             <span className="text-sm font-medium">{user.name}</span>
                         </div>
 
