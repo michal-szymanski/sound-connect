@@ -297,138 +297,52 @@ What type of work are you doing?
 
 #### Agent Descriptions
 
-**feature-spec-writer** (Entry point for new features)
+**feature-spec-writer** - Creates detailed specifications for new features
+- **Use when:** User requests a NEW feature ("add", "implement", "create", "build")
+- Asks clarifying questions, writes spec to `/specs/`, auto-delegates to other agents
 
-- Transforms vague ideas into detailed specifications
-- Asks clarifying questions
-- Creates `/specs/[feature-name].md` file
-- Automatically delegates to appropriate agents
-- Use when: Building any new feature
+**designer** - UI/UX and accessibility advisor (does NOT implement)
+- **Use when:** UI design decisions, layout improvements, accessibility reviews, component recommendations
+- **Skills:** `frontend-design`
+- After response → ask user approval → invoke frontend
 
-**designer**
+**database-architect** - Designs database schemas and migrations (does NOT implement)
+- **Use when:** New tables, schema changes, query optimization, indexing decisions
+- After response → ask user approval → invoke backend
 
-- Provides UI/UX guidance
-- ShadCN component recommendations
-- Accessibility considerations (WCAG 2.1 AA)
-- Invoked by: feature-spec-writer (automatic)
+**system-architect** - Coordinates multi-domain features (frontend + backend + shared code)
+- **Use when:** Feature needs shared types/schemas in `packages/common` OR API contract coordination
+- NOT for single-domain work - use frontend or backend directly
 
-**database-architect**
-
-- Designs database schemas
-- Plans migrations
-- Optimizes queries and indexes
-- Invoked by: feature-spec-writer (automatic) or user directly
-
-**system-architect**
-
-- Creates shared code in `packages/common` (Zod schemas, types, utilities)
-- Defines API contracts between frontend and backend
-- Ensures type safety across the stack
-- Delegates to frontend/backend with **requirements**, not implementation details
-- **Coordination-focused**: Let domain agents use their expertise and MCPs (Magic UI, etc.)
-- Use when: Multi-domain feature needs shared code or API contract coordination
-- DON'T use when: Feature is frontend-only or backend-only
-- DON'T provide: Prescriptive implementation guides, code examples, component choices
-
-**frontend**
-
-- Tanstack Start implementation
-- React components and server functions
-- Tanstack Query hooks
+**frontend** - Implements frontend code in `apps/web/`
+- **Use when:** ANY frontend work (features, bugs, refactors) - even "simple" fixes
+- **Skills:** `frontend-design`
 - Auto-invokes code-quality-enforcer
-- Use when: Frontend-only features or frontend portion of multi-domain
-- **CRITICAL**: ALWAYS invoke for ANY frontend code changes (bugs, features, refactors)
-- **NEVER** make direct edits to frontend files - delegate to frontend agent
 
-**backend**
-
-- Hono API routes
-- Drizzle ORM queries
-- Durable Objects
-- Queue consumers
+**backend** - Implements backend code in `apps/api/` and queue consumers
+- **Use when:** ANY backend work (API routes, queries, Durable Objects, queues)
 - Auto-invokes code-quality-enforcer
-- Use when: Backend-only features or backend portion of multi-domain
-- **CRITICAL**: ALWAYS invoke for ANY backend code changes (bugs, features, refactors)
-- **NEVER** make direct edits to backend files - delegate to backend agent
 
-**realtime-architect**
+**realtime-architect** - Implements real-time features
+- **Use when:** Chat, live notifications, presence, typing indicators, real-time updates
 
-- WebSocket features
-- Durable Objects for real-time
-- Connection management
-- Use when: Real-time features (chat, notifications, live updates)
-
-**devops**
-
-- Cloudflare Workers deployments
-- Database migrations (production)
-- Monitoring configuration
-- CI/CD pipeline modifications (GitHub Actions workflows)
-- Secret management (Cloudflare secrets, environment variables)
-- Infrastructure configuration (wrangler.jsonc, deployment settings)
+**devops** - Handles deployments, migrations, CI/CD, infrastructure
+- **Use when:** Production deployments, database migrations, wrangler.jsonc, GitHub Actions, secrets
 - Requires user approval for ALL operations
-- **MUST be invoked for:**
-    - Any changes to `.github/workflows/*.yml` files
-    - Any changes to `wrangler.jsonc` files
-    - Production deployments or rollbacks
-    - Creating/updating/deleting Cloudflare secrets
-    - Database migrations in production
-    - Queue, Durable Object, or R2 bucket configuration changes
-- Use when: Deployment, operational, or infrastructure tasks
 
-**test-expert**
+**test-expert** - Plans and implements tests
+- **Use when:** E2E tests (Playwright), integration tests, unit tests
+- Adding test coverage for new or existing features
 
-- E2E tests with Playwright
-- Integration tests
-- Unit tests
-- Test organization and coverage
-- Use when: Adding or fixing tests
-
-**code-quality-enforcer**
-
-- Validates CLAUDE.md compliance
-- Runs Prettier, ESLint, TypeScript checks
-- Invoked automatically by: frontend, backend
-- DON'T invoke manually
+**code-quality-enforcer** - Validates code against CLAUDE.md rules
+- **Do not invoke manually** - called automatically by frontend/backend agents
 
 #### Two-Step Workflows (Advisory → Implementation)
 
-Some tasks require consultation with an advisory agent followed by automatic implementation:
-
-**UI/UX Improvements Workflow:**
-
-1. User requests UI improvement → Invoke **designer** agent
-2. Designer provides comprehensive recommendations
-3. **Assistant asks**: "Should I implement these improvements?"
-4. **On any affirmative response** (yes/continue/proceed/sure/go ahead/do it/implement it/etc.) → **Automatically invoke frontend agent**
-5. Frontend agent implements the recommendations
-
-**Database Schema Changes Workflow:**
-
-1. User requests database changes → Invoke **database-architect** agent
-2. Database-architect provides schema design and migration plan
-3. **Assistant asks**: "Should I implement these changes?"
-4. **On any affirmative response** → **Automatically invoke backend agent**
-5. Backend agent implements migrations
-
-**Critical Rules for Two-Step Workflows:**
-
-- After advisory agent completes, ALWAYS proactively ask user if they want implementation
-- Detect user **intent**, not specific keywords - any affirmative response triggers implementation
-- If user says "no" or asks questions → wait for clarification, don't implement
-- If user provides feedback/changes → loop back to advisory agent first, then ask again
-- DON'T wait passively for user to explicitly say "invoke frontend" or "use the agent"
-- DON'T start implementing with direct tool use (Edit, Write) - always use the appropriate implementation agent
-
-**Advisory Agents:**
-
-- `designer` → provides UI/UX guidance → followed by `frontend` implementation
-- `database-architect` → provides schema design → followed by `backend` implementation
-
-**Implementation Agents:**
-
-- `frontend` → implements UI changes, React components, Tanstack Start features
-- `backend` → implements API routes, database migrations, Durable Objects
+**Advisory agents** (designer, database-architect) provide recommendations but do NOT implement. After they respond:
+1. Ask user: "Should I implement these changes?"
+2. On affirmative response → automatically invoke frontend/backend
+3. If user provides feedback → loop back to advisory agent first
 
 #### Example Workflows
 
@@ -451,22 +365,7 @@ feature-spec-writer:
        - Task(frontend) → "Implement edit UI per spec + designer guidance. Use your expertise and MCPs."
 ```
 
-**Example 2: Frontend-Only Feature (Dark Mode)**
-
-```
-User: "Add dark mode toggle"
-  ↓
-Invoke: feature-spec-writer
-  ↓
-feature-spec-writer:
-  1. Asks clarifying questions
-  2. Writes spec to /specs/dark-mode.md
-  3. Auto-delegates:
-     - Task(designer) → Color palette, toggle design
-     - Task(frontend) → Implementation (skip system-architect)
-```
-
-**Example 3: Bug Fix**
+**Example 2: Bug Fix**
 
 ```
 User: "Fix broken profile image upload"
@@ -476,20 +375,7 @@ Invoke: frontend (if frontend bug) or backend (if API bug)
 Agent fixes bug and auto-invokes code-quality-enforcer
 ```
 
-**Example 4: Database Change**
-
-```
-User: "Add indexes for post queries"
-  ↓
-Invoke: database-architect
-  ↓
-database-architect:
-  1. Analyzes query patterns
-  2. Designs indexes
-  3. Delegates to backend for migration
-```
-
-**Example 5: UI/UX Improvement (Two-Step Workflow)**
+**Example 3: UI/UX Improvement (Two-Step Workflow)**
 
 ```
 User: "Improve the profile page UI"
@@ -510,32 +396,6 @@ frontend:
   Auto-invokes code-quality-enforcer
   ↓
 Done!
-```
-
-**Example 6: UI/UX Improvement with Feedback**
-
-```
-User: "Improve the profile page UI"
-  ↓
-Invoke: designer
-  ↓
-designer:
-  Provides comprehensive UI/UX recommendations
-  ↓
-Assistant: "Should I implement these improvements?"
-  ↓
-User: "Can you also add dark mode support?"
-  ↓
-Loop back to designer with additional requirements
-  ↓
-designer:
-  Provides updated recommendations including dark mode
-  ↓
-Assistant: "Should I implement these improvements?"
-  ↓
-User: "yes"
-  ↓
-Automatically invoke: frontend
 ```
 
 #### Key Principles
@@ -676,46 +536,21 @@ When you identify an issue or need to implement a feature:
 
 ### App-Specific Rules
 
-#### Frontend (`apps/web`)
+For frontend patterns (React, TypeScript, ShadCN, TanStack), see:
+- **react** skill - Component patterns, hooks, forms, file organization
+- **typescript** skill - Type conventions, Zod patterns, enum definitions
+- **shadcn-ui** skill - UI components, z-index system, form components
+- **magic-ui** skill - Enhanced animations, text effects, special effects, interactive components
+- **tanstack** skill - Router, Query, Start patterns (file-based routing, server functions)
 
-- NEVER modify files in `src/shared/components/ui/` - these are ShadCN auto-generated components
+For backend patterns (Hono, Cloudflare, Database), see:
+- **hono** skill - API routes, middleware, validation, error handling
+- **cloudflare** skill - Workers, D1, R2, Durable Objects, Queues
+- **database-design** skill - Drizzle schema, migrations, query patterns
 
-**Z-Index System:**
-
-Sound Connect uses a centralized z-index system defined in Tailwind configuration to ensure consistent layering across the application.
-
-**Available Tokens:**
-
-- `z-base` (0) - Default layer for normal content
-- `z-dropdown` (1) - Dropdown menus (not popovers)
-- `z-sticky` (10) - Sticky headers and navigation
-- `z-sidebar` (60) - Sidebar navigation (main layout)
-- `z-dialog` (100) - Dialog/modal overlays
-- `z-popover` (110) - Popover components (emoji picker, tooltips)
-- `z-tooltip` (120) - Tooltip overlays (highest priority)
-
-**Usage:**
-
-```tsx
-<div className="z-popover">...</div>
-<div className="z-tooltip">...</div>
-```
-
-**Rules:**
-
-- ALWAYS use semantic z-index tokens (e.g., `z-popover`) instead of numeric values (e.g., `z-[110]`)
-- NEVER use arbitrary z-index values like `z-[999]` or `z-50` unless adding to the token system
-- Tooltips must use `pointer-events-none` to prevent hover interference
-- If a new layering level is needed, add it to the Tailwind config and document it here
-
-**Defined in:**
-
-- CSS variables: `apps/web/src/styles/globals.css:170-177`
-- Tailwind config: `apps/web/tailwind.config.ts` (theme.extend.zIndex)
-
-#### Backend API (`apps/api`)
-
-- ALWAYS access current user ID with `c.get('user')` - NEVER trust user IDs from frontend requests
+For design and branding:
+- **branding** skill - Visual identity, color palette, terminology, voice
+- **frontend-design** skill - Sound Connect UI patterns, Magic UI components
 
 #### R2 Asset Storage (`sound-connect-assets`)
 
@@ -824,38 +659,6 @@ sound-connect-assets/
 - Old bucket `users-bucket` (binding: `UsersBucket`) - kept as backup, not used in code
 - Migration completed: 2025-11-10
 - Presigned upload system implemented: 2025-11-10
-
-#### Database (`packages/drizzle`)
-
-- Column names MUST use snake_case (e.g., `created_at`, `user_id`, `post_id`)
-- All columns MUST have explicit column names specified in the schema definition
-- **Date field types**:
-    - **Authentication tables** (users, sessions, accounts, verifications): Use `integer({ mode: 'timestamp' })` for date fields (better-auth expects Date objects)
-    - **Application tables** (posts, comments, messages, etc.): Use `text()` for date fields (stores ISO 8601 strings for JSON serialization)
-- **Migrations**:
-    - Schema migrations (CREATE TABLE, ALTER TABLE, etc.) MUST be generated using `pnpm db:generate` command ONLY
-    - NEVER manually create migration files for schema changes
-    - Example: Adding a new column must use `pnpm db:generate` (schema migration)
-- **Seeding**:
-    - Use type-safe TypeScript seed script: `packages/drizzle/src/seed.ts`
-    - **Local seeding**: `pnpm db:seed:local` - Seeds local D1 database via Drizzle ORM + better-sqlite3
-    - **Remote seeding**: `pnpm db:seed:remote` - Seeds production D1 database via Wrangler CLI
-    - **Automatic seeding**: Both `db:migrate:local` and `db:migrate:remote` automatically run seed scripts after migrations
-    - Seed script is idempotent (safe to run multiple times - checks for existing users)
-    - Uses Drizzle ORM for type-safe inserts (local) and raw SQL via Wrangler (remote)
-    - Seeds 4 test users: t1, t2, pw1 (Playwright User 1), pw2 (Playwright User 2) with pre-hashed passwords
-    - **FTS synchronization**: `users_fts` table is automatically kept in sync with `users` table via database triggers (INSERT, UPDATE, DELETE)
-- **After schema changes**, run these commands IN ORDER:
-    1. `pnpm db:generate` - Generate migration files
-    2. Manually update Zod schemas in `packages/common/src/types/drizzle.ts` to match the database schema
-    3. `pnpm --filter @sound-connect/api db:migrate:local` - Apply migrations locally (automatically seeds test users)
-
-    Note: `db:migrate:local` automatically runs `pnpm db:seed:local` after applying migrations, so test users are always available in local development.
-- Always specify explicit column names for all fields
-- Use proper foreign key references with `onDelete` actions
-- Mark all required fields with `.notNull()`
-- Define relations separately from table definitions
-- Use TypeScript `as const` for enum definitions before using them in schemas
 
 #### Queue Consumers (`apps/posts-queue-consumer` and `apps/notifications-queue-consumer`)
 

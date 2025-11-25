@@ -1,101 +1,182 @@
 ---
 name: shadcn-ui
-description: ShadCN UI patterns for Sound Connect - component composition, forms, dialogs, accessibility, theme integration, and never modifying ui/ components
+description: ShadCN/ui component usage, patterns, and best practices for Sound Connect. Use this skill when working with UI components from the ShadCN library including forms, dialogs, sheets, popovers, tooltips, toasts, and applying the z-index token system.
 ---
 
-# ShadCN UI Skill for Sound Connect
+# ShadCN UI Components
 
-## Core Concepts
+## Overview
 
-1. **Copy-Paste Components** - Components live in `shared/components/ui/`
-2. **Composition Over Configuration** - Build complex UIs from primitives
-3. **Accessibility First** - ARIA attributes and keyboard navigation
-4. **Theme Integration** - CSS variables for consistent theming
-5. **Radix UI Primitives** - Built on unstyled, accessible components
+This skill covers the usage of ShadCN/ui components in Sound Connect. ShadCN provides accessible, customizable components built on Radix UI primitives. Components are installed directly into the codebase and can be customized as needed.
 
-## Sound Connect Patterns
+## Critical Rules
 
-### 1. Form Components
+### DO NOT MODIFY UI Components
+
+**NEVER modify files in `apps/web/src/shared/components/ui/`** - these are ShadCN auto-generated components.
+
+If customization is needed:
+1. Create a wrapper component in feature-specific directories
+2. Use the `cn()` utility to extend styles
+3. Pass custom classNames through props
+
+### Import Pattern
+
+Always import from the shared UI directory:
+
 ```tsx
-// Using form components with validation
+import { Button } from '@/shared/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/components/ui/dialog';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/components/ui/form';
+```
+
+## Available Components
+
+Sound Connect includes these ShadCN components:
+
+| Component | Import Path | Primary Use |
+|-----------|-------------|-------------|
+| Alert | `@/shared/components/ui/alert` | Status messages, warnings |
+| AlertDialog | `@/shared/components/ui/alert-dialog` | Confirmations, destructive actions |
+| AspectRatio | `@/shared/components/ui/aspect-ratio` | Consistent media ratios |
+| Avatar | `@/shared/components/ui/avatar` | User/band profile images |
+| Badge | `@/shared/components/ui/badge` | Status indicators, tags |
+| Button | `@/shared/components/ui/button` | Actions, form submission |
+| Card | `@/shared/components/ui/card` | Content containers |
+| Checkbox | `@/shared/components/ui/checkbox` | Boolean inputs |
+| Collapsible | `@/shared/components/ui/collapsible` | Expandable sections |
+| Command | `@/shared/components/ui/command` | Command palettes, search |
+| Dialog | `@/shared/components/ui/dialog` | Modal overlays |
+| DropdownMenu | `@/shared/components/ui/dropdown-menu` | Action menus |
+| Form | `@/shared/components/ui/form` | Form field wrappers |
+| Input | `@/shared/components/ui/input` | Text inputs |
+| Label | `@/shared/components/ui/label` | Form labels |
+| NavigationMenu | `@/shared/components/ui/navigation-menu` | Site navigation |
+| Popover | `@/shared/components/ui/popover` | Floating content |
+| Progress | `@/shared/components/ui/progress` | Progress indicators |
+| ScrollArea | `@/shared/components/ui/scroll-area` | Custom scrollbars |
+| Select | `@/shared/components/ui/select` | Dropdown selections |
+| Separator | `@/shared/components/ui/separator` | Visual dividers |
+| Sheet | `@/shared/components/ui/sheet` | Slide-out panels |
+| Skeleton | `@/shared/components/ui/skeleton` | Loading placeholders |
+| Tabs | `@/shared/components/ui/tabs` | Tabbed interfaces |
+| Textarea | `@/shared/components/ui/textarea` | Multi-line text |
+| Tooltip | `@/shared/components/ui/tooltip` | Hover hints |
+| Sonner (Toaster) | `@/shared/components/ui/sonner` | Toast notifications |
+
+## Z-Index Token System
+
+Sound Connect uses a centralized z-index system. **ALWAYS use semantic tokens instead of numeric values.**
+
+### Token Reference
+
+| Token | Value | Use Case |
+|-------|-------|----------|
+| `z-base` | 0 | Default layer for normal content |
+| `z-dropdown` | 1 | Dropdown menus (not popovers) |
+| `z-sticky` | 10 | Sticky headers and navigation |
+| `z-sidebar` | 60 | Sidebar navigation (main layout) |
+| `z-dialog` | 100 | Dialog/modal overlays |
+| `z-popover` | 110 | Popover components (emoji picker, tooltips) |
+| `z-tooltip` | 120 | Tooltip overlays (highest priority) |
+
+### Usage
+
+```tsx
+<DialogContent className="z-dialog">...</DialogContent>
+<PopoverContent className="z-popover">...</PopoverContent>
+<TooltipContent className="z-tooltip pointer-events-none">...</TooltipContent>
+```
+
+### Z-Index Rules
+
+1. **ALWAYS** use semantic tokens (e.g., `z-popover`) not numeric values (e.g., `z-[110]`)
+2. **NEVER** use arbitrary values like `z-[999]` or `z-50`
+3. Tooltips **MUST** use `pointer-events-none` to prevent hover interference
+4. If a new layer is needed, add it to the token system first
+
+### Defined In
+
+- CSS variables: `apps/web/src/styles/globals.css` (lines 172-178)
+- Tailwind config: `apps/web/tailwind.config.ts` (theme.extend.zIndex)
+
+## Form Components
+
+Forms use react-hook-form with Zod validation and ShadCN form components.
+
+### Form Pattern
+
+```tsx
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/components/ui/form';
 import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Textarea } from '@/shared/components/ui/textarea';
 
-<div className="space-y-2">
-    <Label htmlFor="name">
-        Band Name <span className="text-destructive">*</span>
-    </Label>
-    <Input
-        id="name"
-        value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        placeholder="Enter band name"
-        maxLength={100}
-        aria-required="true"
-        aria-invalid={!!errors['name']}
-        aria-describedby={errors['name'] ? 'name-error' : undefined}
-    />
-    {errors['name'] && (
-        <p id="name-error" className="text-destructive text-sm" role="alert">
-            {errors['name']}
-        </p>
-    )}
-</div>
+const formSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(8).max(128)
+});
+
+const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+        email: '',
+        password: ''
+    }
+});
+
+<Form {...form}>
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                        <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}
+        />
+    </form>
+</Form>
 ```
 
-### 2. Card Layouts
+### Form Component Hierarchy
+
+- `Form` - Wraps the entire form (extends FormProvider)
+- `FormField` - Connects a field to react-hook-form via Controller
+- `FormItem` - Container for a single form field
+- `FormLabel` - Accessible label (auto-linked to input)
+- `FormControl` - Wraps the input element
+- `FormMessage` - Displays validation errors
+- `FormDescription` - Optional help text
+
+## Dialog Patterns
+
+### Basic Dialog
+
 ```tsx
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/shared/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/shared/components/ui/dialog';
 
-<Card className="border-border/40 bg-card">
-    <CardHeader>
-        <CardTitle>Band Profile</CardTitle>
-    </CardHeader>
-    <CardContent className="space-y-4">
-        {/* Content */}
-    </CardContent>
-    <CardFooter className="flex justify-between">
-        <Button variant="outline">Cancel</Button>
-        <Button>Save</Button>
-    </CardFooter>
-</Card>
-```
-
-### 3. Dialog Patterns
-```tsx
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from '@/shared/components/ui/dialog';
-
-<Dialog open={isOpen} onOpenChange={setIsOpen}>
+<Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger asChild>
         <Button>Open Dialog</Button>
     </DialogTrigger>
-    <DialogContent className="sm:max-w-[425px]">
+    <DialogContent className="z-dialog">
         <DialogHeader>
-            <DialogTitle>Edit Profile</DialogTitle>
-            <DialogDescription>
-                Make changes to your profile here.
-            </DialogDescription>
+            <DialogTitle>Dialog Title</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-            {/* Form fields */}
-        </div>
-        <DialogFooter>
-            <Button type="submit">Save changes</Button>
-        </DialogFooter>
+        {/* Content */}
     </DialogContent>
 </Dialog>
 ```
 
-### 4. Alert Dialog for Confirmations
+### Alert Dialog (Confirmations)
+
 ```tsx
 import {
     AlertDialog,
@@ -105,199 +186,192 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle
+    AlertDialogTitle,
+    AlertDialogTrigger
 } from '@/shared/components/ui/alert-dialog';
 
-<AlertDialog open={showDelete} onOpenChange={setShowDelete}>
-    <AlertDialogContent>
+<AlertDialog>
+    <AlertDialogTrigger asChild>
+        <Button variant="destructive">Delete</Button>
+    </AlertDialogTrigger>
+    <AlertDialogContent className="z-dialog">
         <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete
-                the band and remove all members.
+                This action cannot be undone.
             </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-                onClick={handleDelete}
-                className="bg-destructive text-destructive-foreground"
-            >
-                Delete
-            </AlertDialogAction>
+            <AlertDialogAction>Continue</AlertDialogAction>
         </AlertDialogFooter>
     </AlertDialogContent>
 </AlertDialog>
 ```
 
-### 5. Dropdown Menus
-```tsx
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger
-} from '@/shared/components/ui/dropdown-menu';
+## Sheet Patterns
 
-<DropdownMenu modal={false}>
-    <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Options">
-            <MoreHorizontal className="h-4 w-4" />
-        </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleEdit}>
-            Edit
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-            <Link to="/posts/$id" params={{ id: post.id }}>
-                View Details
-            </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-            onClick={handleDelete}
-            className="text-destructive focus:text-destructive"
-        >
-            Delete
-        </DropdownMenuItem>
-    </DropdownMenuContent>
-</DropdownMenu>
+Sheets are slide-out panels, useful for mobile navigation or secondary content.
+
+```tsx
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/shared/components/ui/sheet';
+
+<Sheet>
+    <SheetTrigger asChild>
+        <Button>Open Sheet</Button>
+    </SheetTrigger>
+    <SheetContent side="right">
+        <SheetHeader>
+            <SheetTitle>Sheet Title</SheetTitle>
+        </SheetHeader>
+        {/* Content */}
+    </SheetContent>
+</Sheet>
 ```
 
-### 6. Tabs Interface
-```tsx
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+**Side options:** `top`, `right`, `bottom`, `left`
 
-<Tabs defaultValue="posts" className="w-full">
-    <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="posts">Posts</TabsTrigger>
-        <TabsTrigger value="about">About</TabsTrigger>
-        <TabsTrigger value="members" className="relative">
-            Members
-            {pendingCount > 0 && (
-                <Badge className="ml-2" variant="destructive">
-                    {pendingCount}
-                </Badge>
-            )}
-        </TabsTrigger>
-    </TabsList>
-    <TabsContent value="posts" className="space-y-4">
-        <PostFeed />
-    </TabsContent>
-    <TabsContent value="about">
-        <AboutSection />
-    </TabsContent>
-    <TabsContent value="members">
-        <MembersGrid />
-    </TabsContent>
-</Tabs>
+## Popover Patterns
+
+```tsx
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
+
+<Popover>
+    <PopoverTrigger asChild>
+        <Button>Open Popover</Button>
+    </PopoverTrigger>
+    <PopoverContent className="z-popover" side="bottom" align="start">
+        {/* Content */}
+    </PopoverContent>
+</Popover>
 ```
 
-### 7. Loading States
+## Tooltip Patterns
+
 ```tsx
-import { Skeleton } from '@/shared/components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/components/ui/tooltip';
 
-// Skeleton for cards
-<Card>
-    <CardContent className="p-6">
-        <div className="flex gap-4">
-            <Skeleton className="h-24 w-24 rounded-full" />
-            <div className="flex-1 space-y-2">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-4 w-32" />
-            </div>
-        </div>
-    </CardContent>
-</Card>
-
-// Skeleton for lists
-<div className="space-y-4">
-    {[...Array(3)].map((_, i) => (
-        <Skeleton key={i} className="h-20 w-full" />
-    ))}
-</div>
+<Tooltip>
+    <TooltipTrigger asChild>
+        <Button>Hover me</Button>
+    </TooltipTrigger>
+    <TooltipContent className="z-tooltip pointer-events-none">
+        Tooltip text
+    </TooltipContent>
+</Tooltip>
 ```
 
-## Common Tasks
+**Important:** Always add `pointer-events-none` to TooltipContent to prevent hover interference.
 
-### Adding a New UI Component
-1. Install via CLI: `pnpm dlx shadcn@latest add [component]`
-2. Component added to `shared/components/ui/`
-3. Import and use in feature components
-4. Never modify the UI component directly
+## Toast Notifications (Sonner)
 
-### Customizing Component Styles
-1. Use className prop for one-off styles
-2. Use variant props when available
-3. Extend with cn() utility for conditional classes
-4. Override CSS variables for theme changes
+### Setup
 
-### Building Accessible Forms
-1. Always use Label with htmlFor
-2. Add aria-required for required fields
-3. Use aria-invalid for error states
-4. Include aria-describedby for error messages
-5. Add role="alert" for error text
-
-### Creating Responsive Layouts
-1. Use responsive prefixes: `sm:`, `md:`, `lg:`
-2. Grid system: `grid grid-cols-1 md:grid-cols-2`
-3. Stack on mobile: `flex flex-col sm:flex-row`
-4. Hide on mobile: `hidden sm:block`
-
-## Anti-Patterns to Avoid
-
-- ❌ Modifying files in `/ui/` directory directly
-- ❌ Not using asChild for trigger components
-- ❌ Forgetting modal={false} on nested dropdowns
-- ❌ Missing accessibility attributes
-- ❌ Using inline styles instead of className
-- ❌ Not handling loading/error states
-
-## Integration Guide
-
-- **With Forms**: Combine with react-hook-form or manual validation
-- **With Router**: Use asChild with Link components
-- **With Themes**: Leverages CSS variables from globals.css
-- **With Icons**: Use lucide-react for consistent icons
-- **With Animations**: Tailwind transitions and framer-motion
-
-## Quick Reference
+The Toaster is configured in `__root.tsx`:
 
 ```tsx
-// Common imports
+import { Toaster } from '@/shared/components/ui/sonner';
+
+// In component JSX
+<Toaster />
+```
+
+### Usage
+
+```tsx
+import { toast } from 'sonner';
+
+toast.success('Profile updated');
+
+toast.error('Could not save changes', {
+    description: 'Please try again later'
+});
+
+toast.info('New message received');
+
+toast.warning('Session expiring soon');
+
+toast.loading('Saving...');
+```
+
+### Toast Options
+
+```tsx
+toast.success('Success', {
+    description: 'Additional context',
+    duration: 5000,
+    action: {
+        label: 'Undo',
+        onClick: () => handleUndo()
+    }
+});
+```
+
+## Button Variants
+
+```tsx
 import { Button } from '@/shared/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Input } from '@/shared/components/ui/input';
-import { Label } from '@/shared/components/ui/label';
-import { Skeleton } from '@/shared/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 
-// Button variants
-<Button variant="default">Primary</Button>
-<Button variant="secondary">Secondary</Button>
+<Button>Default</Button>
+<Button variant="destructive">Delete</Button>
 <Button variant="outline">Outline</Button>
+<Button variant="secondary">Secondary</Button>
 <Button variant="ghost">Ghost</Button>
-<Button variant="destructive">Destructive</Button>
+<Button variant="link">Link</Button>
 
-// Size variants
 <Button size="sm">Small</Button>
 <Button size="default">Default</Button>
 <Button size="lg">Large</Button>
-<Button size="icon"><Icon /></Button>
-
-// Common patterns
-<Button asChild>
-    <Link to="/path">Link Button</Link>
-</Button>
+<Button size="icon">Icon Only</Button>
+<Button size="icon-sm">Small Icon</Button>
+<Button size="icon-lg">Large Icon</Button>
 ```
 
-## Real Examples from Codebase
+## cn() Utility
 
-- **Complex Form**: `apps/web/src/features/bands/components/band-form.tsx`
-- **Dialog Usage**: `apps/web/src/features/posts/components/add-post-dialog.tsx`
-- **Tabs Layout**: `apps/web/src/routes/(main)/bands/$id.tsx`
-- **Cards**: `apps/web/src/features/posts/components/post.tsx`
-- **Dropdowns**: `apps/web/src/shared/components/common/account-button.tsx`
+Use the `cn()` utility to merge Tailwind classes safely:
+
+```tsx
+import { cn } from '@/shared/lib/utils';
+
+<div className={cn(
+    'base-classes',
+    isActive && 'active-classes',
+    className
+)}>
+```
+
+## MCP Tools
+
+Use the `mcp__shadcn__*` tools for component information:
+
+- `mcp__shadcn__get_project_registries` - Get configured registries
+- `mcp__shadcn__list_items_in_registries` - List available components
+- `mcp__shadcn__search_items_in_registries` - Search for components
+- `mcp__shadcn__view_items_in_registries` - View component details
+- `mcp__shadcn__get_item_examples_from_registries` - Get usage examples
+- `mcp__shadcn__get_add_command_for_items` - Get CLI add command
+- `mcp__shadcn__get_audit_checklist` - Post-generation verification
+
+### Adding New Components
+
+```bash
+pnpm dlx shadcn@latest add button
+pnpm dlx shadcn@latest add dialog sheet popover
+```
+
+## Context7 Documentation
+
+For latest ShadCN documentation, use Context7:
+
+```
+mcp__context7__get-library-docs with context7CompatibleLibraryID: "/shadcn-ui/ui"
+```
+
+Topics to query:
+- `form` - Form component patterns
+- `dialog` - Dialog/modal patterns
+- `sheet` - Sheet patterns
+- `popover` - Popover patterns
+- `tooltip` - Tooltip patterns
+- `toast` - Toast/sonner patterns
