@@ -10,7 +10,7 @@ type Props = {
 };
 
 export const StepAvailability = ({ value, onChange }: Props) => {
-    const [status, setStatus] = useState<AvailabilityStatus>(value || 'just_browsing');
+    const [status, setStatus] = useState<AvailabilityStatus | ''>(value || '');
 
     const handleChange = (newStatus: AvailabilityStatus) => {
         setStatus(newStatus);
@@ -28,7 +28,7 @@ export const StepAvailability = ({ value, onChange }: Props) => {
                 <Label htmlFor="status">Status</Label>
                 <Select value={status} onValueChange={(value) => handleChange(value as AvailabilityStatus)}>
                     <SelectTrigger id="status" className="w-full">
-                        <SelectValue>
+                        <SelectValue placeholder="Select your availability status">
                             {status && (
                                 <div className="flex items-center gap-2">
                                     <span

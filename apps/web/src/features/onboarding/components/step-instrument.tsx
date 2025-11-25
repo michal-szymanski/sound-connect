@@ -10,7 +10,7 @@ type Props = {
 };
 
 export const StepInstrument = ({ value, onChange }: Props) => {
-    const [selectedInstrument, setSelectedInstrument] = useState<Instrument>(value || 'guitar');
+    const [selectedInstrument, setSelectedInstrument] = useState<Instrument | ''>(value || '');
 
     const handleChange = (instrument: Instrument) => {
         setSelectedInstrument(instrument);
@@ -28,7 +28,7 @@ export const StepInstrument = ({ value, onChange }: Props) => {
 
             <Select value={selectedInstrument} onValueChange={(value) => handleChange(value as Instrument)} required>
                 <SelectTrigger id="primaryInstrument" className="w-full" aria-required="true">
-                    <SelectValue />
+                    <SelectValue placeholder="Select your primary instrument" />
                 </SelectTrigger>
                 <SelectContent>
                     {InstrumentEnum.map((instrument) => (

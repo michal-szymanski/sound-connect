@@ -47,7 +47,7 @@ function RouteComponent() {
     const [formData, setFormData] = useState<OnboardingData>({
         primaryInstrument: null,
         primaryGenre: null,
-        location: { city: '', country: 'USA' },
+        location: { city: '', country: '' },
         bio: '',
         status: null,
         profileImageUrl: null
@@ -68,7 +68,7 @@ function RouteComponent() {
 
     const isStep1Valid = formData.primaryInstrument !== null;
     const isStep2Valid = formData.primaryGenre !== null;
-    const isStep3Valid = formData.location.city.length > 0;
+    const isStep3Valid = formData.location.city.length > 0 && formData.location.country.length > 0;
 
     const hasCompletedOnboardingRef = useRef(false);
 

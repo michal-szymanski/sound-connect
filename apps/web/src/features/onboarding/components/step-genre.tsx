@@ -10,7 +10,7 @@ type Props = {
 };
 
 export const StepGenre = ({ value, onChange }: Props) => {
-    const [selectedGenre, setSelectedGenre] = useState<Genre>(value || 'rock');
+    const [selectedGenre, setSelectedGenre] = useState<Genre | ''>(value || '');
 
     const handleChange = (genre: Genre) => {
         setSelectedGenre(genre);
@@ -28,7 +28,7 @@ export const StepGenre = ({ value, onChange }: Props) => {
 
             <Select value={selectedGenre} onValueChange={(value) => handleChange(value as Genre)} required>
                 <SelectTrigger id="primaryGenre" className="w-full" aria-required="true">
-                    <SelectValue />
+                    <SelectValue placeholder="Select your primary genre" />
                 </SelectTrigger>
                 <SelectContent>
                     {GenreEnum.map((genre) => (
