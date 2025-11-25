@@ -1,4 +1,4 @@
-import { TrendingUp, Maximize2, MessageCircle } from 'lucide-react';
+import { Maximize2, MessageCircle } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
@@ -200,28 +200,6 @@ export default function RightSidebar() {
                                 })}
                             </div>
                         )}
-                    </CardContent>
-                </Card>
-
-                <Card className="border-border/40">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-semibold">Trending Topics</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pb-4">
-                        <div className="space-y-3">
-                            {['#JazzFusion', '#GuitarTips', '#BandMates', '#LiveMusic'].map((topic) => (
-                                <button
-                                    key={topic}
-                                    className="focus-visible:ring-ring group hover:bg-accent block w-full rounded-md p-2 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <TrendingUp className="text-muted-foreground h-4 w-4" aria-hidden="true" />
-                                        <span className="text-foreground text-sm font-medium group-hover:underline">{topic}</span>
-                                    </div>
-                                    <p className="text-muted-foreground ml-6 text-xs">1.2k posts</p>
-                                </button>
-                            ))}
-                        </div>
                     </CardContent>
                 </Card>
             </div>

@@ -29,6 +29,13 @@
       "when": 1763242803361,
       "tag": "0003_amazing_chameleon",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1764106817909,
+      "tag": "0004_add_user_onboarding",
+      "breakpoints": true
     }
   ]
 }

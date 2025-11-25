@@ -6,6 +6,7 @@ import { EmptyFeed } from '@/shared/components/empty-states/empty-feed';
 import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { envsQuery, followersQuery, followingsQuery, authQuery, useAuth } from '@/shared/lib/react-query';
+import { ProfileCompletionBanner, useProfile } from '@/features/profile';
 
 export const Route = createFileRoute('/(main)/')({
     component: RouteComponent,
@@ -21,6 +22,7 @@ export const Route = createFileRoute('/(main)/')({
 function RouteComponent() {
     const { data: auth } = useAuth();
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useFeed();
+    const { data: profile } = useProfile(auth?.user?.id ?? '');
 
     const feed = data?.pages.flat() ?? [];
 
@@ -44,6 +46,8 @@ function RouteComponent() {
 
     return (
         <div className="flex w-full flex-col gap-5">
+            {profile && auth?.user && <ProfileCompletionBanner profile={profile} userId={auth.user.id} />}
+
             <Card className="border-border/40 w-full">
                 <CardContent className="w-full">
                     <div className="inline-flex w-full items-center justify-center gap-5">

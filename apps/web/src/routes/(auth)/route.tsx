@@ -8,8 +8,8 @@ import ThemeToggle from '@/shared/components/common/theme-toggle';
 
 export const Route = createFileRoute('/(auth)')({
     component: RouteComponent,
-    beforeLoad: ({ context: { user } }) => {
-        if (user) {
+    beforeLoad: ({ context: { user }, location }) => {
+        if (user && !location.pathname.startsWith('/onboarding')) {
             const path = '/';
 
             throw redirect({

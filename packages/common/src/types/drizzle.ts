@@ -654,3 +654,26 @@ export const discoveryAnalyticsSchema = z.object({
 export type CreateDiscoveryAnalytics = z.infer<typeof createDiscoveryAnalyticsSchema>;
 export type DiscoveryAnalytics = z.infer<typeof discoveryAnalyticsSchema>;
 export type DiscoveryEventType = z.infer<typeof discoveryEventTypeEnum>;
+
+export const createUserOnboardingSchema = z.object({
+    id: z.string(),
+    userId: z.string(),
+    currentStep: z.number().int().min(1).max(6),
+    completedAt: z.number().nullable(),
+    skippedAt: z.number().nullable(),
+    createdAt: z.number(),
+    updatedAt: z.number()
+});
+
+export const userOnboardingSchema = z.object({
+    id: z.string(),
+    userId: z.string(),
+    currentStep: z.number().int().min(1).max(6),
+    completedAt: z.number().nullable(),
+    skippedAt: z.number().nullable(),
+    createdAt: z.number(),
+    updatedAt: z.number()
+});
+
+export type CreateUserOnboarding = z.infer<typeof createUserOnboardingSchema>;
+export type UserOnboarding = z.infer<typeof userOnboardingSchema>;

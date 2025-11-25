@@ -7,6 +7,7 @@ export { InstrumentsSection } from './components/instruments-section';
 export { LogisticsSection } from './components/logistics-section';
 export { LookingForSection } from './components/looking-for-section';
 export { ProfileCompletionBadge } from './components/profile-completion-badge';
+export { ProfileCompletionBanner } from './components/profile-completion-banner';
 export { ProfileSection } from './components/profile-section';
 export { ProfileSkeleton } from './components/profile-skeleton';
 

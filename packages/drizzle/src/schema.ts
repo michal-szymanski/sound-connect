@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import { sqliteTable, integer, text, index, primaryKey } from 'drizzle-orm/sqlite-core';
 import {
     InstrumentEnum,
@@ -547,4 +547,36 @@ export const discoveryAnalyticsTable = sqliteTable(
 export const discoveryAnalyticsRelations = relations(discoveryAnalyticsTable, ({ one }) => ({
     user: one(users, { fields: [discoveryAnalyticsTable.userId], references: [users.id] }),
     band: one(bandsTable, { fields: [discoveryAnalyticsTable.bandId], references: [bandsTable.id] })
+}));
+
+export const userOnboardingTable = sqliteTable(
+    'user_onboarding',
+    {
+        id: text('id')
+            .primaryKey()
+            .$defaultFn(() => crypto.randomUUID()),
+        userId: text('user_id')
+            .notNull()
+            .unique()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        currentStep: integer('current_step').notNull().default(1),
+        completedAt: integer('completed_at', { mode: 'timestamp_ms' }),
+        skippedAt: integer('skipped_at', { mode: 'timestamp_ms' }),
+        createdAt: integer('created_at', { mode: 'timestamp_ms' })
+            .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+            .notNull(),
+        updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+            .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+            .$onUpdate(() => new Date())
+            .notNull()
+    },
+    (table) => ({
+        userIdIdx: index('idx_user_onboarding_user_id').on(table.userId),
+        completedAtIdx: index('idx_user_onboarding_completed_at').on(table.completedAt),
+        skippedAtIdx: index('idx_user_onboarding_skipped_at').on(table.skippedAt)
+    })
+);
+
+export const userOnboardingRelations = relations(userOnboardingTable, ({ one }) => ({
+    user: one(users, { fields: [userOnboardingTable.userId], references: [users.id] })
 }));

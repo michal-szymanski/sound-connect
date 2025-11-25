@@ -21,6 +21,7 @@ import { Route as authVerifyEmailIndexRouteImport } from './routes/(auth)/verify
 import { Route as authSignUpIndexRouteImport } from './routes/(auth)/sign-up/index'
 import { Route as authSignInIndexRouteImport } from './routes/(auth)/sign-in/index'
 import { Route as authResetPasswordIndexRouteImport } from './routes/(auth)/reset-password/index'
+import { Route as authOnboardingIndexRouteImport } from './routes/(auth)/onboarding/index'
 import { Route as authForgotPasswordIndexRouteImport } from './routes/(auth)/forgot-password/index'
 import { Route as mainUsersIdRouteImport } from './routes/(main)/users/$id'
 import { Route as mainPostsPostIdRouteImport } from './routes/(main)/posts/$postId'
@@ -87,6 +88,11 @@ const authResetPasswordIndexRoute = authResetPasswordIndexRouteImport.update({
   path: '/reset-password/',
   getParentRoute: () => authRouteRoute,
 } as any)
+const authOnboardingIndexRoute = authOnboardingIndexRouteImport.update({
+  id: '/onboarding/',
+  path: '/onboarding/',
+  getParentRoute: () => authRouteRoute,
+} as any)
 const authForgotPasswordIndexRoute = authForgotPasswordIndexRouteImport.update({
   id: '/forgot-password/',
   path: '/forgot-password/',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/posts/$postId': typeof mainPostsPostIdRoute
   '/users/$id': typeof mainUsersIdRoute
   '/forgot-password': typeof authForgotPasswordIndexRoute
+  '/onboarding': typeof authOnboardingIndexRoute
   '/reset-password': typeof authResetPasswordIndexRoute
   '/sign-in': typeof authSignInIndexRoute
   '/sign-up': typeof authSignUpIndexRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/posts/$postId': typeof mainPostsPostIdRoute
   '/users/$id': typeof mainUsersIdRoute
   '/forgot-password': typeof authForgotPasswordIndexRoute
+  '/onboarding': typeof authOnboardingIndexRoute
   '/reset-password': typeof authResetPasswordIndexRoute
   '/sign-in': typeof authSignInIndexRoute
   '/sign-up': typeof authSignUpIndexRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/(main)/posts/$postId': typeof mainPostsPostIdRoute
   '/(main)/users/$id': typeof mainUsersIdRoute
   '/(auth)/forgot-password/': typeof authForgotPasswordIndexRoute
+  '/(auth)/onboarding/': typeof authOnboardingIndexRoute
   '/(auth)/reset-password/': typeof authResetPasswordIndexRoute
   '/(auth)/sign-in/': typeof authSignInIndexRoute
   '/(auth)/sign-up/': typeof authSignUpIndexRoute
@@ -196,6 +205,7 @@ export interface FileRouteTypes {
     | '/posts/$postId'
     | '/users/$id'
     | '/forgot-password'
+    | '/onboarding'
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
@@ -215,6 +225,7 @@ export interface FileRouteTypes {
     | '/posts/$postId'
     | '/users/$id'
     | '/forgot-password'
+    | '/onboarding'
     | '/reset-password'
     | '/sign-in'
     | '/sign-up'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/(main)/posts/$postId'
     | '/(main)/users/$id'
     | '/(auth)/forgot-password/'
+    | '/(auth)/onboarding/'
     | '/(auth)/reset-password/'
     | '/(auth)/sign-in/'
     | '/(auth)/sign-up/'
@@ -337,6 +349,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authResetPasswordIndexRouteImport
       parentRoute: typeof authRouteRoute
     }
+    '/(auth)/onboarding/': {
+      id: '/(auth)/onboarding/'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof authOnboardingIndexRouteImport
+      parentRoute: typeof authRouteRoute
+    }
     '/(auth)/forgot-password/': {
       id: '/(auth)/forgot-password/'
       path: '/forgot-password'
@@ -391,6 +410,7 @@ declare module '@tanstack/react-router' {
 
 interface authRouteRouteChildren {
   authForgotPasswordIndexRoute: typeof authForgotPasswordIndexRoute
+  authOnboardingIndexRoute: typeof authOnboardingIndexRoute
   authResetPasswordIndexRoute: typeof authResetPasswordIndexRoute
   authSignInIndexRoute: typeof authSignInIndexRoute
   authSignUpIndexRoute: typeof authSignUpIndexRoute
@@ -399,6 +419,7 @@ interface authRouteRouteChildren {
 
 const authRouteRouteChildren: authRouteRouteChildren = {
   authForgotPasswordIndexRoute: authForgotPasswordIndexRoute,
+  authOnboardingIndexRoute: authOnboardingIndexRoute,
   authResetPasswordIndexRoute: authResetPasswordIndexRoute,
   authSignInIndexRoute: authSignInIndexRoute,
   authSignUpIndexRoute: authSignUpIndexRoute,

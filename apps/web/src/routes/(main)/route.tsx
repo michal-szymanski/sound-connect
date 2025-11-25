@@ -8,6 +8,7 @@ import { NotificationsProvider } from '@/features/notifications/providers/notifi
 import { MessagingProvider, useMessagingContext } from './messages/context';
 import { ConversationsListSidebar } from '@/shared/components/layout/conversations-list-sidebar';
 import { useEnvs } from '@/shared/lib/react-query';
+import { getOnboardingStatus } from '@/features/onboarding/server-functions/onboarding';
 
 export const Route = createFileRoute('/(main)')({
     component: RouteComponent,
@@ -24,6 +25,27 @@ export const Route = createFileRoute('/(main)')({
             user: context.user,
             accessToken: context.accessToken
         };
+    },
+    loader: async ({ location }) => {
+        const result = await getOnboardingStatus();
+
+        if (!result.success) {
+            throw redirect({
+                to: '/onboarding',
+                search: { redirect: location.pathname },
+                replace: true
+            });
+        }
+
+        const onboardingStatus = result.body;
+
+        if (!onboardingStatus.exists || (!onboardingStatus.completedAt && !onboardingStatus.skippedAt)) {
+            throw redirect({
+                to: '/onboarding',
+                search: { redirect: location.pathname },
+                replace: true
+            });
+        }
     }
 });
 

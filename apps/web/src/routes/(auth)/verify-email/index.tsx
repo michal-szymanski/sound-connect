@@ -44,7 +44,7 @@ function RouteComponent() {
                 if (result.success) {
                     setState('success');
                     setTimeout(() => {
-                        router.navigate({ to: '/' });
+                        router.navigate({ to: '/onboarding', search: { redirect: undefined } });
                     }, 3000);
                 } else if (result.body) {
                     setState('error');
@@ -101,7 +101,7 @@ function RouteComponent() {
                 {state === 'success' && (
                     <Alert className="border-green-200 bg-green-50 text-green-900">
                         <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        <AlertDescription>Email verified successfully! Redirecting to home page...</AlertDescription>
+                        <AlertDescription>Email verified successfully! Redirecting to onboarding...</AlertDescription>
                     </Alert>
                 )}
 
