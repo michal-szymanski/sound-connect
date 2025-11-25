@@ -12,7 +12,6 @@ import { StepProfilePhoto } from '@/features/onboarding/components/step-profile-
 import { useUpdateOnboardingProgress, useCompleteOnboarding, useSkipOnboarding } from '@/features/onboarding/hooks/use-onboarding';
 import { useUpdateInstruments, useUpdateGenres, useUpdateLogistics, useUpdateBio, useUpdateAvailability } from '@/features/profile/hooks/use-profile';
 import type { Instrument, Genre, AvailabilityStatus } from '@sound-connect/common/types/profile-enums';
-import { toast } from 'sonner';
 
 export const Route = createFileRoute('/(auth)/onboarding/')({
     beforeLoad: async ({ context }) => {
@@ -172,11 +171,6 @@ function RouteComponent() {
 
     const handleSkip = () => {
         if (currentStep >= 1 && currentStep <= 6) {
-            if (currentStep < 4) {
-                toast.error('This step is required');
-                return;
-            }
-
             updateProgressMutation.mutate(currentStep);
             setCurrentStep(currentStep + 1);
         } else if (currentStep === 0) {
@@ -340,7 +334,7 @@ function RouteComponent() {
                                         Back
                                     </Button>
                                 )}
-                                {currentStep >= 4 && currentStep <= 6 && (
+                                {currentStep >= 1 && currentStep <= 6 && (
                                     <Button variant="ghost" onClick={handleSkip} disabled={isPending()}>
                                         Skip
                                     </Button>
