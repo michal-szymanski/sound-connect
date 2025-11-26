@@ -352,6 +352,11 @@ bandsRoutes.delete('/bands/:id/follow', async (c) => {
         throw new HTTPException(404, { message: 'Band not found' });
     }
 
+    const isMember = await isBandMember(id, user.id);
+    if (isMember) {
+        throw new HTTPException(400, { message: 'You cannot unfollow a band you are a member of' });
+    }
+
     await unfollowBand(id, user.id);
 
     return c.body(null, 204);

@@ -1,11 +1,12 @@
 import { FeedItem } from '@/common/types/models';
 import { Link } from '@tanstack/react-router';
-import { Heart, MoreHorizontal, MessageCircle, Share2 } from 'lucide-react';
+import { Heart, MoreHorizontal, MessageCircle, Share2, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { LikesDialog } from '../index';
 import { PostModal } from './post-modal';
 import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
+import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardFooter } from '@/shared/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/shared/components/ui/dropdown-menu';
 import { useLikeToggle } from '../hooks/use-posts';
@@ -79,12 +80,26 @@ export function Post({ item }: Props) {
                                 className="text-foreground flex items-center gap-2 text-sm font-semibold hover:underline"
                             >
                                 {authorName}
+                                {item.isDiscovery && (
+                                    <Badge variant="outline" className="text-xs ml-1">
+                                        <Sparkles className="h-3 w-3 mr-1" />
+                                        Suggested
+                                    </Badge>
+                                )}
                                 <span className="text-muted-foreground bg-muted rounded px-2 py-0.5 text-xs font-normal">Band</span>
                             </Link>
                         ) : (
-                            <Link to="/users/$id" params={{ id: post.userId }} className="text-foreground text-sm font-semibold hover:underline">
-                                {authorName}
-                            </Link>
+                            <div className="flex items-center gap-2">
+                                <Link to="/users/$id" params={{ id: post.userId }} className="text-foreground text-sm font-semibold hover:underline">
+                                    {authorName}
+                                </Link>
+                                {item.isDiscovery && (
+                                    <Badge variant="outline" className="text-xs">
+                                        <Sparkles className="h-3 w-3 mr-1" />
+                                        Suggested
+                                    </Badge>
+                                )}
+                            </div>
                         )}
                         <span className="text-muted-foreground text-xs">
                             {!isBandPost && `@${username} · `}

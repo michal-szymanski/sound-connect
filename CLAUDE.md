@@ -62,6 +62,22 @@ Seeded via: `pnpm db:seed:local` (defined in `packages/drizzle/src/seed.ts`)
 - View followers and following lists
 - Follow request system
 
+### Onboarding Flow
+
+- **6-step guided profile setup** after signup/email verification:
+    - **Step 1**: Primary instrument selection (required)
+    - **Step 2**: Primary genre selection (required)
+    - **Step 3**: Location - city & country (required)
+    - **Step 4**: Bio (optional, max 500 chars)
+    - **Step 5**: Availability status (optional)
+    - **Step 6**: Profile photo upload (optional)
+- **Progress tracking**: Database tracks current step, completion, and skip status
+- **Skip options**: Users can skip entire onboarding or individual optional steps
+- **Redirect logic**:
+    - Users redirected to onboarding after email verification
+    - Main app routes check onboarding status and redirect if incomplete
+    - Original destination preserved and restored after completion
+
 ### Musician Discovery
 
 - **Advanced search** at `/musicians`:
@@ -148,6 +164,35 @@ Seeded via: `pnpm db:seed:local` (defined in `packages/drizzle/src/seed.ts`)
     - Posts by users or bands (author_type: 'user' | 'band')
     - View post detail pages
     - Social feed on home page
+- **Discovery Feed**: Personalized hybrid feed combining followed and discovery posts
+    - **Intelligent Post Matching**: Recommends posts from non-followed users and bands based on profile similarity
+    - **User Post Scoring Algorithm**:
+        - Primary instrument match: 50 points
+        - Additional instrument match: 25 points
+        - Primary genre match: 30 points
+        - Secondary genre match: 15 points
+        - Location proximity: 20 points (<10 miles), 10 points (<25 miles), 5 points (<50 miles)
+    - **Band Post Scoring Algorithm**:
+        - Primary genre match: 40 points
+        - Secondary genre match: 20 points
+        - "Looking for" instrument match: 30 points
+        - Location proximity: 20 points (<10 miles), 10 points (<25 miles), 5 points (<50 miles)
+    - **Recency Boost**: Recent posts get multiplier (1.5x <1hr, 1.3x <6hr, 1.1x <24hr, 1.0x <7d, 0.8x >7d)
+    - **Minimum Score**: 20 points required for inclusion
+    - **Feed Blending**: 60% followed posts, 40% discovery posts (3:2 interleaving pattern)
+    - **Smart Fallbacks**:
+        - New users with no follows: 100% discovery posts
+        - Insufficient followed posts: Fill with discovery
+        - Insufficient discovery posts: Fill with followed
+    - **Privacy Respecting**: Excludes blocked users and non-public profiles
+    - **"Suggested" Badge**: Discovery posts marked with sparkle icon for transparency
+    - **Band Member Auto-Follow**: Users automatically see posts from bands they're members of
+- **Band Follow Management**:
+    - Follow/unfollow bands
+    - **Member Auto-Follow Rule**: Band members automatically "follow" their bands (implicit)
+    - **Cannot Unfollow Own Bands**: Members see "Member" badge instead of unfollow button
+    - API protection prevents unfollowing bands where user is member
+    - Auto-unfollow when user leaves band
 - **Reactions**: React to posts
 - **Comments**: Comment on posts
 - **User search**: Basic user search functionality
@@ -198,8 +243,6 @@ Seeded via: `pnpm db:seed:local` (defined in `packages/drizzle/src/seed.ts`)
 
 ### High Priority (Affects Activation & Retention)
 
-- **Onboarding flow**: No guided profile setup for new users after sign-up
-- **Discovery feed**: No personalized "For You" feed - users must manually search
 - **Saved profiles**: Cannot bookmark musicians/bands for later
 
 ### Medium Priority

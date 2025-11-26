@@ -11,6 +11,7 @@ import {
     type CommentReaction,
     type UserDTO
 } from './drizzle';
+import { matchReasonSchema } from './band-discovery';
 
 export { userDTOSchema, type UserDTO };
 
@@ -107,7 +108,9 @@ export const feedItemSchema = z.object({
     band: bandInfoSchema.nullable().optional(),
     reactions: z.array(postReactionSchema),
     media: z.array(mediaSchema),
-    commentsCount: z.number()
+    commentsCount: z.number(),
+    isDiscovery: z.boolean().optional(),
+    matchReasons: z.array(matchReasonSchema).optional()
 });
 
 export type FeedItem = z.infer<typeof feedItemSchema>;

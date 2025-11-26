@@ -4,8 +4,10 @@ import { postReactionSchema, postSchema } from '@/common/types/drizzle';
 import { desc, eq, inArray, and, count, sql } from 'drizzle-orm';
 import z from 'zod';
 import { db } from '../index';
+import { getDiscoveryPosts } from './discovery-feed-queries';
+import type { MatchReason } from '@sound-connect/common/types/band-discovery';
 
-const { mediaTable, postsReactionsTable, postsTable, users, commentsTable, bandsTable, bandsFollowersTable, usersFollowersTable, blockedUsersTable } = schema;
+const { mediaTable, postsReactionsTable, postsTable, users, commentsTable, bandsTable, bandsFollowersTable, bandsMembersTable, usersFollowersTable, blockedUsersTable } = schema;
 
 type FeedPostRow = {
     id: number;
@@ -105,8 +107,10 @@ export const getPostById = async (postId: number) => {
     return feedItemSchema.parse(postWithReactions);
 };
 
-export const getFeed = async (limit: number = 10, offset: number = 0, currentUserId?: string) => {
+export const getFeed = async (limit: number = 10, offset: number = 0, currentUserId?: string, includeDiscovery: boolean = true) => {
     let posts: FeedPostRow[] = [];
+    const discoveryPostIds = new Set<number>();
+    const discoveryPostsMap = new Map<number, { matchReasons: MatchReason[] }>();
 
     if (currentUserId) {
         const blockedByCurrentUser = await db
@@ -131,8 +135,13 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
             .from(bandsFollowersTable)
             .where(eq(bandsFollowersTable.followerId, currentUserId));
 
+        const ownBands = await db
+            .select({ bandId: bandsMembersTable.bandId })
+            .from(bandsMembersTable)
+            .where(eq(bandsMembersTable.userId, currentUserId));
+
         const followedUserIds = [...followedUsers.map((f) => f.userId), currentUserId].filter((id) => !blockedUserIds.includes(id));
-        const followedBandIds = followedBands.map((f) => f.bandId);
+        const followedBandIds = [...followedBands.map((f) => f.bandId), ...ownBands.map((b) => b.bandId)];
 
         const userPosts =
             followedUserIds.length > 0
@@ -178,7 +187,153 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
                       .where(and(eq(postsTable.authorType, 'band'), eq(postsTable.status, 'approved'), sql`${postsTable.bandId} IN ${followedBandIds}`))
                 : [];
 
-        posts = [...userPosts, ...bandPosts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(offset, offset + limit);
+        const followedPosts = [...userPosts, ...bandPosts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) as FeedPostRow[];
+
+        if (includeDiscovery && followedPosts.length > 0) {
+            const discoveryResults = await getDiscoveryPosts(db, currentUserId, limit * 2);
+
+            for (const discoveryPost of discoveryResults) {
+                discoveryPostIds.add(discoveryPost.postId);
+                discoveryPostsMap.set(discoveryPost.postId, {
+                    matchReasons: discoveryPost.matchReasons
+                });
+            }
+
+            const discoveryPostsFullRaw = await Promise.all(
+                discoveryResults.map(async (dp) => {
+                    if (dp.authorType === 'user') {
+                        const results = await db
+                            .select({
+                                id: postsTable.id,
+                                authorType: postsTable.authorType,
+                                userId: postsTable.userId,
+                                bandId: postsTable.bandId,
+                                content: postsTable.content,
+                                status: postsTable.status,
+                                createdAt: postsTable.createdAt,
+                                updatedAt: postsTable.updatedAt,
+                                userName: users.name,
+                                userImage: users.image,
+                                bandName: sql<string | null>`NULL`,
+                                bandProfileImageUrl: sql<string | null>`NULL`
+                            })
+                            .from(postsTable)
+                            .innerJoin(users, eq(postsTable.userId, users.id))
+                            .where(eq(postsTable.id, dp.postId))
+                            .limit(1);
+                        return results[0];
+                    } else {
+                        const results = await db
+                            .select({
+                                id: postsTable.id,
+                                authorType: postsTable.authorType,
+                                userId: postsTable.userId,
+                                bandId: postsTable.bandId,
+                                content: postsTable.content,
+                                status: postsTable.status,
+                                createdAt: postsTable.createdAt,
+                                updatedAt: postsTable.updatedAt,
+                                userName: sql<string | null>`NULL`,
+                                userImage: sql<string | null>`NULL`,
+                                bandName: bandsTable.name,
+                                bandProfileImageUrl: bandsTable.profileImageUrl
+                            })
+                            .from(postsTable)
+                            .innerJoin(bandsTable, eq(postsTable.bandId, bandsTable.id))
+                            .where(eq(postsTable.id, dp.postId))
+                            .limit(1);
+                        return results[0];
+                    }
+                })
+            );
+
+            const discoveryPostsFull = discoveryPostsFullRaw.filter((p) => p !== undefined) as FeedPostRow[];
+
+            const blended: FeedPostRow[] = [];
+            let followedIndex = 0;
+            let discoveryIndex = 0;
+
+            while (blended.length < limit + offset && (followedIndex < followedPosts.length || discoveryIndex < discoveryPostsFull.length)) {
+                for (let i = 0; i < 3 && followedIndex < followedPosts.length && blended.length < limit + offset; i++) {
+                    const post = followedPosts[followedIndex];
+                    if (post) {
+                        blended.push(post);
+                    }
+                    followedIndex++;
+                }
+
+                for (let i = 0; i < 2 && discoveryIndex < discoveryPostsFull.length && blended.length < limit + offset; i++) {
+                    const post = discoveryPostsFull[discoveryIndex];
+                    if (post) {
+                        blended.push(post);
+                    }
+                    discoveryIndex++;
+                }
+            }
+
+            posts = blended.slice(offset, offset + limit);
+        } else if (includeDiscovery && followedPosts.length === 0) {
+            const discoveryResults = await getDiscoveryPosts(db, currentUserId, limit + offset);
+
+            for (const discoveryPost of discoveryResults) {
+                discoveryPostIds.add(discoveryPost.postId);
+                discoveryPostsMap.set(discoveryPost.postId, {
+                    matchReasons: discoveryPost.matchReasons
+                });
+            }
+
+            const discoveryPostsFullRaw = await Promise.all(
+                discoveryResults.map(async (dp) => {
+                    if (dp.authorType === 'user') {
+                        const results = await db
+                            .select({
+                                id: postsTable.id,
+                                authorType: postsTable.authorType,
+                                userId: postsTable.userId,
+                                bandId: postsTable.bandId,
+                                content: postsTable.content,
+                                status: postsTable.status,
+                                createdAt: postsTable.createdAt,
+                                updatedAt: postsTable.updatedAt,
+                                userName: users.name,
+                                userImage: users.image,
+                                bandName: sql<string | null>`NULL`,
+                                bandProfileImageUrl: sql<string | null>`NULL`
+                            })
+                            .from(postsTable)
+                            .innerJoin(users, eq(postsTable.userId, users.id))
+                            .where(eq(postsTable.id, dp.postId))
+                            .limit(1);
+                        return results[0];
+                    } else {
+                        const results = await db
+                            .select({
+                                id: postsTable.id,
+                                authorType: postsTable.authorType,
+                                userId: postsTable.userId,
+                                bandId: postsTable.bandId,
+                                content: postsTable.content,
+                                status: postsTable.status,
+                                createdAt: postsTable.createdAt,
+                                updatedAt: postsTable.updatedAt,
+                                userName: sql<string | null>`NULL`,
+                                userImage: sql<string | null>`NULL`,
+                                bandName: bandsTable.name,
+                                bandProfileImageUrl: bandsTable.profileImageUrl
+                            })
+                            .from(postsTable)
+                            .innerJoin(bandsTable, eq(postsTable.bandId, bandsTable.id))
+                            .where(eq(postsTable.id, dp.postId))
+                            .limit(1);
+                        return results[0];
+                    }
+                })
+            );
+
+            posts = discoveryPostsFullRaw.filter((p) => p !== undefined).slice(offset, offset + limit) as FeedPostRow[];
+        } else {
+            posts = followedPosts.slice(offset, offset + limit);
+        }
     } else {
         posts = await db
             .select({
@@ -231,6 +386,9 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
         .groupBy(commentsTable.postId);
 
     const postsWithReactions = posts.map((post) => {
+        const isDiscovery = discoveryPostIds.has(post.id);
+        const discoveryData = discoveryPostsMap.get(post.id);
+
         const baseData = {
             post: {
                 id: post.id,
@@ -262,7 +420,9 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
                           name: post.bandName!,
                           profileImageUrl: post.bandProfileImageUrl
                       }
-                    : null
+                    : null,
+            isDiscovery: isDiscovery ? true : undefined,
+            matchReasons: isDiscovery && discoveryData ? discoveryData.matchReasons : undefined
         };
 
         return baseData;
