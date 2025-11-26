@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Filter } from 'lucide-react';
+import { z } from 'zod';
 import { Button } from '@/shared/components/ui/button';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { Sheet, SheetContent } from '@/shared/components/ui/sheet';
@@ -10,62 +11,116 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 import { WordRotate } from '@/shared/components/ui/word-rotate';
 import { ProfileSearchFilters } from '@/features/search/components/profile-search/profile-search-filters';
 import { ProfileSearchResults } from '@/features/search/components/profile-search/profile-search-results';
-import { ProfileSearchSkeleton } from '@/features/search/components/profile-search/profile-search-skeleton';
 import { ProfileSearchEmptyState } from '@/features/search/components/profile-search/profile-search-empty-state';
 import { ProfileSearchErrorState } from '@/features/search/components/profile-search/profile-search-error-state';
 import { searchProfiles } from '@/features/search/server-functions/profile-search';
+import { InstrumentEnum, GenreEnum, AvailabilityStatusEnum } from '@sound-connect/common/types/profile-enums';
 import type { ProfileSearchParams, ProfileSearchResponse } from '@sound-connect/common/types/profile-search';
+
+const searchParamsSchema = z.object({
+    city: z.string().optional(),
+    instruments: z
+        .union([z.enum(InstrumentEnum), z.array(z.enum(InstrumentEnum))])
+        .transform((val) => (Array.isArray(val) ? val : [val]))
+        .optional(),
+    genres: z
+        .union([z.enum(GenreEnum), z.array(z.enum(GenreEnum))])
+        .transform((val) => (Array.isArray(val) ? val : [val]))
+        .optional(),
+    availabilityStatus: z
+        .union([z.enum(AvailabilityStatusEnum), z.array(z.enum(AvailabilityStatusEnum))])
+        .transform((val) => (Array.isArray(val) ? val : [val]))
+        .optional(),
+    radius: z.coerce.number().optional(),
+    page: z.coerce.number().default(1),
+    limit: z.coerce.number().default(12),
+    showAll: z.boolean().optional()
+});
+
+type LoaderResult = { type: 'success'; data: ProfileSearchResponse } | { type: 'no-search' } | { type: 'error'; message: string };
 
 export const Route = createFileRoute('/(main)/musicians')({
     component: MusiciansPage,
-    validateSearch: (search: Record<string, unknown>) => {
-        return {
-            city: search['city'] as string | undefined,
-            instruments: search['instruments'] ? (Array.isArray(search['instruments']) ? search['instruments'] : [search['instruments']]) : undefined,
-            genres: search['genres'] ? (Array.isArray(search['genres']) ? search['genres'] : [search['genres']]) : undefined,
-            availabilityStatus: search['availabilityStatus']
-                ? Array.isArray(search['availabilityStatus'])
-                    ? search['availabilityStatus']
-                    : [search['availabilityStatus']]
-                : undefined,
-            radius: search['radius'] ? Number(search['radius']) : undefined,
-            page: search['page'] ? Number(search['page']) : 1,
-            limit: 12
-        } as ProfileSearchParams;
+    validateSearch: searchParamsSchema,
+    loaderDeps: ({ search }) => ({
+        city: search.city,
+        instruments: search.instruments,
+        genres: search.genres,
+        availabilityStatus: search.availabilityStatus,
+        radius: search.radius,
+        page: search.page,
+        limit: search.limit,
+        showAll: search.showAll
+    }),
+    loader: async ({ deps }): Promise<LoaderResult> => {
+        const hasFilters = deps.city || deps.instruments?.length || deps.genres?.length || deps.availabilityStatus?.length;
+
+        if (!hasFilters && !deps.showAll) {
+            return { type: 'no-search' };
+        }
+
+        try {
+            const result = await searchProfiles({
+                data: {
+                    page: deps.page,
+                    limit: deps.limit,
+                    city: deps.city,
+                    instruments: deps.instruments,
+                    genres: deps.genres,
+                    availabilityStatus: deps.availabilityStatus,
+                    radius: deps.radius?.toString() as '5' | '10' | '25' | '50' | '100' | undefined
+                }
+            });
+
+            if (!result.success) {
+                return {
+                    type: 'error',
+                    message: result.body?.message ?? 'Failed to fetch search results'
+                };
+            }
+
+            return {
+                type: 'success',
+                data: result.body
+            };
+        } catch (err) {
+            return {
+                type: 'error',
+                message: err instanceof Error ? err.message : 'An unexpected error occurred'
+            };
+        }
     }
 });
 
 function MusiciansPage() {
     const searchParams = Route.useSearch();
+    const loaderData = Route.useLoaderData();
     const navigate = useNavigate();
 
     const [filters, setFilters] = useState<ProfileSearchParams>({
         page: searchParams.page || 1,
         limit: 12,
         city: searchParams.city,
-        instruments: searchParams.instruments,
-        genres: searchParams.genres,
-        availabilityStatus: searchParams.availabilityStatus,
+        instruments: searchParams.instruments as ProfileSearchParams['instruments'],
+        genres: searchParams.genres as ProfileSearchParams['genres'],
+        availabilityStatus: searchParams.availabilityStatus as ProfileSearchParams['availabilityStatus'],
         radius: searchParams.radius
     });
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [results, setResults] = useState<ProfileSearchResponse | null>(null);
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-    const [hasSearched, setHasSearched] = useState(false);
     const [filterSlot, setFilterSlot] = useState<HTMLElement | null>(null);
 
     const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
+
+    const results = loaderData.type === 'success' ? loaderData.data : null;
+    const error = loaderData.type === 'error' ? loaderData.message : null;
+    const hasSearched = loaderData.type !== 'no-search';
 
     useEffect(() => {
         setFilterSlot(document.getElementById('musicians-filters-slot'));
     }, []);
 
-    const handleSearch = useCallback(async () => {
+    const handleSearch = useCallback(() => {
         window.scrollTo(0, 0);
-        setIsLoading(true);
-        setError(null);
-        setHasSearched(true);
 
         navigate({
             to: '/musicians',
@@ -76,48 +131,26 @@ function MusiciansPage() {
                 availabilityStatus: filters.availabilityStatus,
                 radius: filters.radius,
                 page: filters.page,
-                limit: 12
+                limit: 12,
+                showAll: true
             },
             replace: true
         });
 
-        try {
-            const searchParams = {
-                ...filters,
-                radius: filters.radius?.toString() as '5' | '10' | '25' | '50' | '100' | undefined
-            };
-            const result = await searchProfiles({ data: searchParams });
-
-            if (!result.success) {
-                setError(result.body?.message ?? 'Failed to fetch search results');
-                setResults(null);
-            } else {
-                setResults(result.body);
-                setError(null);
-
-                setTimeout(() => {
-                    resultsHeadingRef.current?.focus();
-                }, 100);
-            }
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-            setResults(null);
-        } finally {
-            setIsLoading(false);
-        }
+        setTimeout(() => {
+            resultsHeadingRef.current?.focus();
+        }, 100);
     }, [filters, navigate]);
 
     const handleClearFilters = () => {
         setFilters({ page: 1, limit: 12 });
-        setResults(null);
-        setError(null);
-        setHasSearched(false);
 
         navigate({
             to: '/musicians',
             search: {
                 page: 1,
-                limit: 12
+                limit: 12,
+                showAll: false
             },
             replace: true
         });
@@ -126,22 +159,17 @@ function MusiciansPage() {
     const handlePageChange = (page: number) => {
         setFilters({ ...filters, page });
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        navigate({
+            to: '/musicians',
+            search: {
+                ...filters,
+                page,
+                limit: 12
+            },
+            replace: true
+        });
     };
-
-    useEffect(() => {
-        if (filters.page !== 1 && hasSearched) {
-            handleSearch();
-        }
-    }, [filters.page, hasSearched, handleSearch]);
-
-    useEffect(() => {
-        const hasUrlFilters = searchParams.city || searchParams.instruments?.length || searchParams.genres?.length || searchParams.availabilityStatus?.length;
-
-        if (hasUrlFilters && !hasSearched) {
-            handleSearch();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     const activeFilterCount = [
         filters.instruments && filters.instruments.length > 0,
@@ -158,7 +186,7 @@ function MusiciansPage() {
                     onFiltersChange={setFilters}
                     onSearch={handleSearch}
                     onClear={handleClearFilters}
-                    isLoading={isLoading}
+                    isLoading={false}
                     activeFilterCount={activeFilterCount}
                 />
             </CardContent>
@@ -198,7 +226,12 @@ function MusiciansPage() {
                     <Filter className="text-muted-foreground mb-4 h-16 w-16" />
                     <h2 className="mb-2 text-2xl font-semibold">
                         Find your next{' '}
-                        <WordRotate words={['drummer', 'guitarist', 'vocalist', 'bandmate']} duration={3000} className="text-primary inline-block" loop={false} />
+                        <WordRotate
+                            words={['drummer', 'guitarist', 'vocalist', 'bandmate']}
+                            duration={3000}
+                            className="text-primary inline-block"
+                            loop={false}
+                        />
                     </h2>
                     <p className="text-muted-foreground mb-6 max-w-md">
                         Use the filters to search for musicians by instrument, location, genre, and availability status.
@@ -209,15 +242,11 @@ function MusiciansPage() {
                 </div>
             )}
 
-            {isLoading && <ProfileSearchSkeleton />}
-
             {error && hasSearched && <ProfileSearchErrorState onRetry={handleSearch} error={error} />}
 
-            {!isLoading && !error && hasSearched && results && results.results.length === 0 && <ProfileSearchEmptyState onClearFilters={handleClearFilters} />}
+            {!error && hasSearched && results && results.results.length === 0 && <ProfileSearchEmptyState onClearFilters={handleClearFilters} />}
 
-            {!isLoading && !error && hasSearched && results && results.results.length > 0 && (
-                <ProfileSearchResults results={results} onPageChange={handlePageChange} />
-            )}
+            {!error && hasSearched && results && results.results.length > 0 && <ProfileSearchResults results={results} onPageChange={handlePageChange} />}
 
             <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
                 <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
@@ -229,7 +258,7 @@ function MusiciansPage() {
                             setIsFiltersOpen(false);
                         }}
                         onClear={handleClearFilters}
-                        isLoading={isLoading}
+                        isLoading={false}
                         activeFilterCount={activeFilterCount}
                     />
                 </SheetContent>

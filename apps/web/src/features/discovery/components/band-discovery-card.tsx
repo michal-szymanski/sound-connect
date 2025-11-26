@@ -1,7 +1,8 @@
-import { useNavigate } from '@tanstack/react-router';
-import { Users, Heart } from 'lucide-react';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { Users, UserPlus, MapPin } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar';
-import { AvatarCircles } from '@/shared/components/ui/avatar-circles';
+import { Badge } from '@/shared/components/ui/badge';
+import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/shared/components/ui/card';
 import { cn } from '@/shared/lib/utils';
 import type { BandDiscoveryResult } from '@sound-connect/common/types/band-discovery';
@@ -36,13 +37,12 @@ export function BandDiscoveryCard({ result, onCardClick }: Props) {
     };
 
     const topReasons = result.matchReasons.slice(0, 2);
-    const hasHighQualityMatch = result.matchScore >= 70;
+    const isHighQualityMatch = result.matchScore >= 70;
 
     return (
         <Card
             className={cn(
-                'group focus-visible:ring-ring relative w-full cursor-pointer overflow-hidden transition-all hover:scale-[1.01] hover:shadow-lg focus-visible:ring-2 focus-visible:outline-none',
-                hasHighQualityMatch && 'border-green-200 bg-green-50/30 dark:border-green-900 dark:bg-green-950/10'
+                'group focus-visible:ring-ring focus-visible:ring-offset-background cursor-pointer overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2'
             )}
             onClick={handleClick}
             onKeyDown={(e) => {
@@ -57,36 +57,45 @@ export function BandDiscoveryCard({ result, onCardClick }: Props) {
         >
             <div
                 className={cn(
-                    'pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300',
-                    hasHighQualityMatch && 'to-primary/10 bg-gradient-to-br from-green-500/10 via-transparent group-hover:opacity-100'
+                    'pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100',
+                    isHighQualityMatch
+                        ? 'to-primary/5 bg-gradient-to-br from-green-500/10 via-transparent'
+                        : 'from-primary/5 bg-gradient-to-br via-transparent to-transparent'
                 )}
             />
-            <CardHeader className="space-y-2 pb-3">
-                <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-3">
-                        <Avatar className="h-16 w-16 flex-shrink-0">
-                            <AvatarImage src={result.profileImageUrl || undefined} alt={result.name} />
-                            <AvatarFallback>{initials}</AvatarFallback>
-                        </Avatar>
-                        <h3 className="text-lg font-semibold">{result.name}</h3>
+            <CardHeader className="pb-3">
+                <div className="flex items-start gap-4">
+                    <Avatar className="ring-background h-20 w-20 flex-shrink-0 ring-2">
+                        <AvatarImage src={result.profileImageUrl || undefined} alt={result.name} />
+                        <AvatarFallback className="text-lg">{initials}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                            <h3 className="text-lg leading-tight font-semibold">{result.name}</h3>
+                            <MatchScoreBadge score={result.matchScore} />
+                        </div>
+                        <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                            {result.primaryGenre && (
+                                <Badge variant="secondary" className="text-xs">
+                                    {formatGenre(result.primaryGenre)}
+                                </Badge>
+                            )}
+                            {result.city && (
+                                <span className="flex items-center gap-1">
+                                    <MapPin className="h-3.5 w-3.5" />
+                                    {result.city}, {result.state}
+                                    <span className="text-muted-foreground/70">({Math.round(result.distanceMiles)} mi)</span>
+                                </span>
+                            )}
+                        </div>
                     </div>
-                    <MatchScoreBadge score={result.matchScore} />
-                </div>
-                <div className="text-muted-foreground flex flex-wrap items-center gap-2 text-sm">
-                    {result.primaryGenre && <span>{formatGenre(result.primaryGenre)}</span>}
-                    {result.primaryGenre && result.city && <span>•</span>}
-                    {result.city && (
-                        <span>
-                            {result.city}, {result.state} • {Math.round(result.distanceMiles)} mi
-                        </span>
-                    )}
                 </div>
             </CardHeader>
             <CardContent className="space-y-3 pb-3">
                 {topReasons.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                         {topReasons.map((reason, index) => (
-                            <MatchReasonTag key={index} reason={reason} />
+                            <MatchReasonTag key={index} reason={reason} result={result} />
                         ))}
                     </div>
                 )}
@@ -97,39 +106,22 @@ export function BandDiscoveryCard({ result, onCardClick }: Props) {
                     </div>
                 )}
             </CardContent>
-            <CardFooter className="text-muted-foreground justify-between text-sm">
-                <div className="flex items-center gap-2">
-                    {(() => {
-                        const membersWithImages = result.members?.filter((m) => m.profileImageUrl !== null && m.profileImageUrl !== '') || [];
-
-                        if (membersWithImages.length > 0) {
-                            return (
-                                <AvatarCircles
-                                    avatarUrls={membersWithImages.slice(0, 4).map((m) => ({
-                                        imageUrl: m.profileImageUrl!,
-                                        profileUrl: `/users/${m.id}`
-                                    }))}
-                                    numPeople={result.memberCount > 4 ? result.memberCount - 4 : undefined}
-                                />
-                            );
-                        }
-
-                        return (
-                            <>
-                                <Users className="h-4 w-4" />
-                                <span>
-                                    {result.memberCount} {result.memberCount === 1 ? 'member' : 'members'}
-                                </span>
-                            </>
-                        );
-                    })()}
-                </div>
-                <div className="flex items-center gap-1">
-                    <Heart className="h-4 w-4" />
-                    <span>
+            <CardFooter className="flex-col gap-3 pt-0">
+                <div className="text-muted-foreground flex w-full items-center justify-between text-sm">
+                    <span className="flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        {result.memberCount} {result.memberCount === 1 ? 'member' : 'members'}
+                    </span>
+                    <span className="flex items-center gap-1">
+                        <UserPlus className="h-4 w-4" />
                         {result.followerCount} {result.followerCount === 1 ? 'follower' : 'followers'}
                     </span>
                 </div>
+                <Button variant="default" size="sm" className="w-full" asChild>
+                    <Link to="/bands/$id" params={{ id: result.id.toString() }}>
+                        View Band
+                    </Link>
+                </Button>
             </CardFooter>
         </Card>
     );

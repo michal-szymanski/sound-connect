@@ -1,5 +1,6 @@
 import { UserDTO, userDTOSchema } from '@/common/types/models';
 import { postSchema } from '@/common/types/drizzle';
+import { fullProfileSchema } from '@sound-connect/common/types/profile';
 import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
 import { useState } from 'react';
 import z from 'zod';
@@ -24,8 +25,7 @@ import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, f
 import { getPosts } from '@/features/posts/server-functions/posts';
 import { getUser } from '@/shared/server-functions/users';
 import { useFollowUser, useUnfollowUser } from '@/shared/hooks/use-follow';
-import { useProfile } from '@/features/profile/hooks/use-profile';
-import { ProfileSkeleton } from '@/features/profile/components/profile-skeleton';
+import { getProfile } from '@/features/profile/server-functions/profile';
 import { InstrumentsSection } from '@/features/profile/components/instruments-section';
 import { GenresSection } from '@/features/profile/components/genres-section';
 import { AvailabilitySection } from '@/features/profile/components/availability-section';
@@ -42,7 +42,8 @@ import { FollowingModal } from '@/features/profile/components/following-modal';
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
     user: userDTOSchema,
-    posts: z.array(postSchema)
+    posts: z.array(postSchema),
+    profile: fullProfileSchema.nullable()
 });
 
 export const Route = createFileRoute('/(main)/users/$id')({
@@ -80,6 +81,9 @@ export const Route = createFileRoute('/(main)/users/$id')({
         const postsResult = await getPosts({ data: { userId } });
         const posts = postsResult.success ? postsResult.body : [];
 
+        const profileResult = await getProfile({ data: { userId } });
+        const profile = profileResult.success ? profileResult.body : null;
+
         await Promise.all([
             queryClient.ensureQueryData(followingsQuery(currentUser)),
             queryClient.ensureQueryData(followersQuery(user)),
@@ -87,17 +91,16 @@ export const Route = createFileRoute('/(main)/users/$id')({
             queryClient.ensureQueryData(followRequestStatusQuery(user.id))
         ]);
 
-        return loaderSchema.parse({ currentUser, user, posts });
+        return loaderSchema.parse({ currentUser, user, posts, profile });
     }
 });
 
 function RouteComponent() {
-    const { currentUser, user, posts } = loaderSchema.parse(Route.useLoaderData());
+    const { currentUser, user, posts, profile } = loaderSchema.parse(Route.useLoaderData());
     const { data: followings } = useFollowings(user);
     const { data: followers } = useFollowers(user);
     const { data: currentUserFollowings } = useFollowings(currentUser);
     const { data: followRequestStatus } = useFollowRequestStatus(user.id);
-    const { data: profile, isLoading: isProfileLoading } = useProfile(user.id);
     const { data: blockedUsers } = useBlockedUsers();
     const { mutate: blockUser, isPending: isBlocking } = useBlockUser();
     const { mutate: unblockUser, isPending: isUnblocking } = useUnblockUser();
@@ -328,9 +331,7 @@ function RouteComponent() {
                 </Card>
             )}
 
-            {isProfileLoading ? (
-                <ProfileSkeleton />
-            ) : profile ? (
+            {profile && (
                 <>
                     <InstrumentsSection data={profile.instruments} canEdit={isOwnProfile} id="instruments-section" />
                     <GenresSection data={profile.genres} canEdit={isOwnProfile} id="genres-section" />
@@ -340,7 +341,7 @@ function RouteComponent() {
                     <LookingForSection data={profile.lookingFor} canEdit={isOwnProfile} />
                     <BioSection data={profile.bio} canEdit={isOwnProfile} />
                 </>
-            ) : null}
+            )}
 
             <UserBandsSection userId={user.id} isOwnProfile={isOwnProfile} />
 

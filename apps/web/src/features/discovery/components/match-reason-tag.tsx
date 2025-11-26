@@ -1,12 +1,16 @@
 import { Guitar, Music, MapPin } from 'lucide-react';
 import { Badge } from '@/shared/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/components/ui/tooltip';
+import { cn } from '@/shared/lib/utils';
 import type { MatchReason } from '@sound-connect/common/types/band-discovery';
+import type { BandDiscoveryResult } from '@sound-connect/common/types/band-discovery';
 
 type Props = {
     reason: MatchReason;
+    result?: BandDiscoveryResult;
 };
 
-export function MatchReasonTag({ reason }: Props) {
+export function MatchReasonTag({ reason, result }: Props) {
     const getIcon = () => {
         switch (reason.type) {
             case 'instrument':
@@ -29,10 +33,30 @@ export function MatchReasonTag({ reason }: Props) {
         }
     };
 
+    const getReasonDescription = () => {
+        if (reason.type === 'instrument') {
+            return `They're looking for a ${reason.label.toLowerCase()} - your primary instrument!`;
+        }
+        if (reason.type === 'genre') {
+            return `You both play ${reason.label} music`;
+        }
+        if (reason.type === 'location' && result) {
+            return `Only ${Math.round(result.distanceMiles)} miles from your location`;
+        }
+        return reason.label;
+    };
+
     return (
-        <Badge variant="outline" className={`gap-1 ${getColorClass()}`}>
-            {getIcon()}
-            <span>{reason.label}</span>
-        </Badge>
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <Badge variant="outline" className={cn('gap-1 transition-all duration-200 hover:scale-105', getColorClass())}>
+                    {getIcon()}
+                    <span>{reason.label}</span>
+                </Badge>
+            </TooltipTrigger>
+            <TooltipContent className="z-tooltip">
+                <p className="text-xs">{getReasonDescription()}</p>
+            </TooltipContent>
+        </Tooltip>
     );
 }

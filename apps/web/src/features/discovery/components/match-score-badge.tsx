@@ -26,13 +26,7 @@ export function MatchScoreBadge({ score }: Props) {
     const isHighMatch = score >= 70;
 
     return (
-        <Badge
-            className={cn(
-                getColorClass(),
-                isHighMatch && 'shadow-[0_0_15px_rgba(34,197,94,0.5)] motion-safe:animate-pulse-slow'
-            )}
-            aria-label={getQualityLabel()}
-        >
+        <Badge className={cn(getColorClass(), isHighMatch && 'shadow-[0_0_20px_rgba(34,197,94,0.4)] ring-1 ring-green-500/30')} aria-label={getQualityLabel()}>
             <NumberTicker value={score} />% Match
         </Badge>
     );

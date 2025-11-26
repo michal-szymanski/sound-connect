@@ -114,13 +114,13 @@ function BandDiscoveryPage() {
                 <p className="text-muted-foreground mt-2">Bands looking for musicians like you</p>
             </div>
 
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-sm" aria-live="polite">
                 Showing {(page - 1) * 12 + 1}-{Math.min(page * 12, data.pagination.totalResults)} of {data.pagination.totalResults} matches
             </p>
 
             <div className="flex flex-col gap-4">
                 {data.bands.map((band, index) => (
-                    <BlurFade key={band.id} delay={0.1 + index * 0.05} inView>
+                    <BlurFade key={band.id} delay={0.05 + index * 0.03} inView className="motion-reduce:animate-none">
                         <BandDiscoveryCard result={band} onCardClick={() => handleCardClick(band.id, band.matchScore, index, data)} />
                     </BlurFade>
                 ))}

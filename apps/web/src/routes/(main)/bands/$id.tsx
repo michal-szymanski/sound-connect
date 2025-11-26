@@ -1,9 +1,9 @@
 import { createFileRoute, notFound, redirect, Link } from '@tanstack/react-router';
 import { useState } from 'react';
-import type { CreateBandInput, UpdateBandInput } from '@sound-connect/common/types/bands';
+import type { CreateBandInput, UpdateBandInput, BandWithMembers } from '@sound-connect/common/types/bands';
+import type { GetBandApplicationsResponse } from '@sound-connect/common/types/band-applications';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
-import { Skeleton } from '@/shared/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
 import {
@@ -24,12 +24,29 @@ import { BandPostComposer } from '@/features/bands/components/band-post-composer
 import { BandPostFeed } from '@/features/bands/components/band-post-feed';
 import { ApplyToBandButton } from '@/features/bands/components/apply-to-band-button';
 import { BandApplicationsList } from '@/features/bands/components/band-applications-list';
-import { useBand, useUpdateBand, useDeleteBand, useAddBandMember, useRemoveBandMember } from '@/features/bands/hooks/use-bands';
-import { useBandApplications, useUserApplicationStatus } from '@/features/bands/hooks/use-band-applications';
+import { useUpdateBand, useDeleteBand, useAddBandMember, useRemoveBandMember } from '@/features/bands/hooks/use-bands';
+import { getBand } from '@/features/bands/server-functions/bands';
+import { getBandApplications, getUserApplicationStatus } from '@/features/bands/server-functions/band-applications';
 import { useAuth } from '@/shared/lib/react-query';
 import { ProfileSection } from '@/features/profile/components/profile-section';
 import { Music2, Users, Search, AlertCircle, UserSearch, FileText } from 'lucide-react';
 import { Badge } from '@/shared/components/ui/badge';
+
+type LoaderSuccess = {
+    type: 'success';
+    data: {
+        band: BandWithMembers;
+        applications: GetBandApplicationsResponse | null;
+        applicationStatus: { hasApplied: boolean; isRejected: boolean } | null;
+    };
+};
+
+type LoaderError = {
+    type: 'error';
+    message: string;
+};
+
+type LoaderData = LoaderSuccess | LoaderError;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const Route = createFileRoute('/(main)/bands/$id' as any)({
@@ -42,22 +59,58 @@ export const Route = createFileRoute('/(main)/bands/$id' as any)({
             });
         }
     },
-    loader: async ({ params }: any) => {
+    loader: async ({ params, context }: any): Promise<LoaderData> => {
         const bandId = parseInt(params.id, 10);
         if (isNaN(bandId)) {
             throw notFound();
         }
-        return { bandId };
+
+        const bandResult = await getBand({ data: { bandId } });
+        if (!bandResult.success) {
+            return {
+                type: 'error',
+                message: bandResult.body?.message || 'Failed to load band'
+            };
+        }
+
+        const band = bandResult.body;
+        const isUserAdmin = band.isUserAdmin || false;
+
+        const [applicationsResult, applicationStatusResult] = await Promise.all([
+            isUserAdmin ? getBandApplications({ data: { bandId, status: 'pending', limit: 100 } }) : Promise.resolve(null),
+            !isUserAdmin ? getUserApplicationStatus({ data: { bandId } }) : Promise.resolve(null)
+        ]);
+
+        return {
+            type: 'success',
+            data: {
+                band,
+                applications: applicationsResult?.success ? applicationsResult.body : null,
+                applicationStatus: applicationStatusResult?.success ? applicationStatusResult.body : null
+            }
+        };
     }
 });
 
 function RouteComponent() {
-    const { bandId } = Route.useLoaderData();
-    const { data: band, isLoading, error } = useBand(bandId);
+    const loaderData = Route.useLoaderData();
     const { data: auth } = useAuth();
-    const isUserAdmin = band?.isUserAdmin || false;
-    const { data: applicationsData } = useBandApplications(bandId, 'pending', isUserAdmin);
-    const { data: applicationStatus } = useUserApplicationStatus(bandId);
+
+    if (loaderData.type === 'error') {
+        return (
+            <div className="w-full">
+                <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{loaderData.message}</AlertDescription>
+                </Alert>
+            </div>
+        );
+    }
+
+    const { band, applications, applicationStatus } = loaderData.data;
+    const bandId = band.id;
+    const isUserAdmin = band.isUserAdmin || false;
+
     const updateBand = useUpdateBand(bandId);
     const deleteBand = useDeleteBand();
     const addMember = useAddBandMember(bandId);
@@ -68,38 +121,7 @@ function RouteComponent() {
     const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-    const pendingApplicationsCount = applicationsData?.total || 0;
-
-    if (isLoading) {
-        return (
-            <div className="w-full space-y-6">
-                <Card>
-                    <CardContent className="p-6">
-                        <div className="flex gap-4">
-                            <Skeleton className="h-24 w-24 rounded-full" />
-                            <div className="flex-1 space-y-2">
-                                <Skeleton className="h-8 w-48" />
-                                <Skeleton className="h-4 w-32" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-                <Skeleton className="h-32 w-full" />
-                <Skeleton className="h-64 w-full" />
-            </div>
-        );
-    }
-
-    if (error || !band) {
-        return (
-            <div className="w-full">
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{error?.message || 'Band not found'}</AlertDescription>
-                </Alert>
-            </div>
-        );
-    }
+    const pendingApplicationsCount = applications?.total || 0;
 
     const isUserMember = auth?.user ? band.members.some((m) => m.userId === auth.user?.id) : false;
     const existingMemberIds = band.members.map((m) => m.userId);

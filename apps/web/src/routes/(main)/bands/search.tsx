@@ -1,7 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Filter } from 'lucide-react';
+import { z } from 'zod';
 import { Button } from '@/shared/components/ui/button';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { Sheet, SheetContent } from '@/shared/components/ui/sheet';
@@ -9,83 +10,151 @@ import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { BandSearchFilters } from '@/features/search/components/band-search/band-search-filters';
 import { BandSearchResults } from '@/features/search/components/band-search/band-search-results';
-import { BandSearchSkeleton } from '@/features/search/components/band-search/band-search-skeleton';
 import { BandSearchEmptyState } from '@/features/search/components/band-search/band-search-empty-state';
 import { BandSearchErrorState } from '@/features/search/components/band-search/band-search-error-state';
 import { searchBands } from '@/features/search/server-functions/band-search';
+import { GenreEnum } from '@sound-connect/common/types/profile-enums';
 import type { BandSearchParams, BandSearchResponse } from '@sound-connect/common/types/band-search';
 
+const searchParamsSchema = z.object({
+    genre: z.enum(GenreEnum).optional(),
+    city: z.string().optional(),
+    lookingFor: z.string().optional(),
+    radius: z.coerce.number().optional(),
+    page: z.coerce.number().default(1),
+    limit: z.coerce.number().default(12),
+    showAll: z.boolean().optional()
+});
+
+type LoaderResult = { type: 'success'; data: BandSearchResponse } | { type: 'no-search' } | { type: 'error'; message: string };
+
 export const Route = createFileRoute('/(main)/bands/search')({
-    component: BandSearchPage
+    component: BandSearchPage,
+    validateSearch: searchParamsSchema,
+    loaderDeps: ({ search }) => ({
+        genre: search.genre,
+        city: search.city,
+        lookingFor: search.lookingFor,
+        radius: search.radius,
+        page: search.page,
+        limit: search.limit,
+        showAll: search.showAll
+    }),
+    loader: async ({ deps }): Promise<LoaderResult> => {
+        const hasFilters = deps.genre || deps.city || deps.lookingFor;
+
+        if (!hasFilters && !deps.showAll) {
+            return { type: 'no-search' };
+        }
+
+        try {
+            const result = await searchBands({
+                data: {
+                    page: deps.page,
+                    limit: deps.limit,
+                    genre: deps.genre,
+                    city: deps.city,
+                    lookingFor: deps.lookingFor,
+                    radius: deps.radius?.toString() as '5' | '10' | '25' | '50' | '100' | undefined
+                }
+            });
+
+            if (!result.success) {
+                return {
+                    type: 'error',
+                    message: result.body?.message ?? 'Failed to fetch search results'
+                };
+            }
+
+            return {
+                type: 'success',
+                data: result.body
+            };
+        } catch (err) {
+            return {
+                type: 'error',
+                message: err instanceof Error ? err.message : 'An unexpected error occurred'
+            };
+        }
+    }
 });
 
 function BandSearchPage() {
+    const searchParams = Route.useSearch();
+    const loaderData = Route.useLoaderData();
+    const navigate = useNavigate();
+
     const [filters, setFilters] = useState<BandSearchParams>({
-        page: 1,
-        limit: 12
+        page: searchParams.page || 1,
+        limit: 12,
+        genre: searchParams.genre,
+        city: searchParams.city,
+        lookingFor: searchParams.lookingFor,
+        radius: searchParams.radius
     });
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [results, setResults] = useState<BandSearchResponse | null>(null);
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-    const [hasSearched, setHasSearched] = useState(false);
     const [filterSlot, setFilterSlot] = useState<HTMLElement | null>(null);
 
     const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
+
+    const results = loaderData.type === 'success' ? loaderData.data : null;
+    const error = loaderData.type === 'error' ? loaderData.message : null;
+    const hasSearched = loaderData.type !== 'no-search';
 
     useEffect(() => {
         setFilterSlot(document.getElementById('bands-filters-slot'));
     }, []);
 
-    const handleSearch = useCallback(async () => {
+    const handleSearch = useCallback(() => {
         window.scrollTo(0, 0);
-        setIsLoading(true);
-        setError(null);
-        setHasSearched(true);
 
-        try {
-            const searchParams = {
-                ...filters,
-                radius: filters.radius?.toString() as '5' | '10' | '25' | '50' | '100' | undefined
-            };
-            const result = await searchBands({ data: searchParams });
+        navigate({
+            to: '/bands/search',
+            search: {
+                genre: filters.genre,
+                city: filters.city,
+                lookingFor: filters.lookingFor,
+                radius: filters.radius,
+                page: filters.page,
+                limit: 12,
+                showAll: true
+            },
+            replace: true
+        });
 
-            if (!result.success) {
-                setError(result.body?.message ?? 'Failed to fetch search results');
-                setResults(null);
-            } else {
-                setResults(result.body);
-                setError(null);
-
-                setTimeout(() => {
-                    resultsHeadingRef.current?.focus();
-                }, 100);
-            }
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-            setResults(null);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [filters]);
+        setTimeout(() => {
+            resultsHeadingRef.current?.focus();
+        }, 100);
+    }, [filters, navigate]);
 
     const handleClearFilters = () => {
         setFilters({ page: 1, limit: 12 });
-        setResults(null);
-        setError(null);
-        setHasSearched(false);
+
+        navigate({
+            to: '/bands/search',
+            search: {
+                page: 1,
+                limit: 12,
+                showAll: false
+            },
+            replace: true
+        });
     };
 
     const handlePageChange = (page: number) => {
         setFilters({ ...filters, page });
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
 
-    useEffect(() => {
-        if (filters.page !== 1 && hasSearched) {
-            handleSearch();
-        }
-    }, [filters.page, hasSearched, handleSearch]);
+        navigate({
+            to: '/bands/search',
+            search: {
+                ...filters,
+                page,
+                limit: 12
+            },
+            replace: true
+        });
+    };
 
     const activeFilterCount = [filters.genre, filters.city, filters.lookingFor].filter(Boolean).length;
 
@@ -97,7 +166,7 @@ function BandSearchPage() {
                     onFiltersChange={setFilters}
                     onSearch={handleSearch}
                     onClear={handleClearFilters}
-                    isLoading={isLoading}
+                    isLoading={false}
                     activeFilterCount={activeFilterCount}
                 />
             </CardContent>
@@ -145,15 +214,11 @@ function BandSearchPage() {
                 </div>
             )}
 
-            {isLoading && <BandSearchSkeleton />}
-
             {error && hasSearched && <BandSearchErrorState onRetry={handleSearch} error={error} />}
 
-            {!isLoading && !error && hasSearched && results && results.results.length === 0 && <BandSearchEmptyState onClearFilters={handleClearFilters} />}
+            {!error && hasSearched && results && results.results.length === 0 && <BandSearchEmptyState onClearFilters={handleClearFilters} />}
 
-            {!isLoading && !error && hasSearched && results && results.results.length > 0 && (
-                <BandSearchResults results={results} onPageChange={handlePageChange} />
-            )}
+            {!error && hasSearched && results && results.results.length > 0 && <BandSearchResults results={results} onPageChange={handlePageChange} />}
 
             <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
                 <SheetContent side="bottom" className="h-[85vh] overflow-y-auto">
@@ -165,7 +230,7 @@ function BandSearchPage() {
                             setIsFiltersOpen(false);
                         }}
                         onClear={handleClearFilters}
-                        isLoading={isLoading}
+                        isLoading={false}
                         activeFilterCount={activeFilterCount}
                     />
                 </SheetContent>
