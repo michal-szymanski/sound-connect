@@ -1,98 +1,72 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useState, useEffect, useCallback } from 'react';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { z } from 'zod';
 import { Button } from '@/shared/components/ui/button';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { BlurFade } from '@/shared/components/ui/blur-fade';
 import { BandDiscoveryCard } from '@/features/discovery/components/band-discovery-card';
-import { BandDiscoveryCardSkeleton } from '@/features/discovery/components/band-discovery-card-skeleton';
 import { EmptyDiscoveryState } from '@/features/discovery/components/empty-discovery-state';
 import { useDiscoveryAnalytics } from '@/features/discovery/hooks/use-discovery-analytics';
 import { getBandDiscovery } from '@/features/discovery/server-functions/band-discovery';
 import type { BandDiscoveryResponse } from '@sound-connect/common/types/band-discovery';
 
+const bandDiscoverySearchSchema = z.object({
+    page: z.coerce.number().positive().int().catch(1).default(1)
+});
+
 export const Route = createFileRoute('/(main)/discover/bands')({
-    component: BandDiscoveryPage
+    component: BandDiscoveryPage,
+    validateSearch: bandDiscoverySearchSchema,
+    loaderDeps: ({ search }) => ({ page: search.page }),
+    loader: async ({ deps }) => {
+        const result = await getBandDiscovery({ data: { page: deps.page, limit: 12 } });
+
+        if (!result.success) {
+            return {
+                type: 'error' as const,
+                message: result.body?.message ?? 'Failed to fetch band recommendations'
+            };
+        }
+
+        const responseBody = result.body as BandDiscoveryResponse & {
+            profileStatus?: 'incomplete' | 'not_found';
+            missingFields?: string[];
+        };
+
+        if (responseBody.profileStatus === 'incomplete' || responseBody.profileStatus === 'not_found') {
+            return {
+                type: 'incomplete-profile' as const,
+                message: 'Please complete your profile to get personalized band recommendations'
+            };
+        }
+
+        return {
+            type: 'success' as const,
+            data: result.body
+        };
+    }
 });
 
 function BandDiscoveryPage() {
-    const [page, setPage] = useState(1);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [data, setData] = useState<BandDiscoveryResponse | null>(null);
-    const [isIncompleteProfile, setIsIncompleteProfile] = useState(false);
-
+    const loaderData = Route.useLoaderData();
+    const { page } = Route.useSearch();
+    const navigate = useNavigate({ from: Route.fullPath });
     const { trackCardClick, trackPagination } = useDiscoveryAnalytics();
 
-    const fetchDiscovery = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-
-        try {
-            const result = await getBandDiscovery({ data: { page, limit: 12 } });
-
-            if (!result.success) {
-                setError(result.body?.message ?? 'Failed to fetch band recommendations');
-                setData(null);
-            } else {
-                const responseBody = result.body as BandDiscoveryResponse & {
-                    profileStatus?: 'incomplete' | 'not_found';
-                    missingFields?: string[];
-                };
-
-                if (responseBody.profileStatus === 'incomplete' || responseBody.profileStatus === 'not_found') {
-                    setIsIncompleteProfile(true);
-                    setData(null);
-                } else {
-                    setData(result.body);
-                    setIsIncompleteProfile(false);
-                    setError(null);
-                }
-            }
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-            setData(null);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [page]);
-
-    useEffect(() => {
-        fetchDiscovery();
-    }, [fetchDiscovery]);
-
     const handlePageChange = (newPage: number) => {
-        setPage(newPage);
         trackPagination(newPage);
+        navigate({ search: { page: newPage } });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleCardClick = (bandId: number, matchScore: number, positionInFeed: number) => {
-        if (data) {
-            const band = data.bands[positionInFeed];
-            if (band) {
-                trackCardClick(bandId, matchScore, band.matchReasons, positionInFeed + 1);
-            }
+    const handleCardClick = (bandId: number, matchScore: number, positionInFeed: number, data: BandDiscoveryResponse) => {
+        const band = data.bands[positionInFeed];
+        if (band) {
+            trackCardClick(bandId, matchScore, band.matchReasons, positionInFeed + 1);
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen space-y-6">
-                <div>
-                    <h1 className="text-3xl font-bold">Discover Bands</h1>
-                    <p className="text-muted-foreground mt-2">Bands looking for musicians like you</p>
-                </div>
-                <div className="flex flex-col gap-4">
-                    {Array.from({ length: 12 }).map((_, i) => (
-                        <BandDiscoveryCardSkeleton key={i} />
-                    ))}
-                </div>
-            </div>
-        );
-    }
-
-    if (isIncompleteProfile) {
+    if (loaderData.type === 'incomplete-profile') {
         return (
             <div className="min-h-screen space-y-6">
                 <div>
@@ -104,7 +78,7 @@ function BandDiscoveryPage() {
         );
     }
 
-    if (error) {
+    if (loaderData.type === 'error') {
         return (
             <div className="min-h-screen space-y-6">
                 <div>
@@ -112,14 +86,16 @@ function BandDiscoveryPage() {
                     <p className="text-muted-foreground mt-2">Bands looking for musicians like you</p>
                 </div>
                 <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription>{loaderData.message}</AlertDescription>
                 </Alert>
-                <Button onClick={fetchDiscovery}>Retry</Button>
+                <Button onClick={() => navigate({ search: { page } })}>Retry</Button>
             </div>
         );
     }
 
-    if (!data || data.bands.length === 0) {
+    const data = loaderData.data;
+
+    if (data.bands.length === 0) {
         return (
             <div className="min-h-screen space-y-6">
                 <div>
@@ -145,7 +121,7 @@ function BandDiscoveryPage() {
             <div className="flex flex-col gap-4">
                 {data.bands.map((band, index) => (
                     <BlurFade key={band.id} delay={0.1 + index * 0.05} inView>
-                        <BandDiscoveryCard result={band} onCardClick={() => handleCardClick(band.id, band.matchScore, index)} />
+                        <BandDiscoveryCard result={band} onCardClick={() => handleCardClick(band.id, band.matchScore, index, data)} />
                     </BlurFade>
                 ))}
             </div>
