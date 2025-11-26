@@ -1,5 +1,6 @@
 import { useBandPosts } from '@/features/bands/hooks/use-bands';
 import { Post } from '@/features/posts/components/post';
+import { PostSkeleton } from '@/features/posts/components/post-skeleton';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Loader2, FileText } from 'lucide-react';
@@ -23,8 +24,10 @@ export function BandPostFeed({ bandId, onViewAbout }: Props) {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center py-12">
-                <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+            <div className="space-y-4">
+                <PostSkeleton />
+                <PostSkeleton />
+                <PostSkeleton />
             </div>
         );
     }

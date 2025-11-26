@@ -1,10 +1,9 @@
 import { UserDTO, userDTOSchema } from '@/common/types/models';
 import { postSchema } from '@/common/types/drizzle';
-import { useQueryClient } from '@tanstack/react-query';
-import { createFileRoute, notFound, redirect, useRouter } from '@tanstack/react-router';
-import { useState, useEffect } from 'react';
+import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
+import { useState } from 'react';
 import z from 'zod';
-import { MoreVertical, AlertCircle } from 'lucide-react';
+import { MoreVertical, AlertCircle, ChevronDown } from 'lucide-react';
 import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
@@ -23,7 +22,8 @@ import {
 import { availabilityStatusConfig } from '@/shared/lib/utils/availability';
 import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, followersQuery, followRequestStatusQuery } from '@/shared/lib/react-query';
 import { getPosts } from '@/features/posts/server-functions/posts';
-import { getUser, followUser, unfollowUser } from '@/shared/server-functions/users';
+import { getUser } from '@/shared/server-functions/users';
+import { useFollowUser, useUnfollowUser } from '@/shared/hooks/use-follow';
 import { useProfile } from '@/features/profile/hooks/use-profile';
 import { ProfileSkeleton } from '@/features/profile/components/profile-skeleton';
 import { InstrumentsSection } from '@/features/profile/components/instruments-section';
@@ -36,6 +36,8 @@ import { BioSection } from '@/features/profile/components/bio-section';
 import { UserBandsSection } from '@/features/bands/components/user-bands-section';
 import { useBlockedUsers, useBlockUser, useUnblockUser } from '@/features/settings/hooks/use-settings';
 import { MessageButton } from '@/features/chat/components/message-button';
+import { FollowersModal } from '@/features/profile/components/followers-modal';
+import { FollowingModal } from '@/features/profile/components/following-modal';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
@@ -99,65 +101,21 @@ function RouteComponent() {
     const { data: blockedUsers } = useBlockedUsers();
     const { mutate: blockUser, isPending: isBlocking } = useBlockUser();
     const { mutate: unblockUser, isPending: isUnblocking } = useUnblockUser();
-    const queryClient = useQueryClient();
-    const router = useRouter();
-    const [optimisticStatus, setOptimisticStatus] = useState<'pending' | 'following' | null>(null);
+    const followUserMutation = useFollowUser(user.id);
+    const unfollowUserMutation = useUnfollowUser(user.id);
     const [blockDialogOpen, setBlockDialogOpen] = useState(false);
     const [unblockDialogOpen, setUnblockDialogOpen] = useState(false);
+    const [followersModalOpen, setFollowersModalOpen] = useState(false);
+    const [followingModalOpen, setFollowingModalOpen] = useState(false);
     const isOwnProfile = currentUser.id === user.id;
     const isBlocked = blockedUsers?.some((u) => u.id === user.id) ?? false;
 
-    useEffect(() => {
-        if (followRequestStatus?.status === 'following') {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setOptimisticStatus('following');
-        } else if (followRequestStatus?.status === 'pending') {
-            setOptimisticStatus(null);
-        } else if (followRequestStatus?.status === 'none') {
-            setOptimisticStatus(null);
-        }
-    }, [followRequestStatus?.status]);
-
-    useEffect(() => {
-        const isCurrentUserFollowing = currentUserFollowings?.some((following) => following.id === user.id);
-        if (isCurrentUserFollowing) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setOptimisticStatus(null);
-        }
-    }, [currentUserFollowings, user.id]);
-
-    const handleFollow = async () => {
-        setOptimisticStatus('pending');
-
-        try {
-            const result = await followUser({ data: { userId: user.id } });
-
-            if (!result.success) {
-                setOptimisticStatus(null);
-                return;
-            }
-
-            queryClient.invalidateQueries({ queryKey: ['follow-request-status', user.id] });
-            router.invalidate();
-        } catch {
-            setOptimisticStatus(null);
-        }
+    const handleFollow = () => {
+        followUserMutation.mutate();
     };
 
-    const handleUnfollow = async () => {
-        setOptimisticStatus(null);
-
-        try {
-            const result = await unfollowUser({ data: { userId: user.id } });
-
-            if (!result.success) {
-                return;
-            }
-
-            router.invalidate();
-        } catch (error) {
-            console.error('Failed to unfollow user:', error);
-        }
+    const handleUnfollow = () => {
+        unfollowUserMutation.mutate();
     };
 
     const handleBlockClick = () => {
@@ -189,15 +147,25 @@ function RouteComponent() {
 
         const isCurrentUserFollowing = currentUserFollowings?.some((following) => following.id === user.id) ?? false;
 
-        if (isCurrentUserFollowing || optimisticStatus === 'following') {
+        if (isCurrentUserFollowing) {
             return (
-                <Button onClick={handleUnfollow} data-testid="following-button">
-                    Following
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button data-testid="following-button" className="gap-1">
+                            Following
+                            <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="z-popover">
+                        <DropdownMenuItem onClick={handleUnfollow} disabled={unfollowUserMutation.isPending}>
+                            {unfollowUserMutation.isPending ? 'Unfollowing...' : 'Unfollow'}
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             );
         }
 
-        if (followRequestStatus?.status === 'pending' || optimisticStatus === 'pending') {
+        if (followRequestStatus?.status === 'pending') {
             return (
                 <Button disabled variant="outline" data-testid="requested-button">
                     Requested
@@ -206,8 +174,8 @@ function RouteComponent() {
         }
 
         return (
-            <Button onClick={handleFollow} data-testid="follow-button">
-                Follow
+            <Button onClick={handleFollow} disabled={followUserMutation.isPending} data-testid="follow-button">
+                {followUserMutation.isPending ? 'Following...' : 'Follow'}
             </Button>
         );
     };
@@ -295,11 +263,17 @@ function RouteComponent() {
                             <span className="text-foreground font-semibold">{posts.length}</span>
                             <span className="text-muted-foreground ml-1">posts</span>
                         </button>
-                        <button className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2">
+                        <button
+                            onClick={() => setFollowersModalOpen(true)}
+                            className="focus-visible:ring-ring cursor-pointer rounded-sm outline-none hover:underline focus-visible:ring-2"
+                        >
                             <span className="text-foreground font-semibold">{followers.length}</span>
                             <span className="text-muted-foreground ml-1">followers</span>
                         </button>
-                        <button className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2">
+                        <button
+                            onClick={() => setFollowingModalOpen(true)}
+                            className="focus-visible:ring-ring cursor-pointer rounded-sm outline-none hover:underline focus-visible:ring-2"
+                        >
                             <span className="text-foreground font-semibold">{followings ? followings.length : 0}</span>
                             <span className="text-muted-foreground ml-1">following</span>
                         </button>
@@ -401,6 +375,10 @@ function RouteComponent() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            <FollowersModal followers={followers} open={followersModalOpen} onOpenChange={setFollowersModalOpen} />
+
+            <FollowingModal user={user} following={followings || []} open={followingModalOpen} onOpenChange={setFollowingModalOpen} />
         </div>
     );
 }

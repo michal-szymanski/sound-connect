@@ -25,9 +25,24 @@ mediaRoutes.put('/media', async (c) => {
     });
 });
 
-mediaRoutes.get('/media/:key', async (c) => {
-    const { key } = c.req.param();
+mediaRoutes.get('/media/*', async (c) => {
+    const fullPath = c.req.path;
+    const key = fullPath.replace('/api/media/', '');
+
+    console.log('[MEDIA GET] Request path:', fullPath);
+    console.log('[MEDIA GET] Extracted key:', key);
+
+    if (!key) {
+        throw new HTTPException(400, { message: 'Missing media key' });
+    }
+
     const r2Object = await c.env.ASSETS.get(key);
+
+    console.log('[MEDIA GET] R2 object found:', !!r2Object);
+    if (r2Object) {
+        console.log('[MEDIA GET] R2 object size:', r2Object.size);
+        console.log('[MEDIA GET] R2 object key:', r2Object.key);
+    }
 
     if (!r2Object) {
         throw new HTTPException(404, { message: 'Media not found' });
@@ -49,8 +64,14 @@ mediaRoutes.get('/media/:key', async (c) => {
     });
 });
 
-mediaRoutes.delete('/media/:key', async (c) => {
-    const { key } = c.req.param();
+mediaRoutes.delete('/media/*', async (c) => {
+    const fullPath = c.req.path;
+    const key = fullPath.replace('/api/media/', '');
+
+    if (!key) {
+        throw new HTTPException(400, { message: 'Missing media key' });
+    }
+
     await c.env.ASSETS.delete(key);
     return c.json({ success: true });
 });

@@ -11,11 +11,18 @@ import {
     unlikePost,
     getPostLikesData,
     getPostLikesUsers,
-    getPostById
+    getPostById,
+    updatePost,
+    deletePost,
+    getMediaByPostId,
+    deleteMediaByKeys,
+    deleteCommentReactionsByPostId,
+    deleteCommentsByPostId,
+    deletePostReactionsByPostId
 } from '@/api/db/queries/posts-queries';
 import { addMedia } from '@/api/db/queries/media-queries';
 import { isBandAdmin } from '@/api/db/queries/bands-queries';
-import { postQueueMessageSchema } from '@/common/types/posts';
+import { postQueueMessageSchema, createUserPostInputSchema } from '@/common/types/posts';
 
 const postsRoutes = new Hono<HonoContext>();
 
@@ -39,61 +46,25 @@ postsRoutes.get('/users/:userId/posts', async (c) => {
 });
 
 postsRoutes.post('/posts', async (c) => {
-    const form = await c.req.formData();
-
-    const { content, media } = z
-        .object({
-            content: z.string(),
-            media: z.array(z.instanceof(File)).optional()
-        })
-        .parse({
-            content: form.get('content'),
-            media: form.getAll('media')
-        });
-
     const user = c.get('user');
-    const postResults = await addPost(user.id, content);
 
-    if (!postResults) {
-        throw new HTTPException(500, { message: 'Failed to add post' });
-    }
+    const body = await c.req.json();
+    const data = createUserPostInputSchema.parse(body);
 
-    if (!media || !media.length) {
-        const queueMessage = postQueueMessageSchema.parse({
-            postId: postResults.id,
-            userId: user.id,
-            content,
-            mediaKeys: []
-        });
+    const post = await addPost(user.id, data);
 
-        await c.env.PostsQueue.send(queueMessage);
-
-        return c.json({ post: postResults, media: [] });
-    }
-
-    const mediaKeys = [];
-
-    for (const file of media) {
-        const key = crypto.randomUUID();
-        const uploadedFile = await c.env.ASSETS.put(key, file);
-
-        if (uploadedFile) {
-            mediaKeys.push(uploadedFile.key);
-        }
-    }
-
-    const mediaResults = await addMedia(postResults.id, mediaKeys);
+    const mediaKeys = data.media?.map((m) => m.key) ?? [];
 
     const queueMessage = postQueueMessageSchema.parse({
-        postId: postResults.id,
+        postId: post.id,
         userId: user.id,
-        content,
+        content: data.content,
         mediaKeys
     });
 
     await c.env.PostsQueue.send(queueMessage);
 
-    return c.json({ post: postResults, media: mediaResults });
+    return c.json(post, 201);
 });
 
 postsRoutes.get('/feed', async (c) => {
@@ -187,6 +158,100 @@ postsRoutes.get('/posts/:postId/likes/users', async (c) => {
 
     const likesUsers = await getPostLikesUsers(postId);
     return c.json(likesUsers);
+});
+
+postsRoutes.put('/posts/:postId', async (c) => {
+    const user = c.get('user');
+    const { postId } = z.object({ postId: z.coerce.number().positive() }).parse(c.req.param());
+
+    const post = await getPostById(postId);
+
+    if (!post) {
+        throw new HTTPException(404, { message: 'Post not found' });
+    }
+
+    let isAuthorized = false;
+    if (post.post.authorType === 'user' && post.post.userId === user.id) {
+        isAuthorized = true;
+    } else if (post.post.authorType === 'band' && post.post.bandId) {
+        const isAdmin = await isBandAdmin(post.post.bandId, user.id);
+        if (isAdmin) {
+            isAuthorized = true;
+        }
+    }
+
+    if (!isAuthorized) {
+        throw new HTTPException(403, { message: 'Not authorized to edit this post' });
+    }
+
+    const body = await c.req.json();
+    const { content, mediaKeysToKeep, newMediaKeys } = z
+        .object({
+            content: z.string().min(1).max(5000),
+            mediaKeysToKeep: z.array(z.string()).optional().default([]),
+            newMediaKeys: z.array(z.string()).optional().default([])
+        })
+        .parse(body);
+
+    await updatePost(postId, content);
+
+    const existingMedia = await getMediaByPostId(postId);
+    const mediaKeysToDelete = existingMedia.filter((m) => !mediaKeysToKeep.includes(m.key)).map((m) => m.key);
+
+    if (mediaKeysToDelete.length > 0) {
+        await deleteMediaByKeys(postId, mediaKeysToDelete);
+
+        for (const key of mediaKeysToDelete) {
+            await c.env.ASSETS.delete(key);
+        }
+    }
+
+    if (newMediaKeys.length > 0) {
+        await addMedia(postId, newMediaKeys);
+    }
+
+    const updatedPostFull = await getPostById(postId);
+
+    return c.json(updatedPostFull);
+});
+
+postsRoutes.delete('/posts/:postId', async (c) => {
+    const user = c.get('user');
+    const { postId } = z.object({ postId: z.coerce.number().positive() }).parse(c.req.param());
+
+    const post = await getPostById(postId);
+
+    if (!post) {
+        throw new HTTPException(404, { message: 'Post not found' });
+    }
+
+    let isAuthorized = false;
+    if (post.post.authorType === 'user' && post.post.userId === user.id) {
+        isAuthorized = true;
+    } else if (post.post.authorType === 'band' && post.post.bandId) {
+        const isAdmin = await isBandAdmin(post.post.bandId, user.id);
+        if (isAdmin) {
+            isAuthorized = true;
+        }
+    }
+
+    if (!isAuthorized) {
+        throw new HTTPException(403, { message: 'Not authorized to delete this post' });
+    }
+
+    await deleteCommentReactionsByPostId(postId);
+    await deleteCommentsByPostId(postId);
+    await deletePostReactionsByPostId(postId);
+
+    const media = await getMediaByPostId(postId);
+
+    for (const mediaItem of media) {
+        await c.env.ASSETS.delete(mediaItem.key);
+    }
+
+    await deletePost(postId);
+
+    return c.body(null, 204);
 });
 
 export { postsRoutes };

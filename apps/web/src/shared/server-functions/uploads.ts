@@ -64,7 +64,8 @@ export const uploadToPresignedUrl = async (uploadUrl: string, file: File, onProg
             reject(new Error('Upload cancelled'));
         });
 
-        xhr.open('PUT', uploadUrl);
+        xhr.open('POST', uploadUrl);
+        xhr.withCredentials = true;
         xhr.setRequestHeader('Content-Type', file.type);
         xhr.send(file);
     });

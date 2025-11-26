@@ -12,7 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as mainRouteRouteImport } from './routes/(main)/route'
 import { Route as authRouteRouteImport } from './routes/(auth)/route'
 import { Route as mainIndexRouteImport } from './routes/(main)/index'
-import { Route as MediaKeyRouteImport } from './routes/media/$key'
+import { Route as MediaSplatRouteImport } from './routes/media/$'
 import { Route as mainMusiciansRouteImport } from './routes/(main)/musicians'
 import { Route as mainSettingsIndexRouteImport } from './routes/(main)/settings/index'
 import { Route as mainMessagesIndexRouteImport } from './routes/(main)/messages/index'
@@ -43,9 +43,9 @@ const mainIndexRoute = mainIndexRouteImport.update({
   path: '/',
   getParentRoute: () => mainRouteRoute,
 } as any)
-const MediaKeyRoute = MediaKeyRouteImport.update({
-  id: '/media/$key',
-  path: '/media/$key',
+const MediaSplatRoute = MediaSplatRouteImport.update({
+  id: '/media/$',
+  path: '/media/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const mainMusiciansRoute = mainMusiciansRouteImport.update({
@@ -131,7 +131,7 @@ const mainBandsIdRoute = mainBandsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/musicians': typeof mainMusiciansRoute
-  '/media/$key': typeof MediaKeyRoute
+  '/media/$': typeof MediaSplatRoute
   '/': typeof mainIndexRoute
   '/bands/$id': typeof mainBandsIdRoute
   '/bands/new': typeof mainBandsNewRoute
@@ -151,7 +151,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/musicians': typeof mainMusiciansRoute
-  '/media/$key': typeof MediaKeyRoute
+  '/media/$': typeof MediaSplatRoute
   '/': typeof mainIndexRoute
   '/bands/$id': typeof mainBandsIdRoute
   '/bands/new': typeof mainBandsNewRoute
@@ -174,7 +174,7 @@ export interface FileRoutesById {
   '/(auth)': typeof authRouteRouteWithChildren
   '/(main)': typeof mainRouteRouteWithChildren
   '/(main)/musicians': typeof mainMusiciansRoute
-  '/media/$key': typeof MediaKeyRoute
+  '/media/$': typeof MediaSplatRoute
   '/(main)/': typeof mainIndexRoute
   '/(main)/bands/$id': typeof mainBandsIdRoute
   '/(main)/bands/new': typeof mainBandsNewRoute
@@ -196,7 +196,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/musicians'
-    | '/media/$key'
+    | '/media/$'
     | '/'
     | '/bands/$id'
     | '/bands/new'
@@ -216,7 +216,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/musicians'
-    | '/media/$key'
+    | '/media/$'
     | '/'
     | '/bands/$id'
     | '/bands/new'
@@ -238,7 +238,7 @@ export interface FileRouteTypes {
     | '/(auth)'
     | '/(main)'
     | '/(main)/musicians'
-    | '/media/$key'
+    | '/media/$'
     | '/(main)/'
     | '/(main)/bands/$id'
     | '/(main)/bands/new'
@@ -260,7 +260,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   authRouteRoute: typeof authRouteRouteWithChildren
   mainRouteRoute: typeof mainRouteRouteWithChildren
-  MediaKeyRoute: typeof MediaKeyRoute
+  MediaSplatRoute: typeof MediaSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -286,11 +286,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof mainIndexRouteImport
       parentRoute: typeof mainRouteRoute
     }
-    '/media/$key': {
-      id: '/media/$key'
-      path: '/media/$key'
-      fullPath: '/media/$key'
-      preLoaderRoute: typeof MediaKeyRouteImport
+    '/media/$': {
+      id: '/media/$'
+      path: '/media/$'
+      fullPath: '/media/$'
+      preLoaderRoute: typeof MediaSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(main)/musicians': {
@@ -465,7 +465,7 @@ const mainRouteRouteWithChildren = mainRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   authRouteRoute: authRouteRouteWithChildren,
   mainRouteRoute: mainRouteRouteWithChildren,
-  MediaKeyRoute: MediaKeyRoute,
+  MediaSplatRoute: MediaSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

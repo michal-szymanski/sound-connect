@@ -1,5 +1,6 @@
 import { feedItemSchema, postLikeDataSchema, userDTOSchema } from '@/common/types/models';
 import { postReactionSchema, postSchema } from '@/common/types/drizzle';
+import { createUserPostInputSchema } from '@sound-connect/common/types/posts';
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { apiErrorHandler, failure, success } from '@/shared/server-functions/helpers';
@@ -114,14 +115,15 @@ export const getReactions = createServerFn()
 
 export const addPost = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
-    .inputValidator(z.instanceof(FormData))
+    .inputValidator(createUserPostInputSchema)
     .handler(async ({ data, context: { env, auth } }) => {
         const response = await env.API.fetch(`${env.API_URL}/api/posts`, {
             method: 'POST',
             headers: {
+                'Content-Type': 'application/json',
                 ...(auth.cookie && { Cookie: auth.cookie })
             },
-            body: data,
+            body: JSON.stringify(data),
             credentials: 'include'
         });
 
@@ -264,4 +266,55 @@ export const getPost = createServerFn()
             console.error(error);
             return failure(null);
         }
+    });
+
+export const updatePost = createServerFn({ method: 'POST' })
+    .middleware([authMiddleware])
+    .inputValidator(
+        z.object({
+            postId: z.number(),
+            content: z.string().min(1).max(5000),
+            mediaKeysToKeep: z.array(z.string()).optional(),
+            newMediaKeys: z.array(z.string()).optional()
+        })
+    )
+    .handler(async ({ data, context: { env, auth } }) => {
+        const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
+            body: JSON.stringify({
+                content: data.content,
+                mediaKeysToKeep: data.mediaKeysToKeep,
+                newMediaKeys: data.newMediaKeys
+            }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await apiErrorHandler(response);
+        }
+
+        return success({});
+    });
+
+export const deletePost = createServerFn({ method: 'POST' })
+    .middleware([authMiddleware])
+    .inputValidator(z.object({ postId: z.number() }))
+    .handler(async ({ data, context: { env, auth } }) => {
+        const response = await env.API.fetch(`${env.API_URL}/api/posts/${data.postId}`, {
+            method: 'DELETE',
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return await apiErrorHandler(response);
+        }
+
+        return success({});
     });

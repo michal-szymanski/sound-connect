@@ -2,7 +2,7 @@ import { UserDTO, FeedItem } from '@/common/types/models';
 import { type User, type PostReaction } from '@/common/types/drizzle';
 import { queryOptions, useQuery, useSuspenseQuery, infiniteQueryOptions, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { getFeedPaginated, getReactions, getPost, likePost, unlikePost } from '../server-functions/posts';
+import { getFeedPaginated, getReactions, getPost, likePost, unlikePost, updatePost, deletePost } from '../server-functions/posts';
 import { getComments, createComment, likeComment, unlikeComment } from '../server-functions/comments';
 
 export const useReactions = ({ postId }: { postId: number }) =>
@@ -236,6 +236,91 @@ export const useCommentLikeToggle = (commentId: number, postId: number, _current
         },
         onError: () => {
             toast.error('Failed to update comment like status');
+        }
+    });
+};
+
+export const useUpdatePost = (postId: number, isBandPost: boolean) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ content, mediaKeysToKeep, newMediaKeys }: { content: string; mediaKeysToKeep?: string[]; newMediaKeys?: string[] }) => {
+            const result = await updatePost({ data: { postId, content, mediaKeysToKeep, newMediaKeys } });
+
+            if (!result.success) {
+                throw new Error('Failed to update post');
+            }
+
+            return result;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['feed-infinite'] });
+            queryClient.invalidateQueries({ queryKey: ['post', postId] });
+            if (isBandPost) {
+                queryClient.invalidateQueries({ queryKey: ['band-posts'] });
+            }
+            toast.success('Post updated successfully');
+        },
+        onError: (error) => {
+            toast.error(`Failed to update post: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    });
+};
+
+export const useDeletePost = (postId: number, isBandPost: boolean) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async () => {
+            const result = await deletePost({ data: { postId } });
+
+            if (!result.success) {
+                throw new Error('Failed to delete post');
+            }
+
+            return result;
+        },
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: ['feed-infinite'] });
+            await queryClient.cancelQueries({ queryKey: ['band-posts'] });
+
+            const previousFeedData = queryClient.getQueryData(['feed-infinite']);
+
+            queryClient.setQueryData(['feed-infinite'], (old: { pages: FeedItem[][]; pageParams: number[] } | undefined) => {
+                if (!old) return old;
+
+                return {
+                    ...old,
+                    pages: old.pages.map((page) => page.filter((item) => item.post.id !== postId))
+                };
+            });
+
+            queryClient.setQueriesData({ queryKey: ['band-posts'] }, (old: { pages: FeedItem[][]; pageParams: number[] } | undefined) => {
+                if (!old) return old;
+
+                return {
+                    ...old,
+                    pages: old.pages.map((page) => page.filter((item) => item.post.id !== postId))
+                };
+            });
+
+            return { previousFeedData };
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['feed-infinite'] });
+            queryClient.invalidateQueries({ queryKey: ['post', postId] });
+            if (isBandPost) {
+                queryClient.invalidateQueries({ queryKey: ['band-posts'] });
+            }
+            toast.success('Post deleted successfully');
+        },
+        onError: (error, _variables, context) => {
+            console.error('Delete mutation error:', error);
+            if (context?.previousFeedData) {
+                queryClient.setQueryData(['feed-infinite'], context.previousFeedData);
+            }
+            queryClient.invalidateQueries({ queryKey: ['band-posts'] });
+            toast.error(`Failed to delete post: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     });
 };

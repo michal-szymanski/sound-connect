@@ -15,6 +15,7 @@ import { useChat } from '@/shared/components/providers/chat-provider';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
 import { VirtualizedMessageList } from '@/features/chat/components/virtualized-message-list';
 import { MessageStatusIndicator } from '@/features/chat/components/message-status-indicator';
+import { MessageSkeleton } from '@/features/chat/components/message-skeleton';
 import { useChatMessages, useGetRoomId, useSendMessage, useMarkMessagesAsRead } from '@/features/chat/hooks/use-chat-queries';
 import { useMessagingContext } from './context';
 import { useDelayedLoading } from '@/web/hooks/use-delayed-loading';
@@ -184,9 +185,7 @@ function RouteComponent() {
 
             <div className="bg-muted/30 flex-1">
                 {shouldShowLoading ? (
-                    <div className="flex h-full items-center justify-center">
-                        <div className="text-muted-foreground text-sm">Loading messages...</div>
-                    </div>
+                    <MessageSkeleton />
                 ) : messages.length === 0 && !isInitialLoading ? (
                     <div className="flex h-full items-center justify-center">
                         <div className="text-muted-foreground text-sm">Start a conversation with {selectedPeer ? selectedPeer.name : selectedBand?.name}</div>

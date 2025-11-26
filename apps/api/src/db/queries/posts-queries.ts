@@ -6,8 +6,20 @@ import z from 'zod';
 import { db } from '../index';
 import { getDiscoveryPosts } from './discovery-feed-queries';
 import type { MatchReason } from '@sound-connect/common/types/band-discovery';
+import type { CreateUserPostInput } from '@sound-connect/common/types/posts';
 
-const { mediaTable, postsReactionsTable, postsTable, users, commentsTable, bandsTable, bandsFollowersTable, bandsMembersTable, usersFollowersTable, blockedUsersTable } = schema;
+const {
+    mediaTable,
+    postsReactionsTable,
+    postsTable,
+    users,
+    commentsTable,
+    bandsTable,
+    bandsFollowersTable,
+    bandsMembersTable,
+    usersFollowersTable,
+    blockedUsersTable
+} = schema;
 
 type FeedPostRow = {
     id: number;
@@ -135,10 +147,7 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
             .from(bandsFollowersTable)
             .where(eq(bandsFollowersTable.followerId, currentUserId));
 
-        const ownBands = await db
-            .select({ bandId: bandsMembersTable.bandId })
-            .from(bandsMembersTable)
-            .where(eq(bandsMembersTable.userId, currentUserId));
+        const ownBands = await db.select({ bandId: bandsMembersTable.bandId }).from(bandsMembersTable).where(eq(bandsMembersTable.userId, currentUserId));
 
         const followedUserIds = [...followedUsers.map((f) => f.userId), currentUserId].filter((id) => !blockedUserIds.includes(id));
         const followedBandIds = [...followedBands.map((f) => f.bandId), ...ownBands.map((b) => b.bandId)];
@@ -448,21 +457,42 @@ export const getReactions = async (postId: number) => {
     return schema.parse(results);
 };
 
-export const addPost = async (userId: string, content: string) => {
-    const results = await db
+export const addPost = async (userId: string, data: CreateUserPostInput) => {
+    const now = new Date().toISOString();
+
+    const [post] = await db
         .insert(postsTable)
         .values({
             authorType: 'user',
             userId,
             bandId: null,
-            content,
+            content: data.content,
             status: 'pending',
-            createdAt: new Date().toISOString()
+            createdAt: now,
+            updatedAt: null
         })
         .returning();
 
-    const [post] = z.array(postSchema).parse(results);
-    return post;
+    if (!post) {
+        throw new Error('Failed to create post');
+    }
+
+    if (data.media && data.media.length > 0) {
+        await db.insert(mediaTable).values(
+            data.media.map((m) => ({
+                postId: post.id,
+                type: m.type,
+                key: m.key
+            }))
+        );
+    }
+
+    const media = data.media ? await db.select().from(mediaTable).where(eq(mediaTable.postId, post.id)) : [];
+
+    return {
+        ...post,
+        media
+    };
 };
 
 export const likePost = async (userId: string, postId: number) => {
@@ -523,4 +553,72 @@ export const getPostLikesUsers = async (postId: number) => {
 
     const schema = z.array(userDTOSchema);
     return schema.parse(results);
+};
+
+export const updatePost = async (postId: number, content: string) => {
+    const [post] = await db
+        .update(postsTable)
+        .set({
+            content,
+            updatedAt: new Date().toISOString()
+        })
+        .where(eq(postsTable.id, postId))
+        .returning();
+
+    return postSchema.parse(post);
+};
+
+export const deletePost = async (postId: number) => {
+    await db.delete(postsTable).where(eq(postsTable.id, postId));
+};
+
+export const getMediaByPostId = async (postId: number) => {
+    const results = await db.select().from(mediaTable).where(eq(mediaTable.postId, postId));
+
+    const schema = z.array(
+        z.object({
+            id: z.number(),
+            postId: z.number(),
+            type: z.enum(['image', 'video']),
+            key: z.string()
+        })
+    );
+
+    return schema.parse(results);
+};
+
+export const deleteMediaByPostId = async (postId: number) => {
+    await db.delete(mediaTable).where(eq(mediaTable.postId, postId));
+};
+
+export const deleteMediaByKeys = async (postId: number, keys: string[]) => {
+    if (keys.length === 0) return;
+
+    await db.delete(mediaTable).where(
+        and(
+            eq(mediaTable.postId, postId),
+            sql`${mediaTable.key} IN (${sql.join(
+                keys.map((k) => sql`${k}`),
+                sql`, `
+            )})`
+        )
+    );
+};
+
+export const deleteCommentReactionsByPostId = async (postId: number) => {
+    const comments = await db.select({ id: commentsTable.id }).from(commentsTable).where(eq(commentsTable.postId, postId));
+
+    const commentIds = comments.map((c) => c.id);
+
+    if (commentIds.length === 0) return;
+
+    await db.delete(schema.commentsReactionsTable).where(inArray(schema.commentsReactionsTable.commentId, commentIds));
+};
+
+export const deleteCommentsByPostId = async (postId: number) => {
+    await db.delete(commentsTable).where(eq(commentsTable.postId, postId));
+};
+
+export const deletePostReactionsByPostId = async (postId: number) => {
+    await db.delete(postsReactionsTable).where(eq(postsReactionsTable.postId, postId));
 };

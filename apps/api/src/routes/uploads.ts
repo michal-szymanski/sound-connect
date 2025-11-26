@@ -78,7 +78,7 @@ uploadsRoutes.post('/uploads/presigned-url', async (c) => {
         expiresAt
     });
 
-    const uploadUrl = await generateUploadUrl(c.env.ASSETS, tempKey);
+    const uploadUrl = await generateUploadUrl(c.env.API_URL, sessionId);
 
     return c.json({
         uploadUrl,
@@ -170,7 +170,12 @@ uploadsRoutes.post('/uploads/confirm', async (c) => {
         permanentKey = `posts/pending/${data.sessionId}.${extension}`;
     }
 
+    console.log('[CONFIRM] Moving from temp:', session.tempKey);
+    console.log('[CONFIRM] Moving to permanent:', permanentKey);
+
     await moveR2Object(c.env.ASSETS, session.tempKey, permanentKey);
+
+    console.log('[CONFIRM] Move completed successfully');
 
     await confirmUploadSession(data.sessionId);
 
@@ -220,7 +225,13 @@ uploadsRoutes.post('/uploads/confirm-batch', async (c) => {
             const extension = session.fileName.split('.').pop() || 'bin';
             const permanentKey = `posts/pending/${sessionId}.${extension}`;
 
+            console.log('[CONFIRM-BATCH] Moving from temp:', session.tempKey);
+            console.log('[CONFIRM-BATCH] Moving to permanent:', permanentKey);
+
             await moveR2Object(c.env.ASSETS, session.tempKey, permanentKey);
+
+            console.log('[CONFIRM-BATCH] Move completed successfully');
+
             await confirmUploadSession(sessionId);
 
             const publicUrl = constructPublicUrl(permanentKey);

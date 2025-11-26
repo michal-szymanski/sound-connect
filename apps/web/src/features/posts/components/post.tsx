@@ -1,16 +1,20 @@
 import { FeedItem } from '@/common/types/models';
 import { Link } from '@tanstack/react-router';
-import { Heart, MoreHorizontal, MessageCircle, Share2, Sparkles } from 'lucide-react';
+import { Heart, MoreHorizontal, MessageCircle, Share2, Sparkles, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { LikesDialog } from '../index';
 import { PostModal } from './post-modal';
+import { PostDialog } from './post-dialog';
+import { DeletePostDialog } from './delete-post-dialog';
+import { MediaGrid } from './media-grid';
 import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardFooter } from '@/shared/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/shared/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/shared/components/ui/dropdown-menu';
 import { useLikeToggle } from '../hooks/use-posts';
-import { useFollowings, useAuth } from '@/shared/lib/react-query';
+import { useAuth } from '@/shared/lib/react-query';
 import { useElapsedTime } from '@/shared/lib/utils';
 import { useUserBands } from '@/features/bands/hooks/use-bands';
 
@@ -30,10 +34,12 @@ const formatContent = (content: string) => {
 export function Post({ item }: Props) {
     const { post, user, band, media, reactions, commentsCount } = item;
     const { data: auth } = useAuth();
-    const { data: followings } = useFollowings(auth?.user ?? null);
     const { data: userBands } = useUserBands(auth?.user?.id ?? '');
     const [isLikesDialogOpen, setIsLikesDialogOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
     const elapsedTime = useElapsedTime(post.createdAt);
 
     const isBandPost = post.authorType === 'band';
@@ -41,19 +47,52 @@ export function Post({ item }: Props) {
     const authorName = isBandPost ? (band?.name ?? 'Band') : (user?.name ?? 'User');
     const authorImage = isBandPost ? (band?.profileImageUrl ?? null) : (user?.image ?? null);
 
-    const canFollow = !isBandPost && auth?.user?.id !== post.userId && !followings.some((following) => following.id === post.userId);
-
     const isUserBandAdmin = isBandPost && post.bandId ? userBands?.bands.some((membership) => membership.id === post.bandId && membership.isAdmin) : false;
 
     const canLike = auth?.user && (isBandPost ? !isUserBandAdmin : auth.user.id !== post.userId);
 
     const isLiked = reactions.some((reaction) => reaction.userId === auth?.user?.id);
 
+    const canEdit = auth?.user && (isBandPost ? isUserBandAdmin : auth.user.id === post.userId);
+
+    const isEdited = post.updatedAt && post.updatedAt !== post.createdAt;
+
     const likeMutation = useLikeToggle(post.id, auth?.user ?? null);
 
     const handleLikeToggle = () => {
         if (!canLike || !auth?.user || likeMutation.isPending) return;
         likeMutation.mutate(isLiked);
+    };
+
+    const handleShare = async () => {
+        const postUrl = `${window.location.origin}/posts/${post.id}`;
+        const shareData = {
+            title: `Post by ${authorName}`,
+            text: post.content,
+            url: postUrl
+        };
+
+        if (typeof navigator.share !== 'undefined') {
+            try {
+                await navigator.share(shareData);
+            } catch (error) {
+                if (error instanceof Error && error.name !== 'AbortError') {
+                    toast.error('Could not share post');
+                }
+            }
+        } else {
+            try {
+                await navigator.clipboard.writeText(postUrl);
+                toast.success('Link copied to clipboard!');
+            } catch {
+                toast.error('Could not copy link');
+            }
+        }
+    };
+
+    const handleMediaClick = (index: number) => {
+        setLightboxIndex(index);
+        setIsModalOpen(true);
     };
 
     const username = isBandPost ? '' : (user?.name.toLowerCase().replace(/\s+/g, '') ?? '');
@@ -104,6 +143,7 @@ export function Post({ item }: Props) {
                         <span className="text-muted-foreground text-xs">
                             {!isBandPost && `@${username} · `}
                             {elapsedTime}
+                            {isEdited && <span className="text-muted-foreground"> · Edited</span>}
                         </span>
                     </div>
                 </div>
@@ -119,7 +159,19 @@ export function Post({ item }: Props) {
                                 View post
                             </Link>
                         </DropdownMenuItem>
-                        {canFollow && <DropdownMenuItem>Follow</DropdownMenuItem>}
+                        {canEdit && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)} className="text-destructive focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </DropdownMenuItem>
+                            </>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
@@ -129,13 +181,7 @@ export function Post({ item }: Props) {
                     dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
                 />
             </div>
-            {media && media.length > 0 && (
-                <div className="bg-muted relative aspect-video w-full cursor-pointer overflow-hidden" onClick={() => setIsModalOpen(true)}>
-                    {media.map((m) => (
-                        <img key={m.id} src={`/media/${m.key}`} alt={`Post media by ${authorName}`} className="h-full w-full object-cover" loading="lazy" />
-                    ))}
-                </div>
-            )}
+            {media && media.length > 0 && <MediaGrid media={media} onMediaClick={handleMediaClick} />}
             <CardFooter className="border-border/40 flex min-h-[52px] items-center justify-between border-t px-4 py-0">
                 <div className="flex items-center gap-2">
                     <Button
@@ -165,17 +211,15 @@ export function Post({ item }: Props) {
                     <span className="text-sm font-medium tabular-nums">{commentsCount}</span>
                 </div>
 
-                <div className="text-muted-foreground flex items-center gap-2">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] transition-colors"
-                        aria-label="Share post"
-                    >
-                        <Share2 className="h-5 w-5" aria-hidden="true" />
-                    </Button>
-                    <span className="text-sm font-medium tabular-nums">0</span>
-                </div>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleShare}
+                    className="text-muted-foreground hover:text-foreground min-h-[44px] min-w-[44px] transition-colors"
+                    aria-label="Share post"
+                >
+                    <Share2 className="h-5 w-5" aria-hidden="true" />
+                </Button>
             </CardFooter>
             <LikesDialog isOpen={isLikesDialogOpen} onClose={() => setIsLikesDialogOpen(false)} postId={post.id} />
             <PostModal
@@ -189,13 +233,16 @@ export function Post({ item }: Props) {
                     avatar: authorImage
                 }}
                 content={post.content}
-                image={media && media.length > 0 && media[0] ? `/media/${media[0].key}` : undefined}
+                media={media}
                 timestamp={elapsedTime}
                 likes={reactions.length}
                 shares={0}
                 isLiked={isLiked}
                 canLike={canLike ?? false}
+                initialMediaIndex={lightboxIndex}
             />
+            <PostDialog mode="edit" open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} post={post} existingMedia={media} isBandPost={isBandPost} />
+            <DeletePostDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen} postId={post.id} isBandPost={isBandPost} />
         </Card>
     );
 }

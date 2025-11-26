@@ -1,7 +1,8 @@
 const R2_PUBLIC_URL = 'https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev';
 
-export const generateUploadUrl = async (bucket: R2Bucket, key: string): Promise<string> => {
-    const uploadUrl = new URL(`${R2_PUBLIC_URL}/${key}`);
+export const generateUploadUrl = async (apiUrl: string, sessionId: string): Promise<string> => {
+    const uploadUrl = new URL(`${apiUrl}/api/uploads/upload`);
+    uploadUrl.searchParams.set('sessionId', sessionId);
     return uploadUrl.toString();
 };
 

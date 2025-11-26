@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { HTTPException } from 'hono/http-exception';
 import { HonoContext } from 'types';
 import { authMiddleware } from './middlewares';
@@ -21,6 +22,18 @@ import { onboardingRoutes } from '@/api/routes/onboarding';
 import * as Sentry from '@sentry/cloudflare';
 
 const app = new Hono<HonoContext>();
+
+app.use(
+    '*',
+    cors({
+        origin: (_, c) => c.env.CLIENT_URL,
+        allowHeaders: ['Content-Type', 'Authorization'],
+        allowMethods: ['POST', 'GET', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+        exposeHeaders: ['Content-Length'],
+        maxAge: 600,
+        credentials: true
+    })
+);
 
 app.use('*', authMiddleware);
 

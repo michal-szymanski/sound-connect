@@ -1,7 +1,7 @@
 export { Post } from './components/post';
 export { PostModal } from './components/post-modal';
 export { CommentItem } from './components/comment-item';
-export { default as AddPostDialog } from './components/add-post-dialog';
+export { PostDialog, PostDialogContent } from './components/post-dialog';
 export { default as LikesDialog } from './components/likes-dialog';
 export { PostSkeleton } from './components/post-skeleton';
 

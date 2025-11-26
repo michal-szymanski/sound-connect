@@ -6,6 +6,30 @@ import { useState } from 'react';
 import { useNotifications } from '@/features/notifications/providers/notifications-provider';
 import { deleteNotification, markAllNotificationsAsSeen } from '@/features/notifications/server-functions/notifications';
 import { formatDistanceToNow } from 'date-fns';
+import type { NotificationType } from '@sound-connect/common/types/drizzle';
+
+const getNotificationTypeLabel = (type: NotificationType): string => {
+    switch (type) {
+        case 'comment':
+            return 'New Comment';
+        case 'reaction':
+            return 'New Reaction';
+        case 'mention':
+            return 'Mentioned You';
+        case 'band_application_received':
+            return 'New Application';
+        case 'band_application_accepted':
+            return 'Application Accepted';
+        case 'band_application_rejected':
+            return 'Application Declined';
+        case 'follow_request':
+            return 'New Follower';
+        case 'follow_accepted':
+            return 'Follow Request Accepted';
+        default:
+            return 'Notification';
+    }
+};
 
 export function NotificationsButton() {
     const [open, setOpen] = useState(false);
@@ -72,7 +96,7 @@ export function NotificationsButton() {
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="min-w-0 flex-1">
                                             <p className="text-foreground mb-1 text-sm font-medium" data-testid="notification-type">
-                                                {notification.type === 'follow_request' ? 'New follower' : 'Notification'}
+                                                {getNotificationTypeLabel(notification.type)}
                                             </p>
                                             <p className="text-muted-foreground line-clamp-2 text-sm" data-testid="notification-content">
                                                 {notification.content}
