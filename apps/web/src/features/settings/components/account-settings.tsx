@@ -5,13 +5,16 @@ import { Label } from '@/shared/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Separator } from '@/shared/components/ui/separator';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
-import { Skeleton } from '@/shared/components/ui/skeleton';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useAccountInfo, useUpdateEmail, useUpdatePassword } from '@/features/settings/hooks/use-settings';
+import { useUpdateEmail, useUpdatePassword } from '@/features/settings/hooks/use-settings';
 import { updateEmailSchema, updatePasswordSchema } from '@sound-connect/common/types/settings';
+import type { AccountInfo } from '@sound-connect/common/types/settings';
 
-export function AccountSettings() {
-    const { data: accountInfo, isLoading } = useAccountInfo();
+type Props = {
+    accountInfo: AccountInfo;
+};
+
+export function AccountSettings({ accountInfo }: Props) {
     const updateEmailMutation = useUpdateEmail();
     const updatePasswordMutation = useUpdatePassword();
 
@@ -81,23 +84,6 @@ export function AccountSettings() {
         });
     };
 
-    if (isLoading) {
-        return (
-            <div className="space-y-6">
-                <Card>
-                    <CardHeader>
-                        <Skeleton className="h-6 w-32" />
-                        <Skeleton className="mt-2 h-4 w-64" />
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-24" />
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-6">
             <Card>
@@ -109,7 +95,7 @@ export function AccountSettings() {
                     <form onSubmit={handleEmailSubmit} className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="current-email">Current Email</Label>
-                            <Input id="current-email" type="email" value={accountInfo?.email || ''} disabled className="bg-muted" />
+                            <Input id="current-email" type="email" value={accountInfo.email} disabled className="bg-muted" />
                         </div>
 
                         <div className="space-y-2">
@@ -235,13 +221,11 @@ export function AccountSettings() {
                     <div className="space-y-1">
                         <Label className="text-muted-foreground">Account Created</Label>
                         <p className="font-medium">
-                            {accountInfo?.createdAt
-                                ? new Date(accountInfo.createdAt).toLocaleDateString('en-US', {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric'
-                                  })
-                                : 'N/A'}
+                            {new Date(accountInfo.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}
                         </p>
                     </div>
 
@@ -250,7 +234,7 @@ export function AccountSettings() {
                     <div className="space-y-1">
                         <Label className="text-muted-foreground">Last Active</Label>
                         <p className="font-medium">
-                            {accountInfo?.lastActiveAt
+                            {accountInfo.lastActiveAt
                                 ? new Date(accountInfo.lastActiveAt).toLocaleDateString('en-US', {
                                       year: 'numeric',
                                       month: 'long',

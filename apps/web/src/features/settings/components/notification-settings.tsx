@@ -1,39 +1,27 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Label } from '@/shared/components/ui/label';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Skeleton } from '@/shared/components/ui/skeleton';
 import { Separator } from '@/shared/components/ui/separator';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { Info } from 'lucide-react';
-import { useNotificationSettings, useUpdateNotificationSettings } from '@/features/settings/hooks/use-settings';
+import { useUpdateNotificationSettings } from '@/features/settings/hooks/use-settings';
 import type { NotificationSettings as NotificationSettingsType } from '@sound-connect/common/types/settings';
 
-export function NotificationSettings() {
-    const { data: settings, isLoading } = useNotificationSettings();
+type Props = {
+    notificationSettings: NotificationSettingsType;
+};
+
+export function NotificationSettings({ notificationSettings: initialSettings }: Props) {
     const updateSettings = useUpdateNotificationSettings();
+    const [settings, setSettings] = useState(initialSettings);
 
     const handleSettingChange = (key: keyof NotificationSettingsType, value: boolean) => {
+        setSettings((prev) => ({ ...prev, [key]: value }));
         updateSettings.mutate({ [key]: value });
     };
 
-    if (isLoading) {
-        return (
-            <div className="space-y-6">
-                <Card>
-                    <CardHeader>
-                        <Skeleton className="h-6 w-32" />
-                        <Skeleton className="mt-2 h-4 w-64" />
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
-
-    const emailEnabled = settings?.emailEnabled ?? true;
+    const emailEnabled = settings.emailEnabled;
 
     return (
         <div className="space-y-6">
@@ -70,7 +58,7 @@ export function NotificationSettings() {
                             </div>
                             <Checkbox
                                 id="follow-notifications"
-                                checked={settings?.followNotifications ?? true}
+                                checked={settings.followNotifications}
                                 onCheckedChange={(checked) => handleSettingChange('followNotifications', checked as boolean)}
                                 disabled={!emailEnabled || updateSettings.isPending}
                             />
@@ -83,7 +71,7 @@ export function NotificationSettings() {
                             </div>
                             <Checkbox
                                 id="comment-notifications"
-                                checked={settings?.commentNotifications ?? true}
+                                checked={settings.commentNotifications}
                                 onCheckedChange={(checked) => handleSettingChange('commentNotifications', checked as boolean)}
                                 disabled={!emailEnabled || updateSettings.isPending}
                             />
@@ -96,7 +84,7 @@ export function NotificationSettings() {
                             </div>
                             <Checkbox
                                 id="reaction-notifications"
-                                checked={settings?.reactionNotifications ?? true}
+                                checked={settings.reactionNotifications}
                                 onCheckedChange={(checked) => handleSettingChange('reactionNotifications', checked as boolean)}
                                 disabled={!emailEnabled || updateSettings.isPending}
                             />
@@ -109,7 +97,7 @@ export function NotificationSettings() {
                             </div>
                             <Checkbox
                                 id="mention-notifications"
-                                checked={settings?.mentionNotifications ?? true}
+                                checked={settings.mentionNotifications}
                                 onCheckedChange={(checked) => handleSettingChange('mentionNotifications', checked as boolean)}
                                 disabled={!emailEnabled || updateSettings.isPending}
                             />
@@ -122,7 +110,7 @@ export function NotificationSettings() {
                             </div>
                             <Checkbox
                                 id="band-application-notifications"
-                                checked={settings?.bandApplicationNotifications ?? true}
+                                checked={settings.bandApplicationNotifications}
                                 onCheckedChange={(checked) => handleSettingChange('bandApplicationNotifications', checked as boolean)}
                                 disabled={!emailEnabled || updateSettings.isPending}
                             />
@@ -135,7 +123,7 @@ export function NotificationSettings() {
                             </div>
                             <Checkbox
                                 id="band-response-notifications"
-                                checked={settings?.bandResponseNotifications ?? true}
+                                checked={settings.bandResponseNotifications}
                                 onCheckedChange={(checked) => handleSettingChange('bandResponseNotifications', checked as boolean)}
                                 disabled={!emailEnabled || updateSettings.isPending}
                             />

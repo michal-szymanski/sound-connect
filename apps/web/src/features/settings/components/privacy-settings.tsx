@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { Label } from '@/shared/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Skeleton } from '@/shared/components/ui/skeleton';
 import { Separator } from '@/shared/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/components/ui/avatar';
 import { Button } from '@/shared/components/ui/button';
@@ -17,20 +16,26 @@ import {
     AlertDialogHeader,
     AlertDialogTitle
 } from '@/shared/components/ui/alert-dialog';
-import { usePrivacySettings, useUpdatePrivacySettings, useBlockedUsers, useUnblockUser } from '@/features/settings/hooks/use-settings';
+import { useUpdatePrivacySettings, useUnblockUser } from '@/features/settings/hooks/use-settings';
 import { ProfileVisibilityEnum, MessagingPermissionEnum, FollowPermissionEnum } from '@sound-connect/common/types/settings';
-import type { PrivacySettings as PrivacySettingsType } from '@sound-connect/common/types/settings';
+import type { PrivacySettings as PrivacySettingsType, BlockedUser } from '@sound-connect/common/types/settings';
 
-export function PrivacySettings() {
-    const { data: settings, isLoading } = usePrivacySettings();
+type Props = {
+    privacySettings: PrivacySettingsType;
+    blockedUsers: BlockedUser[];
+};
+
+export function PrivacySettings({ privacySettings: initialSettings, blockedUsers: initialBlockedUsers }: Props) {
     const updateSettings = useUpdatePrivacySettings();
-    const { data: blockedUsers, isLoading: loadingBlocked } = useBlockedUsers();
     const unblockUserMutation = useUnblockUser();
 
     const [unblockDialogOpen, setUnblockDialogOpen] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [settings, setSettings] = useState(initialSettings);
+    const [blockedUsers, setBlockedUsers] = useState(initialBlockedUsers);
 
     const handleSettingChange = (key: keyof PrivacySettingsType, value: string | boolean) => {
+        setSettings((prev) => ({ ...prev, [key]: value }));
         updateSettings.mutate({ [key]: value });
     };
 
@@ -43,6 +48,7 @@ export function PrivacySettings() {
         if (selectedUserId) {
             unblockUserMutation.mutate(selectedUserId, {
                 onSuccess: () => {
+                    setBlockedUsers((prev) => prev.filter((user) => user.id !== selectedUserId));
                     setUnblockDialogOpen(false);
                     setSelectedUserId(null);
                 }
@@ -57,23 +63,6 @@ export function PrivacySettings() {
             .join(' ');
     };
 
-    if (isLoading) {
-        return (
-            <div className="space-y-6">
-                <Card>
-                    <CardHeader>
-                        <Skeleton className="h-6 w-32" />
-                        <Skeleton className="mt-2 h-4 w-64" />
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-6">
             <Card>
@@ -85,7 +74,7 @@ export function PrivacySettings() {
                     <div className="space-y-2">
                         <Label htmlFor="profile-visibility">Who can see your profile?</Label>
                         <Select
-                            value={settings?.profileVisibility || 'public'}
+                            value={settings.profileVisibility}
                             onValueChange={(value) => handleSettingChange('profileVisibility', value as (typeof ProfileVisibilityEnum)[number])}
                             disabled={updateSettings.isPending}
                         >
@@ -101,9 +90,9 @@ export function PrivacySettings() {
                             </SelectContent>
                         </Select>
                         <p className="text-muted-foreground text-sm">
-                            {settings?.profileVisibility === 'public' && 'Anyone can view your full profile'}
-                            {settings?.profileVisibility === 'followers_only' && 'Only your followers can view your full profile'}
-                            {settings?.profileVisibility === 'private' && 'Only you can view your full profile'}
+                            {settings.profileVisibility === 'public' && 'Anyone can view your full profile'}
+                            {settings.profileVisibility === 'followers_only' && 'Only your followers can view your full profile'}
+                            {settings.profileVisibility === 'private' && 'Only you can view your full profile'}
                         </p>
                     </div>
                 </CardContent>
@@ -122,7 +111,7 @@ export function PrivacySettings() {
                         </div>
                         <Checkbox
                             id="search-visibility"
-                            checked={settings?.searchVisibility ?? true}
+                            checked={settings.searchVisibility}
                             onCheckedChange={(checked) => handleSettingChange('searchVisibility', checked as boolean)}
                             disabled={updateSettings.isPending}
                         />
@@ -139,7 +128,7 @@ export function PrivacySettings() {
                     <div className="space-y-2">
                         <Label htmlFor="messaging-permission">Who can message you?</Label>
                         <Select
-                            value={settings?.messagingPermission || 'anyone'}
+                            value={settings.messagingPermission}
                             onValueChange={(value) => handleSettingChange('messagingPermission', value as (typeof MessagingPermissionEnum)[number])}
                             disabled={updateSettings.isPending}
                         >
@@ -155,9 +144,9 @@ export function PrivacySettings() {
                             </SelectContent>
                         </Select>
                         <p className="text-muted-foreground text-sm">
-                            {settings?.messagingPermission === 'anyone' && 'Anyone can send you messages'}
-                            {settings?.messagingPermission === 'followers' && 'Only your followers can send you messages'}
-                            {settings?.messagingPermission === 'none' && 'No one can send you new messages'}
+                            {settings.messagingPermission === 'anyone' && 'Anyone can send you messages'}
+                            {settings.messagingPermission === 'followers' && 'Only your followers can send you messages'}
+                            {settings.messagingPermission === 'none' && 'No one can send you new messages'}
                         </p>
                     </div>
 
@@ -166,7 +155,7 @@ export function PrivacySettings() {
                     <div className="space-y-2">
                         <Label htmlFor="follow-permission">Who can follow you?</Label>
                         <Select
-                            value={settings?.followPermission || 'anyone'}
+                            value={settings.followPermission}
                             onValueChange={(value) => handleSettingChange('followPermission', value as (typeof FollowPermissionEnum)[number])}
                             disabled={updateSettings.isPending}
                         >
@@ -182,9 +171,9 @@ export function PrivacySettings() {
                             </SelectContent>
                         </Select>
                         <p className="text-muted-foreground text-sm">
-                            {settings?.followPermission === 'anyone' && 'Anyone can follow you'}
-                            {settings?.followPermission === 'approval' && 'Follow requests require your approval'}
-                            {settings?.followPermission === 'none' && 'No one can follow you'}
+                            {settings.followPermission === 'anyone' && 'Anyone can follow you'}
+                            {settings.followPermission === 'approval' && 'Follow requests require your approval'}
+                            {settings.followPermission === 'none' && 'No one can follow you'}
                         </p>
                     </div>
                 </CardContent>
@@ -196,22 +185,7 @@ export function PrivacySettings() {
                     <CardDescription>Manage users you have blocked</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {loadingBlocked ? (
-                        <div className="space-y-4">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <Skeleton className="h-10 w-10 rounded-full" />
-                                        <div className="space-y-2">
-                                            <Skeleton className="h-4 w-32" />
-                                            <Skeleton className="h-3 w-24" />
-                                        </div>
-                                    </div>
-                                    <Skeleton className="h-9 w-20" />
-                                </div>
-                            ))}
-                        </div>
-                    ) : blockedUsers && blockedUsers.length > 0 ? (
+                    {blockedUsers.length > 0 ? (
                         <div className="space-y-4">
                             {blockedUsers.map((user) => (
                                 <div key={user.id} className="flex items-center justify-between py-2">
