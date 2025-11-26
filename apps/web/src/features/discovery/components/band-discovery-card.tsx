@@ -1,7 +1,9 @@
 import { useNavigate } from '@tanstack/react-router';
 import { Users, Heart } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/shared/components/ui/avatar';
+import { AvatarCircles } from '@/shared/components/ui/avatar-circles';
 import { Card, CardContent, CardFooter, CardHeader } from '@/shared/components/ui/card';
+import { cn } from '@/shared/lib/utils';
 import type { BandDiscoveryResult } from '@sound-connect/common/types/band-discovery';
 import { MatchScoreBadge } from './match-score-badge';
 import { MatchReasonTag } from './match-reason-tag';
@@ -38,9 +40,10 @@ export function BandDiscoveryCard({ result, onCardClick }: Props) {
 
     return (
         <Card
-            className={`group focus-visible:ring-ring w-full cursor-pointer overflow-hidden transition-all hover:scale-[1.01] hover:shadow-lg focus-visible:ring-2 focus-visible:outline-none ${
-                hasHighQualityMatch ? 'border-green-200 bg-green-50/30 dark:border-green-900 dark:bg-green-950/10' : ''
-            }`}
+            className={cn(
+                'group focus-visible:ring-ring relative w-full cursor-pointer overflow-hidden transition-all hover:scale-[1.01] hover:shadow-lg focus-visible:ring-2 focus-visible:outline-none',
+                hasHighQualityMatch && 'border-green-200 bg-green-50/30 dark:border-green-900 dark:bg-green-950/10'
+            )}
             onClick={handleClick}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -52,6 +55,12 @@ export function BandDiscoveryCard({ result, onCardClick }: Props) {
             role="button"
             aria-label={`View ${result.name} band profile. ${result.matchScore}% match.`}
         >
+            <div
+                className={cn(
+                    'pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300',
+                    hasHighQualityMatch && 'to-primary/10 bg-gradient-to-br from-green-500/10 via-transparent group-hover:opacity-100'
+                )}
+            />
             <CardHeader className="space-y-2 pb-3">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-3">
@@ -89,11 +98,31 @@ export function BandDiscoveryCard({ result, onCardClick }: Props) {
                 )}
             </CardContent>
             <CardFooter className="text-muted-foreground justify-between text-sm">
-                <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    <span>
-                        {result.memberCount} {result.memberCount === 1 ? 'member' : 'members'}
-                    </span>
+                <div className="flex items-center gap-2">
+                    {(() => {
+                        const membersWithImages = result.members?.filter((m) => m.profileImageUrl !== null && m.profileImageUrl !== '') || [];
+
+                        if (membersWithImages.length > 0) {
+                            return (
+                                <AvatarCircles
+                                    avatarUrls={membersWithImages.slice(0, 4).map((m) => ({
+                                        imageUrl: m.profileImageUrl!,
+                                        profileUrl: `/users/${m.id}`
+                                    }))}
+                                    numPeople={result.memberCount > 4 ? result.memberCount - 4 : undefined}
+                                />
+                            );
+                        }
+
+                        return (
+                            <>
+                                <Users className="h-4 w-4" />
+                                <span>
+                                    {result.memberCount} {result.memberCount === 1 ? 'member' : 'members'}
+                                </span>
+                            </>
+                        );
+                    })()}
                 </div>
                 <div className="flex items-center gap-1">
                     <Heart className="h-4 w-4" />

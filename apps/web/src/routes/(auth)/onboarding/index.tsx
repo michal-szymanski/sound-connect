@@ -320,7 +320,10 @@ function RouteComponent() {
                             <Button variant="outline" onClick={handleSkip} disabled={skipOnboardingMutation.isPending}>
                                 {skipOnboardingMutation.isPending ? 'Skipping...' : 'Skip for now'}
                             </Button>
-                            <Button onClick={handleNext}>Get Started</Button>
+                            <Button onClick={handleNext} className="group relative overflow-hidden">
+                                <span className="relative z-10">Get Started</span>
+                                <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent motion-safe:group-hover:animate-shimmer-sweep" />
+                            </Button>
                         </>
                     ) : currentStep === 7 ? (
                         <Button onClick={() => navigate({ to: redirect || '/' })} className="w-full">
@@ -340,8 +343,9 @@ function RouteComponent() {
                                     </Button>
                                 )}
                             </div>
-                            <Button onClick={handleNext} disabled={isContinueDisabled()}>
-                                {isPending() ? 'Saving...' : currentStep === 6 ? 'Finish' : 'Continue'}
+                            <Button onClick={handleNext} disabled={isContinueDisabled()} className="group relative overflow-hidden">
+                                <span className="relative z-10">{isPending() ? 'Saving...' : currentStep === 6 ? 'Finish' : 'Continue'}</span>
+                                <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent motion-safe:group-hover:animate-shimmer-sweep" />
                             </Button>
                         </>
                     )}

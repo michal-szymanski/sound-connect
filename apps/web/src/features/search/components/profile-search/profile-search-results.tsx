@@ -1,4 +1,5 @@
 import { Button } from '@/shared/components/ui/button';
+import { BlurFade } from '@/shared/components/ui/blur-fade';
 import { ProfileSearchCard } from './profile-search-card';
 import type { ProfileSearchResponse } from '@sound-connect/common/types/profile-search';
 
@@ -13,8 +14,10 @@ export function ProfileSearchResults({ results, onPageChange }: Props) {
     return (
         <div className="space-y-6">
             <div className="space-y-4">
-                {searchResults.map((result) => (
-                    <ProfileSearchCard key={result.userId} result={result} />
+                {searchResults.map((result, index) => (
+                    <BlurFade key={result.userId} delay={0.1 + index * 0.05} inView>
+                        <ProfileSearchCard result={result} />
+                    </BlurFade>
                 ))}
             </div>
 

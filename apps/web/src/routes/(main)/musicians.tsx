@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { Sheet, SheetContent } from '@/shared/components/ui/sheet';
 import { Badge } from '@/shared/components/ui/badge';
 import { Card, CardContent } from '@/shared/components/ui/card';
+import { WordRotate } from '@/shared/components/ui/word-rotate';
 import { ProfileSearchFilters } from '@/features/search/components/profile-search/profile-search-filters';
 import { ProfileSearchResults } from '@/features/search/components/profile-search/profile-search-results';
 import { ProfileSearchSkeleton } from '@/features/search/components/profile-search/profile-search-skeleton';
@@ -195,7 +196,10 @@ function MusiciansPage() {
             {!hasSearched && (
                 <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
                     <Filter className="text-muted-foreground mb-4 h-16 w-16" />
-                    <h2 className="mb-2 text-2xl font-semibold">Find Musicians</h2>
+                    <h2 className="mb-2 text-2xl font-semibold">
+                        Find your next{' '}
+                        <WordRotate words={['drummer', 'guitarist', 'vocalist', 'bandmate']} duration={3000} className="text-primary inline-block" loop={false} />
+                    </h2>
                     <p className="text-muted-foreground mb-6 max-w-md">
                         Use the filters to search for musicians by instrument, location, genre, and availability status.
                     </p>

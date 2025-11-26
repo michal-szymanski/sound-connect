@@ -1,15 +1,16 @@
 import { drizzle } from 'drizzle-orm/d1';
-import { eq, and, sql, isNotNull } from 'drizzle-orm';
+import { eq, and, sql, isNotNull, inArray, desc, asc } from 'drizzle-orm';
 import {
     bandsTable,
     bandsMembersTable,
     bandsFollowersTable,
     userProfilesTable,
     userAdditionalInstrumentsTable,
-    discoveryAnalyticsTable
+    discoveryAnalyticsTable,
+    users
 } from '@sound-connect/drizzle/schema';
 import { calculateHaversineDistance } from '@sound-connect/common/utils/geo';
-import type { BandDiscoveryParams, MatchReason } from '@sound-connect/common/types/band-discovery';
+import type { BandDiscoveryParams, MatchReason, BandMemberPreview } from '@sound-connect/common/types/band-discovery';
 import type { DiscoveryAnalyticsEvent } from '@sound-connect/common/types/band-discovery';
 
 type BandWithCounts = {
@@ -205,8 +206,47 @@ export const discoverBands = async (db: D1Database, userId: string, params: Band
 
     const totalPages = Math.ceil(total / params.limit);
 
+    const bandIds = paginatedBands.map((b) => b.id);
+
+    let membersByBand: Record<number, BandMemberPreview[]> = {};
+
+    if (bandIds.length > 0) {
+        const members = await drizzle(db)
+            .select({
+                bandId: bandsMembersTable.bandId,
+                userId: bandsMembersTable.userId,
+                name: users.name,
+                profileImageUrl: users.image
+            })
+            .from(bandsMembersTable)
+            .innerJoin(users, eq(bandsMembersTable.userId, users.id))
+            .where(inArray(bandsMembersTable.bandId, bandIds))
+            .orderBy(desc(bandsMembersTable.isAdmin), asc(bandsMembersTable.joinedAt));
+
+        membersByBand = members.reduce(
+            (acc, member) => {
+                const bandId = member.bandId;
+                if (!acc[bandId]) {
+                    acc[bandId] = [];
+                }
+                if (acc[bandId].length < 4) {
+                    acc[bandId].push({
+                        id: member.userId,
+                        name: member.name,
+                        profileImageUrl: member.profileImageUrl
+                    });
+                }
+                return acc;
+            },
+            {} as Record<number, BandMemberPreview[]>
+        );
+    }
+
     return {
-        bands: paginatedBands,
+        bands: paginatedBands.map((band) => ({
+            ...band,
+            members: membersByBand[band.id] || []
+        })),
         pagination: {
             currentPage: params.page,
             totalPages,

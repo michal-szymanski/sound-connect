@@ -9,6 +9,14 @@ export const matchReasonSchema = z.object({
 
 export type MatchReason = z.infer<typeof matchReasonSchema>;
 
+export const bandMemberPreviewSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    profileImageUrl: z.string().nullable()
+});
+
+export type BandMemberPreview = z.infer<typeof bandMemberPreviewSchema>;
+
 export const bandDiscoveryResultSchema = z.object({
     id: z.number(),
     name: z.string(),
@@ -22,7 +30,8 @@ export const bandDiscoveryResultSchema = z.object({
     matchScore: z.number(),
     matchReasons: z.array(matchReasonSchema),
     followerCount: z.number(),
-    memberCount: z.number()
+    memberCount: z.number(),
+    members: z.array(bandMemberPreviewSchema).optional()
 });
 
 export type BandDiscoveryResult = z.infer<typeof bandDiscoveryResultSchema>;

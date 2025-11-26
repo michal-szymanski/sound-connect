@@ -5,6 +5,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Progress } from '@/shared/components/ui/progress';
+import { cn } from '@/shared/lib/utils';
 import { availabilityStatusConfig } from '@/shared/lib/utils/availability';
 import type { ProfileSearchResult } from '@sound-connect/common/types/profile-search';
 import { useAuth } from '@/shared/lib/react-query';
@@ -47,9 +48,17 @@ export function ProfileSearchCard({ result }: Props) {
             .join(' ');
     };
 
+    const isActivelyLooking = result.status === 'actively_looking';
+
     return (
-        <Card className="w-full overflow-hidden transition-shadow hover:shadow-lg">
-            <CardContent className="p-4">
+        <Card className={cn('group relative w-full overflow-hidden transition-shadow hover:shadow-lg', isActivelyLooking && 'border-green-200/50 dark:border-green-900/50')}>
+            <div
+                className={cn(
+                    'pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300',
+                    isActivelyLooking && 'group-hover:opacity-100 bg-gradient-to-br from-green-500/5 via-transparent to-primary/5'
+                )}
+            />
+            <CardContent className="relative p-4">
                 <div className="flex gap-4">
                     <Avatar className="h-16 w-16 flex-shrink-0">
                         <AvatarImage src={result.image || undefined} alt={result.name} />

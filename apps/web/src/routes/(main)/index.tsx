@@ -57,7 +57,7 @@ function RouteComponent() {
                             <ProfileAvatar profile={userDTOSchema.parse(auth?.user)} type="user" />
                             <DialogTrigger asChild>
                                 <button className="border-input dark:bg-input/30 text-muted-foreground dark:hover:bg-accent h-12 flex-1 rounded-md border bg-transparent px-3 py-1 text-left text-sm font-normal shadow-xs hover:bg-transparent">
-                                    What's on your mind?
+                                    What&apos;s on your mind?
                                 </button>
                             </DialogTrigger>
                         </div>

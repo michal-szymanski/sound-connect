@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
+import { BlurFade } from '@/shared/components/ui/blur-fade';
 import { BandDiscoveryCard } from '@/features/discovery/components/band-discovery-card';
 import { BandDiscoveryCardSkeleton } from '@/features/discovery/components/band-discovery-card-skeleton';
 import { EmptyDiscoveryState } from '@/features/discovery/components/empty-discovery-state';
@@ -143,7 +144,9 @@ function BandDiscoveryPage() {
 
             <div className="flex flex-col gap-4">
                 {data.bands.map((band, index) => (
-                    <BandDiscoveryCard key={band.id} result={band} onCardClick={() => handleCardClick(band.id, band.matchScore, index)} />
+                    <BlurFade key={band.id} delay={0.1 + index * 0.05} inView>
+                        <BandDiscoveryCard result={band} onCardClick={() => handleCardClick(band.id, band.matchScore, index)} />
+                    </BlurFade>
                 ))}
             </div>
 
