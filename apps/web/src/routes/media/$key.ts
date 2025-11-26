@@ -8,7 +8,7 @@ export const Route = createFileRoute('/media/$key')({
                 const { API, API_URL } = env;
                 const { key } = params;
 
-                const response = await API.fetch(`${API_URL}/media/${key}`, {
+                const response = await API.fetch(`${API_URL}/api/media/${key}`, {
                     headers: request.headers
                 });
 

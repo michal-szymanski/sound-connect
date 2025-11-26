@@ -81,8 +81,8 @@ export function Post({ item }: Props) {
                             >
                                 {authorName}
                                 {item.isDiscovery && (
-                                    <Badge variant="outline" className="text-xs ml-1">
-                                        <Sparkles className="h-3 w-3 mr-1" />
+                                    <Badge variant="outline" className="ml-1 text-xs">
+                                        <Sparkles className="mr-1 h-3 w-3" />
                                         Suggested
                                     </Badge>
                                 )}
@@ -95,7 +95,7 @@ export function Post({ item }: Props) {
                                 </Link>
                                 {item.isDiscovery && (
                                     <Badge variant="outline" className="text-xs">
-                                        <Sparkles className="h-3 w-3 mr-1" />
+                                        <Sparkles className="mr-1 h-3 w-3" />
                                         Suggested
                                     </Badge>
                                 )}
