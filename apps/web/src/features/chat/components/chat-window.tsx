@@ -17,7 +17,7 @@ import { useDelayedLoading } from '@/web/hooks/use-delayed-loading';
 import { MessageStatusIndicator } from './message-status-indicator';
 import { formatTimestamp } from '@/features/chat/utils/format-timestamp';
 import { messageFormSchema, type MessageFormValues } from '@/features/chat/schemas/message-form';
-import { CHAT_MESSAGE_MAX_LENGTH } from '@/common/constants';
+import { appConfig } from '@sound-connect/common/app-config';
 
 type Props = {
     user: UserDTO;
@@ -311,7 +311,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                                     placeholder="Enter Message"
                                     onKeyDown={handleKeyDown}
                                     className="bg-background border-border flex-1 text-base md:text-sm"
-                                    maxLength={CHAT_MESSAGE_MAX_LENGTH}
+                                    maxLength={appConfig.chatMessageMaxLength}
                                     autoComplete="off"
                                 />
                                 <Button type="submit" size="icon" disabled={!textValue?.trim()} className="shrink-0">

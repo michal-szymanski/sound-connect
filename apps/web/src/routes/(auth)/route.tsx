@@ -3,7 +3,7 @@ import { VideoBackground } from '@/shared/components/common/video-background';
 import { Music } from 'lucide-react';
 import { memo } from 'react';
 import { useAnimateOnce } from '@/features/auth/hooks/use-animate-once';
-import { APP_NAME } from '@/common/constants';
+import { appConfig } from '@sound-connect/common/app-config';
 import ThemeToggle from '@/shared/components/common/theme-toggle';
 
 export const Route = createFileRoute('/(auth)')({
@@ -34,7 +34,7 @@ const AnimatedHeroContent = memo(function AnimatedHeroContent() {
                 <div className="bg-primary/20 rounded-full p-2 backdrop-blur-sm">
                     <Music className="text-primary h-5 w-5" aria-hidden="true" />
                 </div>
-                <span className="text-xl font-bold tracking-tight">{APP_NAME}</span>
+                <span className="text-xl font-bold tracking-tight">{appConfig.appName}</span>
             </div>
 
             <div className="space-y-3" aria-live="polite">

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CHAT_MESSAGE_MAX_LENGTH } from '@/common/constants';
+import { appConfig } from '@sound-connect/common/app-config';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -252,7 +252,7 @@ function RouteComponent() {
                         placeholder="Type a message..."
                         className="max-h-32 min-h-[44px] flex-1 resize-none"
                         disabled={(!selectedPeer && !selectedBand) || !roomId || !auth?.user}
-                        maxLength={CHAT_MESSAGE_MAX_LENGTH}
+                        maxLength={appConfig.chatMessageMaxLength}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();

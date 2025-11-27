@@ -1,5 +1,5 @@
 /// <reference types="vite/client" />
-import { APP_NAME } from '@/common/constants';
+import { appConfig } from '@sound-connect/common/app-config';
 import type { QueryClient } from '@tanstack/react-query';
 import { Outlet, createRootRouteWithContext, HeadContent, Scripts, useLocation } from '@tanstack/react-router';
 import { type ReactNode, useEffect } from 'react';
@@ -22,7 +22,7 @@ export const Route = createRootRouteWithContext<{
                 content: 'width=device-width, initial-scale=1'
             },
             {
-                title: APP_NAME
+                title: appConfig.appName
             }
         ],
         links: [

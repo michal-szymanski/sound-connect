@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { MAX_POST_MEDIA_COUNT } from '@sound-connect/common/constants';
+import { appConfig } from '@sound-connect/common/app-config';
 import { useBatchPresignedUpload } from '@/web/hooks/use-batch-presigned-upload';
 import { Button } from '@/shared/components/ui/button';
 import { Progress } from '@/shared/components/ui/progress';
@@ -20,7 +20,7 @@ type MediaPreview = {
 };
 
 export const PostMediaUpload = (props: Props) => {
-    const { onMediaKeysChange, maxFiles = MAX_POST_MEDIA_COUNT, className } = props;
+    const { onMediaKeysChange, maxFiles = appConfig.maxPostMediaCount, className } = props;
 
     const [previews, setPreviews] = useState<MediaPreview[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);

@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DialogDescription } from '@radix-ui/react-dialog';
-import { POST_TEXT_MAX_LENGTH, MAX_POST_MEDIA_COUNT } from '@sound-connect/common/constants';
+import { appConfig } from '@sound-connect/common/app-config';
 import type { Post, Media } from '@sound-connect/common/types/drizzle';
 import { useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
@@ -49,8 +49,8 @@ const formSchema = z.object({
     content: z
         .string()
         .min(1)
-        .refine((val) => getCharacterCount(val) <= POST_TEXT_MAX_LENGTH, {
-            message: `Post must be ${POST_TEXT_MAX_LENGTH} characters or less`
+        .refine((val) => getCharacterCount(val) <= appConfig.postTextMaxLength, {
+            message: `Post must be ${appConfig.postTextMaxLength} characters or less`
         })
 });
 
@@ -72,7 +72,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
         error: uploadError
     } = useBatchPresignedUpload({
         purpose: 'post-media',
-        maxFiles: MAX_POST_MEDIA_COUNT,
+        maxFiles: appConfig.maxPostMediaCount,
         onSuccess: (results) => {
             const keys = results.map((r) => r.key);
             setNewMediaKeys((prev) => [...prev, ...keys]);
@@ -124,8 +124,8 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
         const newCount = previews.filter((p) => !p.isExisting).length;
         const totalCount = existingCount + newCount + files.length;
 
-        if (totalCount > MAX_POST_MEDIA_COUNT) {
-            toast.error(`Maximum ${MAX_POST_MEDIA_COUNT} files allowed`);
+        if (totalCount > appConfig.maxPostMediaCount) {
+            toast.error(`Maximum ${appConfig.maxPostMediaCount} files allowed`);
             return;
         }
 
@@ -171,7 +171,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
     };
 
     const handleAddEmoji = (emoji: string) => {
-        if (getCharacterCount(form.getValues('content')) >= POST_TEXT_MAX_LENGTH) return;
+        if (getCharacterCount(form.getValues('content')) >= appConfig.postTextMaxLength) return;
 
         if (textareaRef.current) {
             insertAtCursor(textareaRef.current, emoji);
@@ -237,11 +237,11 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
     const isSubmitting = form.formState.isSubmitting || form.formState.isSubmitSuccessful;
     const isEditPending = mode === 'edit' && updateMutation?.isPending;
     const isDisabled = isSubmitting || isEditPending || isUploading;
-    const canAddMore = previews.length < MAX_POST_MEDIA_COUNT && !isUploading;
+    const canAddMore = previews.length < appConfig.maxPostMediaCount && !isUploading;
 
     const currentContentLength = getCharacterCount(form.watch('content'));
-    const isOverLimit = currentContentLength > POST_TEXT_MAX_LENGTH;
-    const isNearLimit = currentContentLength > POST_TEXT_MAX_LENGTH * 0.9;
+    const isOverLimit = currentContentLength > appConfig.postTextMaxLength;
+    const isNearLimit = currentContentLength > appConfig.postTextMaxLength * 0.9;
 
     const visiblePreviews = previews.filter((p) => !p.isExisting || !removedMediaKeys.includes(p.key!));
 
@@ -361,12 +361,12 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                             </Button>
                         </div>
                         <div className={clsx('text-sm tabular-nums', isOverLimit ? 'text-destructive' : 'text-muted-foreground')}>
-                            {currentContentLength} / {POST_TEXT_MAX_LENGTH}
+                            {currentContentLength} / {appConfig.postTextMaxLength}
                         </div>
                     </div>
 
                     <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-                        {isNearLimit && !isOverLimit && `${POST_TEXT_MAX_LENGTH - currentContentLength} characters remaining`}
+                        {isNearLimit && !isOverLimit && `${appConfig.postTextMaxLength - currentContentLength} characters remaining`}
                     </div>
 
                     {mode === 'create' ? (

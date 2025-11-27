@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import type { UploadPurpose } from '@sound-connect/common/types/uploads';
-import { MAX_IMAGE_SIZE, MAX_VIDEO_SIZE, ALLOWED_IMAGE_TYPES, ALLOWED_VIDEO_TYPES } from '@sound-connect/common/constants';
+import { appConfig } from '@sound-connect/common/app-config';
 import { usePresignedUpload } from '@/web/hooks/use-presigned-upload';
 import { Button } from '@/shared/components/ui/button';
 import { Progress } from '@/shared/components/ui/progress';
@@ -34,21 +34,21 @@ const validateFile = (file: File, purpose: UploadPurpose, maxSize?: number): Val
             };
         }
 
-        if (isImage && !ALLOWED_IMAGE_TYPES.includes(file.type as (typeof ALLOWED_IMAGE_TYPES)[number])) {
+        if (isImage && !appConfig.allowedImageTypes.includes(file.type as (typeof appConfig.allowedImageTypes)[number])) {
             return {
                 type: 'type',
                 message: 'Invalid image type. Use JPG, PNG, or WebP'
             };
         }
 
-        if (isVideo && !ALLOWED_VIDEO_TYPES.includes(file.type as (typeof ALLOWED_VIDEO_TYPES)[number])) {
+        if (isVideo && !appConfig.allowedVideoTypes.includes(file.type as (typeof appConfig.allowedVideoTypes)[number])) {
             return {
                 type: 'type',
                 message: 'Invalid video type. Use MP4, WebM, or MOV'
             };
         }
 
-        const maxFileSize = maxSize || (isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE);
+        const maxFileSize = maxSize || (isVideo ? appConfig.maxVideoSize : appConfig.maxImageSize);
         if (file.size > maxFileSize) {
             const maxSizeMB = Math.round(maxFileSize / (1024 * 1024));
             return {
@@ -64,14 +64,14 @@ const validateFile = (file: File, purpose: UploadPurpose, maxSize?: number): Val
             };
         }
 
-        if (!ALLOWED_IMAGE_TYPES.includes(file.type as (typeof ALLOWED_IMAGE_TYPES)[number])) {
+        if (!appConfig.allowedImageTypes.includes(file.type as (typeof appConfig.allowedImageTypes)[number])) {
             return {
                 type: 'type',
                 message: 'Invalid image type. Use JPG, PNG, or WebP'
             };
         }
 
-        const maxFileSize = maxSize || MAX_IMAGE_SIZE;
+        const maxFileSize = maxSize || appConfig.maxImageSize;
         if (file.size > maxFileSize) {
             const maxSizeMB = Math.round(maxFileSize / (1024 * 1024));
             return {

@@ -1,4 +1,4 @@
-import { APP_NAME_NORMALIZED } from '@/common/constants';
+import { appConfig } from '@sound-connect/common/app-config';
 import { UserDTO } from '@/common/types/models';
 import { useLocation } from '@tanstack/react-router';
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
@@ -31,7 +31,7 @@ export const useChatWindows = () => {
 
 type Props = React.PropsWithChildren;
 
-const STORAGE_KEY = `${APP_NAME_NORMALIZED}:chat-windows-state`;
+const STORAGE_KEY = `${appConfig.appNameNormalized}:chat-windows-state`;
 const MAX_INDIVIDUAL_CHATS = 5;
 
 type StoredChatState = {
