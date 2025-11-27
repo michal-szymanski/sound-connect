@@ -72,13 +72,7 @@ export const LogisticsSection = ({ data, canEdit, id }: Props) => {
                 <Label htmlFor="location">
                     Location <span className="text-destructive">*</span>
                 </Label>
-                <LocationAutocomplete
-                    id="location"
-                    value={selectedLocation}
-                    onChange={handleLocationChange}
-                    placeholder="Search for a city..."
-                    required
-                />
+                <LocationAutocomplete id="location" value={selectedLocation} onChange={handleLocationChange} placeholder="Search for a city..." required />
             </div>
 
             <div className="space-y-2">

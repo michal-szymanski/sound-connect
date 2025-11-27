@@ -322,7 +322,7 @@ function RouteComponent() {
                             </Button>
                             <Button onClick={handleNext} className="group relative overflow-hidden">
                                 <span className="relative z-10">Get Started</span>
-                                <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent motion-safe:group-hover:animate-shimmer-sweep" />
+                                <div className="motion-safe:group-hover:animate-shimmer-sweep pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                             </Button>
                         </>
                     ) : currentStep === 7 ? (
@@ -345,7 +345,7 @@ function RouteComponent() {
                             </div>
                             <Button onClick={handleNext} disabled={isContinueDisabled()} className="group relative overflow-hidden">
                                 <span className="relative z-10">{isPending() ? 'Saving...' : currentStep === 6 ? 'Finish' : 'Continue'}</span>
-                                <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent motion-safe:group-hover:animate-shimmer-sweep" />
+                                <div className="motion-safe:group-hover:animate-shimmer-sweep pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                             </Button>
                         </>
                     )}

@@ -51,11 +51,16 @@ export function ProfileSearchCard({ result }: Props) {
     const isActivelyLooking = result.status === 'actively_looking';
 
     return (
-        <Card className={cn('group relative w-full overflow-hidden transition-shadow hover:shadow-lg', isActivelyLooking && 'border-green-200/50 dark:border-green-900/50')}>
+        <Card
+            className={cn(
+                'group relative w-full overflow-hidden transition-shadow hover:shadow-lg',
+                isActivelyLooking && 'border-green-200/50 dark:border-green-900/50'
+            )}
+        >
             <div
                 className={cn(
                     'pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300',
-                    isActivelyLooking && 'group-hover:opacity-100 bg-gradient-to-br from-green-500/5 via-transparent to-primary/5'
+                    isActivelyLooking && 'to-primary/5 bg-gradient-to-br from-green-500/5 via-transparent group-hover:opacity-100'
                 )}
             />
             <CardContent className="relative p-4">

@@ -82,12 +82,7 @@ export function BandSearchFilters({ filters, onFiltersChange, onSearch, onClear,
 
                 <div>
                     <Label htmlFor="location">Location</Label>
-                    <LocationAutocomplete
-                        id="location"
-                        value={selectedLocation}
-                        onChange={handleLocationChange}
-                        placeholder="Search for a city..."
-                    />
+                    <LocationAutocomplete id="location" value={selectedLocation} onChange={handleLocationChange} placeholder="Search for a city..." />
                 </div>
 
                 <div>

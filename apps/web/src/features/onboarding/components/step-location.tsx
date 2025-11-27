@@ -33,13 +33,7 @@ export const StepLocation = ({ value, onChange }: Props) => {
                 <Label htmlFor="location">
                     Location <span className="text-destructive">*</span>
                 </Label>
-                <LocationAutocomplete
-                    id="location"
-                    value={selectedLocation}
-                    onChange={handleLocationChange}
-                    placeholder="Search for a city..."
-                    required
-                />
+                <LocationAutocomplete id="location" value={selectedLocation} onChange={handleLocationChange} placeholder="Search for a city..." required />
             </div>
         </div>
     );

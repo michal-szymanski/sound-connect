@@ -15,7 +15,7 @@ export const appConfig = {
     maxPostMediaCount: 5,
     presignedUrlExpiryMinutes: 15,
     allowedImageTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
-    allowedVideoTypes: ['video/mp4', 'video/webm', 'video/quicktime'],
+    allowedVideoTypes: ['video/mp4', 'video/webm', 'video/quicktime']
 } as const;
 
 export type AppConfig = typeof appConfig;

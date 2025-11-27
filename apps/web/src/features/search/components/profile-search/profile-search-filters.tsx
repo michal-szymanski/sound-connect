@@ -153,12 +153,7 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
 
                 <div>
                     <Label htmlFor="location">Location</Label>
-                    <LocationAutocomplete
-                        id="location"
-                        value={selectedLocation}
-                        onChange={handleLocationChange}
-                        placeholder="Search for a city..."
-                    />
+                    <LocationAutocomplete id="location" value={selectedLocation} onChange={handleLocationChange} placeholder="Search for a city..." />
                 </div>
 
                 <div>

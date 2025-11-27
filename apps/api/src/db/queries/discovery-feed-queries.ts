@@ -40,14 +40,6 @@ type BandProfile = {
     longitude: number | null;
 };
 
-type PostWithAuthor = {
-    postId: number;
-    postContent: string;
-    postCreatedAt: string;
-    authorProfile: UserProfile | BandProfile;
-    authorType: 'user' | 'band';
-};
-
 type ScoredPost = {
     postId: number;
     postContent: string;
@@ -206,15 +198,9 @@ export const getDiscoveryPosts = async (db: DrizzleD1Database<typeof schema>, us
         .from(userAdditionalInstrumentsTable)
         .where(eq(userAdditionalInstrumentsTable.userId, userId));
 
-    const blockedByUser = await db
-        .select({ blockedId: blockedUsersTable.blockedId })
-        .from(blockedUsersTable)
-        .where(eq(blockedUsersTable.blockerId, userId));
+    const blockedByUser = await db.select({ blockedId: blockedUsersTable.blockedId }).from(blockedUsersTable).where(eq(blockedUsersTable.blockerId, userId));
 
-    const blockedUser = await db
-        .select({ blockerId: blockedUsersTable.blockerId })
-        .from(blockedUsersTable)
-        .where(eq(blockedUsersTable.blockedId, userId));
+    const blockedUser = await db.select({ blockerId: blockedUsersTable.blockerId }).from(blockedUsersTable).where(eq(blockedUsersTable.blockedId, userId));
 
     const blockedUserIds = [...blockedByUser.map((b) => b.blockedId), ...blockedUser.map((b) => b.blockerId)];
 
@@ -223,15 +209,9 @@ export const getDiscoveryPosts = async (db: DrizzleD1Database<typeof schema>, us
         .from(usersFollowersTable)
         .where(eq(usersFollowersTable.userId, userId));
 
-    const followedBands = await db
-        .select({ bandId: bandsFollowersTable.bandId })
-        .from(bandsFollowersTable)
-        .where(eq(bandsFollowersTable.followerId, userId));
+    const followedBands = await db.select({ bandId: bandsFollowersTable.bandId }).from(bandsFollowersTable).where(eq(bandsFollowersTable.followerId, userId));
 
-    const ownBands = await db
-        .select({ bandId: bandsMembersTable.bandId })
-        .from(bandsMembersTable)
-        .where(eq(bandsMembersTable.userId, userId));
+    const ownBands = await db.select({ bandId: bandsMembersTable.bandId }).from(bandsMembersTable).where(eq(bandsMembersTable.userId, userId));
 
     const followedUserIds = followedUsers.map((f) => f.userId);
     const followedBandIds = [...followedBands.map((f) => f.bandId), ...ownBands.map((b) => b.bandId)];
@@ -328,13 +308,7 @@ export const getDiscoveryPosts = async (db: DrizzleD1Database<typeof schema>, us
         })
         .from(postsTable)
         .innerJoin(bandsTable, eq(postsTable.bandId, bandsTable.id))
-        .where(
-            and(
-                eq(postsTable.authorType, 'band'),
-                eq(postsTable.status, 'approved'),
-                sql`${postsTable.createdAt} > ${sevenDaysAgoISO}`
-            )
-        )
+        .where(and(eq(postsTable.authorType, 'band'), eq(postsTable.status, 'approved'), sql`${postsTable.createdAt} > ${sevenDaysAgoISO}`))
         .limit(100);
 
     const filteredBandPosts = candidateBandPosts.filter((post) => {
