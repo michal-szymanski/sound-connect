@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { geocodingCacheTable } from '@/drizzle/schema';
 import type { GeocodingLookupParams, GeocodingLookupResponse } from '@sound-connect/common/types/profile-search';
 import type { LocationSuggestion } from '@sound-connect/common/types/location';
+import { GeocodingCore } from '@mapbox/search-js-core';
 
 type NominatimResponse = {
     lat: string;
@@ -13,31 +14,6 @@ type NominatimResponse = {
         state?: string;
         country?: string;
     };
-};
-
-type MapboxSuggestion = {
-    mapbox_id: string;
-    name: string;
-    place_formatted: string;
-    context?: {
-        place?: {
-            name?: string;
-        };
-        region?: {
-            name?: string;
-        };
-        country?: {
-            name?: string;
-        };
-    };
-    coordinates?: {
-        longitude: number;
-        latitude: number;
-    };
-};
-
-type MapboxSuggestionResponse = {
-    suggestions: MapboxSuggestion[];
 };
 
 export async function geocodeCity(db: D1Database, params: GeocodingLookupParams): Promise<GeocodingLookupResponse | null> {
@@ -141,40 +117,43 @@ async function cacheGeocodingResult(db: D1Database, result: GeocodingLookupRespo
 
 export async function autocompleteLocation(query: string, accessToken: string): Promise<LocationSuggestion[]> {
     try {
-        const url = new URL('https://api.mapbox.com/search/searchbox/v1/suggest');
-        url.searchParams.set('q', query);
-        url.searchParams.set('access_token', accessToken);
-        url.searchParams.set('types', 'place,locality,city');
-        url.searchParams.set('limit', '5');
+        const geocode = new GeocodingCore({ accessToken });
 
-        const response = await fetch(url.toString());
+        const response = await geocode.suggest(query, {
+            types: 'place',
+            limit: 5
+        });
 
-        if (!response.ok) {
+        if (!response.features || response.features.length === 0) {
             return [];
         }
 
-        const data: MapboxSuggestionResponse = await response.json();
+        const suggestions: LocationSuggestion[] = response.features.map((feature) => {
+            const longitude = feature.geometry.coordinates[0];
+            const latitude = feature.geometry.coordinates[1];
 
-        const suggestions: LocationSuggestion[] = data.suggestions
-            .filter((suggestion) => suggestion.coordinates)
-            .map((suggestion) => {
-                const city = suggestion.context?.place?.name || suggestion.name;
-                const state = suggestion.context?.region?.name || null;
-                const country = suggestion.context?.country?.name || '';
+            const placeContext = feature.properties.context.place;
+            const regionContext = feature.properties.context.region;
+            const countryContext = feature.properties.context.country;
 
-                return {
-                    mapboxId: suggestion.mapbox_id,
-                    displayName: suggestion.place_formatted,
-                    city,
-                    state,
-                    country,
-                    latitude: suggestion.coordinates!.latitude,
-                    longitude: suggestion.coordinates!.longitude
-                };
-            });
+            const city = placeContext?.name || feature.properties.name;
+            const state = regionContext?.name || null;
+            const country = countryContext?.name || '';
+
+            return {
+                mapboxId: feature.properties.mapbox_id,
+                displayName: feature.properties.full_address,
+                city,
+                state,
+                country,
+                latitude,
+                longitude
+            };
+        }).filter((s): s is LocationSuggestion => s !== null);
 
         return suggestions;
-    } catch {
+    } catch (error) {
+        console.error('[Mapbox] Exception:', error);
         return [];
     }
 }
