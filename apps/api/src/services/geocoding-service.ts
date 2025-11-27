@@ -23,7 +23,7 @@ export async function autocompleteLocation(query: string, accessToken: string): 
                 const regionContext = feature.properties.context.region;
                 const countryContext = feature.properties.context.country;
 
-                const city = placeContext?.name || feature.properties.name;
+                const city = placeContext?.name || feature.properties.name_preferred || feature.properties.name;
                 const state = regionContext?.name || null;
                 const country = countryContext?.name || '';
 

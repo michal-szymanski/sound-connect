@@ -220,7 +220,7 @@ export const updateUserProfileLogistics = async (
     await getOrCreateUserProfile(userId);
 
     const updateData = {
-        city: data.city.trim().toLowerCase(),
+        city: data.city.trim(),
         state: data.state || null,
         country: data.country,
         latitude: data.latitude,
