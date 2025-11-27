@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { CHAT_MESSAGE_MAX_LENGTH } from '../constants';
+import { appConfig } from '../app-config';
 import { messageSchema } from './drizzle';
 
 export const sendBandMessageSchema = z.object({
-    content: z.string().min(1).max(CHAT_MESSAGE_MAX_LENGTH)
+    content: z.string().min(1).max(appConfig.chatMessageMaxLength)
 });
 
 export const chatHistoryResponseSchema = z.array(messageSchema);

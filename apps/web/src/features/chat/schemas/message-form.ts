@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { CHAT_MESSAGE_MAX_LENGTH } from '@/common/constants';
+import { appConfig } from '@sound-connect/common/app-config';
 
 export const messageFormSchema = z.object({
-    text: z.string().max(CHAT_MESSAGE_MAX_LENGTH)
+    text: z.string().max(appConfig.chatMessageMaxLength)
 });
 
 export type MessageFormValues = z.infer<typeof messageFormSchema>;

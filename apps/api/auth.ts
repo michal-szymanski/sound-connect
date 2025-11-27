@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 import { jwt, openAPI } from 'better-auth/plugins';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { schema } from '@/drizzle';
-import { APP_NAME_NORMALIZED, JWT_EXPIRATION_TIME_IN_SECONDS } from '@/common/constants';
+import { appConfig } from '@sound-connect/common/app-config';
 import { db } from '@/api/db';
 
 const queueVerificationEmail = async (email: string, verificationUrl: string, name: string, userId: string, queue: Queue) => {
@@ -44,15 +44,17 @@ const createAuthInstance = ({ queue, apiUrl, clientUrl, secret }: CreateAuthOpti
         trustedOrigins: [clientUrl],
         emailAndPassword: {
             enabled: true,
-            requireEmailVerification: true,
+            requireEmailVerification: appConfig.emailsEnabled,
             sendResetPassword: async ({ user, url }) => {
+                if (!appConfig.emailsEnabled) return;
                 await queuePasswordResetEmail(user.email, url, user.name, user.id, queue);
             }
         },
         emailVerification: {
-            sendOnSignUp: true,
+            sendOnSignUp: appConfig.emailsEnabled,
             autoSignInAfterVerification: true,
             sendVerificationEmail: async ({ user, url }) => {
+                if (!appConfig.emailsEnabled) return;
                 await queueVerificationEmail(user.email, url, user.name, user.id, queue);
             }
         },
@@ -70,7 +72,7 @@ const createAuthInstance = ({ queue, apiUrl, clientUrl, secret }: CreateAuthOpti
                 secure: true,
                 partitioned: true
             },
-            cookiePrefix: APP_NAME_NORMALIZED
+            cookiePrefix: appConfig.appNameNormalized
         },
         session: {
             cookieCache: {
@@ -82,7 +84,7 @@ const createAuthInstance = ({ queue, apiUrl, clientUrl, secret }: CreateAuthOpti
             openAPI(),
             jwt({
                 jwt: {
-                    expirationTime: `${JWT_EXPIRATION_TIME_IN_SECONDS}s`
+                    expirationTime: `${appConfig.jwtExpirationTimeInSeconds}s`
                 }
             })
         ]

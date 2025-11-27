@@ -3,6 +3,7 @@ import type { NotificationQueueMessage, SocialNotificationMessage } from '@sound
 import { db } from '../db';
 import { eq } from 'drizzle-orm';
 import { sendVerificationEmail, sendPasswordResetEmail } from './email-service';
+import { appConfig } from '@sound-connect/common/app-config';
 
 type UserSettingsRow = typeof userSettingsTable.$inferSelect;
 
@@ -110,6 +111,13 @@ const processSocialNotification = async (message: SocialNotificationMessage, env
 };
 
 export const processNotification = async (message: NotificationQueueMessage, env: CloudflareBindings): Promise<void> => {
+    if (message.type === 'email_verification' || message.type === 'password_reset') {
+        if (!appConfig.emailsEnabled) {
+            console.log('[EMAIL] Emails disabled by config, skipping');
+            return;
+        }
+    }
+
     if (message.type === 'email_verification') {
         console.log(`Processing email verification for user ${message.userId}`);
         await sendVerificationEmail(message, env.RESEND_API_KEY);

@@ -1,4 +1,4 @@
-import { APP_NAME_NORMALIZED, JWT_EXPIRATION_TIME_IN_SECONDS } from '@/common/constants';
+import { appConfig } from '@sound-connect/common/app-config';
 import { apiErrorSchema } from '@/common/types/api';
 import type { ServerFunctionError, ServerFunctionSuccess } from '@/common/types/server-functions';
 import { getCookie, getRequest, setCookie, setResponseHeader } from '@tanstack/react-start/server';
@@ -7,11 +7,11 @@ import { Session, sessionSchema, User, userSchema } from '@/common/types/drizzle
 import { AuthError } from '@/shared/types';
 
 const SECURE_PREFIX = '__Secure-';
-const SESSION_TOKEN_COOKIE_NAME = `${APP_NAME_NORMALIZED}.session_token`;
+const SESSION_TOKEN_COOKIE_NAME = `${appConfig.appNameNormalized}.session_token`;
 const SECURE_SESSION_TOKEN_COOKIE_NAME = `${SECURE_PREFIX}${SESSION_TOKEN_COOKIE_NAME}`;
-const SESSION_DATA_COOKIE_NAME = `${APP_NAME_NORMALIZED}.session_data`;
+const SESSION_DATA_COOKIE_NAME = `${appConfig.appNameNormalized}.session_data`;
 const SECURE_SESSION_DATA_COOKIE_NAME = `${SECURE_PREFIX}${SESSION_DATA_COOKIE_NAME}`;
-const ACCESS_TOKEN_COOKIE_NAME = `${APP_NAME_NORMALIZED}.access_token`;
+const ACCESS_TOKEN_COOKIE_NAME = `${appConfig.appNameNormalized}.access_token`;
 const SECURE_ACCESS_TOKEN_COOKIE_NAME = `${SECURE_PREFIX}${ACCESS_TOKEN_COOKIE_NAME}`;
 
 type SessionData = {
@@ -144,7 +144,7 @@ const setAccessTokenCookie = (accessToken?: string) => {
     }
 
     setCookie(SECURE_ACCESS_TOKEN_COOKIE_NAME, accessToken, {
-        maxAge: JWT_EXPIRATION_TIME_IN_SECONDS - 1,
+        maxAge: appConfig.jwtExpirationTimeInSeconds - 1,
         path: '/',
         httpOnly: true,
         secure: true,

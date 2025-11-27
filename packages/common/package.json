@@ -5,7 +5,7 @@
     "main": "./src",
     "exports": {
         ".": "./src",
-        "./constants": "./src/constants.ts",
+        "./app-config": "./src/app-config.ts",
         "./helpers": "./src/helpers.ts",
         "./types/models": "./src/types/models.ts",
         "./types/auth": "./src/types/auth.ts",

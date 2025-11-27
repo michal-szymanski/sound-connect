@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { HonoContext } from 'types';
 import { presignedUrlRequestSchema, uploadConfirmRequestSchema, batchConfirmRequestSchema } from '@sound-connect/common/types/uploads';
-import { ALLOWED_IMAGE_TYPES, ALLOWED_VIDEO_TYPES, MAX_IMAGE_SIZE, MAX_VIDEO_SIZE, PRESIGNED_URL_EXPIRY_MINUTES } from '@sound-connect/common/constants';
+import { appConfig } from '@sound-connect/common/app-config';
 import { isBandAdmin } from '@/api/db/queries/bands-queries';
 import {
     createUploadSession,
@@ -29,17 +29,17 @@ uploadsRoutes.post('/uploads/presigned-url', async (c) => {
     const body = await c.req.json();
     const data = presignedUrlRequestSchema.parse(body);
 
-    const allowedTypes = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES];
+    const allowedTypes = [...appConfig.allowedImageTypes, ...appConfig.allowedVideoTypes];
     if (!allowedTypes.includes(data.fileType as never)) {
         throw new HTTPException(400, {
             message: `Invalid file type. Allowed types: ${allowedTypes.join(', ')}`
         });
     }
 
-    const isImage = ALLOWED_IMAGE_TYPES.includes(data.fileType as never);
-    const isVideo = ALLOWED_VIDEO_TYPES.includes(data.fileType as never);
+    const isImage = appConfig.allowedImageTypes.includes(data.fileType as never);
+    const isVideo = appConfig.allowedVideoTypes.includes(data.fileType as never);
 
-    const maxSize = isImage ? MAX_IMAGE_SIZE : isVideo ? MAX_VIDEO_SIZE : 0;
+    const maxSize = isImage ? appConfig.maxImageSize : isVideo ? appConfig.maxVideoSize : 0;
 
     if (data.fileSize > maxSize) {
         throw new HTTPException(400, {
@@ -64,7 +64,7 @@ uploadsRoutes.post('/uploads/presigned-url', async (c) => {
     const timestamp = Date.now();
     const tempKey = `temp/${user.id}/${timestamp}-${sessionId}.${extension}`;
 
-    const expiresAt = new Date(Date.now() + PRESIGNED_URL_EXPIRY_MINUTES * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + appConfig.presignedUrlExpiryMinutes * 60 * 1000).toISOString();
 
     await createUploadSession({
         id: sessionId,

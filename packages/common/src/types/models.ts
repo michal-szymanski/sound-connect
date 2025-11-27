@@ -1,4 +1,4 @@
-import { CHAT_MESSAGE_MAX_LENGTH } from '../constants';
+import { appConfig } from '../app-config';
 import z from 'zod';
 import {
     userDTOSchema,
@@ -34,7 +34,7 @@ export type OnlineStatusMessage = z.infer<typeof onlineStatusMessageSchema>;
 export const chatMessageSchema = z.object({
     id: z.string().uuid(),
     type: z.literal(webSocketMessageTypes.enum.chat),
-    content: z.string().max(CHAT_MESSAGE_MAX_LENGTH),
+    content: z.string().max(appConfig.chatMessageMaxLength),
     roomId: z.string(),
     senderId: z.string(),
     senderName: z.string().optional(),
