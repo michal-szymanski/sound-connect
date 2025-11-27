@@ -3,12 +3,17 @@ import { z } from 'zod';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
 import { success, failure, apiErrorHandler } from '@/shared/server-functions/helpers';
 
-const onboardingStatusSchema = z.object({
-    exists: z.boolean(),
-    currentStep: z.number().nullable(),
-    completedAt: z.number().nullable(),
-    skippedAt: z.number().nullable()
-});
+const onboardingStatusSchema = z.discriminatedUnion('exists', [
+    z.object({
+        exists: z.literal(false)
+    }),
+    z.object({
+        exists: z.literal(true),
+        currentStep: z.number(),
+        completedAt: z.number().nullable(),
+        skippedAt: z.number().nullable()
+    })
+]);
 
 const updateProgressSchema = z.object({
     step: z.number().min(1).max(6)
