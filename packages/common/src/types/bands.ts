@@ -7,6 +7,8 @@ export const createBandInputSchema = z.object({
     city: z.string().min(1, 'City is required').max(100),
     state: z.string().min(1, 'State is required').max(100),
     country: z.string().max(100).default('USA'),
+    latitude: z.number().min(-90).max(90),
+    longitude: z.number().min(-180).max(180),
     primaryGenre: z.enum(GenreEnum, { message: 'Please select a genre' }),
     lookingFor: z.string().max(500, 'Looking for must be 500 characters or less').optional()
 });
@@ -19,6 +21,8 @@ export const updateBandInputSchema = z.object({
     city: z.string().min(1).max(100).optional(),
     state: z.string().min(1).max(100).optional(),
     country: z.string().max(100).optional(),
+    latitude: z.number().min(-90).max(90).optional(),
+    longitude: z.number().min(-180).max(180).optional(),
     primaryGenre: z.enum(GenreEnum).optional(),
     lookingFor: z.string().max(500).optional()
 });

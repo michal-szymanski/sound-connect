@@ -18,6 +18,14 @@ export const searchBands = createServerFn()
                 queryParams.append('city', data.city);
             }
 
+            if (data.latitude !== undefined) {
+                queryParams.append('latitude', data.latitude.toString());
+            }
+
+            if (data.longitude !== undefined) {
+                queryParams.append('longitude', data.longitude.toString());
+            }
+
             if (data.radius) {
                 queryParams.append('radius', data.radius.toString());
             }

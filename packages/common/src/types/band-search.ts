@@ -18,6 +18,8 @@ export const bandSearchParamsSchema = z
     .object({
         genre: z.enum(GenreEnum).optional(),
         city: z.string().min(2).max(100).optional(),
+        latitude: z.number().min(-90).max(90).optional(),
+        longitude: z.number().min(-180).max(180).optional(),
         radius: z
             .enum(searchRadiusEnum.map(String) as [string, ...string[]])
             .transform(Number)
@@ -28,13 +30,13 @@ export const bandSearchParamsSchema = z
     })
     .refine(
         (data) => {
-            if (data.radius && !data.city) {
+            if (data.radius && !(data.latitude !== undefined && data.longitude !== undefined)) {
                 return false;
             }
             return true;
         },
         {
-            message: 'Radius requires city to be provided',
+            message: 'Radius requires latitude and longitude to be provided',
             path: ['radius']
         }
     );

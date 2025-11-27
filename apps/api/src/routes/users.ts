@@ -7,7 +7,6 @@ import { notificationQueueMessageSchema } from '@/common/types/notifications';
 import { canViewProfile, canFollow } from '@/api/db/queries/settings-queries';
 import { profileSearchParamsSchema } from '@sound-connect/common/types/profile-search';
 import { searchProfiles } from '@/api/db/queries/profiles-search-queries';
-import { geocodeCity } from '@/api/services/geocoding-service';
 
 const usersRoutes = new Hono<HonoContext>();
 
@@ -20,6 +19,8 @@ usersRoutes.get('/users/search', async (c) => {
         instruments: query['instruments[]'] ? (Array.isArray(query['instruments[]']) ? query['instruments[]'] : [query['instruments[]']]) : undefined,
         genres: query['genres[]'] ? (Array.isArray(query['genres[]']) ? query['genres[]'] : [query['genres[]']]) : undefined,
         city: query['city'],
+        latitude: query['latitude'] ? parseFloat(query['latitude']) : undefined,
+        longitude: query['longitude'] ? parseFloat(query['longitude']) : undefined,
         radius: query['radius'],
         availabilityStatus: query['availabilityStatus[]']
             ? Array.isArray(query['availabilityStatus[]'])
@@ -32,22 +33,11 @@ usersRoutes.get('/users/search', async (c) => {
 
     const params = profileSearchParamsSchema.parse(rawParams);
 
-    let geocodedLocation = null;
-    let geocodingFallback = false;
-
-    if (params.city) {
-        geocodedLocation = await geocodeCity(db, { city: params.city });
-        if (!geocodedLocation) {
-            geocodingFallback = true;
-        }
-    }
-
-    const results = await searchProfiles(db, params, geocodedLocation, currentUser.id);
+    const results = await searchProfiles(db, params, currentUser.id);
 
     return c.json({
         results: results.data,
-        pagination: results.pagination,
-        geocodingFallback
+        pagination: results.pagination
     });
 });
 

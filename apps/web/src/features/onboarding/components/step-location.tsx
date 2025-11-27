@@ -4,21 +4,21 @@ import { LocationAutocomplete } from '@/shared/components/location/location-auto
 import type { SelectedLocation } from '@sound-connect/common/types/location';
 
 type Props = {
-    value: { city: string; country: string };
-    onChange: (value: { city: string; country: string }) => void;
+    value: { city: string; country: string; latitude: number; longitude: number };
+    onChange: (value: { city: string; country: string; latitude: number; longitude: number }) => void;
 };
 
 export const StepLocation = ({ value, onChange }: Props) => {
     const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(
-        value.city ? { city: value.city, state: undefined, country: value.country, latitude: 0, longitude: 0 } : null
+        value.city ? { city: value.city, state: undefined, country: value.country, latitude: value.latitude, longitude: value.longitude } : null
     );
 
     const handleLocationChange = (location: SelectedLocation | null) => {
         setSelectedLocation(location);
         if (location) {
-            onChange({ city: location.city, country: location.country });
+            onChange({ city: location.city, country: location.country, latitude: location.latitude, longitude: location.longitude });
         } else {
-            onChange({ city: '', country: '' });
+            onChange({ city: '', country: '', latitude: 0, longitude: 0 });
         }
     };
 

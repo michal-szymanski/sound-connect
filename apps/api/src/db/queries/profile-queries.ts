@@ -3,8 +3,6 @@ import { eq } from 'drizzle-orm';
 import { db } from '../index';
 import { calculateProfileCompletion } from '@/common/utils/profile-completion';
 import type { Instrument, Genre, AvailabilityStatus, CommitmentLevel, RehearsalFrequency, GiggingLevel } from '@/common/types/profile-enums';
-import { geocodeCity } from '@/api/services/geocoding-service';
-import { env } from 'cloudflare:workers';
 
 const { users, userProfilesTable, userAdditionalInstrumentsTable } = schema;
 
@@ -212,6 +210,8 @@ export const updateUserProfileLogistics = async (
         city: string;
         state?: string;
         country: string;
+        latitude: number;
+        longitude: number;
         travelRadius?: number;
         hasRehearsalSpace?: boolean;
         hasTransportation?: boolean;
@@ -219,17 +219,15 @@ export const updateUserProfileLogistics = async (
 ) => {
     await getOrCreateUserProfile(userId);
 
-    const geocoded = await geocodeCity(env.DB, { city: data.city });
-
     const updateData = {
         city: data.city.trim().toLowerCase(),
         state: data.state || null,
         country: data.country,
+        latitude: data.latitude,
+        longitude: data.longitude,
         travelRadius: data.travelRadius ?? null,
         hasRehearsalSpace: data.hasRehearsalSpace ?? null,
         hasTransportation: data.hasTransportation ?? null,
-        latitude: geocoded?.latitude ?? null,
-        longitude: geocoded?.longitude ?? null,
         updatedAt: new Date().toISOString()
     };
 
@@ -451,6 +449,8 @@ export const getUserProfile = async (userId: string) => {
                   city: profile.city,
                   state: profile.state,
                   country: profile.country,
+                  latitude: profile.latitude,
+                  longitude: profile.longitude,
                   travelRadius: profile.travelRadius,
                   hasRehearsalSpace: profile.hasRehearsalSpace,
                   hasTransportation: profile.hasTransportation

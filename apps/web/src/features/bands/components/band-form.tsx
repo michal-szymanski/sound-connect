@@ -27,18 +27,20 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
         city: initialData?.city || '',
         state: initialData?.state || '',
         country: initialData?.country || 'USA',
+        latitude: initialData?.latitude ?? 0,
+        longitude: initialData?.longitude ?? 0,
         primaryGenre: initialData?.primaryGenre || ('rock' as const),
         lookingFor: initialData?.lookingFor || ''
     });
 
     const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(
-        initialData?.city
+        initialData?.city && initialData.latitude !== undefined && initialData.longitude !== undefined
             ? {
                   city: initialData.city,
                   state: initialData.state,
                   country: initialData.country || 'USA',
-                  latitude: 0,
-                  longitude: 0
+                  latitude: initialData.latitude,
+                  longitude: initialData.longitude
               }
             : null
     );
@@ -73,14 +75,18 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
                 ...formData,
                 city: location.city,
                 state: location.state || '',
-                country: location.country
+                country: location.country,
+                latitude: location.latitude,
+                longitude: location.longitude
             });
         } else {
             setFormData({
                 ...formData,
                 city: '',
                 state: '',
-                country: 'USA'
+                country: 'USA',
+                latitude: 0,
+                longitude: 0
             });
         }
     };

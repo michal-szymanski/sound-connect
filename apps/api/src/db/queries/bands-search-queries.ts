@@ -2,9 +2,9 @@ import { drizzle } from 'drizzle-orm/d1';
 import { eq, and, sql, isNotNull, desc } from 'drizzle-orm';
 import { bandsTable, bandsMembersTable } from '@/drizzle/schema';
 import { calculateBoundingBox, calculateHaversineDistance } from '@sound-connect/common/utils/geo';
-import type { BandSearchParams, GeocodingLookupResponse } from '@sound-connect/common/types/band-search';
+import type { BandSearchParams } from '@sound-connect/common/types/band-search';
 
-export async function searchBands(db: D1Database, params: BandSearchParams, geocodedLocation: GeocodingLookupResponse | null) {
+export async function searchBands(db: D1Database, params: BandSearchParams) {
     const whereConditions = [];
 
     if (params.genre) {
@@ -15,8 +15,10 @@ export async function searchBands(db: D1Database, params: BandSearchParams, geoc
         whereConditions.push(sql`LOWER(${bandsTable.lookingFor}) LIKE LOWER(${'%' + params.lookingFor + '%'})`);
     }
 
-    if (geocodedLocation && params.radius) {
-        const bbox = calculateBoundingBox(geocodedLocation.latitude, geocodedLocation.longitude, params.radius);
+    const hasCoordinates = params.latitude !== undefined && params.longitude !== undefined;
+
+    if (hasCoordinates && params.radius) {
+        const bbox = calculateBoundingBox(params.latitude!, params.longitude!, params.radius);
 
         const bboxCondition = and(
             isNotNull(bandsTable.latitude),
@@ -65,8 +67,8 @@ export async function searchBands(db: D1Database, params: BandSearchParams, geoc
 
     let filteredResults = results.map((row) => {
         const distance =
-            geocodedLocation && row.latitude !== null && row.longitude !== null
-                ? calculateHaversineDistance(geocodedLocation.latitude, geocodedLocation.longitude, row.latitude, row.longitude)
+            hasCoordinates && row.latitude !== null && row.longitude !== null
+                ? calculateHaversineDistance(params.latitude!, params.longitude!, row.latitude, row.longitude)
                 : null;
 
         return {
@@ -75,7 +77,7 @@ export async function searchBands(db: D1Database, params: BandSearchParams, geoc
         };
     });
 
-    if (params.radius && geocodedLocation) {
+    if (params.radius && hasCoordinates) {
         filteredResults = filteredResults.filter((row) => row.distance !== null && row.distance <= params.radius!);
     }
 

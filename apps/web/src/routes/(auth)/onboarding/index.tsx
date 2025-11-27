@@ -33,7 +33,7 @@ export const Route = createFileRoute('/(auth)/onboarding/')({
 type OnboardingData = {
     primaryInstrument: Instrument | null;
     primaryGenre: Genre | null;
-    location: { city: string; country: string };
+    location: { city: string; country: string; latitude: number; longitude: number };
     bio: string;
     status: AvailabilityStatus | null;
     profileImageUrl: string | null;
@@ -46,7 +46,7 @@ function RouteComponent() {
     const [formData, setFormData] = useState<OnboardingData>({
         primaryInstrument: null,
         primaryGenre: null,
-        location: { city: '', country: '' },
+        location: { city: '', country: '', latitude: 0, longitude: 0 },
         bio: '',
         status: null,
         profileImageUrl: null
@@ -123,6 +123,8 @@ function RouteComponent() {
                     await updateLogisticsMutation.mutateAsync({
                         city: formData.location.city,
                         country: formData.location.country,
+                        latitude: formData.location.latitude,
+                        longitude: formData.location.longitude,
                         state: undefined,
                         travelRadius: undefined,
                         hasRehearsalSpace: undefined,

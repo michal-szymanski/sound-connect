@@ -50,7 +50,6 @@ import {
     getBandAdminIds
 } from '@/api/db/queries/band-applications-queries';
 import { searchBands } from '@/api/db/queries/bands-search-queries';
-import { geocodeCity } from '@/api/services/geocoding-service';
 import { drizzle } from 'drizzle-orm/d1';
 import { schema } from '@sound-connect/drizzle';
 import { eq, and, desc, gte } from 'drizzle-orm';
@@ -64,6 +63,8 @@ bandsRoutes.get('/bands/search', async (c) => {
     const rawParams = {
         genre: query['genre'],
         city: query['city'],
+        latitude: query['latitude'] ? parseFloat(query['latitude']) : undefined,
+        longitude: query['longitude'] ? parseFloat(query['longitude']) : undefined,
         radius: query['radius'],
         lookingFor: query['lookingFor'],
         page: query['page'],
@@ -72,22 +73,11 @@ bandsRoutes.get('/bands/search', async (c) => {
 
     const params = bandSearchParamsSchema.parse(rawParams);
 
-    let geocodedLocation = null;
-    let geocodingFallback = false;
-
-    if (params.city) {
-        geocodedLocation = await geocodeCity(db, { city: params.city });
-        if (!geocodedLocation) {
-            geocodingFallback = true;
-        }
-    }
-
-    const results = await searchBands(db, params, geocodedLocation);
+    const results = await searchBands(db, params);
 
     return c.json({
         results: results.data,
-        pagination: results.pagination,
-        geocodingFallback
+        pagination: results.pagination
     });
 });
 
@@ -97,20 +87,7 @@ bandsRoutes.post('/bands', async (c) => {
     const body = await c.req.json();
     const data = createBandInputSchema.parse(body);
 
-    const geocodingResult = await geocodeCity(c.env.DB, { city: `${data.city}, ${data.state}` });
-
-    if (!geocodingResult) {
-        throw new HTTPException(400, { message: 'Could not find location. Please check city and state.' });
-    }
-
-    const band = await createBand(
-        {
-            ...data,
-            latitude: geocodingResult.latitude,
-            longitude: geocodingResult.longitude
-        },
-        user.id
-    );
+    const band = await createBand(data, user.id);
 
     return c.json(band, 201);
 });
@@ -143,28 +120,9 @@ bandsRoutes.patch('/bands/:id', async (c) => {
     const body = await c.req.json();
     const data = updateBandInputSchema.parse(body);
 
-    let latitude: number | undefined = undefined;
-    let longitude: number | undefined = undefined;
-
     const band = await getBandById(id);
     if (!band) {
         throw new HTTPException(404, { message: 'Band not found' });
-    }
-
-    if (data.city !== undefined || data.state !== undefined) {
-        const cityToGeocode = data.city ?? band.city;
-        const stateToGeocode = data.state ?? band.state;
-
-        if (cityToGeocode && stateToGeocode) {
-            const geocodingResult = await geocodeCity(c.env.DB, { city: `${cityToGeocode}, ${stateToGeocode}` });
-
-            if (!geocodingResult) {
-                throw new HTTPException(400, { message: 'Could not find location. Please check city and state.' });
-            }
-
-            latitude = geocodingResult.latitude;
-            longitude = geocodingResult.longitude;
-        }
     }
 
     const wasRecruiting = Boolean(band.lookingFor);
@@ -176,7 +134,7 @@ bandsRoutes.patch('/bands/:id', async (c) => {
         await deleteRejectedApplicationsForBand(id);
     }
 
-    const updatedBand = await updateBand(id, { ...data, latitude, longitude });
+    const updatedBand = await updateBand(id, data);
 
     return c.json(updatedBand);
 });

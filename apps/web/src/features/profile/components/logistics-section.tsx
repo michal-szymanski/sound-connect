@@ -22,13 +22,23 @@ export const LogisticsSection = ({ data, canEdit, id }: Props) => {
         city: data?.city || '',
         state: data?.state || undefined,
         country: data?.country || 'USA',
+        latitude: data?.latitude ?? 0,
+        longitude: data?.longitude ?? 0,
         travelRadius: data?.travelRadius || undefined,
         hasRehearsalSpace: data?.hasRehearsalSpace || undefined,
         hasTransportation: data?.hasTransportation || undefined
     });
 
     const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(
-        data?.city ? { city: data.city, state: data.state, country: data.country || 'USA', latitude: 0, longitude: 0 } : null
+        data?.city && data.latitude !== null && data.longitude !== null
+            ? {
+                  city: data.city,
+                  state: data.state || undefined,
+                  country: data.country || 'USA',
+                  latitude: data.latitude,
+                  longitude: data.longitude
+              }
+            : null
     );
 
     const isEmpty = !data?.city;
@@ -54,14 +64,18 @@ export const LogisticsSection = ({ data, canEdit, id }: Props) => {
                 ...formData,
                 city: location.city,
                 state: location.state,
-                country: location.country
+                country: location.country,
+                latitude: location.latitude,
+                longitude: location.longitude
             });
         } else {
             setFormData({
                 ...formData,
                 city: '',
                 state: undefined,
-                country: 'USA'
+                country: 'USA',
+                latitude: 0,
+                longitude: 0
             });
         }
     };

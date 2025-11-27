@@ -85,6 +85,8 @@ export const updateLogisticsSchema = z
         city: z.string().max(100),
         state: z.string().max(50).optional(),
         country: z.string().max(50),
+        latitude: z.number().min(-90).max(90),
+        longitude: z.number().min(-180).max(180),
         travelRadius: z.number().int().min(0).max(500).optional(),
         hasRehearsalSpace: z.boolean().optional(),
         hasTransportation: z.boolean().optional()
@@ -154,6 +156,8 @@ export const logisticsSectionSchema = z.object({
     city: z.string().nullable(),
     state: z.string().nullable(),
     country: z.string().nullable(),
+    latitude: z.number().nullable(),
+    longitude: z.number().nullable(),
     travelRadius: z.number().nullable(),
     hasRehearsalSpace: z.boolean().nullable(),
     hasTransportation: z.boolean().nullable()

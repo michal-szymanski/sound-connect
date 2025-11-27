@@ -2,9 +2,9 @@ import { drizzle } from 'drizzle-orm/d1';
 import { eq, and, or, sql, isNotNull, inArray, desc } from 'drizzle-orm';
 import { userProfilesTable, userAdditionalInstrumentsTable, users, userSettingsTable, blockedUsersTable } from '@/drizzle/schema';
 import { calculateBoundingBox, calculateHaversineDistance } from '@sound-connect/common/utils/geo';
-import type { ProfileSearchParams, GeocodingLookupResponse } from '@sound-connect/common/types/profile-search';
+import type { ProfileSearchParams } from '@sound-connect/common/types/profile-search';
 
-export async function searchProfiles(db: D1Database, params: ProfileSearchParams, geocodedLocation: GeocodingLookupResponse | null, requesterId?: string) {
+export async function searchProfiles(db: D1Database, params: ProfileSearchParams, requesterId?: string) {
     const whereConditions = [eq(userProfilesTable.setupCompleted, true)];
 
     if (requesterId) {
@@ -60,8 +60,10 @@ export async function searchProfiles(db: D1Database, params: ProfileSearchParams
         whereConditions.push(inArray(userProfilesTable.status, params.availabilityStatus));
     }
 
-    if (geocodedLocation && params.radius) {
-        const bbox = calculateBoundingBox(geocodedLocation.latitude, geocodedLocation.longitude, params.radius);
+    const hasCoordinates = params.latitude !== undefined && params.longitude !== undefined;
+
+    if (hasCoordinates && params.radius) {
+        const bbox = calculateBoundingBox(params.latitude!, params.longitude!, params.radius);
 
         const bboxCondition = and(
             isNotNull(userProfilesTable.latitude),
@@ -121,8 +123,8 @@ export async function searchProfiles(db: D1Database, params: ProfileSearchParams
         .filter((row) => row.searchVisibility === null || row.searchVisibility === true)
         .map((row) => {
             const distance =
-                geocodedLocation && row.latitude !== null && row.longitude !== null
-                    ? calculateHaversineDistance(geocodedLocation.latitude, geocodedLocation.longitude, row.latitude, row.longitude)
+                hasCoordinates && row.latitude !== null && row.longitude !== null
+                    ? calculateHaversineDistance(params.latitude!, params.longitude!, row.latitude, row.longitude)
                     : null;
 
             return {
@@ -131,7 +133,7 @@ export async function searchProfiles(db: D1Database, params: ProfileSearchParams
             };
         });
 
-    if (params.radius && geocodedLocation) {
+    if (params.radius && hasCoordinates) {
         filteredResults = filteredResults.filter((row) => row.distance !== null && row.distance <= params.radius!);
     }
 

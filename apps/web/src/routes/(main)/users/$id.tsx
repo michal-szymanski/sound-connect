@@ -26,6 +26,7 @@ import { getPosts } from '@/features/posts/server-functions/posts';
 import { getUser } from '@/shared/server-functions/users';
 import { useFollowUser, useUnfollowUser } from '@/shared/hooks/use-follow';
 import { getProfile } from '@/features/profile/server-functions/profile';
+import { useProfile } from '@/features/profile/hooks/use-profile';
 import { InstrumentsSection } from '@/features/profile/components/instruments-section';
 import { GenresSection } from '@/features/profile/components/genres-section';
 import { AvailabilitySection } from '@/features/profile/components/availability-section';
@@ -96,7 +97,10 @@ export const Route = createFileRoute('/(main)/users/$id')({
 });
 
 function RouteComponent() {
-    const { currentUser, user, posts, profile } = loaderSchema.parse(Route.useLoaderData());
+    const loaderData = loaderSchema.parse(Route.useLoaderData());
+    const { currentUser, user, posts } = loaderData;
+
+    const { data: profile } = useProfile(user.id);
     const { data: followings } = useFollowings(user);
     const { data: followers } = useFollowers(user);
     const { data: currentUserFollowings } = useFollowings(currentUser);
