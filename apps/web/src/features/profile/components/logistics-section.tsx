@@ -6,6 +6,8 @@ import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
 import { Input } from '@/shared/components/ui/input';
 import { Checkbox } from '@/shared/components/ui/checkbox';
+import { LocationAutocomplete } from '@/shared/components/location/location-autocomplete';
+import type { SelectedLocation } from '@sound-connect/common/types/location';
 import type { LogisticsSection as LogisticsSectionData, UpdateLogistics } from '@sound-connect/common/types/profile';
 
 type Props = {
@@ -25,6 +27,10 @@ export const LogisticsSection = ({ data, canEdit, id }: Props) => {
         hasTransportation: data?.hasTransportation || undefined
     });
 
+    const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(
+        data?.city ? { city: data.city, state: data.state, country: data.country || 'USA', latitude: 0, longitude: 0 } : null
+    );
+
     const isEmpty = !data?.city;
 
     const getCompletionStatus = (): 'complete' | 'incomplete' | 'required' => {
@@ -41,53 +47,39 @@ export const LogisticsSection = ({ data, canEdit, id }: Props) => {
         });
     };
 
-    const needsState = formData.country === 'USA' || formData.country === 'Canada';
+    const handleLocationChange = (location: SelectedLocation | null) => {
+        setSelectedLocation(location);
+        if (location) {
+            setFormData({
+                ...formData,
+                city: location.city,
+                state: location.state,
+                country: location.country
+            });
+        } else {
+            setFormData({
+                ...formData,
+                city: '',
+                state: undefined,
+                country: 'USA'
+            });
+        }
+    };
 
     const editForm = (closeForm: () => void) => (
         <form onSubmit={(e) => handleSubmit(e, closeForm)} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="city">
-                    City <span className="text-destructive">*</span>
+                <Label htmlFor="location">
+                    Location <span className="text-destructive">*</span>
                 </Label>
-                <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    maxLength={100}
-                    placeholder="e.g., Chicago"
+                <LocationAutocomplete
+                    id="location"
+                    value={selectedLocation}
+                    onChange={handleLocationChange}
+                    placeholder="Search for a city..."
                     required
                 />
             </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="country">
-                    Country <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                    id="country"
-                    value={formData.country}
-                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    maxLength={50}
-                    placeholder="e.g., USA"
-                    required
-                />
-            </div>
-
-            {needsState && (
-                <div className="space-y-2">
-                    <Label htmlFor="state">
-                        State/Province <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                        id="state"
-                        value={formData.state || ''}
-                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                        maxLength={50}
-                        placeholder="e.g., IL"
-                        required
-                    />
-                </div>
-            )}
 
             <div className="space-y-2">
                 <Label htmlFor="travelRadius">Travel Radius (miles)</Label>

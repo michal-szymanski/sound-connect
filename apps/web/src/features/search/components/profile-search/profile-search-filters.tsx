@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Check, ChevronsUpDown, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
@@ -22,6 +21,8 @@ import {
 import { searchRadiusEnum } from '@sound-connect/common/types/profile-search';
 import { availabilityStatusConfig } from '@/shared/lib/utils/availability';
 import type { ProfileSearchParams } from '@sound-connect/common/types/profile-search';
+import { LocationAutocomplete } from '@/shared/components/location/location-autocomplete';
+import type { SelectedLocation } from '@sound-connect/common/types/location';
 
 type Props = {
     filters: ProfileSearchParams;
@@ -36,6 +37,9 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
     const [instrumentsOpen, setInstrumentsOpen] = useState(false);
     const [genresOpen, setGenresOpen] = useState(true);
     const [availabilityOpen, setAvailabilityOpen] = useState(true);
+    const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(
+        filters.city ? { city: filters.city, state: undefined, country: '', latitude: filters.latitude || 0, longitude: filters.longitude || 0 } : null
+    );
 
     const selectedInstruments = filters.instruments || [];
     const selectedGenres = filters.genres || [];
@@ -61,6 +65,26 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
     const handleStatusToggle = (status: AvailabilityStatus) => {
         const newStatuses = selectedStatuses.includes(status) ? selectedStatuses.filter((s) => s !== status) : [...selectedStatuses, status];
         onFiltersChange({ ...filters, availabilityStatus: newStatuses.length > 0 ? newStatuses : undefined });
+    };
+
+    const handleLocationChange = (location: SelectedLocation | null) => {
+        setSelectedLocation(location);
+        if (location) {
+            onFiltersChange({
+                ...filters,
+                city: location.city,
+                latitude: location.latitude,
+                longitude: location.longitude
+            });
+        } else {
+            onFiltersChange({
+                ...filters,
+                city: undefined,
+                latitude: undefined,
+                longitude: undefined,
+                radius: undefined
+            });
+        }
     };
 
     const formatLabel = (value: string) => {
@@ -128,13 +152,12 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
                 </div>
 
                 <div>
-                    <Label htmlFor="city">Location</Label>
-                    <Input
-                        id="city"
-                        placeholder="City (e.g., Chicago, IL)"
-                        value={filters.city || ''}
-                        onChange={(e) => onFiltersChange({ ...filters, city: e.target.value || undefined })}
-                        className="mt-2"
+                    <Label htmlFor="location">Location</Label>
+                    <LocationAutocomplete
+                        id="location"
+                        value={selectedLocation}
+                        onChange={handleLocationChange}
+                        placeholder="Search for a city..."
                     />
                 </div>
 
@@ -146,7 +169,7 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
                             const numValue = value ? Number(value) : undefined;
                             onFiltersChange({ ...filters, radius: numValue as 5 | 10 | 25 | 50 | 100 | undefined });
                         }}
-                        disabled={!filters.city}
+                        disabled={!selectedLocation}
                     >
                         <SelectTrigger id="radius" className="mt-2">
                             <SelectValue placeholder="Select radius..." />

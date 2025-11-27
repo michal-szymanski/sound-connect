@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/d1';
 import { eq } from 'drizzle-orm';
 import { geocodingCacheTable } from '@/drizzle/schema';
 import type { GeocodingLookupParams, GeocodingLookupResponse } from '@sound-connect/common/types/profile-search';
+import type { LocationSuggestion } from '@sound-connect/common/types/location';
 
 type NominatimResponse = {
     lat: string;
@@ -12,6 +13,31 @@ type NominatimResponse = {
         state?: string;
         country?: string;
     };
+};
+
+type MapboxSuggestion = {
+    mapbox_id: string;
+    name: string;
+    place_formatted: string;
+    context?: {
+        place?: {
+            name?: string;
+        };
+        region?: {
+            name?: string;
+        };
+        country?: {
+            name?: string;
+        };
+    };
+    coordinates?: {
+        longitude: number;
+        latitude: number;
+    };
+};
+
+type MapboxSuggestionResponse = {
+    suggestions: MapboxSuggestion[];
 };
 
 export async function geocodeCity(db: D1Database, params: GeocodingLookupParams): Promise<GeocodingLookupResponse | null> {
@@ -110,5 +136,45 @@ async function cacheGeocodingResult(db: D1Database, result: GeocodingLookupRespo
             });
     } catch {
         return;
+    }
+}
+
+export async function autocompleteLocation(query: string, accessToken: string): Promise<LocationSuggestion[]> {
+    try {
+        const url = new URL('https://api.mapbox.com/search/searchbox/v1/suggest');
+        url.searchParams.set('q', query);
+        url.searchParams.set('access_token', accessToken);
+        url.searchParams.set('types', 'place,locality,city');
+        url.searchParams.set('limit', '5');
+
+        const response = await fetch(url.toString());
+
+        if (!response.ok) {
+            return [];
+        }
+
+        const data: MapboxSuggestionResponse = await response.json();
+
+        const suggestions: LocationSuggestion[] = data.suggestions
+            .filter((suggestion) => suggestion.coordinates)
+            .map((suggestion) => {
+                const city = suggestion.context?.place?.name || suggestion.name;
+                const state = suggestion.context?.region?.name || null;
+                const country = suggestion.context?.country?.name || '';
+
+                return {
+                    mapboxId: suggestion.mapbox_id,
+                    displayName: suggestion.place_formatted,
+                    city,
+                    state,
+                    country,
+                    latitude: suggestion.coordinates!.latitude,
+                    longitude: suggestion.coordinates!.longitude
+                };
+            });
+
+        return suggestions;
+    } catch {
+        return [];
     }
 }

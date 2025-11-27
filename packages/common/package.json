@@ -29,7 +29,8 @@
         "./types/conversations": "./src/types/conversations.ts",
         "./utils/profile-completion": "./src/utils/profile-completion.ts",
         "./utils/geo": "./src/utils/geo.ts",
-        "./utils/availability": "./src/utils/availability.ts"
+        "./utils/availability": "./src/utils/availability.ts",
+        "./types/location": "./src/types/location.ts"
     },
     "scripts": {
         "tsc": "tsc --noEmit",

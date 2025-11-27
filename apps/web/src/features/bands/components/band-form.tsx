@@ -9,6 +9,8 @@ import { GenreEnum } from '@sound-connect/common/types/profile-enums';
 import { createBandInputSchema, type CreateBandInput, type UpdateBandInput } from '@sound-connect/common/types/bands';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { LocationAutocomplete } from '@/shared/components/location/location-autocomplete';
+import type { SelectedLocation } from '@sound-connect/common/types/location';
 
 type Props = {
     initialData?: Partial<UpdateBandInput>;
@@ -28,6 +30,18 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
         primaryGenre: initialData?.primaryGenre || ('rock' as const),
         lookingFor: initialData?.lookingFor || ''
     });
+
+    const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(
+        initialData?.city
+            ? {
+                  city: initialData.city,
+                  state: initialData.state,
+                  country: initialData.country || 'USA',
+                  latitude: 0,
+                  longitude: 0
+              }
+            : null
+    );
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -50,6 +64,25 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
 
         setErrors({});
         onSubmit(isEdit ? formData : result.data);
+    };
+
+    const handleLocationChange = (location: SelectedLocation | null) => {
+        setSelectedLocation(location);
+        if (location) {
+            setFormData({
+                ...formData,
+                city: location.city,
+                state: location.state || '',
+                country: location.country
+            });
+        } else {
+            setFormData({
+                ...formData,
+                city: '',
+                state: '',
+                country: 'USA'
+            });
+        }
     };
 
     const formatLabel = (value: string) => {
@@ -107,48 +140,23 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
                 )}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                    <Label htmlFor="city">
-                        City <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        placeholder="Chicago"
-                        maxLength={100}
-                        aria-required="true"
-                        aria-invalid={!!errors['city']}
-                        aria-describedby={errors['city'] ? 'city-error' : undefined}
-                    />
-                    {errors['city'] && (
-                        <p id="city-error" className="text-destructive text-sm" role="alert">
-                            {errors['city']}
-                        </p>
-                    )}
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="state">
-                        State <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                        id="state"
-                        value={formData.state}
-                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                        placeholder="IL"
-                        maxLength={100}
-                        aria-required="true"
-                        aria-invalid={!!errors['state']}
-                        aria-describedby={errors['state'] ? 'state-error' : undefined}
-                    />
-                    {errors['state'] && (
-                        <p id="state-error" className="text-destructive text-sm" role="alert">
-                            {errors['state']}
-                        </p>
-                    )}
-                </div>
+            <div className="space-y-2">
+                <Label htmlFor="location">
+                    Location <span className="text-destructive">*</span>
+                </Label>
+                <LocationAutocomplete
+                    id="location"
+                    value={selectedLocation}
+                    onChange={handleLocationChange}
+                    placeholder="Search for a city..."
+                    required
+                    error={errors['city'] || errors['state'] || errors['country']}
+                />
+                {(errors['city'] || errors['state'] || errors['country']) && (
+                    <p className="text-destructive text-sm" role="alert">
+                        {errors['city'] || errors['state'] || errors['country']}
+                    </p>
+                )}
             </div>
 
             <div className="space-y-2">

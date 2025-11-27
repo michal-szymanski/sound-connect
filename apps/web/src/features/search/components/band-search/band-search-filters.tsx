@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
@@ -6,6 +7,8 @@ import { Badge } from '@/shared/components/ui/badge';
 import { GenreEnum } from '@sound-connect/common/types/profile-enums';
 import { searchRadiusEnum } from '@sound-connect/common/types/band-search';
 import type { BandSearchParams } from '@sound-connect/common/types/band-search';
+import { LocationAutocomplete } from '@/shared/components/location/location-autocomplete';
+import type { SelectedLocation } from '@sound-connect/common/types/location';
 
 type Props = {
     filters: BandSearchParams;
@@ -17,6 +20,30 @@ type Props = {
 };
 
 export function BandSearchFilters({ filters, onFiltersChange, onSearch, onClear, isLoading, activeFilterCount }: Props) {
+    const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(
+        filters.city ? { city: filters.city, state: undefined, country: '', latitude: filters.latitude || 0, longitude: filters.longitude || 0 } : null
+    );
+
+    const handleLocationChange = (location: SelectedLocation | null) => {
+        setSelectedLocation(location);
+        if (location) {
+            onFiltersChange({
+                ...filters,
+                city: location.city,
+                latitude: location.latitude,
+                longitude: location.longitude
+            });
+        } else {
+            onFiltersChange({
+                ...filters,
+                city: undefined,
+                latitude: undefined,
+                longitude: undefined,
+                radius: undefined
+            });
+        }
+    };
+
     const formatLabel = (value: string) => {
         return value
             .split('_')
@@ -54,13 +81,12 @@ export function BandSearchFilters({ filters, onFiltersChange, onSearch, onClear,
                 </div>
 
                 <div>
-                    <Label htmlFor="city">Location</Label>
-                    <Input
-                        id="city"
-                        placeholder="City (e.g., Chicago, IL)"
-                        value={filters.city || ''}
-                        onChange={(e) => onFiltersChange({ ...filters, city: e.target.value || undefined })}
-                        className="mt-2"
+                    <Label htmlFor="location">Location</Label>
+                    <LocationAutocomplete
+                        id="location"
+                        value={selectedLocation}
+                        onChange={handleLocationChange}
+                        placeholder="Search for a city..."
                     />
                 </div>
 
@@ -72,7 +98,7 @@ export function BandSearchFilters({ filters, onFiltersChange, onSearch, onClear,
                             const numValue = value ? Number(value) : undefined;
                             onFiltersChange({ ...filters, radius: numValue as 5 | 10 | 25 | 50 | 100 | undefined });
                         }}
-                        disabled={!filters.city}
+                        disabled={!selectedLocation}
                     >
                         <SelectTrigger id="radius" className="mt-2">
                             <SelectValue placeholder="Select radius..." />
