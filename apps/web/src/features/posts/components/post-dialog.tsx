@@ -22,6 +22,7 @@ import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { useBatchPresignedUpload } from '@/web/hooks/use-batch-presigned-upload';
 import { addPost } from '@/features/posts/server-functions/posts';
 import { useUpdatePost } from '../hooks/use-posts';
+import { VideoPlayer } from './video-player';
 
 type PostDialogContentProps = {
     mode: 'create' | 'edit';
@@ -287,7 +288,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                                         {preview.type === 'image' ? (
                                             <img src={preview.previewUrl} alt={`Media ${index + 1}`} className="h-full w-full object-cover" />
                                         ) : (
-                                            <video src={preview.previewUrl} className="h-full w-full object-cover" controls={false} muted />
+                                            <VideoPlayer src={preview.previewUrl} controls={false} muted aspectRatio="1/1" className="h-full w-full" />
                                         )}
 
                                         {isUploading && !preview.isExisting && progress[index] !== undefined && (

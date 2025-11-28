@@ -9,6 +9,7 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { useLikeToggle, useComments, useCreateComment } from '../hooks/use-posts';
 import { useAuth } from '@/shared/lib/react-query';
 import { CommentItem } from './comment-item';
+import { VideoPlayer } from './video-player';
 import type { Media } from '@sound-connect/common/types/drizzle';
 
 type Props = {
@@ -163,7 +164,7 @@ export function PostModal({
                 {hasMedia && displayMedia[currentMediaIndex] && (
                     <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black">
                         {displayMedia[currentMediaIndex]!.type === 'video' ? (
-                            <video src={`/media/${displayMedia[currentMediaIndex]!.key}`} className="max-h-full max-w-full" controls />
+                            <VideoPlayer src={`/media/${displayMedia[currentMediaIndex]!.key}`} controls className="max-h-full max-w-full" />
                         ) : (
                             <img src={`/media/${displayMedia[currentMediaIndex]!.key}`} alt="Post content" className="max-h-full max-w-full object-contain" />
                         )}

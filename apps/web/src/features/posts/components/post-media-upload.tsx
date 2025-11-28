@@ -5,6 +5,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Progress } from '@/shared/components/ui/progress';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { cn } from '@/shared/lib/utils';
+import { VideoPlayer } from './video-player';
 
 type Props = {
     onMediaKeysChange?: (keys: string[]) => void;
@@ -109,7 +110,7 @@ export const PostMediaUpload = (props: Props) => {
                                 {preview.type === 'image' ? (
                                     <img src={preview.previewUrl} alt={`Media ${index + 1}`} className="h-full w-full object-cover" />
                                 ) : preview.type === 'video' ? (
-                                    <video src={preview.previewUrl} className="h-full w-full object-cover" controls={false} />
+                                    <VideoPlayer src={preview.previewUrl} controls={false} muted aspectRatio="1/1" className="h-full w-full" />
                                 ) : (
                                     <div className="flex h-full w-full flex-col items-center justify-center gap-2">
                                         <svg
