@@ -1,4 +1,6 @@
 import { Badge } from '@/shared/components/ui/badge';
+import { AudioPlayer } from '@/features/posts/components/audio-player';
+import { VideoPlayer } from '@/features/posts/components/video-player';
 import { formatInstrument } from '../lib/profile-utils';
 import type { MusicSample } from '@sound-connect/common/types/music-samples';
 
@@ -22,19 +24,7 @@ export const MusicSamplePlayer = ({ sample, compact = false, hideTitle = false }
                 {sample.instrument && <Badge variant="secondary">{formatInstrument(sample.instrument)}</Badge>}
             </div>
 
-            <div className={`border-border/40 overflow-hidden rounded-lg border ${isAudio ? 'bg-card' : 'bg-black'}`}>
-                {isAudio ? (
-                    <audio controls className="w-full" preload="metadata">
-                        <source src={mediaUrl} />
-                        Your browser does not support the audio element.
-                    </audio>
-                ) : (
-                    <video controls className="w-full" preload="metadata">
-                        <source src={mediaUrl} />
-                        Your browser does not support the video element.
-                    </video>
-                )}
-            </div>
+            {isAudio ? <AudioPlayer src={mediaUrl} /> : <VideoPlayer src={mediaUrl} />}
         </div>
     );
 };
