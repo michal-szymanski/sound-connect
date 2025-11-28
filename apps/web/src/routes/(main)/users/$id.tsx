@@ -39,6 +39,7 @@ import { useBlockedUsers, useBlockUser, useUnblockUser } from '@/features/settin
 import { MessageButton } from '@/features/chat/components/message-button';
 import { FollowersModal } from '@/features/profile/components/followers-modal';
 import { FollowingModal } from '@/features/profile/components/following-modal';
+import { MusicPortfolioSection } from '@/features/profile/components/music-portfolio-section';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
@@ -348,6 +349,8 @@ function RouteComponent() {
             )}
 
             <UserBandsSection userId={user.id} isOwnProfile={isOwnProfile} />
+
+            <MusicPortfolioSection userId={user.id} canEdit={isOwnProfile} />
 
             <AlertDialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
                 <AlertDialogContent className="z-dialog">

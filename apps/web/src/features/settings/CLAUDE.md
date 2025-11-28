@@ -3,6 +3,7 @@
 User settings for account management, privacy controls, notifications, and data export.
 
 ## Key Components
+
 - `SettingsTabs` - Tabbed interface (Account/Privacy/Notifications/Data & Account)
 - `AccountTab` - Email update, password change, account creation date
 - `PrivacyTab` - Profile visibility, search visibility, messaging/follow permissions, block management
@@ -11,6 +12,7 @@ User settings for account management, privacy controls, notifications, and data 
 - `BlockedUsersList` - List of blocked users with unblock action
 
 ## Hooks
+
 - `useSettings` - Fetches user settings
 - `useUpdateEmail` - Updates email address
 - `useUpdatePassword` - Changes password
@@ -22,6 +24,7 @@ User settings for account management, privacy controls, notifications, and data 
 - `useDeleteAccount` - Deletes user account
 
 ## Server Functions
+
 - `getSettings` - Fetches user settings
 - `updateEmail` - Updates email address
 - `updatePassword` - Changes password with current password verification
@@ -34,6 +37,7 @@ User settings for account management, privacy controls, notifications, and data 
 - `deleteAccount` - Deletes account with password confirmation
 
 ## Data Flow
+
 1. **Privacy**: Settings enforced across platform (profile visibility, search exclusion, messaging/follow permissions)
 2. **Blocked Users**: Cannot view profile, send messages, or see content in feed
 3. **Notifications**: Global toggle + per-type controls (follows, comments, reactions, mentions, band applications)

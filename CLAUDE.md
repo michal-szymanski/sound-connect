@@ -24,12 +24,12 @@ This project is a monorepo containing a social media app designed like LinkedIn 
 
 ### Test Users
 
-| Email           | Password | Name              |
-| --------------- | -------- | ----------------- |
-| t1@asd.asd      | aaaaaaaa | t1                |
-| t2@asd.asd      | aaaaaaaa | t2                |
-| pw1@test.test   | Test123! | Playwright User 1 |
-| pw2@test.test   | Test123! | Playwright User 2 |
+| Email         | Password | Name              |
+| ------------- | -------- | ----------------- |
+| t1@asd.asd    | aaaaaaaa | t1                |
+| t2@asd.asd    | aaaaaaaa | t2                |
+| pw1@test.test | Test123! | Playwright User 1 |
+| pw2@test.test | Test123! | Playwright User 2 |
 
 Seeded via: `pnpm db:seed:local` (defined in `packages/drizzle/src/seed.ts`)
 
@@ -49,10 +49,6 @@ For detailed information about each feature, see the feature-level documentation
 - **[Settings](apps/web/src/features/settings/CLAUDE.md)** - Account, privacy, notifications, data export
 
 ## Known Gaps / Future Features
-
-### High Priority (Affects Activation & Retention)
-
-- **Saved profiles**: Cannot bookmark musicians/bands for later
 
 ### Medium Priority
 
@@ -150,48 +146,59 @@ What type of work are you doing?
 #### Agent Descriptions
 
 **feature-spec-writer** - Creates detailed specifications for new features
+
 - **Use when:** User requests a NEW feature ("add", "implement", "create", "build")
 - Asks clarifying questions, writes spec to `/specs/`, auto-delegates to other agents
 
 **designer** - UI/UX and accessibility advisor (does NOT implement)
+
 - **Use when:** UI design decisions, layout improvements, accessibility reviews, component recommendations
 - **Skills:** `frontend-design`
 - After response → ask user approval → invoke frontend
 
 **database-architect** - Designs database schemas and migrations (does NOT implement)
+
 - **Use when:** New tables, schema changes, query optimization, indexing decisions
 - After response → ask user approval → invoke backend
 
 **system-architect** - Coordinates multi-domain features (frontend + backend + shared code)
+
 - **Use when:** Feature needs shared types/schemas in `packages/common` OR API contract coordination
 - NOT for single-domain work - use frontend or backend directly
 
 **frontend** - Implements frontend code in `apps/web/`
+
 - **Use when:** ANY frontend work (features, bugs, refactors) - even "simple" fixes
 - **Skills:** `frontend-design`
 - Auto-invokes code-quality-enforcer
 
 **backend** - Implements backend code in `apps/api/` and queue consumers
+
 - **Use when:** ANY backend work (API routes, queries, Durable Objects, queues)
 - Auto-invokes code-quality-enforcer
 
 **realtime-architect** - Implements real-time features
+
 - **Use when:** Chat, live notifications, presence, typing indicators, real-time updates
 
 **devops** - Handles deployments, migrations, CI/CD, infrastructure
+
 - **Use when:** Production deployments, database migrations, wrangler.jsonc, GitHub Actions, secrets
 - Requires user approval for ALL operations
 
 **test-expert** - Plans and implements tests
+
 - **Use when:** E2E tests (Playwright), integration tests, unit tests
 - Adding test coverage for new or existing features
 
 **code-quality-enforcer** - Validates code against CLAUDE.md rules
+
 - **Do not invoke manually** - called automatically by frontend/backend agents
 
 #### Two-Step Workflows (Advisory → Implementation)
 
 **Advisory agents** (designer, database-architect) provide recommendations but do NOT implement. After they respond:
+
 1. Ask user: "Should I implement these changes?"
 2. On affirmative response → automatically invoke frontend/backend
 3. If user provides feedback → loop back to advisory agent first
@@ -390,6 +397,7 @@ When you identify an issue or need to implement a feature:
 ### App-Specific Rules
 
 For frontend patterns (React, TypeScript, ShadCN, TanStack), see:
+
 - **react** skill - Component patterns, hooks, forms, file organization
 - **typescript** skill - Type conventions, Zod patterns, enum definitions
 - **shadcn-ui** skill - UI components, z-index system, form components
@@ -397,11 +405,13 @@ For frontend patterns (React, TypeScript, ShadCN, TanStack), see:
 - **tanstack** skill - Router, Query, Start patterns (file-based routing, server functions)
 
 For backend patterns (Hono, Cloudflare, Database), see:
+
 - **hono** skill - API routes, middleware, validation, error handling
 - **cloudflare** skill - Workers, D1, R2, Durable Objects, Queues
 - **database-design** skill - Drizzle schema, migrations, query patterns
 
 For design and branding:
+
 - **branding** skill - Visual identity, color palette, terminology, voice
 - **frontend-design** skill - Sound Connect UI patterns, Magic UI components
 
@@ -475,14 +485,6 @@ sound-connect-assets/
 - File size limits: 10MB for images, 100MB for videos
 - Allowed types: JPEG, PNG, WebP, GIF (images); MP4, WebM, MOV (videos)
 - Upload sessions expire after 15 minutes (presigned URL) or 1 hour (upload window)
-
-**Cost:**
-
-- Storage: $0.015/GB/month
-- Class A operations (PUT): $4.50/million
-- Class B operations (GET): $0.50/million
-- Egress: FREE (no bandwidth charges)
-- Estimated cost for 10k DAU: ~$3-5/month
 
 **Implemented Features:**
 

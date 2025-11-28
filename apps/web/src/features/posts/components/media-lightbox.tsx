@@ -3,6 +3,8 @@ import { Dialog, DialogContent } from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
+import { VideoPlayer } from './video-player';
+import { AudioPlayer } from './audio-player';
 
 type Props = {
     media: Media[];
@@ -114,8 +116,12 @@ export function MediaLightbox({ media, initialIndex, open, onOpenChange }: Props
                 )}
 
                 <div className="flex h-full w-full items-center justify-center p-12">
-                    {currentMedia.type === 'video' ? (
-                        <video src={`/media/${currentMedia.key}`} className="max-h-full max-w-full" controls autoPlay />
+                    {currentMedia.type === 'audio' ? (
+                        <div className="w-full max-w-2xl">
+                            <AudioPlayer src={`/media/${currentMedia.key}`} />
+                        </div>
+                    ) : currentMedia.type === 'video' ? (
+                        <VideoPlayer src={`/media/${currentMedia.key}`} className="max-h-full max-w-full" autoPlay />
                     ) : (
                         <img src={`/media/${currentMedia.key}`} alt={`Media ${currentIndex + 1}`} className="max-h-full max-w-full object-contain" />
                     )}

@@ -76,7 +76,7 @@ export const commentsReactionsTable = sqliteTable('comments_reactions', {
     createdAt: text('created_at').notNull()
 });
 
-export const mediaTypeEnum = ['image', 'video'] as const;
+export const mediaTypeEnum = ['image', 'video', 'audio'] as const;
 
 export const mediaTable = sqliteTable('media', {
     id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
@@ -423,7 +423,7 @@ export const bandApplicationsRelations = relations(bandApplicationsTable, ({ one
     user: one(users, { fields: [bandApplicationsTable.userId], references: [users.id] })
 }));
 
-export const uploadTypeEnum = ['profile-image', 'band-image', 'post-media'] as const;
+export const uploadTypeEnum = ['profile-image', 'band-image', 'post-media', 'music-sample'] as const;
 
 export const uploadSessionsTable = sqliteTable(
     'upload_sessions',
@@ -579,4 +579,34 @@ export const userOnboardingTable = sqliteTable(
 
 export const userOnboardingRelations = relations(userOnboardingTable, ({ one }) => ({
     user: one(users, { fields: [userOnboardingTable.userId], references: [users.id] })
+}));
+
+export const musicSampleMediaTypeEnum = ['audio', 'video'] as const;
+
+export const musicSamplesTable = sqliteTable(
+    'music_samples',
+    {
+        id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
+        userId: text('user_id')
+            .notNull()
+            .references(() => users.id, { onDelete: 'cascade' }),
+        title: text('title').notNull(),
+        description: text('description'),
+        instrument: text('instrument', { enum: InstrumentEnum }),
+        mediaType: text('media_type', { enum: musicSampleMediaTypeEnum }).notNull(),
+        r2Key: text('r2_key').notNull(),
+        durationSeconds: integer('duration_seconds'),
+        fileSize: integer('file_size').notNull(),
+        sortOrder: integer('sort_order').notNull().default(0),
+        createdAt: text('created_at').notNull(),
+        updatedAt: text('updated_at')
+    },
+    (table) => ({
+        userIdIdx: index('idx_music_samples_user_id').on(table.userId),
+        userSortIdx: index('idx_music_samples_user_sort').on(table.userId, table.sortOrder)
+    })
+);
+
+export const musicSamplesRelations = relations(musicSamplesTable, ({ one }) => ({
+    user: one(users, { fields: [musicSamplesTable.userId], references: [users.id] })
 }));

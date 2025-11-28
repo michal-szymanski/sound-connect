@@ -3,6 +3,7 @@
 Manages band profiles, including creation, editing, members, followers, applications, and band posts.
 
 ## Key Components
+
 - `BandHeader` - Band profile header with image, name, genre, location
 - `BandForm` - Form for creating/editing band profile
 - `BandFollowButton` - Follow/unfollow button with state management
@@ -22,10 +23,12 @@ Manages band profiles, including creation, editing, members, followers, applicat
 - `UserBandCard` - Band card for user's bands list
 
 ## Hooks
+
 - `useBands` - Fetches all bands user belongs to
 - `useBandApplications` - Fetches pending applications for a band (admins only)
 
 ## Server Functions
+
 - `getBand` - Fetches band profile by ID
 - `createBand` - Creates new band
 - `updateBand` - Updates band profile
@@ -44,6 +47,7 @@ Manages band profiles, including creation, editing, members, followers, applicat
 - `getBandApplicationStatus` - Checks user's application status
 
 ## Data Flow
+
 1. **Profile**: Bands loaded via `getBand`, displayed in tabbed interface (Posts/About/Members/Applications)
 2. **Members**: Admins can add/remove members, prevent removing last admin
 3. **Followers**: Users follow bands, follower count updates reactively

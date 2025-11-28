@@ -25,6 +25,7 @@
         "./types/band-applications": "./src/types/band-applications.ts",
         "./types/messaging": "./src/types/messaging.ts",
         "./types/uploads": "./src/types/uploads.ts",
+        "./types/music-samples": "./src/types/music-samples.ts",
         "./types/settings": "./src/types/settings.ts",
         "./types/conversations": "./src/types/conversations.ts",
         "./utils/profile-completion": "./src/utils/profile-completion.ts",

@@ -36,6 +36,13 @@
       "when": 1764106817909,
       "tag": "0004_add_user_onboarding",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1764365998627,
+      "tag": "0005_brown_vivisector",
+      "breakpoints": true
     }
   ]
 }

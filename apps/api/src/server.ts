@@ -20,6 +20,7 @@ import { settingsRoutes } from '@/api/routes/settings';
 import { discoverRoutes } from '@/api/routes/discover';
 import { onboardingRoutes } from '@/api/routes/onboarding';
 import { geocodingRoutes } from '@/api/routes/geocoding';
+import { musicSamplesRoutes } from '@/api/routes/music-samples';
 import * as Sentry from '@sentry/cloudflare';
 
 const app = new Hono<HonoContext>();
@@ -71,6 +72,7 @@ app.route('/api', settingsRoutes);
 app.route('/api', discoverRoutes);
 app.route('/api', onboardingRoutes);
 app.route('/api', geocodingRoutes);
+app.route('/api', musicSamplesRoutes);
 
 export { ChatDurableObject, UserDurableObject, NotificationsDurableObject } from '@sound-connect/durable-objects';
 

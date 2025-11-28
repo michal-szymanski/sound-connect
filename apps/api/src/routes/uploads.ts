@@ -29,7 +29,7 @@ uploadsRoutes.post('/uploads/presigned-url', async (c) => {
     const body = await c.req.json();
     const data = presignedUrlRequestSchema.parse(body);
 
-    const allowedTypes = [...appConfig.allowedImageTypes, ...appConfig.allowedVideoTypes];
+    const allowedTypes = [...appConfig.allowedImageTypes, ...appConfig.allowedVideoTypes, ...appConfig.allowedAudioTypes];
     if (!allowedTypes.includes(data.fileType as never)) {
         throw new HTTPException(400, {
             message: `Invalid file type. Allowed types: ${allowedTypes.join(', ')}`
@@ -38,12 +38,14 @@ uploadsRoutes.post('/uploads/presigned-url', async (c) => {
 
     const isImage = appConfig.allowedImageTypes.includes(data.fileType as never);
     const isVideo = appConfig.allowedVideoTypes.includes(data.fileType as never);
+    const isAudio = appConfig.allowedAudioTypes.includes(data.fileType as never);
 
-    const maxSize = isImage ? appConfig.maxImageSize : isVideo ? appConfig.maxVideoSize : 0;
+    const maxSize = isImage ? appConfig.maxImageSize : isVideo ? appConfig.maxVideoSize : isAudio ? appConfig.maxAudioSize : 0;
 
     if (data.fileSize > maxSize) {
+        const fileTypeName = isImage ? 'images' : isVideo ? 'videos' : isAudio ? 'audio files' : 'files';
         throw new HTTPException(400, {
-            message: `File size exceeds maximum (${maxSize} bytes for ${isImage ? 'images' : 'videos'})`
+            message: `File size exceeds maximum (${maxSize} bytes for ${fileTypeName})`
         });
     }
 
@@ -166,6 +168,8 @@ uploadsRoutes.post('/uploads/confirm', async (c) => {
             throw new HTTPException(400, { message: 'Band ID is missing' });
         }
         permanentKey = `bands/${session.bandId}/avatar-${timestamp}.${extension}`;
+    } else if (session.uploadType === 'music-sample') {
+        permanentKey = `music-samples/${user.id}/${timestamp}-${data.sessionId}.${extension}`;
     } else {
         permanentKey = `posts/pending/${data.sessionId}.${extension}`;
     }

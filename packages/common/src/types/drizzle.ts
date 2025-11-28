@@ -206,14 +206,14 @@ export type CommentReaction = z.infer<typeof commentReactionSchema>;
 export const createMediaSchema = z.object({
     id: z.number(),
     postId: z.number(),
-    type: z.enum(['image', 'video']),
+    type: z.enum(['image', 'video', 'audio']),
     key: z.string()
 });
 
 export const mediaSchema = z.object({
     id: z.number(),
     postId: z.number(),
-    type: z.enum(['image', 'video']),
+    type: z.enum(['image', 'video', 'audio']),
     key: z.string()
 });
 
@@ -677,3 +677,38 @@ export const userOnboardingSchema = z.object({
 
 export type CreateUserOnboarding = z.infer<typeof createUserOnboardingSchema>;
 export type UserOnboarding = z.infer<typeof userOnboardingSchema>;
+
+export const musicSampleMediaTypeEnum = z.enum(['audio', 'video']);
+
+export const createMusicSampleDbSchema = z.object({
+    userId: z.string(),
+    title: z.string(),
+    description: z.string().nullable(),
+    instrument: z.enum(InstrumentEnum).nullable(),
+    mediaType: musicSampleMediaTypeEnum,
+    r2Key: z.string(),
+    durationSeconds: z.number().nullable(),
+    fileSize: z.number(),
+    sortOrder: z.number(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
+export const musicSampleDbSchema = z.object({
+    id: z.number(),
+    userId: z.string(),
+    title: z.string(),
+    description: z.string().nullable(),
+    instrument: z.enum(InstrumentEnum).nullable(),
+    mediaType: musicSampleMediaTypeEnum,
+    r2Key: z.string(),
+    durationSeconds: z.number().nullable(),
+    fileSize: z.number(),
+    sortOrder: z.number(),
+    createdAt: z.string(),
+    updatedAt: z.string().nullable()
+});
+
+export type CreateMusicSampleDb = z.infer<typeof createMusicSampleDbSchema>;
+export type MusicSampleDb = z.infer<typeof musicSampleDbSchema>;
+export type MusicSampleMediaType = z.infer<typeof musicSampleMediaTypeEnum>;

@@ -3,6 +3,7 @@
 Rich musician profiles with 30+ fields, inline editing, and completion tracking.
 
 ## Key Components
+
 - `ProfileSection` - Reusable section wrapper with edit mode
 - `InstrumentsSection` - Primary + 4 additional instruments
 - `GenresSection` - Primary + secondary genres (up to 5)
@@ -21,6 +22,7 @@ Rich musician profiles with 30+ fields, inline editing, and completion tracking.
 - `CharacterCounter` - Character count for text inputs
 
 ## Hooks
+
 - `useProfile` - Fetches user profile with reactive updates
 - `useUpdateInstruments` - Updates instruments section
 - `useUpdateGenres` - Updates genres section
@@ -31,6 +33,7 @@ Rich musician profiles with 30+ fields, inline editing, and completion tracking.
 - `useUpdateLookingFor` - Updates seeking section
 
 ## Server Functions
+
 - `getProfile` - Fetches user profile by ID
 - `updateInstruments` - Saves instruments
 - `updateGenres` - Saves genres
@@ -45,6 +48,7 @@ Rich musician profiles with 30+ fields, inline editing, and completion tracking.
 - `getFollowing` - Fetches following list
 
 ## Data Flow
+
 1. Profile loaded via `getProfile`, displays all sections
 2. Each section shows completion status (complete/incomplete/required)
 3. User clicks edit → inline form appears → saves → cache invalidates → UI updates

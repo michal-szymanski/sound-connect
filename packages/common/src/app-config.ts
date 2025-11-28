@@ -12,10 +12,13 @@ export const appConfig = {
 
     maxImageSize: 10 * 1024 * 1024,
     maxVideoSize: 100 * 1024 * 1024,
+    maxAudioSize: 50 * 1024 * 1024,
     maxPostMediaCount: 5,
+    maxMusicSampleCount: 10,
     presignedUrlExpiryMinutes: 15,
     allowedImageTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
-    allowedVideoTypes: ['video/mp4', 'video/webm', 'video/quicktime']
+    allowedVideoTypes: ['video/mp4', 'video/webm', 'video/quicktime'],
+    allowedAudioTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/webm']
 } as const;
 
 export type AppConfig = typeof appConfig;

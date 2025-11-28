@@ -16,7 +16,7 @@ type MediaPreview = {
     id: string;
     file: File;
     previewUrl: string;
-    type: 'image' | 'video';
+    type: 'image' | 'video' | 'audio';
 };
 
 export const PostMediaUpload = (props: Props) => {
@@ -47,15 +47,16 @@ export const PostMediaUpload = (props: Props) => {
         for (const file of files) {
             const isImage = file.type.startsWith('image/');
             const isVideo = file.type.startsWith('video/');
+            const isAudio = file.type.startsWith('audio/');
 
-            if (!isImage && !isVideo) continue;
+            if (!isImage && !isVideo && !isAudio) continue;
 
             const previewUrl = URL.createObjectURL(file);
             newPreviews.push({
                 id: Math.random().toString(36).substring(7),
                 file,
                 previewUrl,
-                type: isImage ? 'image' : 'video'
+                type: isImage ? 'image' : isVideo ? 'video' : 'audio'
             });
         }
 
@@ -93,7 +94,7 @@ export const PostMediaUpload = (props: Props) => {
             <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
+                accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime,audio/mpeg,audio/wav,audio/ogg,audio/webm"
                 onChange={handleFileChange}
                 className="hidden"
                 disabled={isUploading || previews.length >= maxFiles}
@@ -107,8 +108,26 @@ export const PostMediaUpload = (props: Props) => {
                             <div className="border-input bg-muted relative aspect-square overflow-hidden rounded-lg border">
                                 {preview.type === 'image' ? (
                                     <img src={preview.previewUrl} alt={`Media ${index + 1}`} className="h-full w-full object-cover" />
-                                ) : (
+                                ) : preview.type === 'video' ? (
                                     <video src={preview.previewUrl} className="h-full w-full object-cover" controls={false} />
+                                ) : (
+                                    <div className="flex h-full w-full flex-col items-center justify-center gap-2">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            strokeWidth={1.5}
+                                            stroke="currentColor"
+                                            className="text-muted-foreground h-12 w-12"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z"
+                                            />
+                                        </svg>
+                                        <span className="text-muted-foreground text-sm font-medium">Audio</span>
+                                    </div>
                                 )}
 
                                 {isUploading && progress[index] !== undefined && (
@@ -139,6 +158,7 @@ export const PostMediaUpload = (props: Props) => {
                             </div>
 
                             {preview.type === 'video' && <div className="absolute top-2 left-2 rounded bg-black/70 px-2 py-1 text-xs text-white">Video</div>}
+                            {preview.type === 'audio' && <div className="absolute top-2 left-2 rounded bg-black/70 px-2 py-1 text-xs text-white">Audio</div>}
                         </div>
                     ))}
                 </div>

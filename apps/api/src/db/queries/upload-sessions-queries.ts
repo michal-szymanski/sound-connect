@@ -7,7 +7,7 @@ const { uploadSessionsTable } = schema;
 type CreateUploadSessionData = {
     id: string;
     userId: string;
-    uploadType: 'profile-image' | 'band-image' | 'post-media';
+    uploadType: 'profile-image' | 'band-image' | 'post-media' | 'music-sample';
     bandId?: number;
     fileName: string;
     fileSize: number;
