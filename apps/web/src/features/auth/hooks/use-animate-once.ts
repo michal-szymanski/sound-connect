@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { isServer } from '@/web/utils/env-utils';
 
 type WindowWithFlag = Window & { __loginHeroAnimated?: boolean };
 
 export function useAnimateOnce() {
     const [animate] = useState(() => {
-        if (typeof window === 'undefined') {
+        if (isServer()) {
             return true;
         }
 

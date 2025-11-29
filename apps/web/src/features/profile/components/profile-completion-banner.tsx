@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { cn } from '@/shared/lib/utils';
 import type { FullProfile } from '@sound-connect/common/types/profile';
+import { isServer } from '@/web/utils/env-utils';
 
 type Props = {
     profile: FullProfile;
@@ -14,7 +15,7 @@ type Props = {
 
 export function ProfileCompletionBanner({ profile, userId }: Props) {
     const [dismissed, setDismissed] = useState(() => {
-        if (typeof window === 'undefined') return false;
+        if (isServer()) return false;
         return localStorage.getItem('profile-completion-banner-dismissed') === 'true';
     });
 

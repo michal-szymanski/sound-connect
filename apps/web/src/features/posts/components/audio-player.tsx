@@ -6,6 +6,7 @@ import { Slider } from '@/shared/components/ui/slider';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
+import { isServer } from '@/web/utils/env-utils';
 
 type Props = {
     src: string;
@@ -23,8 +24,10 @@ export function AudioPlayer({ src, className }: Props) {
     const [isMuted, setIsMuted] = useState(false);
     const mediaPlayback = useMediaPlayback();
 
-    const plugins = useMemo(
-        () => [
+    const plugins = useMemo(() => {
+        if (isServer()) return [];
+
+        return [
             Hover.create({
                 lineColor: 'oklch(0.72 0.14 200 / 0.35)',
                 lineWidth: 2,
@@ -32,9 +35,8 @@ export function AudioPlayer({ src, className }: Props) {
                 labelColor: 'oklch(0.965 0.005 240)',
                 labelSize: '11px'
             })
-        ],
-        []
-    );
+        ];
+    }, []);
 
     const renderFunction = useCallback((channelData: ChannelData, ctx: CanvasRenderingContext2D) => {
         const { width, height } = ctx.canvas;

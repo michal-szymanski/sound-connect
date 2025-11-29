@@ -4,7 +4,7 @@ import { appConfig } from '@sound-connect/common/app-config';
 import type { Post, Media } from '@sound-connect/common/types/drizzle';
 import { useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { X, ImagePlus, Loader2, Music } from 'lucide-react';
+import { X, ImagePlus, Loader2 } from 'lucide-react';
 import { VisuallyHidden } from 'radix-ui';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -93,7 +93,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
             const existingPreviews: MediaPreview[] = existingMedia.map((m) => ({
                 id: m.id.toString(),
                 previewUrl: `/media/${m.key}`,
-                type: m.type === 'image' ? 'image' : 'video',
+                type: m.type === 'image' ? 'image' : m.type === 'video' ? 'video' : 'audio',
                 key: m.key,
                 isExisting: true
             }));
@@ -284,17 +284,24 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                     />
 
                     {visiblePreviews.length > 0 && (
-                        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                        <div
+                            className={clsx('grid gap-3', visiblePreviews.some((p) => p.type === 'audio') ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3')}
+                        >
                             {visiblePreviews.map((preview, index) => (
                                 <div key={preview.id} className="group relative">
-                                    <div className="border-input bg-muted relative aspect-square overflow-hidden rounded-lg border">
+                                    <div
+                                        className={clsx(
+                                            'border-input bg-muted relative overflow-hidden rounded-lg border',
+                                            preview.type === 'audio' ? '' : 'aspect-square'
+                                        )}
+                                    >
                                         {preview.type === 'image' ? (
                                             <img src={preview.previewUrl} alt={`Media ${index + 1}`} className="h-full w-full object-cover" />
                                         ) : preview.type === 'video' ? (
                                             <VideoPlayer src={preview.previewUrl} controls={false} muted aspectRatio="1/1" className="h-full w-full" />
                                         ) : (
-                                            <div className="flex h-full w-full items-center justify-center bg-muted">
-                                                <Music className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
+                                            <div className="flex items-center justify-center p-4">
+                                                <audio src={preview.previewUrl} controls className="w-full" preload="metadata" />
                                             </div>
                                         )}
 

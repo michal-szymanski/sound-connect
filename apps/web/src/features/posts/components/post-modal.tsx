@@ -1,9 +1,10 @@
 import { Link } from '@tanstack/react-router';
 import { Heart, MessageCircle, Share2, Send, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { VisuallyHidden } from 'radix-ui';
 import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
-import { Dialog, DialogContent } from '@/shared/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/shared/components/ui/dialog';
 import { Input } from '@/shared/components/ui/input';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { useLikeToggle, useComments, useCreateComment } from '../hooks/use-posts';
@@ -161,6 +162,11 @@ export function PostModal({
                 className={`z-dialog! flex h-[90vh] flex-row gap-0 overflow-hidden p-0 ${hasMedia ? 'w-[90vw] max-w-[1400px] sm:max-w-[1400px]' : 'w-[500px]'}`}
                 showCloseButton={true}
             >
+                <VisuallyHidden.Root>
+                    <DialogTitle>Post by {author.name}</DialogTitle>
+                    <DialogDescription>View post content, media, and comments. Like and comment on this post.</DialogDescription>
+                </VisuallyHidden.Root>
+
                 {hasMedia && displayMedia[currentMediaIndex] && (
                     <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black">
                         {displayMedia[currentMediaIndex]!.type === 'video' ? (
