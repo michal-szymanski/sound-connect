@@ -5,6 +5,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Slider } from '@/shared/components/ui/slider';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
 
 type Props = {
     src: string;
@@ -16,9 +17,11 @@ type ChannelData = Array<Float32Array | number[]>;
 export function AudioPlayer({ src, className }: Props) {
     const waveformRef = useRef<HTMLDivElement>(null);
     const hoverCanvasRef = useRef<HTMLCanvasElement>(null);
+    const instanceIdRef = useRef<string>(`audio-${Math.random().toString(36).substring(2, 11)}`);
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
+    const mediaPlayback = useMediaPlayback();
 
     const plugins = useMemo(
         () => [
@@ -33,63 +36,60 @@ export function AudioPlayer({ src, className }: Props) {
         []
     );
 
-    const renderFunction = useCallback(
-        (channelData: ChannelData, ctx: CanvasRenderingContext2D) => {
-            const { width, height } = ctx.canvas;
-            const barWidth = 3;
-            const barGap = 1;
-            const barRadius = 2;
+    const renderFunction = useCallback((channelData: ChannelData, ctx: CanvasRenderingContext2D) => {
+        const { width, height } = ctx.canvas;
+        const barWidth = 3;
+        const barGap = 1;
+        const barRadius = 2;
 
-            const dpr = window.devicePixelRatio || 1;
-            const displayWidth = width / dpr;
-            const displayHeight = height / dpr;
+        const dpr = window.devicePixelRatio || 1;
+        const displayWidth = width / dpr;
+        const displayHeight = height / dpr;
 
-            const barCount = Math.floor(displayWidth / (barWidth + barGap));
-            const peaksData = channelData[0];
-            if (!peaksData) return;
-            const step = peaksData.length / barCount;
+        const barCount = Math.floor(displayWidth / (barWidth + barGap));
+        const peaksData = channelData[0];
+        if (!peaksData) return;
+        const step = peaksData.length / barCount;
 
-            let maxPeak = 0;
-            for (let i = 0; i < peaksData.length; i++) {
-                maxPeak = Math.max(maxPeak, Math.abs(peaksData[i] ?? 0));
-            }
-            const normalizer = maxPeak > 0 ? 1 / maxPeak : 1;
+        let maxPeak = 0;
+        for (let i = 0; i < peaksData.length; i++) {
+            maxPeak = Math.max(maxPeak, Math.abs(peaksData[i] ?? 0));
+        }
+        const normalizer = maxPeak > 0 ? 1 / maxPeak : 1;
 
-            ctx.clearRect(0, 0, width, height);
-            ctx.save();
-            ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, width, height);
+        ctx.save();
+        ctx.scale(dpr, dpr);
 
-            for (let i = 0; i < barCount; i++) {
-                const startIndex = Math.floor(i * step);
-                const endIndex = Math.floor((i + 1) * step);
+        for (let i = 0; i < barCount; i++) {
+            const startIndex = Math.floor(i * step);
+            const endIndex = Math.floor((i + 1) * step);
 
-                let barMax = 0;
-                for (let j = startIndex; j < endIndex; j++) {
-                    barMax = Math.max(barMax, Math.abs(peaksData[j] ?? 0));
-                }
-
-                const normalized = barMax * normalizer;
-                const barHeight = Math.max(barRadius * 2, normalized * displayHeight);
-                const x = i * (barWidth + barGap);
-                const y = (displayHeight - barHeight) / 2;
-
-                ctx.beginPath();
-                ctx.roundRect(x, y, barWidth, barHeight, barRadius);
-                ctx.fill();
+            let barMax = 0;
+            for (let j = startIndex; j < endIndex; j++) {
+                barMax = Math.max(barMax, Math.abs(peaksData[j] ?? 0));
             }
 
-            ctx.restore();
+            const normalized = barMax * normalizer;
+            const barHeight = Math.max(barRadius * 2, normalized * displayHeight);
+            const x = i * (barWidth + barGap);
+            const y = (displayHeight - barHeight) / 2;
 
-            const hoverCanvas = hoverCanvasRef.current;
-            if (hoverCanvas) {
-                hoverCanvas.width = width;
-                hoverCanvas.height = height;
-                hoverCanvas.style.width = `${displayWidth}px`;
-                hoverCanvas.style.height = `${displayHeight}px`;
-            }
-        },
-        []
-    );
+            ctx.beginPath();
+            ctx.roundRect(x, y, barWidth, barHeight, barRadius);
+            ctx.fill();
+        }
+
+        ctx.restore();
+
+        const hoverCanvas = hoverCanvasRef.current;
+        if (hoverCanvas) {
+            hoverCanvas.width = width;
+            hoverCanvas.height = height;
+            hoverCanvas.style.width = `${displayWidth}px`;
+            hoverCanvas.style.height = `${displayHeight}px`;
+        }
+    }, []);
 
     const { wavesurfer, isPlaying, currentTime } = useWavesurfer({
         container: waveformRef,
@@ -105,83 +105,89 @@ export function AudioPlayer({ src, className }: Props) {
         renderFunction
     });
 
-    const drawHoverWaveform = useCallback((hoverX: number) => {
-        const canvas = hoverCanvasRef.current;
-        if (!canvas || !wavesurfer) return;
+    const drawHoverWaveform = useCallback(
+        (hoverX: number) => {
+            const canvas = hoverCanvasRef.current;
+            if (!canvas || !wavesurfer) return;
 
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
 
-        const dpr = window.devicePixelRatio || 1;
-        const displayWidth = canvas.width / dpr;
-        const displayHeight = canvas.height / dpr;
+            const dpr = window.devicePixelRatio || 1;
+            const displayWidth = canvas.width / dpr;
+            const displayHeight = canvas.height / dpr;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        if (hoverX <= 0) return;
+            if (hoverX <= 0) return;
 
-        const decodedData = wavesurfer.getDecodedData();
-        if (!decodedData) return;
+            const decodedData = wavesurfer.getDecodedData();
+            if (!decodedData) return;
 
-        const duration = wavesurfer.getDuration();
-        const currentTime = wavesurfer.getCurrentTime();
-        const progressX = duration > 0 ? (currentTime / duration) * displayWidth : 0;
+            const duration = wavesurfer.getDuration();
+            const currentTime = wavesurfer.getCurrentTime();
+            const progressX = duration > 0 ? (currentTime / duration) * displayWidth : 0;
 
-        const channelData = decodedData.getChannelData(0);
-        const barWidth = 3;
-        const barGap = 1;
-        const barRadius = 2;
+            const channelData = decodedData.getChannelData(0);
+            const barWidth = 3;
+            const barGap = 1;
+            const barRadius = 2;
 
-        const barCount = Math.floor(displayWidth / (barWidth + barGap));
-        const step = channelData.length / barCount;
+            const barCount = Math.floor(displayWidth / (barWidth + barGap));
+            const step = channelData.length / barCount;
 
-        let maxPeak = 0;
-        for (let i = 0; i < channelData.length; i++) {
-            maxPeak = Math.max(maxPeak, Math.abs(channelData[i] ?? 0));
-        }
-        const normalizer = maxPeak > 0 ? 1 / maxPeak : 1;
+            let maxPeak = 0;
+            for (let i = 0; i < channelData.length; i++) {
+                maxPeak = Math.max(maxPeak, Math.abs(channelData[i] ?? 0));
+            }
+            const normalizer = maxPeak > 0 ? 1 / maxPeak : 1;
 
-        ctx.save();
-        ctx.scale(dpr, dpr);
+            ctx.save();
+            ctx.scale(dpr, dpr);
 
-        const isHoverAfterProgress = hoverX > progressX;
+            const isHoverAfterProgress = hoverX > progressX;
 
-        if (isHoverAfterProgress) {
-            ctx.beginPath();
-            ctx.rect(progressX, 0, hoverX - progressX, displayHeight);
-            ctx.clip();
-        } else {
-            ctx.beginPath();
-            ctx.rect(hoverX, 0, progressX - hoverX, displayHeight);
-            ctx.clip();
-        }
-
-        ctx.fillStyle = 'oklch(0.80 0.12 200)';
-
-        for (let i = 0; i < barCount; i++) {
-            const startIndex = Math.floor(i * step);
-            const endIndex = Math.floor((i + 1) * step);
-
-            let barMax = 0;
-            for (let j = startIndex; j < endIndex; j++) {
-                barMax = Math.max(barMax, Math.abs(channelData[j] ?? 0));
+            if (isHoverAfterProgress) {
+                ctx.beginPath();
+                ctx.rect(progressX, 0, hoverX - progressX, displayHeight);
+                ctx.clip();
+            } else {
+                ctx.beginPath();
+                ctx.rect(hoverX, 0, progressX - hoverX, displayHeight);
+                ctx.clip();
             }
 
-            const normalized = barMax * normalizer;
-            const barHeight = Math.max(barRadius * 2, normalized * displayHeight);
-            const x = i * (barWidth + barGap);
-            const y = (displayHeight - barHeight) / 2;
+            ctx.fillStyle = 'oklch(0.80 0.12 200)';
 
-            ctx.beginPath();
-            ctx.roundRect(x, y, barWidth, barHeight, barRadius);
-            ctx.fill();
-        }
+            for (let i = 0; i < barCount; i++) {
+                const startIndex = Math.floor(i * step);
+                const endIndex = Math.floor((i + 1) * step);
 
-        ctx.restore();
-    }, [wavesurfer]);
+                let barMax = 0;
+                for (let j = startIndex; j < endIndex; j++) {
+                    barMax = Math.max(barMax, Math.abs(channelData[j] ?? 0));
+                }
+
+                const normalized = barMax * normalizer;
+                const barHeight = Math.max(barRadius * 2, normalized * displayHeight);
+                const x = i * (barWidth + barGap);
+                const y = (displayHeight - barHeight) / 2;
+
+                ctx.beginPath();
+                ctx.roundRect(x, y, barWidth, barHeight, barRadius);
+                ctx.fill();
+            }
+
+            ctx.restore();
+        },
+        [wavesurfer]
+    );
 
     useEffect(() => {
         if (!wavesurfer) return;
+
+        const instanceId = instanceIdRef.current;
+        mediaPlayback.register(instanceId, wavesurfer, 'audio');
 
         const onReady = () => {
             setDuration(wavesurfer.getDuration());
@@ -197,14 +203,21 @@ export function AudioPlayer({ src, className }: Props) {
             }
         };
 
+        const onPlay = () => {
+            mediaPlayback.notifyPlay(instanceId);
+        };
+
         wavesurfer.on('ready', onReady);
         wavesurfer.on('seeking', onSeeking);
+        wavesurfer.on('play', onPlay);
 
         return () => {
             wavesurfer.un('ready', onReady);
             wavesurfer.un('seeking', onSeeking);
+            wavesurfer.un('play', onPlay);
+            mediaPlayback.unregister(instanceId);
         };
-    }, [wavesurfer]);
+    }, [wavesurfer, mediaPlayback]);
 
     const togglePlayPause = () => {
         if (!wavesurfer) return;
@@ -272,16 +285,9 @@ export function AudioPlayer({ src, className }: Props) {
                 </Button>
 
                 <div className="flex flex-1 flex-col gap-2">
-                    <div
-                        className="relative"
-                        onMouseMove={handleMouseMove}
-                        onMouseLeave={handleMouseLeave}
-                    >
+                    <div className="relative" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
                         <div ref={waveformRef} className="cursor-pointer" aria-label="Audio waveform, click to seek" role="slider" tabIndex={0} />
-                        <canvas
-                            ref={hoverCanvasRef}
-                            className="pointer-events-none absolute inset-0 z-50"
-                        />
+                        <canvas ref={hoverCanvasRef} className="pointer-events-none absolute inset-0 z-50" />
                     </div>
 
                     <div className="text-muted-foreground flex items-center justify-between text-xs">

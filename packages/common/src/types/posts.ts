@@ -5,7 +5,7 @@ export const createUserPostInputSchema = z.object({
     media: z
         .array(
             z.object({
-                type: z.enum(['image', 'video']),
+                type: z.enum(['image', 'video', 'audio']),
                 key: z.string()
             })
         )

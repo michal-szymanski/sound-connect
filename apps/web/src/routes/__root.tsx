@@ -7,6 +7,7 @@ import { Toaster } from '@/shared/components/ui/sonner';
 import { getAuth } from '@/features/auth/server-functions/auth';
 import globalsCss from '@/web/styles/globals.css?url';
 import { ThemeProvider } from '@/shared/components/providers/theme-provider';
+import { MediaPlaybackProvider } from '@/shared/contexts/media-playback-context';
 import { authQuery } from '@/shared/lib/react-query';
 
 export const Route = createRootRouteWithContext<{
@@ -76,10 +77,12 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             </head>
             <body>
                 <ThemeProvider>
-                    {children}
-                    {/* <TanStackRouterDevtools position="bottom-right" />
+                    <MediaPlaybackProvider>
+                        {children}
+                        {/* <TanStackRouterDevtools position="bottom-right" />
                     <ReactQueryDevtools buttonPosition="bottom-right" /> */}
-                    <Toaster position="top-right" duration={7000} />
+                        <Toaster position="top-right" duration={7000} />
+                    </MediaPlaybackProvider>
                 </ThemeProvider>
                 <Scripts />
             </body>

@@ -4,7 +4,7 @@ import { appConfig } from '@sound-connect/common/app-config';
 import type { Post, Media } from '@sound-connect/common/types/drizzle';
 import { useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { X, ImagePlus, Loader2 } from 'lucide-react';
+import { X, ImagePlus, Loader2, Music } from 'lucide-react';
 import { VisuallyHidden } from 'radix-ui';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -41,7 +41,7 @@ type MediaPreview = {
     id: string;
     file?: File;
     previewUrl: string;
-    type: 'image' | 'video';
+    type: 'image' | 'video' | 'audio';
     key?: string;
     isExisting: boolean;
 };
@@ -135,15 +135,16 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
         for (const file of files) {
             const isImage = file.type.startsWith('image/');
             const isVideo = file.type.startsWith('video/');
+            const isAudio = file.type.startsWith('audio/');
 
-            if (!isImage && !isVideo) continue;
+            if (!isImage && !isVideo && !isAudio) continue;
 
             const previewUrl = URL.createObjectURL(file);
             newPreviews.push({
                 id: crypto.randomUUID(),
                 file,
                 previewUrl,
-                type: isImage ? 'image' : 'video',
+                type: isImage ? 'image' : isVideo ? 'video' : 'audio',
                 isExisting: false
             });
         }
@@ -197,7 +198,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                             key
                         };
                     })
-                    .filter((item): item is { type: 'image' | 'video'; key: string } => item !== null);
+                    .filter((item): item is { type: 'image' | 'video' | 'audio'; key: string } => item !== null);
 
                 const result = await addPost({
                     data: {
@@ -289,8 +290,12 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                                     <div className="border-input bg-muted relative aspect-square overflow-hidden rounded-lg border">
                                         {preview.type === 'image' ? (
                                             <img src={preview.previewUrl} alt={`Media ${index + 1}`} className="h-full w-full object-cover" />
-                                        ) : (
+                                        ) : preview.type === 'video' ? (
                                             <VideoPlayer src={preview.previewUrl} controls={false} muted aspectRatio="1/1" className="h-full w-full" />
+                                        ) : (
+                                            <div className="flex h-full w-full items-center justify-center bg-muted">
+                                                <Music className="h-12 w-12 text-muted-foreground" aria-hidden="true" />
+                                            </div>
                                         )}
 
                                         {isUploading && !preview.isExisting && progress[index] !== undefined && (
@@ -316,6 +321,9 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
 
                                     {preview.type === 'video' && (
                                         <div className="absolute top-2 left-2 rounded bg-black/70 px-2 py-1 text-xs text-white">Video</div>
+                                    )}
+                                    {preview.type === 'audio' && (
+                                        <div className="absolute top-2 left-2 rounded bg-black/70 px-2 py-1 text-xs text-white">Audio</div>
                                     )}
                                 </div>
                             ))}
@@ -346,7 +354,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                             <input
                                 ref={fileInputRef}
                                 type="file"
-                                accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime"
+                                accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime,audio/mpeg,audio/wav,audio/ogg,audio/webm"
                                 onChange={handleFileChange}
                                 className="hidden"
                                 disabled={isDisabled || !canAddMore}

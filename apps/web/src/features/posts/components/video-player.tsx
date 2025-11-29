@@ -3,6 +3,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Slider } from '@/shared/components/ui/slider';
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
 
 type Props = {
     src: string;
@@ -17,6 +18,7 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const hideControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const instanceIdRef = useRef<string>(`video-${Math.random().toString(36).substring(2, 11)}`);
 
     const [isPlaying, setIsPlaying] = useState(autoPlay);
     const [currentTime, setCurrentTime] = useState(0);
@@ -25,6 +27,8 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
     const [isMuted, setIsMuted] = useState(muted);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
+
+    const mediaPlayback = useMediaPlayback();
 
     const resetHideControlsTimer = useCallback(() => {
         if (hideControlsTimeoutRef.current) {
@@ -95,6 +99,25 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, []);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const instanceId = instanceIdRef.current;
+        mediaPlayback.register(instanceId, video, 'video');
+
+        const handlePlay = () => {
+            mediaPlayback.notifyPlay(instanceId);
+        };
+
+        video.addEventListener('play', handlePlay);
+
+        return () => {
+            video.removeEventListener('play', handlePlay);
+            mediaPlayback.unregister(instanceId);
+        };
+    }, [mediaPlayback]);
 
     const togglePlayPause = () => {
         const video = videoRef.current;
