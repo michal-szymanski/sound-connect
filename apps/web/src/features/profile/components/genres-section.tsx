@@ -20,7 +20,7 @@ type Props = {
 export const GenresSection = ({ data, canEdit, id }: Props) => {
     const updateMutation = useUpdateGenres();
     const [formData, setFormData] = useState<UpdateGenres>({
-        primaryGenre: data?.primaryGenre || 'rock',
+        primaryGenre: data?.primaryGenre || ('' as Genre),
         secondaryGenres: data?.secondaryGenres || [],
         influences: data?.influences || ''
     });
@@ -61,9 +61,20 @@ export const GenresSection = ({ data, canEdit, id }: Props) => {
                 <Label htmlFor="primaryGenre">
                     Primary Genre <span className="text-destructive">*</span>
                 </Label>
-                <Select value={formData.primaryGenre} onValueChange={(value) => setFormData({ ...formData, primaryGenre: value as Genre })} required>
+                <Select
+                    value={formData.primaryGenre}
+                    onValueChange={(value) => {
+                        const newPrimary = value as Genre;
+                        setFormData({
+                            ...formData,
+                            primaryGenre: newPrimary,
+                            secondaryGenres: formData.secondaryGenres.filter((g) => g !== newPrimary)
+                        });
+                    }}
+                    required
+                >
                     <SelectTrigger id="primaryGenre" className="w-full" aria-required="true">
-                        <SelectValue />
+                        <SelectValue placeholder="Select your primary genre" />
                     </SelectTrigger>
                     <SelectContent>
                         {GenreEnum.map((genre) => (

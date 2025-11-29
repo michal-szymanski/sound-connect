@@ -7,9 +7,14 @@ import { Label } from '@/shared/components/ui/label';
 import { Input } from '@/shared/components/ui/input';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import type { InstrumentsSection as InstrumentsSectionData, UpdateInstruments, AdditionalInstrument } from '@sound-connect/common/types/profile';
+import type { InstrumentsSection as InstrumentsSectionData, UpdateInstruments } from '@sound-connect/common/types/profile';
 import { InstrumentEnum, type Instrument } from '@sound-connect/common/types/profile-enums';
 import { formatInstrument } from '@/features/profile/lib/profile-utils';
+
+type FormAdditionalInstrument = {
+    instrument: Instrument | '';
+    years: number | undefined;
+};
 
 type Props = {
     data: InstrumentsSectionData | null;
@@ -17,11 +22,18 @@ type Props = {
     id?: string;
 };
 
+type FormState = {
+    primaryInstrument: Instrument | '';
+    yearsPlayingPrimary: number | undefined;
+    additionalInstruments: FormAdditionalInstrument[];
+    seekingToPlay: Instrument[];
+};
+
 export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
     const updateMutation = useUpdateInstruments();
-    const [formData, setFormData] = useState<UpdateInstruments>({
-        primaryInstrument: data?.primaryInstrument || 'guitar',
-        yearsPlayingPrimary: data?.yearsPlayingPrimary || 1,
+    const [formData, setFormData] = useState<FormState>({
+        primaryInstrument: data?.primaryInstrument || '',
+        yearsPlayingPrimary: data?.yearsPlayingPrimary || undefined,
         additionalInstruments: data?.additionalInstruments || [],
         seekingToPlay: data?.seekingToPlay || []
     });
@@ -36,14 +48,26 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
 
     const handleSubmit = (e: React.FormEvent, closeForm: () => void) => {
         e.preventDefault();
-        updateMutation.mutate(formData, {
+
+        const validAdditionalInstruments = formData.additionalInstruments.filter(
+            (inst): inst is { instrument: Instrument; years: number } => inst.instrument !== '' && inst.years !== undefined
+        );
+
+        const submitData: UpdateInstruments = {
+            primaryInstrument: formData.primaryInstrument as Instrument,
+            yearsPlayingPrimary: formData.yearsPlayingPrimary!,
+            additionalInstruments: validAdditionalInstruments,
+            seekingToPlay: formData.seekingToPlay
+        };
+
+        updateMutation.mutate(submitData, {
             onSuccess: () => closeForm()
         });
     };
 
     const addInstrument = () => {
         if (formData.additionalInstruments.length >= 4) return;
-        const newInstrument: AdditionalInstrument = { instrument: 'guitar', years: 1 };
+        const newInstrument: FormAdditionalInstrument = { instrument: '', years: undefined };
         setFormData({
             ...formData,
             additionalInstruments: [...formData.additionalInstruments, newInstrument]
@@ -57,14 +81,14 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
         });
     };
 
-    const updateAdditionalInstrument = (index: number, field: keyof AdditionalInstrument, value: Instrument | number) => {
+    const updateAdditionalInstrument = (index: number, field: keyof FormAdditionalInstrument, value: Instrument | '' | number | undefined) => {
         const updated = [...formData.additionalInstruments];
         const current = updated[index];
         if (!current) return;
 
         updated[index] = {
-            instrument: field === 'instrument' ? (value as Instrument) : current.instrument,
-            years: field === 'years' ? (value as number) : current.years
+            instrument: field === 'instrument' ? (value as Instrument | '') : current.instrument,
+            years: field === 'years' ? (value as number | undefined) : current.years
         };
         setFormData({
             ...formData,
@@ -78,7 +102,113 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
         setFormData({ ...formData, seekingToPlay: updated });
     };
 
-    const allInstruments = [formData.primaryInstrument, ...formData.additionalInstruments.map((i) => i.instrument)];
+    const handlePrimaryInstrumentChange = (newPrimary: Instrument | '') => {
+        if (newPrimary === '') {
+            setFormData({ ...formData, primaryInstrument: newPrimary });
+            return;
+        }
+
+        const existingAdditional = formData.additionalInstruments.find((inst) => inst.instrument === newPrimary);
+
+        if (existingAdditional) {
+            if (formData.primaryInstrument !== '' && formData.primaryInstrument !== newPrimary) {
+                const oldPrimary = formData.primaryInstrument;
+                const oldPrimaryYears = formData.yearsPlayingPrimary;
+                const newPrimaryYears = existingAdditional.years;
+
+                const updatedAdditional = formData.additionalInstruments.map((inst) =>
+                    inst.instrument === newPrimary
+                        ? {
+                              instrument: oldPrimary,
+                              years: oldPrimaryYears
+                          }
+                        : inst
+                );
+
+                setFormData({
+                    ...formData,
+                    primaryInstrument: newPrimary,
+                    yearsPlayingPrimary: newPrimaryYears,
+                    additionalInstruments: updatedAdditional
+                });
+            } else {
+                const newPrimaryYears = existingAdditional.years;
+                const updatedAdditional = formData.additionalInstruments.filter((inst) => inst.instrument !== newPrimary);
+
+                setFormData({
+                    ...formData,
+                    primaryInstrument: newPrimary,
+                    yearsPlayingPrimary: newPrimaryYears,
+                    additionalInstruments: updatedAdditional
+                });
+            }
+        } else {
+            setFormData({
+                ...formData,
+                primaryInstrument: newPrimary
+            });
+        }
+    };
+
+    const handleAdditionalInstrumentChange = (index: number, newInstrument: Instrument | '') => {
+        const currentInstrument = formData.additionalInstruments[index];
+        if (!currentInstrument) return;
+
+        if (newInstrument === formData.primaryInstrument && formData.primaryInstrument !== '') {
+            const oldAdditionalInstrument = currentInstrument.instrument;
+            const oldAdditionalYears = currentInstrument.years;
+            const oldPrimaryInstrument = formData.primaryInstrument;
+            const oldPrimaryYears = formData.yearsPlayingPrimary;
+
+            const updatedAdditional = [...formData.additionalInstruments];
+
+            if (oldAdditionalInstrument !== '' && oldAdditionalYears !== undefined) {
+                updatedAdditional[index] = {
+                    instrument: oldPrimaryInstrument,
+                    years: oldPrimaryYears
+                };
+                setFormData({
+                    ...formData,
+                    primaryInstrument: oldAdditionalInstrument as Instrument,
+                    yearsPlayingPrimary: oldAdditionalYears,
+                    additionalInstruments: updatedAdditional
+                });
+            } else {
+                updatedAdditional[index] = {
+                    instrument: oldPrimaryInstrument,
+                    years: oldPrimaryYears
+                };
+                setFormData({
+                    ...formData,
+                    primaryInstrument: '' as Instrument,
+                    yearsPlayingPrimary: undefined,
+                    additionalInstruments: updatedAdditional
+                });
+            }
+        } else {
+            updateAdditionalInstrument(index, 'instrument', newInstrument);
+        }
+    };
+
+    const getAvailableInstruments = (currentIndex: number) => {
+        const alreadySelected = formData.additionalInstruments
+            .map((inst, idx) => (idx !== currentIndex ? inst.instrument : null))
+            .filter((inst): inst is Instrument => inst !== null && inst !== '');
+
+        return InstrumentEnum.filter((instrument) => {
+            if (instrument === formData.additionalInstruments[currentIndex]?.instrument) {
+                return true;
+            }
+            if (instrument === formData.primaryInstrument) {
+                return true;
+            }
+            return !alreadySelected.includes(instrument);
+        });
+    };
+
+    const allInstruments = [formData.primaryInstrument, ...formData.additionalInstruments.map((i) => i.instrument)].filter(
+        (inst): inst is Instrument => inst !== ''
+    );
 
     const editForm = (closeForm: () => void) => (
         <form onSubmit={(e) => handleSubmit(e, closeForm)} className="space-y-4">
@@ -86,13 +216,9 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
                 <Label htmlFor="primaryInstrument">
                     Primary Instrument <span className="text-destructive">*</span>
                 </Label>
-                <Select
-                    value={formData.primaryInstrument}
-                    onValueChange={(value) => setFormData({ ...formData, primaryInstrument: value as Instrument })}
-                    required
-                >
+                <Select value={formData.primaryInstrument} onValueChange={(value) => handlePrimaryInstrumentChange(value as Instrument)} required>
                     <SelectTrigger id="primaryInstrument" className="w-full" aria-required="true">
-                        <SelectValue />
+                        <SelectValue placeholder="Select your primary instrument" />
                     </SelectTrigger>
                     <SelectContent>
                         {InstrumentEnum.map((instrument) => (
@@ -113,8 +239,9 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
                     type="number"
                     min={0}
                     max={70}
-                    value={formData.yearsPlayingPrimary}
-                    onChange={(e) => setFormData({ ...formData, yearsPlayingPrimary: parseInt(e.target.value) || 0 })}
+                    value={formData.yearsPlayingPrimary ?? ''}
+                    onChange={(e) => setFormData({ ...formData, yearsPlayingPrimary: e.target.value ? parseInt(e.target.value, 10) : undefined })}
+                    placeholder="e.g., 5"
                     required
                 />
             </div>
@@ -122,13 +249,13 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
             <div className="space-y-2">
                 <Label>Additional Instruments</Label>
                 {formData.additionalInstruments.map((inst, index) => (
-                    <div key={index} className="flex flex-col gap-2 sm:flex-row">
-                        <Select value={inst.instrument} onValueChange={(value) => updateAdditionalInstrument(index, 'instrument', value as Instrument)}>
+                    <div key={inst.instrument || `empty-${index}`} className="flex flex-col gap-2 sm:flex-row">
+                        <Select value={inst.instrument} onValueChange={(value) => handleAdditionalInstrumentChange(index, value as Instrument)}>
                             <SelectTrigger className="w-full sm:flex-1">
-                                <SelectValue />
+                                <SelectValue placeholder="Select instrument" />
                             </SelectTrigger>
                             <SelectContent>
-                                {InstrumentEnum.filter((i) => i !== formData.primaryInstrument).map((instrument) => (
+                                {getAvailableInstruments(index).map((instrument) => (
                                     <SelectItem key={instrument} value={instrument}>
                                         {formatInstrument(instrument)}
                                     </SelectItem>
@@ -139,8 +266,8 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
                             type="number"
                             min={0}
                             max={70}
-                            value={inst.years}
-                            onChange={(e) => updateAdditionalInstrument(index, 'years', parseInt(e.target.value) || 0)}
+                            value={inst.years ?? ''}
+                            onChange={(e) => updateAdditionalInstrument(index, 'years', e.target.value ? parseInt(e.target.value, 10) : undefined)}
                             className="w-full sm:w-24"
                             placeholder="Years"
                         />
