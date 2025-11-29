@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import WaveSurfer from 'wavesurfer.js';
 import { Button } from '@/shared/components/ui/button';
 import { Slider } from '@/shared/components/ui/slider';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
@@ -10,7 +11,8 @@ type Props = {
 };
 
 export function AudioPlayer({ src, className }: Props) {
-    const audioRef = useRef<HTMLAudioElement>(null);
+    const waveformRef = useRef<HTMLDivElement>(null);
+    const wavesurferRef = useRef<WaveSurfer | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -18,63 +20,72 @@ export function AudioPlayer({ src, className }: Props) {
     const [isMuted, setIsMuted] = useState(false);
 
     useEffect(() => {
-        const audio = audioRef.current;
-        if (!audio) return;
+        if (!waveformRef.current) return;
 
-        const updateTime = () => setCurrentTime(audio.currentTime);
-        const updateDuration = () => setDuration(audio.duration);
-        const handleEnded = () => setIsPlaying(false);
+        const wavesurfer = WaveSurfer.create({
+            container: waveformRef.current,
+            url: src,
+            progressColor: 'oklch(0.72 0.14 200)',
+            barWidth: 3,
+            barGap: 1,
+            barRadius: 2,
+            height: 64,
+            normalize: true,
+            hideScrollbar: true,
+            cursorWidth: 0,
+            barHeight: 1
+        });
 
-        audio.addEventListener('timeupdate', updateTime);
-        audio.addEventListener('loadedmetadata', updateDuration);
-        audio.addEventListener('ended', handleEnded);
+        wavesurferRef.current = wavesurfer;
+
+        wavesurfer.on('ready', () => {
+            setDuration(wavesurfer.getDuration());
+        });
+
+        wavesurfer.on('audioprocess', () => {
+            setCurrentTime(wavesurfer.getCurrentTime());
+        });
+
+        wavesurfer.on('finish', () => {
+            setIsPlaying(false);
+        });
 
         return () => {
-            audio.removeEventListener('timeupdate', updateTime);
-            audio.removeEventListener('loadedmetadata', updateDuration);
-            audio.removeEventListener('ended', handleEnded);
+            wavesurfer.destroy();
         };
-    }, []);
+    }, [src]);
 
     const togglePlayPause = () => {
-        const audio = audioRef.current;
-        if (!audio) return;
+        const wavesurfer = wavesurferRef.current;
+        if (!wavesurfer) return;
 
         if (isPlaying) {
-            audio.pause();
+            wavesurfer.pause();
         } else {
-            audio.play();
+            wavesurfer.play();
         }
         setIsPlaying(!isPlaying);
     };
 
-    const handleProgressChange = (value: number[]) => {
-        const audio = audioRef.current;
-        if (!audio || !value[0]) return;
-
-        audio.currentTime = value[0];
-        setCurrentTime(value[0]);
-    };
-
     const handleVolumeChange = (value: number[]) => {
-        const audio = audioRef.current;
-        if (!audio || value[0] === undefined) return;
+        const wavesurfer = wavesurferRef.current;
+        if (!wavesurfer || value[0] === undefined) return;
 
         const newVolume = value[0];
-        audio.volume = newVolume;
+        wavesurfer.setVolume(newVolume);
         setVolume(newVolume);
         setIsMuted(newVolume === 0);
     };
 
     const toggleMute = () => {
-        const audio = audioRef.current;
-        if (!audio) return;
+        const wavesurfer = wavesurferRef.current;
+        if (!wavesurfer) return;
 
         if (isMuted) {
-            audio.volume = volume || 1;
+            wavesurfer.setVolume(volume || 1);
             setIsMuted(false);
         } else {
-            audio.volume = 0;
+            wavesurfer.setVolume(0);
             setIsMuted(true);
         }
     };
@@ -88,8 +99,6 @@ export function AudioPlayer({ src, className }: Props) {
 
     return (
         <div className={cn('border-border/40 bg-card flex w-full flex-col gap-3 rounded-lg border p-4', className)}>
-            <audio ref={audioRef} src={src} preload="metadata" />
-
             <div className="flex items-center gap-3">
                 <Button
                     variant="outline"
@@ -102,14 +111,7 @@ export function AudioPlayer({ src, className }: Props) {
                 </Button>
 
                 <div className="flex flex-1 flex-col gap-2">
-                    <Slider
-                        value={[currentTime]}
-                        max={duration || 100}
-                        step={0.1}
-                        onValueChange={handleProgressChange}
-                        className="cursor-pointer"
-                        aria-label="Audio progress"
-                    />
+                    <div ref={waveformRef} className="cursor-pointer" aria-label="Audio waveform, click to seek" role="slider" tabIndex={0} />
 
                     <div className="text-muted-foreground flex items-center justify-between text-xs">
                         <span>{formatTime(currentTime)}</span>
