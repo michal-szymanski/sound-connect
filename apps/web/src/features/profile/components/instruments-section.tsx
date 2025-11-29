@@ -45,10 +45,9 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
 
     const isEmpty = !data?.primaryInstrument;
 
-    const getCompletionStatus = (): 'complete' | 'incomplete' | 'required' => {
+    const getCompletionStatus = (): 'required' | null => {
         if (!data?.primaryInstrument) return 'required';
-        if (data.additionalInstruments.length > 0 || data.seekingToPlay.length > 0) return 'complete';
-        return 'incomplete';
+        return null;
     };
 
     const handleSubmit = (e: React.FormEvent, closeForm: () => void) => {

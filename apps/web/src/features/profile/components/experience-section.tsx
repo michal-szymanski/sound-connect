@@ -34,11 +34,6 @@ export const ExperienceSection = ({ data, canEdit }: Props) => {
 
     const isEmpty = !data?.giggingLevel && !data?.pastBands && !data?.hasStudioExperience;
 
-    const getCompletionStatus = (): 'complete' | 'incomplete' => {
-        if (data?.giggingLevel || data?.pastBands || data?.hasStudioExperience) return 'complete';
-        return 'incomplete';
-    };
-
     const handleSubmit = (e: React.FormEvent, closeForm: () => void) => {
         e.preventDefault();
         updateMutation.mutate(formData, {
@@ -124,7 +119,7 @@ export const ExperienceSection = ({ data, canEdit }: Props) => {
             isEmpty={isEmpty}
             emptyMessage="Complete your experience to help musicians find you"
             editForm={canEdit ? editForm : undefined}
-            completionStatus={getCompletionStatus()}
+            completionStatus={null}
         >
             {data && (
                 <div className="space-y-2">

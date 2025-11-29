@@ -47,12 +47,6 @@ export const AvailabilitySection = ({ data, canEdit }: Props) => {
 
     const isEmpty = !data?.status;
 
-    const getCompletionStatus = (): 'complete' | 'incomplete' => {
-        if (!data?.status) return 'incomplete';
-        if (data.commitmentLevel || data.weeklyAvailability || data.rehearsalFrequency) return 'complete';
-        return 'incomplete';
-    };
-
     const handleSubmit = (e: React.FormEvent, closeForm: () => void) => {
         e.preventDefault();
         updateMutation.mutate(formData, {
@@ -183,7 +177,7 @@ export const AvailabilitySection = ({ data, canEdit }: Props) => {
             isEmpty={isEmpty}
             emptyMessage="Complete your availability to help musicians find you"
             editForm={canEdit ? editForm : undefined}
-            completionStatus={getCompletionStatus()}
+            completionStatus={null}
         >
             {data && (
                 <div className="space-y-2">

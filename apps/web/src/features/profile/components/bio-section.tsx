@@ -21,11 +21,6 @@ export const BioSection = ({ data, canEdit }: Props) => {
 
     const isEmpty = !data?.bio;
 
-    const getCompletionStatus = (): 'complete' | 'incomplete' => {
-        if (data?.bio) return 'complete';
-        return 'incomplete';
-    };
-
     const handleSubmit = (e: React.FormEvent, closeForm: () => void) => {
         e.preventDefault();
         updateMutation.mutate(formData, {
@@ -76,7 +71,7 @@ export const BioSection = ({ data, canEdit }: Props) => {
             isEmpty={isEmpty}
             emptyMessage="Complete your bio to help musicians find you"
             editForm={canEdit ? editForm : undefined}
-            completionStatus={getCompletionStatus()}
+            completionStatus={null}
         >
             {data && <div className="space-y-2">{data.bio && <div>{data.bio}</div>}</div>}
         </ProfileSection>

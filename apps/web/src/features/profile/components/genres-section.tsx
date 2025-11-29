@@ -27,10 +27,9 @@ export const GenresSection = ({ data, canEdit, id }: Props) => {
 
     const isEmpty = !data?.primaryGenre;
 
-    const getCompletionStatus = (): 'complete' | 'incomplete' | 'required' => {
+    const getCompletionStatus = (): 'required' | null => {
         if (!data?.primaryGenre) return 'required';
-        if (data.secondaryGenres.length > 0 || data.influences) return 'complete';
-        return 'incomplete';
+        return null;
     };
 
     const handleSubmit = (e: React.FormEvent, closeForm: () => void) => {

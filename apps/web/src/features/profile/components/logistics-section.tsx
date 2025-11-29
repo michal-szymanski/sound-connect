@@ -43,11 +43,9 @@ export const LogisticsSection = ({ data, canEdit, id }: Props) => {
 
     const isEmpty = !data?.city;
 
-    const getCompletionStatus = (): 'complete' | 'incomplete' | 'required' => {
+    const getCompletionStatus = (): 'required' | null => {
         if (!data?.city) return 'required';
-        if (data.travelRadius !== null && data.travelRadius !== undefined) return 'complete';
-        if (data.hasRehearsalSpace || data.hasTransportation) return 'complete';
-        return 'incomplete';
+        return null;
     };
 
     const hasChanges = () => {

@@ -12,7 +12,7 @@ type Props = {
     canEdit: boolean;
     isEmpty?: boolean;
     emptyMessage?: string;
-    completionStatus?: 'complete' | 'incomplete' | 'required';
+    completionStatus?: 'required' | null;
     id?: string;
 };
 
@@ -31,7 +31,7 @@ export const ProfileSection = ({ title, icon, children, editForm, canEdit, isEmp
                 <div className="flex min-w-0 flex-1 items-center gap-2">
                     {icon}
                     <h2 className="text-lg font-semibold">{title}</h2>
-                    {canEdit && completionStatus && completionStatus !== 'complete' && <CompletionBadge status={completionStatus} />}
+                    {canEdit && completionStatus === 'required' && <CompletionBadge status="required" />}
                 </div>
                 {canEdit && !isEditing && (
                     <Button
