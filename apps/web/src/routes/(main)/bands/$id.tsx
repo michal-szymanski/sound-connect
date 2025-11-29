@@ -5,7 +5,7 @@ import type { GetBandApplicationsResponse } from '@sound-connect/common/types/ba
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { NavigationTabs, NavigationTabsContent } from '@/shared/components/common/navigation-tabs';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -219,26 +219,30 @@ function RouteComponent() {
                 </Card>
             ) : (
                 <>
-                    <Tabs defaultValue="about" className="w-full">
-                        <TabsList className={`grid w-full ${isUserAdmin ? 'grid-cols-4' : 'grid-cols-3'}`}>
-                            <TabsTrigger value="about">About</TabsTrigger>
-                            <TabsTrigger value="posts">Posts</TabsTrigger>
-                            <TabsTrigger value="members">Members</TabsTrigger>
-                            {isUserAdmin && (
-                                <TabsTrigger value="applications">
-                                    <div className="flex items-center gap-2">
-                                        Applications
-                                        {pendingApplicationsCount > 0 && (
-                                            <Badge variant="default" className="ml-1 rounded-full px-2 py-0.5 text-xs">
-                                                {pendingApplicationsCount}
-                                            </Badge>
-                                        )}
-                                    </div>
-                                </TabsTrigger>
-                            )}
-                        </TabsList>
-
-                        <TabsContent value="about" className="mt-6 space-y-6">
+                    <NavigationTabs
+                        defaultValue="about"
+                        tabs={[
+                            { value: 'about', label: 'About' },
+                            { value: 'posts', label: 'Posts' },
+                            { value: 'members', label: 'Members' },
+                            ...(isUserAdmin
+                                ? [
+                                      {
+                                          value: 'applications',
+                                          label: 'Applications',
+                                          badge:
+                                              pendingApplicationsCount > 0 ? (
+                                                  <Badge variant="default" className="ml-1 rounded-full px-2 py-0.5 text-xs">
+                                                      {pendingApplicationsCount}
+                                                  </Badge>
+                                              ) : undefined
+                                      }
+                                  ]
+                                : [])
+                        ]}
+                        className="w-full"
+                    >
+                        <NavigationTabsContent value="about" className="mt-6 space-y-6">
                             {band.description && (
                                 <ProfileSection title="About" icon={<Music2 className="h-5 w-5" />} canEdit={false} isEmpty={false}>
                                     <p className="text-foreground whitespace-pre-wrap">{band.description}</p>
@@ -286,14 +290,14 @@ function RouteComponent() {
                                     </CardContent>
                                 </Card>
                             )}
-                        </TabsContent>
+                        </NavigationTabsContent>
 
-                        <TabsContent value="posts" className="mt-6 space-y-6">
+                        <NavigationTabsContent value="posts" className="mt-6 space-y-6">
                             {isUserAdmin && <BandPostComposer bandId={band.id} bandName={band.name} />}
                             <BandPostFeed bandId={band.id} />
-                        </TabsContent>
+                        </NavigationTabsContent>
 
-                        <TabsContent value="members" className="mt-6 space-y-6">
+                        <NavigationTabsContent value="members" className="mt-6 space-y-6">
                             <Card>
                                 <CardContent className="p-6">
                                     <div className="mb-4 flex items-center justify-between">
@@ -325,10 +329,10 @@ function RouteComponent() {
                                     )}
                                 </CardContent>
                             </Card>
-                        </TabsContent>
+                        </NavigationTabsContent>
 
                         {isUserAdmin && (
-                            <TabsContent value="applications" className="mt-6 space-y-6">
+                            <NavigationTabsContent value="applications" className="mt-6 space-y-6">
                                 <div className="mb-4">
                                     <div className="flex items-center gap-2">
                                         <FileText className="h-5 w-5" />
@@ -340,9 +344,9 @@ function RouteComponent() {
                                     </p>
                                 </div>
                                 <BandApplicationsList bandId={band.id} />
-                            </TabsContent>
+                            </NavigationTabsContent>
                         )}
-                    </Tabs>
+                    </NavigationTabs>
                 </>
             )}
 

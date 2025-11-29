@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { z } from 'zod';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import { NavigationTabs, NavigationTabsContent } from '@/shared/components/common/navigation-tabs';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { AccountSettings } from '@/features/settings/components/account-settings';
 import { PrivacySettings } from '@/features/settings/components/privacy-settings';
@@ -78,15 +78,8 @@ export const Route = createFileRoute('/(main)/settings/')({
 });
 
 function RouteComponent() {
-    const navigate = Route.useNavigate();
     const loaderData = Route.useLoaderData();
     const { tab } = Route.useSearch();
-
-    const handleTabChange = (value: string) => {
-        navigate({
-            search: { tab: value as z.infer<typeof settingsSearchSchema>['tab'] }
-        });
-    };
 
     return (
         <div className="container max-w-5xl py-8">
@@ -102,42 +95,49 @@ function RouteComponent() {
                         <AlertDescription>{loaderData.message}</AlertDescription>
                     </Alert>
                 ) : (
-                    <Tabs value={tab} onValueChange={handleTabChange} className="space-y-6">
-                        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
-                            <TabsTrigger value="account" className="gap-2">
-                                <User className="h-4 w-4" />
-                                <span className="hidden sm:inline">Account</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="privacy" className="gap-2">
-                                <Lock className="h-4 w-4" />
-                                <span className="hidden sm:inline">Privacy</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="notifications" className="gap-2">
-                                <Bell className="h-4 w-4" />
-                                <span className="hidden sm:inline">Notifications</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="data" className="gap-2">
-                                <Database className="h-4 w-4" />
-                                <span className="hidden sm:inline">Data</span>
-                            </TabsTrigger>
-                        </TabsList>
-
-                        <TabsContent value="account">
+                    <NavigationTabs
+                        defaultValue={tab}
+                        urlParam="tab"
+                        tabs={[
+                            {
+                                value: 'account',
+                                label: <span className="hidden sm:inline">Account</span>,
+                                icon: <User className="h-4 w-4" />
+                            },
+                            {
+                                value: 'privacy',
+                                label: <span className="hidden sm:inline">Privacy</span>,
+                                icon: <Lock className="h-4 w-4" />
+                            },
+                            {
+                                value: 'notifications',
+                                label: <span className="hidden sm:inline">Notifications</span>,
+                                icon: <Bell className="h-4 w-4" />
+                            },
+                            {
+                                value: 'data',
+                                label: <span className="hidden sm:inline">Data</span>,
+                                icon: <Database className="h-4 w-4" />
+                            }
+                        ]}
+                        className="space-y-6"
+                    >
+                        <NavigationTabsContent value="account">
                             <AccountSettings accountInfo={loaderData.data.accountInfo} />
-                        </TabsContent>
+                        </NavigationTabsContent>
 
-                        <TabsContent value="privacy">
+                        <NavigationTabsContent value="privacy">
                             <PrivacySettings privacySettings={loaderData.data.privacySettings} blockedUsers={loaderData.data.blockedUsers} />
-                        </TabsContent>
+                        </NavigationTabsContent>
 
-                        <TabsContent value="notifications">
+                        <NavigationTabsContent value="notifications">
                             <NotificationSettings notificationSettings={loaderData.data.notificationSettings} />
-                        </TabsContent>
+                        </NavigationTabsContent>
 
-                        <TabsContent value="data">
+                        <NavigationTabsContent value="data">
                             <DataAccountSettings />
-                        </TabsContent>
-                    </Tabs>
+                        </NavigationTabsContent>
+                    </NavigationTabs>
                 )}
             </div>
         </div>
