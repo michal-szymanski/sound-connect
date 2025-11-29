@@ -18,7 +18,9 @@ type ChannelData = Array<Float32Array | number[]>;
 export function AudioPlayer({ src, className }: Props) {
     const waveformRef = useRef<HTMLDivElement>(null);
     const hoverCanvasRef = useRef<HTMLCanvasElement>(null);
-    const instanceIdRef = useRef<string>(`audio-${Math.random().toString(36).substring(2, 11)}`);
+    const instanceIdRef = useRef<string>(`audio-${src}`);
+    const barDataRef = useRef<Array<{ x: number; y: number; height: number }>>([]);
+    const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0, displayWidth: 0, displayHeight: 64 });
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
@@ -110,39 +112,26 @@ export function AudioPlayer({ src, className }: Props) {
     const drawHoverWaveform = useCallback(
         (hoverX: number) => {
             const canvas = hoverCanvasRef.current;
-            if (!canvas || !wavesurfer) return;
+            const bars = barDataRef.current;
+
+            if (!canvas || bars.length === 0 || !wavesurfer) return;
 
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
 
+            const { displayWidth, displayHeight } = canvasSize;
             const dpr = window.devicePixelRatio || 1;
-            const displayWidth = canvas.width / dpr;
-            const displayHeight = canvas.height / dpr;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             if (hoverX <= 0) return;
 
-            const decodedData = wavesurfer.getDecodedData();
-            if (!decodedData) return;
-
             const duration = wavesurfer.getDuration();
             const currentTime = wavesurfer.getCurrentTime();
             const progressX = duration > 0 ? (currentTime / duration) * displayWidth : 0;
 
-            const channelData = decodedData.getChannelData(0);
             const barWidth = 3;
-            const barGap = 1;
             const barRadius = 2;
-
-            const barCount = Math.floor(displayWidth / (barWidth + barGap));
-            const step = channelData.length / barCount;
-
-            let maxPeak = 0;
-            for (let i = 0; i < channelData.length; i++) {
-                maxPeak = Math.max(maxPeak, Math.abs(channelData[i] ?? 0));
-            }
-            const normalizer = maxPeak > 0 ? 1 / maxPeak : 1;
 
             ctx.save();
             ctx.scale(dpr, dpr);
@@ -161,6 +150,58 @@ export function AudioPlayer({ src, className }: Props) {
 
             ctx.fillStyle = 'oklch(0.80 0.12 200)';
 
+            for (const bar of bars) {
+                ctx.beginPath();
+                ctx.roundRect(bar.x, bar.y, barWidth, bar.height, barRadius);
+                ctx.fill();
+            }
+
+            ctx.restore();
+        },
+        [canvasSize, wavesurfer]
+    );
+
+    useEffect(() => {
+        if (!wavesurfer) return;
+
+        const instanceId = instanceIdRef.current;
+        mediaPlayback.register(instanceId, wavesurfer, 'audio');
+
+        const onReady = () => {
+            setDuration(wavesurfer.getDuration());
+
+            const wrapper = wavesurfer.getWrapper();
+            if (!wrapper) return;
+
+            const dpr = window.devicePixelRatio || 1;
+            const displayWidth = wrapper.clientWidth;
+            const displayHeight = 64;
+
+            setCanvasSize({
+                width: displayWidth * dpr,
+                height: displayHeight * dpr,
+                displayWidth,
+                displayHeight
+            });
+
+            const decodedData = wavesurfer.getDecodedData();
+            if (!decodedData) return;
+
+            const channelData = decodedData.getChannelData(0);
+
+            const barWidth = 3;
+            const barGap = 1;
+            const barRadius = 2;
+            const barCount = Math.floor(displayWidth / (barWidth + barGap));
+            const step = channelData.length / barCount;
+
+            let maxPeak = 0;
+            for (let i = 0; i < channelData.length; i++) {
+                maxPeak = Math.max(maxPeak, Math.abs(channelData[i] ?? 0));
+            }
+            const normalizer = maxPeak > 0 ? 1 / maxPeak : 1;
+
+            const bars: Array<{ x: number; y: number; height: number }> = [];
             for (let i = 0; i < barCount; i++) {
                 const startIndex = Math.floor(i * step);
                 const endIndex = Math.floor((i + 1) * step);
@@ -175,24 +216,9 @@ export function AudioPlayer({ src, className }: Props) {
                 const x = i * (barWidth + barGap);
                 const y = (displayHeight - barHeight) / 2;
 
-                ctx.beginPath();
-                ctx.roundRect(x, y, barWidth, barHeight, barRadius);
-                ctx.fill();
+                bars.push({ x, y, height: barHeight });
             }
-
-            ctx.restore();
-        },
-        [wavesurfer]
-    );
-
-    useEffect(() => {
-        if (!wavesurfer) return;
-
-        const instanceId = instanceIdRef.current;
-        mediaPlayback.register(instanceId, wavesurfer, 'audio');
-
-        const onReady = () => {
-            setDuration(wavesurfer.getDuration());
+            barDataRef.current = bars;
         };
 
         const onSeeking = () => {
@@ -289,7 +315,18 @@ export function AudioPlayer({ src, className }: Props) {
                 <div className="flex flex-1 flex-col gap-2">
                     <div className="relative" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
                         <div ref={waveformRef} className="cursor-pointer" aria-label="Audio waveform, click to seek" role="slider" tabIndex={0} />
-                        <canvas ref={hoverCanvasRef} className="pointer-events-none absolute inset-0 z-50" />
+                        {canvasSize.width > 0 && (
+                            <canvas
+                                ref={hoverCanvasRef}
+                                width={canvasSize.width}
+                                height={canvasSize.height}
+                                style={{
+                                    width: `${canvasSize.displayWidth}px`,
+                                    height: `${canvasSize.displayHeight}px`
+                                }}
+                                className="pointer-events-none absolute inset-0 z-50"
+                            />
+                        )}
                     </div>
 
                     <div className="text-muted-foreground flex items-center justify-between text-xs">
