@@ -76,7 +76,7 @@ For detailed information about each feature, see the feature-level documentation
 
 ### Code Quality Enforcement
 
-Code quality is automatically enforced by the `code-quality-enforcer` agent. This agent validates all code changes against the rules below, runs automated checks (Prettier, ESLint, TypeScript), and blocks completion until standards are met. Agents working on code should invoke the code-quality-enforcer AFTER writing code and BEFORE marking tasks complete.
+Code quality is automatically enforced by the `code-quality-enforcer` agent. This agent validates all code changes against the rules below, runs automated checks (oxlint, oxfmt, TypeScript), and blocks completion until standards are met. Agents working on code should invoke the code-quality-enforcer AFTER writing code and BEFORE marking tasks complete.
 
 ### Agent Workflow
 
@@ -390,7 +390,7 @@ When you identify an issue or need to implement a feature:
 - Every payload MUST be validated with the same zod schema on frontend before sending and on backend after receiving it.
 - Code (functions, variables, etc.) can be exported ONLY if it's imported somewhere else, unless this is related to frameworks and libraries (e.g., React components, API route handlers, worker exports). Code used only internally within the same file should NOT be exported.
 - In try-catch blocks, if the error is not used in the catch block, omit the error parameter entirely. Use `catch { }` instead of `catch (_error) { }` or `catch (error) { }`.
-- ALWAYS use `pnpm` as the package manager. NEVER use `npm` or `npx`. Use `pnpm exec` to run executables from installed packages (e.g., `pnpm exec playwright test`, `pnpm exec eslint`). Use `pnpm dlx` for one-off command execution without installation.
+- ALWAYS use `pnpm` as the package manager. NEVER use `npm` or `npx`. Use `pnpm exec` to run executables from installed packages (e.g., `pnpm exec playwright test`, `pnpm exec oxlint`). Use `pnpm dlx` for one-off command execution without installation.
 - Before making any edit, check if it violates these rules.
 - If a rule conflict arises, ask the user for clarification rather than breaking the rule.
 

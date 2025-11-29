@@ -1,0 +1,41 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/crates/oxc_linter/schema.json",
+  "plugins": ["typescript", "react", "import"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_"
+      }
+    ],
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "warn"
+  },
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    ".wrangler",
+    ".claude",
+    ".cursor",
+    ".tanstack",
+    "*.d.ts",
+    "package.json",
+    "pnpm-lock.yaml",
+    ".gitignore",
+    ".env*",
+    "routeTree.gen.ts",
+    "**/migrations/**",
+    "apps/web/src/shared/components/ui/**",
+    "e2e/**",
+    "worker-configuration.d.ts"
+  ]
+}

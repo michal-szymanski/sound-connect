@@ -11,16 +11,14 @@
     "build": "pnpm run -r --parallel --aggregate-output build",
     "types": "pnpm run -r --parallel --aggregate-output types",
     "tsc": "pnpm run -r --parallel --aggregate-output tsc",
-    "code:check": "pnpm run -r --parallel --aggregate-output prettier && pnpm lint && pnpm tsc",
-    "code:fix": "pnpm run -r --parallel --aggregate-output prettier:fix && pnpm lint:fix && pnpm tsc",
+    "code:check": "pnpm lint && pnpm tsc",
+    "code:fix": "pnpm lint:fix && pnpm tsc",
     "tail": "pnpm run -r --parallel --aggregate-output tail",
     "tail:web": "pnpm --filter @sound-connect/web tail",
     "tail:api": "pnpm --filter @sound-connect/api tail",
     "tail:queue": "pnpm --filter @sound-connect/posts-queue-consumer tail",
-    "lint": "pnpm run -r --parallel --aggregate-output lint",
-    "lint:fix": "pnpm run -r --parallel --aggregate-output lint:fix",
-    "prettier": "pnpm run -r --parallel --aggregate-output prettier",
-    "prettier:fix": "pnpm run -r --parallel --aggregate-output prettier:fix",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
     "wipe:do": "zsh -c 'rm -rf apps/api/.wrangler/**/do'",
     "wipe:db": "zsh -c 'rm -rf apps/api/.wrangler/**/d1'",
     "wipe": "zsh -c 'rm -rf apps/api/.wrangler'",
@@ -34,26 +32,15 @@
     "test:headed": "pnpm --filter @sound-connect/e2e test:headed"
   },
   "devDependencies": {
-    "@eslint/js": "^9.38.0",
     "@modelcontextprotocol/server-filesystem": "^2025.8.21",
     "@playwright/mcp": "^0.0.44",
     "better-sqlite3": "^12.4.1",
     "chrome-devtools-mcp": "^0.9.0",
-    "eslint": "catalog:",
-    "eslint-import-resolver-typescript": "^4.4.4",
-    "eslint-plugin-deprecation": "^3.0.0",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "prettier": "catalog:",
-    "typescript-eslint": "^8.46.2",
+    "oxlint": "^1.30.0",
     "vite-plugin-mcp": "^0.2.4"
   },
   "volta": {
     "node": "22.20.0",
     "pnpm": "10.19.0"
-  },
-  "dependencies": {
-    "prettier-plugin-tailwindcss": "^0.7.1"
   }
 }

@@ -1,6 +1,0 @@
-# Common files
-package.json
-pnpm-lock.yaml
-.gitignore
-.env*
-.claude

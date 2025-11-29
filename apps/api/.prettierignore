@@ -1,6 +1,0 @@
-src/db/migrations
-worker-configuration.d.ts
-wrangler-env.d.ts
-.wrangler
-.cursor
-package.json
