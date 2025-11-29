@@ -1,5 +1,3 @@
-const R2_PUBLIC_URL = 'https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev';
-
 export const generateUploadUrl = async (apiUrl: string, sessionId: string): Promise<string> => {
     const uploadUrl = new URL(`${apiUrl}/api/uploads/upload`);
     uploadUrl.searchParams.set('sessionId', sessionId);
@@ -86,8 +84,8 @@ export const validateMagicNumbers = async (bucket: R2Bucket, key: string, expect
     return true;
 };
 
-export const constructPublicUrl = (key: string): string => {
-    return `${R2_PUBLIC_URL}/${key}`;
+export const constructPublicUrl = (clientUrl: string, key: string): string => {
+    return `${clientUrl}/media/${key}`;
 };
 
 export const sanitizeFileName = (fileName: string): string => {

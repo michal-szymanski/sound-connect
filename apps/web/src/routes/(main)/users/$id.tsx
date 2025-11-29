@@ -21,7 +21,7 @@ import {
     AlertDialogTitle
 } from '@/shared/components/ui/alert-dialog';
 import { availabilityStatusConfig } from '@/shared/lib/utils/availability';
-import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, followersQuery, followRequestStatusQuery } from '@/shared/lib/react-query';
+import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, followersQuery, followRequestStatusQuery, useAuth } from '@/shared/lib/react-query';
 import { getPosts } from '@/features/posts/server-functions/posts';
 import { getUser } from '@/shared/server-functions/users';
 import { useFollowUser, useUnfollowUser } from '@/shared/hooks/use-follow';
@@ -35,6 +35,7 @@ import { FollowersModal } from '@/features/profile/components/followers-modal';
 import { FollowingModal } from '@/features/profile/components/following-modal';
 import { ProfileTabs } from '@/features/profile/components/profile-tabs';
 import { BioSection } from '@/features/profile/components/bio-section';
+import { EditableProfileAvatar } from '@/features/profile/components/editable-profile-avatar';
 import { Link } from '@tanstack/react-router';
 
 const loaderSchema = z.object({
@@ -97,6 +98,7 @@ function RouteComponent() {
     const loaderData = loaderSchema.parse(Route.useLoaderData());
     const { currentUser, user, posts } = loaderData;
 
+    const { data: auth } = useAuth();
     const { data: profile } = useProfile(user.id);
     const { data: followings } = useFollowings(user);
     const { data: followers } = useFollowers(user);
@@ -212,12 +214,22 @@ function RouteComponent() {
 
                 <div className="px-4 pb-4 sm:px-6 sm:pb-6">
                     <div className="-mt-12 mb-4 sm:-mt-16">
-                        <ProfileAvatar
-                            profile={user}
-                            type="user"
-                            className="border-card h-24 w-24 border-4 sm:h-32 sm:w-32"
-                            fallbackClassName="bg-primary text-primary-foreground text-4xl sm:text-6xl"
-                        />
+                        {isOwnProfile ? (
+                            <EditableProfileAvatar
+                                userId={user.id}
+                                currentImage={auth?.user?.image ?? user.image}
+                                name={user.name}
+                                className="border-card h-24 w-24 border-4 sm:h-32 sm:w-32"
+                                fallbackClassName="bg-primary text-primary-foreground text-4xl sm:text-6xl"
+                            />
+                        ) : (
+                            <ProfileAvatar
+                                profile={user}
+                                type="user"
+                                className="border-card h-24 w-24 border-4 sm:h-32 sm:w-32"
+                                fallbackClassName="bg-primary text-primary-foreground text-4xl sm:text-6xl"
+                            />
+                        )}
                     </div>
 
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

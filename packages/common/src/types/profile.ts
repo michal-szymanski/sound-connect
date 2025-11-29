@@ -90,6 +90,16 @@ export const completeSetupSchema = z.object({
     skipOptional: z.boolean().optional()
 });
 
+export const updateProfileImageSchema = z.object({
+    imageUrl: z.string().url()
+});
+
+export const updateProfileImageResponseSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    image: z.string().nullable()
+});
+
 export const profileResponseSchema = z.object({
     success: z.boolean(),
     profileCompletion: z.number().int().min(0).max(100)
@@ -166,6 +176,8 @@ export type UpdateLogistics = z.infer<typeof updateLogisticsSchema>;
 export type UpdateLookingFor = z.infer<typeof updateLookingForSchema>;
 export type UpdateBio = z.infer<typeof updateBioSchema>;
 export type CompleteSetup = z.infer<typeof completeSetupSchema>;
+export type UpdateProfileImage = z.infer<typeof updateProfileImageSchema>;
+export type UpdateProfileImageResponse = z.infer<typeof updateProfileImageResponseSchema>;
 export type ProfileResponse = z.infer<typeof profileResponseSchema>;
 export type InstrumentsSection = z.infer<typeof instrumentsSectionSchema>;
 export type GenresSection = z.infer<typeof genresSectionSchema>;

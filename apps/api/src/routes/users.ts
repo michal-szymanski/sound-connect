@@ -2,11 +2,12 @@ import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 import { HonoContext } from 'types';
-import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getContacts, followUser } from '@/api/db/queries/users-queries';
+import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getContacts, followUser, updateUserImage } from '@/api/db/queries/users-queries';
 import { notificationQueueMessageSchema } from '@/common/types/notifications';
 import { canViewProfile, canFollow } from '@/api/db/queries/settings-queries';
 import { profileSearchParamsSchema } from '@sound-connect/common/types/profile-search';
 import { searchProfiles } from '@/api/db/queries/profiles-search-queries';
+import { updateProfileImageSchema, updateProfileImageResponseSchema } from '@sound-connect/common/types/profile';
 
 const usersRoutes = new Hono<HonoContext>();
 
@@ -119,6 +120,21 @@ usersRoutes.get('/users/:userId/follow-request-status', async (c) => {
     }
 
     return c.json({ status: 'none' });
+});
+
+usersRoutes.patch('/users/me/image', async (c) => {
+    const user = c.get('user');
+
+    const body = await c.req.json();
+    const data = updateProfileImageSchema.parse(body);
+
+    const updated = await updateUserImage(user.id, data.imageUrl);
+
+    if (!updated) {
+        throw new HTTPException(404, { message: 'User not found' });
+    }
+
+    return c.json(updateProfileImageResponseSchema.parse(updated));
 });
 
 usersRoutes.get('/users/:userId', async (c) => {

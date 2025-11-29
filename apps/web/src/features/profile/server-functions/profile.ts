@@ -12,7 +12,9 @@ import {
     updateBioSchema,
     completeSetupSchema,
     profileResponseSchema,
-    fullProfileSchema
+    fullProfileSchema,
+    updateProfileImageSchema,
+    updateProfileImageResponseSchema
 } from '@sound-connect/common/types/profile';
 
 export const getProfile = createServerFn()
@@ -253,6 +255,33 @@ export const completeSetup = createServerFn({ method: 'POST' })
             return success(profileResponseSchema.parse(json));
         } catch (error) {
             console.error('completeSetup error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred' });
+        }
+    });
+
+export const updateProfileImage = createServerFn({ method: 'POST' })
+    .middleware([authMiddleware])
+    .inputValidator(updateProfileImageSchema)
+    .handler(async ({ data, context: { env, auth } }) => {
+        try {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/me/image`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(auth.cookie && { Cookie: auth.cookie })
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                return await apiErrorHandler(response);
+            }
+
+            const json = await response.json();
+            return success(updateProfileImageResponseSchema.parse(json));
+        } catch (error) {
+            console.error('updateProfileImage error:', error);
             return failure({ status: 500, message: 'An unexpected error occurred' });
         }
     });

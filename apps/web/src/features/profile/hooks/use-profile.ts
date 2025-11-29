@@ -9,7 +9,8 @@ import {
     updateLogistics,
     updateLookingFor,
     updateBio,
-    completeSetup
+    completeSetup,
+    updateProfileImage
 } from '@/features/profile/server-functions/profile';
 import type {
     UpdateInstruments,
@@ -19,7 +20,8 @@ import type {
     UpdateLogistics,
     UpdateLookingFor,
     UpdateBio,
-    CompleteSetup
+    CompleteSetup,
+    UpdateProfileImage
 } from '@sound-connect/common/types/profile';
 
 export const useProfile = (userId: string) => {
@@ -197,6 +199,29 @@ export const useCompleteSetup = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile'] });
             toast.success('Profile setup completed');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message);
+        }
+    });
+};
+
+export const useUpdateProfileImage = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: UpdateProfileImage) => {
+            const result = await updateProfileImage({ data });
+            if (!result.success) {
+                throw new Error(result.body?.message || 'Failed to update profile image');
+            }
+            return result.body;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['auth'] });
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+            queryClient.invalidateQueries({ queryKey: ['user'] });
+            toast.success('Profile image updated');
         },
         onError: (error: Error) => {
             toast.error(error.message);

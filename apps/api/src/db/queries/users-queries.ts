@@ -94,3 +94,17 @@ export const searchUsers = async (query: string) => {
     const { results } = await db.run(sqlQuery);
     return schema.parse(results);
 };
+
+export const updateUserImage = async (userId: string, imageUrl: string) => {
+    const [updated] = await db
+        .update(users)
+        .set({ image: imageUrl, updatedAt: new Date() })
+        .where(eq(users.id, userId))
+        .returning({
+            id: users.id,
+            name: users.name,
+            image: users.image
+        });
+
+    return updated;
+};

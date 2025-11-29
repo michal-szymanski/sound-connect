@@ -421,8 +421,8 @@ For design and branding:
 
 - Bucket name: `sound-connect-assets`
 - Binding: `ASSETS` (accessible via `c.env.ASSETS` in API and queue consumers)
-- Public URL: `https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev`
 - No egress fees (Cloudflare R2's key advantage over S3)
+- **All media is proxied through `/media/*` route** (not accessed directly from R2)
 
 **Upload Flow (Hybrid Approach):**
 
@@ -449,7 +449,14 @@ _Legacy Flow (Through-API - For backward compatibility):_
 - API receives file and uploads to R2 using `c.env.ASSETS.put(key, file)`
 - Optional: Queue consumer processes for moderation (future AI moderation)
 
-_Result:_ Files publicly accessible at `https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev/{key}`
+**Media Proxy:**
+
+All uploaded files are served through the `/media/*` proxy route, not directly from R2:
+- Frontend route: `apps/web/src/routes/media/$.ts` - Catches all `/media/*` requests
+- Forwards to backend: `GET /api/media/{key}` (`apps/api/src/routes/media.ts`)
+- Backend fetches from R2 and serves with proper headers and caching
+- Public URL format: `{CLIENT_URL}/media/{key}` (e.g., `http://localhost:3000/media/profiles/userId/avatar.jpg`)
+- Enables future features: authentication, resizing, watermarking, analytics
 
 **Folder Structure:**
 

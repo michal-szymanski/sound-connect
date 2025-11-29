@@ -183,7 +183,7 @@ uploadsRoutes.post('/uploads/confirm', async (c) => {
 
     await confirmUploadSession(data.sessionId);
 
-    const publicUrl = constructPublicUrl(permanentKey);
+    const publicUrl = constructPublicUrl(c.env.CLIENT_URL, permanentKey);
 
     return c.json({
         success: true,
@@ -238,7 +238,7 @@ uploadsRoutes.post('/uploads/confirm-batch', async (c) => {
 
             await confirmUploadSession(sessionId);
 
-            const publicUrl = constructPublicUrl(permanentKey);
+            const publicUrl = constructPublicUrl(c.env.CLIENT_URL, permanentKey);
 
             return {
                 success: true,
