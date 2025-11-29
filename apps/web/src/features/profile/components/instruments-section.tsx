@@ -1,15 +1,18 @@
 import { useState } from 'react';
-import { Guitar } from 'lucide-react';
+import { Guitar, Check, ChevronsUpDown } from 'lucide-react';
 import { ProfileSection } from './profile-section';
 import { useUpdateInstruments } from '@/features/profile/hooks/use-profile';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
 import { Input } from '@/shared/components/ui/input';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/shared/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import type { InstrumentsSection as InstrumentsSectionData, UpdateInstruments } from '@sound-connect/common/types/profile';
 import { InstrumentEnum, type Instrument } from '@sound-connect/common/types/profile-enums';
 import { formatInstrument } from '@/features/profile/lib/profile-utils';
+import { cn } from '@/shared/lib/utils';
 
 type FormAdditionalInstrument = {
     instrument: Instrument | '';
@@ -37,6 +40,8 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
         additionalInstruments: data?.additionalInstruments || [],
         seekingToPlay: data?.seekingToPlay || []
     });
+    const [openPrimary, setOpenPrimary] = useState(false);
+    const [openAdditional, setOpenAdditional] = useState<Record<number, boolean>>({});
 
     const isEmpty = !data?.primaryInstrument;
 
@@ -216,18 +221,46 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
                 <Label htmlFor="primaryInstrument">
                     Primary Instrument <span className="text-destructive">*</span>
                 </Label>
-                <Select value={formData.primaryInstrument} onValueChange={(value) => handlePrimaryInstrumentChange(value as Instrument)} required>
-                    <SelectTrigger id="primaryInstrument" className="w-full" aria-required="true">
-                        <SelectValue placeholder="Select your primary instrument" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {InstrumentEnum.map((instrument) => (
-                            <SelectItem key={instrument} value={instrument}>
-                                {formatInstrument(instrument)}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <Popover open={openPrimary} onOpenChange={setOpenPrimary}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            id="primaryInstrument"
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={openPrimary}
+                            aria-required="true"
+                            className="w-full justify-between"
+                        >
+                            {formData.primaryInstrument ? formatInstrument(formData.primaryInstrument) : 'Select your primary instrument'}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                            <CommandInput placeholder="Search instruments..." />
+                            <CommandEmpty>No instrument found.</CommandEmpty>
+                            <CommandGroup>
+                                <ScrollArea className="h-64">
+                                    {InstrumentEnum.map((instrument) => (
+                                        <CommandItem
+                                            key={instrument}
+                                            value={formatInstrument(instrument)}
+                                            onSelect={() => {
+                                                handlePrimaryInstrumentChange(instrument);
+                                                setOpenPrimary(false);
+                                            }}
+                                        >
+                                            <Check
+                                                className={cn('mr-2 h-4 w-4', formData.primaryInstrument === instrument ? 'opacity-100' : 'opacity-0')}
+                                            />
+                                            {formatInstrument(instrument)}
+                                        </CommandItem>
+                                    ))}
+                                </ScrollArea>
+                            </CommandGroup>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
             </div>
 
             <div className="space-y-2">
@@ -250,18 +283,37 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
                 <Label>Additional Instruments</Label>
                 {formData.additionalInstruments.map((inst, index) => (
                     <div key={inst.instrument || `empty-${index}`} className="flex flex-col gap-2 sm:flex-row">
-                        <Select value={inst.instrument} onValueChange={(value) => handleAdditionalInstrumentChange(index, value as Instrument)}>
-                            <SelectTrigger className="w-full sm:flex-1">
-                                <SelectValue placeholder="Select instrument" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {getAvailableInstruments(index).map((instrument) => (
-                                    <SelectItem key={instrument} value={instrument}>
-                                        {formatInstrument(instrument)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Popover open={openAdditional[index] || false} onOpenChange={(open) => setOpenAdditional({ ...openAdditional, [index]: open })}>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" role="combobox" aria-expanded={openAdditional[index] || false} className="w-full justify-between sm:flex-1">
+                                    {inst.instrument ? formatInstrument(inst.instrument) : 'Select instrument'}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0" align="start">
+                                <Command>
+                                    <CommandInput placeholder="Search instruments..." />
+                                    <CommandEmpty>No instrument found.</CommandEmpty>
+                                    <CommandGroup>
+                                        <ScrollArea className="h-64">
+                                            {getAvailableInstruments(index).map((instrument) => (
+                                                <CommandItem
+                                                    key={instrument}
+                                                    value={formatInstrument(instrument)}
+                                                    onSelect={() => {
+                                                        handleAdditionalInstrumentChange(index, instrument);
+                                                        setOpenAdditional({ ...openAdditional, [index]: false });
+                                                    }}
+                                                >
+                                                    <Check className={cn('mr-2 h-4 w-4', inst.instrument === instrument ? 'opacity-100' : 'opacity-0')} />
+                                                    {formatInstrument(instrument)}
+                                                </CommandItem>
+                                            ))}
+                                        </ScrollArea>
+                                    </CommandGroup>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
                         <Input
                             type="number"
                             min={0}

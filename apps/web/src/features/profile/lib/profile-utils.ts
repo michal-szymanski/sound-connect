@@ -1,26 +1,27 @@
 import { InstrumentEnum, GenreEnum, type Instrument, type Genre } from '@sound-connect/common/types/profile-enums';
 
 export const instrumentLabels: Record<(typeof InstrumentEnum)[number], string> = {
+    vocals: 'Vocals',
     guitar: 'Guitar',
     bass_guitar: 'Bass Guitar',
     drums: 'Drums',
     keyboards: 'Keyboards',
-    vocals: 'Vocals',
-    saxophone: 'Saxophone',
-    trumpet: 'Trumpet',
-    trombone: 'Trombone',
+    piano: 'Piano',
     violin: 'Violin',
     cello: 'Cello',
-    flute: 'Flute',
-    clarinet: 'Clarinet',
-    harmonica: 'Harmonica',
     banjo: 'Banjo',
     mandolin: 'Mandolin',
     ukulele: 'Ukulele',
-    percussion: 'Percussion',
+    saxophone: 'Saxophone',
+    trumpet: 'Trumpet',
+    trombone: 'Trombone',
+    flute: 'Flute',
+    clarinet: 'Clarinet',
+    harmonica: 'Harmonica',
     synth: 'Synth',
     dj: 'DJ',
-    production: 'Production'
+    production: 'Production',
+    percussion: 'Percussion'
 };
 
 export const genreLabels: Record<(typeof GenreEnum)[number], string> = {

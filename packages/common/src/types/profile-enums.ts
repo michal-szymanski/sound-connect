@@ -1,24 +1,25 @@
 export const InstrumentEnum = [
+    'vocals',
     'guitar',
     'bass_guitar',
     'drums',
     'keyboards',
-    'vocals',
-    'saxophone',
-    'trumpet',
-    'trombone',
+    'piano',
     'violin',
     'cello',
-    'flute',
-    'clarinet',
-    'harmonica',
     'banjo',
     'mandolin',
     'ukulele',
-    'percussion',
+    'saxophone',
+    'trumpet',
+    'trombone',
+    'flute',
+    'clarinet',
+    'harmonica',
     'synth',
     'dj',
-    'production'
+    'production',
+    'percussion'
 ] as const;
 
 export const GenreEnum = [
