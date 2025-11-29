@@ -46,13 +46,7 @@ export const ProfileSection = ({ title, icon, children, editForm, canEdit, isEmp
                     </Button>
                 )}
                 {canEdit && isEditing && (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsEditing(false)}
-                        className="h-11 w-11 p-0 sm:h-8 sm:w-8"
-                        aria-label="Close edit mode"
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)} className="h-11 w-11 p-0 sm:h-8 sm:w-8" aria-label="Close edit mode">
                         <X className="h-4 w-4" aria-hidden="true" />
                         <span className="sr-only">Close edit mode</span>
                     </Button>

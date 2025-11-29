@@ -192,11 +192,11 @@ function RouteComponent() {
                 <div className="space-y-6 text-center">
                     <div className="space-y-2">
                         <h1 className="text-3xl font-bold">Welcome to Sound Connect!</h1>
-                        <p className="text-muted-foreground text-lg">Let's set up your musician profile</p>
+                        <p className="text-muted-foreground text-lg">Let&apos;s set up your musician profile</p>
                     </div>
 
                     <div className="bg-muted/50 mx-auto max-w-md rounded-lg p-6 text-left">
-                        <p className="text-sm">This will only take a few minutes. We'll help you:</p>
+                        <p className="text-sm">This will only take a few minutes. We&apos;ll help you:</p>
                         <ul className="mt-3 space-y-2 text-sm">
                             <li className="flex items-center gap-2">
                                 <span className="text-primary">✓</span>

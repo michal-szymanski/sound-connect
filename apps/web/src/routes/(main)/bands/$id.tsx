@@ -51,15 +51,15 @@ type LoaderData = LoaderSuccess | LoaderError;
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const Route = createFileRoute('/(main)/bands/$id' as any)({
     component: RouteComponent,
-    beforeLoad: async ({ context }: any) => {
-        const { user } = context;
+    beforeLoad: async ({ context: _context }: any) => {
+        const { user } = _context;
         if (!user) {
             throw redirect({
                 to: '/sign-in'
             });
         }
     },
-    loader: async ({ params, context }: any): Promise<LoaderData> => {
+    loader: async ({ params, context: _context }: any): Promise<LoaderData> => {
         const bandId = parseInt(params.id, 10);
         if (isNaN(bandId)) {
             throw notFound();
@@ -96,6 +96,17 @@ function RouteComponent() {
     const loaderData = Route.useLoaderData();
     const { data: auth } = useAuth();
 
+    const bandId = loaderData.type === 'success' ? loaderData.data.band.id : 0;
+    const updateBand = useUpdateBand(bandId);
+    const deleteBand = useDeleteBand();
+    const addMember = useAddBandMember(bandId);
+    const removeMember = useRemoveBandMember(bandId);
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+    const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(null);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
     if (loaderData.type === 'error') {
         return (
             <div className="w-full">
@@ -108,23 +119,12 @@ function RouteComponent() {
     }
 
     const { band, applications, applicationStatus } = loaderData.data;
-    const bandId = band.id;
     const isUserAdmin = band.isUserAdmin || false;
-
-    const updateBand = useUpdateBand(bandId);
-    const deleteBand = useDeleteBand();
-    const addMember = useAddBandMember(bandId);
-    const removeMember = useRemoveBandMember(bandId);
-
-    const [isEditing, setIsEditing] = useState(false);
-    const [showAddMemberModal, setShowAddMemberModal] = useState(false);
-    const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(null);
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     const pendingApplicationsCount = applications?.total || 0;
 
-    const isUserMember = auth?.user ? band.members.some((m) => m.userId === auth.user?.id) : false;
-    const existingMemberIds = band.members.map((m) => m.userId);
+    const isUserMember = auth?.user ? band.members.some((m: { userId: string }) => m.userId === auth.user?.id) : false;
+    const existingMemberIds = band.members.map((m: { userId: string }) => m.userId);
 
     const handleUpdateBand = (data: UpdateBandInput | CreateBandInput) => {
         updateBand.mutate(data as UpdateBandInput, {
@@ -314,15 +314,26 @@ function RouteComponent() {
 
                                     {band.members.length > 0 ? (
                                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                            {band.members.map((member) => (
-                                                <BandMemberCard
-                                                    key={member.userId}
-                                                    member={member}
-                                                    canRemove={isUserAdmin && (!member.isAdmin || band.members.filter((m) => m.isAdmin).length > 1)}
-                                                    onRemove={(userId) => handleRemoveMember(userId, member.name)}
-                                                    isRemoving={removeMember.isPending}
-                                                />
-                                            ))}
+                                            {band.members.map(
+                                                (member: {
+                                                    userId: string;
+                                                    name: string;
+                                                    isAdmin: boolean;
+                                                    profileImageUrl: string | null;
+                                                    joinedAt: string;
+                                                }) => (
+                                                    <BandMemberCard
+                                                        key={member.userId}
+                                                        member={member}
+                                                        canRemove={
+                                                            isUserAdmin &&
+                                                            (!member.isAdmin || band.members.filter((m: { isAdmin: boolean }) => m.isAdmin).length > 1)
+                                                        }
+                                                        onRemove={(userId) => handleRemoveMember(userId, member.name)}
+                                                        isRemoving={removeMember.isPending}
+                                                    />
+                                                )
+                                            )}
                                         </div>
                                     ) : (
                                         <p className="text-muted-foreground text-center text-sm">No members yet. Add members to get started.</p>

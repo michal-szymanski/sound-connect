@@ -116,7 +116,9 @@ Before marking complete:
 - [ ] Loading/error states handled
 - [ ] Props type named "Props"
 - [ ] Files are kebab-case
-- [ ] Use `isServer()` from `@/web/utils/env-utils` instead of `typeof window === 'undefined'`
+- [ ] Use `isServer()` from `@/utils/env-utils` instead of `typeof window === 'undefined'`
+- [ ] Use `isTouchDevice()` from `@/utils/env-utils` instead of checking directly
+- [ ] **NEVER use `document.querySelector()` or `document.querySelectorAll()`** - use React refs instead
 - [ ] **MANDATORY:** Code-quality-enforcer invoked
 - [ ] **MANDATORY:** Violations fixed or max attempts reached
 

@@ -243,9 +243,7 @@ export function Post({ item }: Props) {
                     >
                         <MessageCircle className="size-[18px]" aria-hidden="true" />
                     </Button>
-                    <span className="text-muted-foreground min-w-[2ch] text-xs tabular-nums">
-                        {formatCount(commentsCount)}
-                    </span>
+                    <span className="text-muted-foreground min-w-[2ch] text-xs tabular-nums">{formatCount(commentsCount)}</span>
                 </div>
                 <Button
                     variant="ghost"
@@ -258,24 +256,14 @@ export function Post({ item }: Props) {
                 </Button>
             </footer>
             <div className="mb-2 text-sm">
-                <Link
-                    to={isBandPost ? '/bands/$id' : '/users/$id'}
-                    params={{ id: authorId }}
-                    className="font-semibold hover:underline"
-                >
+                <Link to={isBandPost ? '/bands/$id' : '/users/$id'} params={{ id: authorId }} className="font-semibold hover:underline">
                     {authorName}
                 </Link>{' '}
                 {isExpanded ? (
-                    <span
-                        className="text-foreground break-words whitespace-pre-wrap"
-                        dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
-                    />
+                    <span className="text-foreground break-words whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: formatContent(post.content) }} />
                 ) : (
                     <>
-                        <span
-                            className="text-foreground line-clamp-2 break-words"
-                            dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
-                        />
+                        <span className="text-foreground line-clamp-2 break-words" dangerouslySetInnerHTML={{ __html: formatContent(post.content) }} />
                         {post.content.length > 100 && (
                             <button onClick={() => setIsExpanded(true)} className="text-muted-foreground ml-1">
                                 more
@@ -298,7 +286,13 @@ export function Post({ item }: Props) {
                     className="border-0 px-0 focus-visible:ring-0"
                 />
                 {commentText.trim() && (
-                    <Button variant="ghost" size="sm" onClick={handleCommentSubmit} disabled={createCommentMutation.isPending} className="text-primary h-8 px-2 font-semibold">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleCommentSubmit}
+                        disabled={createCommentMutation.isPending}
+                        className="text-primary h-8 px-2 font-semibold"
+                    >
                         Post
                     </Button>
                 )}

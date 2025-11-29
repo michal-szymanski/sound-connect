@@ -5,7 +5,7 @@ import { Input } from '@/shared/components/ui/input';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/components/ui/tooltip';
-import { searchEmojis, getRecentEmojis, addRecentEmoji } from '@/web/utils/emoji-utils';
+import { searchEmojis, getRecentEmojis, addRecentEmoji } from '@/utils/emoji-utils';
 import emojiData from '@/web/data/emojis.json';
 
 type Emoji = {

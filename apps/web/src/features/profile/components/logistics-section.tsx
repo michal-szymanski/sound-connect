@@ -49,12 +49,7 @@ export const LogisticsSection = ({ data, canEdit, id }: Props) => {
     };
 
     const hasChanges = () => {
-        return !!(
-            formData.city ||
-            formData.travelRadius ||
-            formData.hasRehearsalSpace !== undefined ||
-            formData.hasTransportation !== undefined
-        );
+        return !!(formData.city || formData.travelRadius || formData.hasRehearsalSpace !== undefined || formData.hasTransportation !== undefined);
     };
 
     const handleSubmit = (e: React.FormEvent, closeForm: () => void) => {

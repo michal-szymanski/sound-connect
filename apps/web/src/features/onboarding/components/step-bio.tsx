@@ -21,7 +21,7 @@ export const StepBio = ({ value, onChange }: Props) => {
                 <Label htmlFor="bio" className="text-base">
                     Tell us about yourself
                 </Label>
-                <p className="text-muted-foreground text-sm">Share your musical journey, experience, or what you're looking for. This step is optional.</p>
+                <p className="text-muted-foreground text-sm">Share your musical journey, experience, or what you&apos;re looking for. This step is optional.</p>
             </div>
 
             <div className="space-y-2">

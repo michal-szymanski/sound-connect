@@ -1,11 +1,11 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Slider } from '@/shared/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
-import { isServer } from '@/web/utils/env-utils';
+import { isTouchDevice } from '@/utils/env-utils';
 
 type Props = {
     src: string;
@@ -20,23 +20,25 @@ export function VideoPlayer({ src, className, autoPlay = false, aspectRatio = '1
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const hideControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const instanceIdRef = useRef<string>(`video-${src}`);
 
     const [isPlaying, setIsPlaying] = useState(autoPlay);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
-    const [isVolumeOpen, setIsVolumeOpen] = useState(false);
     const volumeOpenTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const volumeCloseTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const volumeContainerRef = useRef<HTMLDivElement>(null);
     const isHoveringVolumeRef = useRef(false);
     const isClosingRef = useRef(false);
+    const popoverContentRef = useRef<HTMLDivElement>(null);
 
-    const { volume, isMuted, setVolume, setMuted, register, unregister, notifyPlay } = useMediaPlayback();
+    const { volume, isMuted, setVolume, setMuted, register, unregister, notifyPlay, activeVolumePopoverId, setActiveVolumePopover } = useMediaPlayback();
 
-    const isTouchDevice = !isServer() && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    const instanceId = useMemo(() => `video-${src}`, [src]);
+    const isVolumeOpen = activeVolumePopoverId === instanceId;
+
+    const touchDevice = isTouchDevice();
 
     const resetHideControlsTimer = useCallback(() => {
         if (hideControlsTimeoutRef.current) {
@@ -114,7 +116,6 @@ export function VideoPlayer({ src, className, autoPlay = false, aspectRatio = '1
 
         video.volume = isMuted ? 0 : volume;
 
-        const instanceId = instanceIdRef.current;
         register(instanceId, video, 'video');
 
         const handlePlay = () => {
@@ -141,24 +142,18 @@ export function VideoPlayer({ src, className, autoPlay = false, aspectRatio = '1
 
         const handlePointerMove = (e: PointerEvent) => {
             const trigger = volumeContainerRef.current;
-            if (!trigger) return;
+            const popoverEl = popoverContentRef.current;
+            if (!trigger || !popoverEl) return;
 
             const triggerRect = trigger.getBoundingClientRect();
             const isOverTrigger =
-                e.clientX >= triggerRect.left &&
-                e.clientX <= triggerRect.right &&
-                e.clientY >= triggerRect.top &&
-                e.clientY <= triggerRect.bottom;
+                e.clientX >= triggerRect.left && e.clientX <= triggerRect.right && e.clientY >= triggerRect.top && e.clientY <= triggerRect.bottom;
 
-            const popover = document.querySelector('[data-radix-popper-content-wrapper]');
             let isOverPopover = false;
-            if (popover) {
-                const popoverRect = popover.getBoundingClientRect();
+            if (popoverEl) {
+                const popoverRect = popoverEl.getBoundingClientRect();
                 isOverPopover =
-                    e.clientX >= popoverRect.left &&
-                    e.clientX <= popoverRect.right &&
-                    e.clientY >= popoverRect.top &&
-                    e.clientY <= popoverRect.bottom;
+                    e.clientX >= popoverRect.left && e.clientX <= popoverRect.right && e.clientY >= popoverRect.top && e.clientY <= popoverRect.bottom;
             }
 
             if (!isOverTrigger && !isOverPopover) {
@@ -167,7 +162,7 @@ export function VideoPlayer({ src, className, autoPlay = false, aspectRatio = '1
                 clearTimeout(volumeOpenTimeoutRef.current);
                 clearTimeout(volumeCloseTimeoutRef.current);
                 volumeCloseTimeoutRef.current = setTimeout(() => {
-                    setIsVolumeOpen(false);
+                    setActiveVolumePopover((current) => (current === instanceId ? null : current));
                     setTimeout(() => {
                         isClosingRef.current = false;
                     }, 300);
@@ -184,23 +179,23 @@ export function VideoPlayer({ src, className, autoPlay = false, aspectRatio = '1
     }, [isVolumeOpen]);
 
     const handleVolumeMouseEnter = () => {
-        if (isTouchDevice) return;
+        if (touchDevice) return;
         isHoveringVolumeRef.current = true;
         isClosingRef.current = false;
         clearTimeout(volumeCloseTimeoutRef.current);
         volumeOpenTimeoutRef.current = setTimeout(() => {
-            setIsVolumeOpen(true);
+            setActiveVolumePopover(instanceId);
         }, 150);
     };
 
     const handleVolumeMouseLeave = () => {
-        if (isTouchDevice) return;
+        if (touchDevice) return;
         isHoveringVolumeRef.current = false;
         clearTimeout(volumeOpenTimeoutRef.current);
         isClosingRef.current = true;
         volumeCloseTimeoutRef.current = setTimeout(() => {
             if (!isHoveringVolumeRef.current) {
-                setIsVolumeOpen(false);
+                setActiveVolumePopover((current) => (current === instanceId ? null : current));
             }
             setTimeout(() => {
                 isClosingRef.current = false;
@@ -209,25 +204,29 @@ export function VideoPlayer({ src, className, autoPlay = false, aspectRatio = '1
     };
 
     const handleVolumeFocus = () => {
-        if (isTouchDevice) return;
+        if (touchDevice) return;
         if (isClosingRef.current) return;
-        setIsVolumeOpen(true);
+        setActiveVolumePopover(instanceId);
     };
 
     const handleVolumeBlur = (e: React.FocusEvent) => {
-        if (isTouchDevice) return;
+        if (touchDevice) return;
         const container = volumeContainerRef.current;
         if (container && e.relatedTarget && container.contains(e.relatedTarget as Node)) {
             return;
         }
         volumeCloseTimeoutRef.current = setTimeout(() => {
-            setIsVolumeOpen(false);
+            setActiveVolumePopover((current) => (current === instanceId ? null : current));
         }, 100);
     };
 
     const toggleVolumePopover = () => {
-        if (!isTouchDevice) return;
-        setIsVolumeOpen((prev) => !prev);
+        if (!touchDevice) return;
+        if (isVolumeOpen) {
+            setActiveVolumePopover((current) => (current === instanceId ? null : current));
+        } else {
+            setActiveVolumePopover(instanceId);
+        }
     };
 
     const togglePlayPause = () => {
@@ -380,7 +379,11 @@ export function VideoPlayer({ src, className, autoPlay = false, aspectRatio = '1
                                     open={isVolumeOpen}
                                     onOpenChange={(open) => {
                                         if (open && isClosingRef.current) return;
-                                        setIsVolumeOpen(open);
+                                        if (open) {
+                                            setActiveVolumePopover(instanceId);
+                                        } else {
+                                            setActiveVolumePopover((current) => (current === instanceId ? null : current));
+                                        }
                                     }}
                                 >
                                     <PopoverTrigger asChild>
@@ -398,6 +401,7 @@ export function VideoPlayer({ src, className, autoPlay = false, aspectRatio = '1
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent
+                                        ref={popoverContentRef}
                                         side="top"
                                         align="center"
                                         className="w-12 p-2"

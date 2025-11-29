@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { Heart, MessageCircle, Share2, Send, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { VisuallyHidden } from 'radix-ui';
 import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
@@ -65,7 +65,7 @@ export function PostModal({
     const [commentText, setCommentText] = useState('');
     const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
     const [replyingTo, setReplyingTo] = useState<number | null>(null);
-    const [currentMediaIndex, setCurrentMediaIndex] = useState(initialMediaIndex ?? 0);
+    const [currentMediaIndex, setCurrentMediaIndex] = useState(() => initialMediaIndex ?? 0);
     const commentInputRef = useRef<HTMLInputElement>(null);
     const { data: auth } = useAuth();
     const likeMutation = useLikeToggle(postId, auth?.user ?? null);
@@ -87,17 +87,13 @@ export function PostModal({
         (newOpen: boolean) => {
             if (!newOpen) {
                 setCurrentMediaIndex(0);
+            } else if (initialMediaIndex !== undefined) {
+                setCurrentMediaIndex(initialMediaIndex);
             }
             onOpenChange(newOpen);
         },
-        [onOpenChange]
+        [onOpenChange, initialMediaIndex]
     );
-
-    useEffect(() => {
-        if (open && initialMediaIndex !== undefined) {
-            setCurrentMediaIndex(initialMediaIndex);
-        }
-    }, [open, initialMediaIndex]);
 
     useEffect(() => {
         if (!open || displayMedia.length <= 1) return;
@@ -332,9 +328,7 @@ export function PostModal({
                                 >
                                     <MessageCircle className="size-[18px]" aria-hidden="true" />
                                 </Button>
-                                <span className="text-muted-foreground min-w-[2ch] text-xs tabular-nums">
-                                    {formatCount(comments.length)}
-                                </span>
+                                <span className="text-muted-foreground min-w-[2ch] text-xs tabular-nums">{formatCount(comments.length)}</span>
                             </div>
                             <Button
                                 variant="ghost"

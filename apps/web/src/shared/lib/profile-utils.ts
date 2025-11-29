@@ -5,6 +5,7 @@ export const instrumentLabels: Record<(typeof InstrumentEnum)[number], string> =
     bass_guitar: 'Bass Guitar',
     drums: 'Drums',
     keyboards: 'Keyboards',
+    piano: 'Piano',
     vocals: 'Vocals',
     saxophone: 'Saxophone',
     trumpet: 'Trumpet',

@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
-import { isServer } from '@/web/utils/env-utils';
+import { isServer, isTouchDevice } from '@/utils/env-utils';
 
 type Props = {
     src: string;
@@ -19,19 +19,21 @@ type ChannelData = Array<Float32Array | number[]>;
 export function AudioPlayer({ src, className }: Props) {
     const waveformRef = useRef<HTMLDivElement>(null);
     const hoverCanvasRef = useRef<HTMLCanvasElement>(null);
-    const instanceIdRef = useRef<string>(`audio-${src}`);
     const barDataRef = useRef<Array<{ x: number; y: number; height: number }>>([]);
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0, displayWidth: 0, displayHeight: 64 });
     const [duration, setDuration] = useState(0);
-    const [isVolumeOpen, setIsVolumeOpen] = useState(false);
     const volumeOpenTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const volumeCloseTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const volumeContainerRef = useRef<HTMLDivElement>(null);
     const isHoveringVolumeRef = useRef(false);
     const isClosingRef = useRef(false);
-    const { volume, isMuted, setVolume, setMuted, register, unregister, notifyPlay } = useMediaPlayback();
+    const popoverContentRef = useRef<HTMLDivElement>(null);
+    const { volume, isMuted, setVolume, setMuted, register, unregister, notifyPlay, activeVolumePopoverId, setActiveVolumePopover } = useMediaPlayback();
 
-    const isTouchDevice = !isServer() && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    const instanceId = useMemo(() => `audio-${src}`, [src]);
+    const isVolumeOpen = activeVolumePopoverId === instanceId;
+
+    const touchDevice = isTouchDevice();
 
     const plugins = useMemo(() => {
         if (isServer()) return [];
@@ -173,7 +175,6 @@ export function AudioPlayer({ src, className }: Props) {
 
         wavesurfer.setVolume(isMuted ? 0 : volume);
 
-        const instanceId = instanceIdRef.current;
         register(instanceId, wavesurfer, 'audio');
 
         const onReady = () => {
@@ -268,24 +269,18 @@ export function AudioPlayer({ src, className }: Props) {
 
         const handlePointerMove = (e: PointerEvent) => {
             const trigger = volumeContainerRef.current;
-            if (!trigger) return;
+            const popoverEl = popoverContentRef.current;
+            if (!trigger || !popoverEl) return;
 
             const triggerRect = trigger.getBoundingClientRect();
             const isOverTrigger =
-                e.clientX >= triggerRect.left &&
-                e.clientX <= triggerRect.right &&
-                e.clientY >= triggerRect.top &&
-                e.clientY <= triggerRect.bottom;
+                e.clientX >= triggerRect.left && e.clientX <= triggerRect.right && e.clientY >= triggerRect.top && e.clientY <= triggerRect.bottom;
 
-            const popover = document.querySelector('[data-radix-popper-content-wrapper]');
             let isOverPopover = false;
-            if (popover) {
-                const popoverRect = popover.getBoundingClientRect();
+            if (popoverEl) {
+                const popoverRect = popoverEl.getBoundingClientRect();
                 isOverPopover =
-                    e.clientX >= popoverRect.left &&
-                    e.clientX <= popoverRect.right &&
-                    e.clientY >= popoverRect.top &&
-                    e.clientY <= popoverRect.bottom;
+                    e.clientX >= popoverRect.left && e.clientX <= popoverRect.right && e.clientY >= popoverRect.top && e.clientY <= popoverRect.bottom;
             }
 
             if (!isOverTrigger && !isOverPopover) {
@@ -294,7 +289,7 @@ export function AudioPlayer({ src, className }: Props) {
                 clearTimeout(volumeOpenTimeoutRef.current);
                 clearTimeout(volumeCloseTimeoutRef.current);
                 volumeCloseTimeoutRef.current = setTimeout(() => {
-                    setIsVolumeOpen(false);
+                    setActiveVolumePopover((current) => (current === instanceId ? null : current));
                     setTimeout(() => {
                         isClosingRef.current = false;
                     }, 300);
@@ -311,23 +306,23 @@ export function AudioPlayer({ src, className }: Props) {
     }, [isVolumeOpen]);
 
     const handleVolumeMouseEnter = () => {
-        if (isTouchDevice) return;
+        if (touchDevice) return;
         isHoveringVolumeRef.current = true;
         isClosingRef.current = false;
         clearTimeout(volumeCloseTimeoutRef.current);
         volumeOpenTimeoutRef.current = setTimeout(() => {
-            setIsVolumeOpen(true);
+            setActiveVolumePopover(instanceId);
         }, 150);
     };
 
     const handleVolumeMouseLeave = () => {
-        if (isTouchDevice) return;
+        if (touchDevice) return;
         isHoveringVolumeRef.current = false;
         clearTimeout(volumeOpenTimeoutRef.current);
         isClosingRef.current = true;
         volumeCloseTimeoutRef.current = setTimeout(() => {
             if (!isHoveringVolumeRef.current) {
-                setIsVolumeOpen(false);
+                setActiveVolumePopover((current) => (current === instanceId ? null : current));
             }
             setTimeout(() => {
                 isClosingRef.current = false;
@@ -336,25 +331,29 @@ export function AudioPlayer({ src, className }: Props) {
     };
 
     const handleVolumeFocus = () => {
-        if (isTouchDevice) return;
+        if (touchDevice) return;
         if (isClosingRef.current) return;
-        setIsVolumeOpen(true);
+        setActiveVolumePopover(instanceId);
     };
 
     const handleVolumeBlur = (e: React.FocusEvent) => {
-        if (isTouchDevice) return;
+        if (touchDevice) return;
         const container = volumeContainerRef.current;
         if (container && e.relatedTarget && container.contains(e.relatedTarget as Node)) {
             return;
         }
         volumeCloseTimeoutRef.current = setTimeout(() => {
-            setIsVolumeOpen(false);
+            setActiveVolumePopover((current) => (current === instanceId ? null : current));
         }, 100);
     };
 
     const toggleVolumePopover = () => {
-        if (!isTouchDevice) return;
-        setIsVolumeOpen((prev) => !prev);
+        if (!touchDevice) return;
+        if (isVolumeOpen) {
+            setActiveVolumePopover((current) => (current === instanceId ? null : current));
+        } else {
+            setActiveVolumePopover(instanceId);
+        }
     };
 
     const togglePlayPause = () => {
@@ -452,7 +451,11 @@ export function AudioPlayer({ src, className }: Props) {
                         open={isVolumeOpen}
                         onOpenChange={(open) => {
                             if (open && isClosingRef.current) return;
-                            setIsVolumeOpen(open);
+                            if (open) {
+                                setActiveVolumePopover(instanceId);
+                            } else {
+                                setActiveVolumePopover((current) => (current === instanceId ? null : current));
+                            }
                         }}
                     >
                         <PopoverTrigger asChild>
@@ -470,6 +473,7 @@ export function AudioPlayer({ src, className }: Props) {
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent
+                            ref={popoverContentRef}
                             side="top"
                             align="center"
                             className="w-12 p-2"

@@ -54,11 +54,7 @@ export const StepInstrument = ({ value, onChange }: Props) => {
                         <CommandGroup>
                             <ScrollArea className="h-64">
                                 {InstrumentEnum.map((instrument) => (
-                                    <CommandItem
-                                        key={instrument}
-                                        value={formatInstrument(instrument)}
-                                        onSelect={() => handleChange(instrument)}
-                                    >
+                                    <CommandItem key={instrument} value={formatInstrument(instrument)} onSelect={() => handleChange(instrument)}>
                                         <Check className={cn('mr-2 h-4 w-4', selectedInstrument === instrument ? 'opacity-100' : 'opacity-0')} />
                                         {formatInstrument(instrument)}
                                     </CommandItem>

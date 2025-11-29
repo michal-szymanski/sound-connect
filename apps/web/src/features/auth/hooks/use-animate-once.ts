@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { isServer } from '@/web/utils/env-utils';
+import { isServer } from '@/utils/env-utils';
 
 type WindowWithFlag = Window & { __loginHeroAnimated?: boolean };
 

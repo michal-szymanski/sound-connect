@@ -6,7 +6,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { cn } from '@/shared/lib/utils';
 import type { FullProfile } from '@sound-connect/common/types/profile';
-import { isServer } from '@/web/utils/env-utils';
+import { isServer } from '@/utils/env-utils';
 
 type Props = {
     profile: FullProfile;

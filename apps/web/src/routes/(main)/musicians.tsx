@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Filter } from 'lucide-react';
 import { z } from 'zod';
@@ -107,17 +107,18 @@ function MusiciansPage() {
         radius: searchParams.radius
     });
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-    const [filterSlot, setFilterSlot] = useState<HTMLElement | null>(null);
+    const [filterSlot] = useState<HTMLElement | null>(() => {
+        if (typeof document !== 'undefined') {
+            return document.getElementById('musicians-filters-slot');
+        }
+        return null;
+    });
 
     const resultsHeadingRef = useRef<HTMLHeadingElement>(null);
 
     const results = loaderData.type === 'success' ? loaderData.data : null;
     const error = loaderData.type === 'error' ? loaderData.message : null;
     const hasSearched = loaderData.type !== 'no-search';
-
-    useEffect(() => {
-        setFilterSlot(document.getElementById('musicians-filters-slot'));
-    }, []);
 
     const handleSearch = useCallback(() => {
         window.scrollTo(0, 0);

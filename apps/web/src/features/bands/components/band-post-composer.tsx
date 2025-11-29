@@ -6,7 +6,7 @@ import { Card } from '@/shared/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import type { BandPost } from '@sound-connect/common/types/band-posts';
 import { EmojiPicker } from '@/web/components/emoji-picker';
-import { insertAtCursor } from '@/web/utils/emoji-utils';
+import { insertAtCursor } from '@/utils/emoji-utils';
 
 type Props = {
     bandId: number;

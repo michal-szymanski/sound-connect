@@ -249,9 +249,7 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
                                                 setOpenPrimary(false);
                                             }}
                                         >
-                                            <Check
-                                                className={cn('mr-2 h-4 w-4', formData.primaryInstrument === instrument ? 'opacity-100' : 'opacity-0')}
-                                            />
+                                            <Check className={cn('mr-2 h-4 w-4', formData.primaryInstrument === instrument ? 'opacity-100' : 'opacity-0')} />
                                             {formatInstrument(instrument)}
                                         </CommandItem>
                                     ))}
@@ -284,7 +282,12 @@ export const InstrumentsSection = ({ data, canEdit, id }: Props) => {
                     <div key={inst.instrument || `empty-${index}`} className="flex flex-col gap-2 sm:flex-row">
                         <Popover open={openAdditional[index] || false} onOpenChange={(open) => setOpenAdditional({ ...openAdditional, [index]: open })}>
                             <PopoverTrigger asChild>
-                                <Button variant="outline" role="combobox" aria-expanded={openAdditional[index] || false} className="w-full justify-between sm:flex-1">
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openAdditional[index] || false}
+                                    className="w-full justify-between sm:flex-1"
+                                >
                                     {inst.instrument ? formatInstrument(inst.instrument) : 'Select instrument'}
                                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                 </Button>

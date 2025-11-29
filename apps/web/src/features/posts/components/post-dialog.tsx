@@ -11,8 +11,8 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import z from 'zod';
 import { EmojiPicker } from '@/web/components/emoji-picker';
-import { insertAtCursor } from '@/web/utils/emoji-utils';
-import { getCharacterCount } from '@/web/utils/string-utils';
+import { insertAtCursor } from '@/utils/emoji-utils';
+import { getCharacterCount } from '@/utils/string-utils';
 import { Button } from '@/shared/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/shared/components/ui/dialog';
 import { Form, FormField, FormItem } from '@/shared/components/ui/form';
@@ -63,7 +63,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const queryClient = useQueryClient();
 
-    const updateMutation = mode === 'edit' && post ? useUpdatePost(post.id, isBandPost) : null;
+    const updateMutation = useUpdatePost(post?.id ?? 0, isBandPost);
 
     const {
         upload,
@@ -216,7 +216,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                     description: 'Unknown error occurred'
                 });
             }
-        } else if (mode === 'edit' && updateMutation) {
+        } else if (mode === 'edit') {
             const existingKeysToKeep = previews.filter((p) => p.isExisting && p.key && !removedMediaKeys.includes(p.key)).map((p) => p.key!);
 
             updateMutation.mutate(
@@ -237,7 +237,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
     const isUploading = uploadState === 'uploading' || uploadState === 'requesting' || uploadState === 'confirming';
     const hasUploadError = uploadState === 'error';
     const isSubmitting = form.formState.isSubmitting || form.formState.isSubmitSuccessful;
-    const isEditPending = mode === 'edit' && updateMutation?.isPending;
+    const isEditPending = mode === 'edit' && updateMutation.isPending;
     const isDisabled = isSubmitting || isEditPending || isUploading;
     const canAddMore = previews.length < appConfig.maxPostMediaCount && !isUploading;
 
@@ -284,9 +284,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                     />
 
                     {visiblePreviews.length > 0 && (
-                        <div
-                            className={clsx('grid gap-3', visiblePreviews.some((p) => p.type === 'audio') ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3')}
-                        >
+                        <div className={clsx('grid gap-3', visiblePreviews.some((p) => p.type === 'audio') ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3')}>
                             {visiblePreviews.map((preview, index) => (
                                 <div key={preview.id} className="group relative">
                                     <div

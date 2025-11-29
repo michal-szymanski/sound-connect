@@ -1,6 +1,6 @@
 import { createContext, useContext, useRef, useCallback, useState, type ReactNode } from 'react';
 import type WaveSurfer from 'wavesurfer.js';
-import { isServer } from '@/web/utils/env-utils';
+import { isServer } from '@/utils/env-utils';
 import { appConfig } from '@sound-connect/common/app-config';
 
 type MediaInstance = {
@@ -21,6 +21,8 @@ type MediaPlaybackContext = {
     isMuted: boolean;
     setVolume: (volume: number) => void;
     setMuted: (muted: boolean) => void;
+    activeVolumePopoverId: string | null;
+    setActiveVolumePopover: (idOrUpdater: string | null | ((current: string | null) => string | null)) => void;
 };
 
 const STORAGE_KEY = `${appConfig.appNameNormalized}-media-volume`;
@@ -54,6 +56,7 @@ type Props = {
 export function MediaPlaybackProvider({ children }: Props) {
     const instancesRef = useRef<Map<string, MediaInstance>>(new Map());
     const [volumeSettings, setVolumeSettings] = useState<VolumeSettings>(() => loadVolumeSettings());
+    const [activeVolumePopoverId, setActiveVolumePopoverId] = useState<string | null>(null);
 
     const register = useCallback((id: string, instance: WaveSurfer | HTMLVideoElement, type: 'audio' | 'video') => {
         instancesRef.current.set(id, { type, instance });
@@ -97,6 +100,14 @@ export function MediaPlaybackProvider({ children }: Props) {
         });
     }, []);
 
+    const setActiveVolumePopover = useCallback((idOrUpdater: string | null | ((current: string | null) => string | null)) => {
+        if (typeof idOrUpdater === 'function') {
+            setActiveVolumePopoverId(idOrUpdater);
+        } else {
+            setActiveVolumePopoverId(idOrUpdater);
+        }
+    }, []);
+
     return (
         <Context.Provider
             value={{
@@ -106,7 +117,9 @@ export function MediaPlaybackProvider({ children }: Props) {
                 volume: volumeSettings.volume,
                 isMuted: volumeSettings.isMuted,
                 setVolume,
-                setMuted
+                setMuted,
+                activeVolumePopoverId,
+                setActiveVolumePopover
             }}
         >
             {children}

@@ -20,8 +20,10 @@ export const StepAvailability = ({ value, onChange }: Props) => {
     return (
         <div className="space-y-4">
             <div className="space-y-2">
-                <Label className="text-base">What's your availability status?</Label>
-                <p className="text-muted-foreground text-sm">Let musicians and bands know if you're actively looking to collaborate. This step is optional.</p>
+                <Label className="text-base">What&apos;s your availability status?</Label>
+                <p className="text-muted-foreground text-sm">
+                    Let musicians and bands know if you&apos;re actively looking to collaborate. This step is optional.
+                </p>
             </div>
 
             <div className="space-y-2">
