@@ -123,6 +123,10 @@ export function AudioPlayer({ src, className }: Props) {
         const decodedData = wavesurfer.getDecodedData();
         if (!decodedData) return;
 
+        const duration = wavesurfer.getDuration();
+        const currentTime = wavesurfer.getCurrentTime();
+        const progressX = duration > 0 ? (currentTime / duration) * displayWidth : 0;
+
         const channelData = decodedData.getChannelData(0);
         const barWidth = 3;
         const barGap = 1;
@@ -139,9 +143,18 @@ export function AudioPlayer({ src, className }: Props) {
 
         ctx.save();
         ctx.scale(dpr, dpr);
-        ctx.beginPath();
-        ctx.rect(0, 0, hoverX, displayHeight);
-        ctx.clip();
+
+        const isHoverAfterProgress = hoverX > progressX;
+
+        if (isHoverAfterProgress) {
+            ctx.beginPath();
+            ctx.rect(progressX, 0, hoverX - progressX, displayHeight);
+            ctx.clip();
+        } else {
+            ctx.beginPath();
+            ctx.rect(hoverX, 0, progressX - hoverX, displayHeight);
+            ctx.clip();
+        }
 
         ctx.fillStyle = 'oklch(0.80 0.12 200)';
 
@@ -174,10 +187,22 @@ export function AudioPlayer({ src, className }: Props) {
             setDuration(wavesurfer.getDuration());
         };
 
+        const onSeeking = () => {
+            const canvas = hoverCanvasRef.current;
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+        };
+
         wavesurfer.on('ready', onReady);
+        wavesurfer.on('seeking', onSeeking);
 
         return () => {
             wavesurfer.un('ready', onReady);
+            wavesurfer.un('seeking', onSeeking);
         };
     }, [wavesurfer]);
 
