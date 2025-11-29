@@ -43,6 +43,13 @@
       "when": 1764365998627,
       "tag": "0005_brown_vivisector",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1764541200000,
+      "tag": "0006_remove_profile_fields",
+      "breakpoints": true
     }
   ]
 }

@@ -138,7 +138,6 @@ export const updateUserProfileAvailability = async (
     userId: string,
     data: {
         status: AvailabilityStatus;
-        statusExpiresAt?: string;
         commitmentLevel?: CommitmentLevel;
         weeklyAvailability?: string;
         rehearsalFrequency?: RehearsalFrequency;
@@ -150,7 +149,6 @@ export const updateUserProfileAvailability = async (
         .update(userProfilesTable)
         .set({
             status: data.status,
-            statusExpiresAt: data.statusExpiresAt || null,
             commitmentLevel: data.commitmentLevel || null,
             weeklyAvailability: data.weeklyAvailability || null,
             rehearsalFrequency: data.rehearsalFrequency || null,
@@ -285,8 +283,6 @@ export const updateUserProfileBio = async (
     userId: string,
     data: {
         bio?: string;
-        musicalGoals?: string;
-        ageRange?: string;
     }
 ) => {
     await getOrCreateUserProfile(userId);
@@ -295,8 +291,6 @@ export const updateUserProfileBio = async (
         .update(userProfilesTable)
         .set({
             bio: data.bio || null,
-            musicalGoals: data.musicalGoals || null,
-            ageRange: data.ageRange || null,
             updatedAt: new Date().toISOString()
         })
         .where(eq(userProfilesTable.userId, userId));
@@ -381,28 +375,6 @@ export const getUserProfile = async (userId: string) => {
         };
     }
 
-    let currentStatus = profile.status;
-    let currentStatusExpiresAt = profile.statusExpiresAt;
-
-    if (profile.status === 'actively_looking' && profile.statusExpiresAt) {
-        const expiresAt = new Date(profile.statusExpiresAt);
-        const now = new Date();
-
-        if (expiresAt < now) {
-            currentStatus = 'open_to_offers';
-            currentStatusExpiresAt = null;
-
-            await db
-                .update(userProfilesTable)
-                .set({
-                    status: 'open_to_offers',
-                    statusExpiresAt: null,
-                    updatedAt: new Date().toISOString()
-                })
-                .where(eq(userProfilesTable.userId, userId));
-        }
-    }
-
     const seekingToPlay = profile.seekingToPlay ? JSON.parse(profile.seekingToPlay) : [];
     const secondaryGenres = profile.secondaryGenres ? JSON.parse(profile.secondaryGenres) : [];
 
@@ -429,8 +401,7 @@ export const getUserProfile = async (userId: string) => {
             : null,
         availability: profile.status
             ? {
-                  status: currentStatus,
-                  statusExpiresAt: currentStatusExpiresAt,
+                  status: profile.status,
                   commitmentLevel: profile.commitmentLevel,
                   weeklyAvailability: profile.weeklyAvailability,
                   rehearsalFrequency: profile.rehearsalFrequency
@@ -464,13 +435,10 @@ export const getUserProfile = async (userId: string) => {
                       dealBreakers: profile.dealBreakers
                   }
                 : null,
-        bio:
-            profile.bio || profile.musicalGoals || profile.ageRange
-                ? {
-                      bio: profile.bio,
-                      musicalGoals: profile.musicalGoals,
-                      ageRange: profile.ageRange
-                  }
-                : null
+        bio: profile.bio
+            ? {
+                  bio: profile.bio
+              }
+            : null
     };
 };

@@ -138,9 +138,7 @@ function RouteComponent() {
             if (currentStep === 4 && formData.bio) {
                 try {
                     await updateBioMutation.mutateAsync({
-                        bio: formData.bio,
-                        musicalGoals: undefined,
-                        ageRange: undefined
+                        bio: formData.bio
                     });
                 } catch {
                     saveSuccess = false;
@@ -149,10 +147,8 @@ function RouteComponent() {
 
             if (currentStep === 5 && formData.status) {
                 try {
-                    const thirtyDaysFromNow = Date.now() + 30 * 24 * 60 * 60 * 1000;
                     await updateAvailabilityMutation.mutateAsync({
                         status: formData.status,
-                        statusExpiresAt: formData.status === 'actively_looking' ? new Date(thirtyDaysFromNow).toISOString() : undefined,
                         commitmentLevel: undefined,
                         weeklyAvailability: undefined,
                         rehearsalFrequency: undefined

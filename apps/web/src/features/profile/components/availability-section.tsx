@@ -4,7 +4,6 @@ import { ProfileSection } from './profile-section';
 import { useUpdateAvailability } from '@/features/profile/hooks/use-profile';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
-import { Input } from '@/shared/components/ui/input';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { CharacterCounter } from './character-counter';
@@ -41,7 +40,6 @@ export const AvailabilitySection = ({ data, canEdit }: Props) => {
     const updateMutation = useUpdateAvailability();
     const [formData, setFormData] = useState<UpdateAvailability>({
         status: data?.status || 'just_browsing',
-        statusExpiresAt: data?.statusExpiresAt || undefined,
         commitmentLevel: data?.commitmentLevel || undefined,
         weeklyAvailability: data?.weeklyAvailability || undefined,
         rehearsalFrequency: data?.rehearsalFrequency || undefined
@@ -62,21 +60,10 @@ export const AvailabilitySection = ({ data, canEdit }: Props) => {
         });
     };
 
-    const getExpirationText = (expiresAt: string) => {
-        const date = new Date(expiresAt);
-        const now = new Date();
-        const daysLeft = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        if (daysLeft < 0) return 'Expired';
-        if (daysLeft === 0) return 'Expires today';
-        return `${daysLeft} days left`;
-    };
-
     const editForm = (closeForm: () => void) => (
         <form onSubmit={(e) => handleSubmit(e, closeForm)} className="space-y-4">
             <div className="space-y-2">
-                <Label htmlFor="status">
-                    Status <span className="text-destructive">*</span>
-                </Label>
+                <Label htmlFor="status">Status</Label>
                 <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as AvailabilityStatus })} required>
                     <SelectTrigger id="status" className="w-full" aria-required="true">
                         <SelectValue>
@@ -106,26 +93,6 @@ export const AvailabilitySection = ({ data, canEdit }: Props) => {
                     </SelectContent>
                 </Select>
             </div>
-
-            {formData.status === 'actively_looking' && (
-                <div className="space-y-2">
-                    <Label htmlFor="statusExpiresAt">
-                        Expires At <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                        id="statusExpiresAt"
-                        type="datetime-local"
-                        value={formData.statusExpiresAt ? new Date(formData.statusExpiresAt).toISOString().slice(0, 16) : ''}
-                        onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                statusExpiresAt: e.target.value ? new Date(e.target.value).toISOString() : undefined
-                            })
-                        }
-                        required
-                    />
-                </div>
-            )}
 
             <div className="space-y-2">
                 <Label htmlFor="commitmentLevel">Commitment Level</Label>
@@ -230,9 +197,6 @@ export const AvailabilitySection = ({ data, canEdit }: Props) => {
                                 />
                                 <span>{availabilityStatusConfig[data.status].label}</span>
                             </>
-                        )}
-                        {data.status === 'actively_looking' && data.statusExpiresAt && (
-                            <span className="text-muted-foreground ml-2 text-sm">({getExpirationText(data.statusExpiresAt)})</span>
                         )}
                     </div>
                     {data.commitmentLevel && (

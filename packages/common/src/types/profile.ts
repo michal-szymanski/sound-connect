@@ -39,40 +39,12 @@ export const updateGenresSchema = z
         }
     );
 
-export const updateAvailabilitySchema = z
-    .object({
-        status: z.enum(AvailabilityStatusEnum),
-        statusExpiresAt: z.string().datetime().optional(),
-        commitmentLevel: z.enum(CommitmentLevelEnum).optional(),
-        weeklyAvailability: z.string().max(200).optional(),
-        rehearsalFrequency: z.enum(RehearsalFrequencyEnum).optional()
-    })
-    .refine(
-        (data) => {
-            if (data.status === 'actively_looking') {
-                return !!data.statusExpiresAt;
-            }
-            return true;
-        },
-        {
-            message: 'statusExpiresAt is required when status is actively_looking',
-            path: ['statusExpiresAt']
-        }
-    )
-    .refine(
-        (data) => {
-            if (data.statusExpiresAt) {
-                const expiresAt = new Date(data.statusExpiresAt);
-                const now = new Date();
-                return expiresAt > now;
-            }
-            return true;
-        },
-        {
-            message: 'statusExpiresAt must be a future date',
-            path: ['statusExpiresAt']
-        }
-    );
+export const updateAvailabilitySchema = z.object({
+    status: z.enum(AvailabilityStatusEnum),
+    commitmentLevel: z.enum(CommitmentLevelEnum).optional(),
+    weeklyAvailability: z.string().max(200).optional(),
+    rehearsalFrequency: z.enum(RehearsalFrequencyEnum).optional()
+});
 
 export const updateExperienceSchema = z.object({
     giggingLevel: z.enum(GiggingLevelEnum).optional(),
@@ -93,7 +65,7 @@ export const updateLogisticsSchema = z
     })
     .refine(
         (data) => {
-            if (data.country === 'USA' || data.country === 'Canada') {
+            if (data.city && (data.country === 'USA' || data.country === 'Canada')) {
                 return !!data.state;
             }
             return true;
@@ -111,9 +83,7 @@ export const updateLookingForSchema = z.object({
 });
 
 export const updateBioSchema = z.object({
-    bio: z.string().max(500).optional(),
-    musicalGoals: z.string().max(300).optional(),
-    ageRange: z.string().max(20).optional()
+    bio: z.string().max(500).optional()
 });
 
 export const completeSetupSchema = z.object({
@@ -140,7 +110,6 @@ export const genresSectionSchema = z.object({
 
 export const availabilitySectionSchema = z.object({
     status: z.enum(AvailabilityStatusEnum).nullable(),
-    statusExpiresAt: z.string().nullable(),
     commitmentLevel: z.enum(CommitmentLevelEnum).nullable(),
     weeklyAvailability: z.string().nullable(),
     rehearsalFrequency: z.enum(RehearsalFrequencyEnum).nullable()
@@ -170,9 +139,7 @@ export const lookingForSectionSchema = z.object({
 });
 
 export const bioSectionSchema = z.object({
-    bio: z.string().nullable(),
-    musicalGoals: z.string().nullable(),
-    ageRange: z.string().nullable()
+    bio: z.string().nullable()
 });
 
 export const fullProfileSchema = z.object({

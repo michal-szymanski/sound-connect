@@ -21,7 +21,7 @@ export const LogisticsSection = ({ data, canEdit, id }: Props) => {
     const [formData, setFormData] = useState<UpdateLogistics>({
         city: data?.city || '',
         state: data?.state || undefined,
-        country: data?.country || 'USA',
+        country: data?.country || '',
         latitude: data?.latitude ?? 0,
         longitude: data?.longitude ?? 0,
         travelRadius: data?.travelRadius || undefined,
@@ -34,7 +34,7 @@ export const LogisticsSection = ({ data, canEdit, id }: Props) => {
             ? {
                   city: data.city,
                   state: data.state || undefined,
-                  country: data.country || 'USA',
+                  country: data.country || '',
                   latitude: data.latitude,
                   longitude: data.longitude
               }
@@ -48,6 +48,15 @@ export const LogisticsSection = ({ data, canEdit, id }: Props) => {
         if (data.travelRadius !== null && data.travelRadius !== undefined) return 'complete';
         if (data.hasRehearsalSpace || data.hasTransportation) return 'complete';
         return 'incomplete';
+    };
+
+    const hasChanges = () => {
+        return !!(
+            formData.city ||
+            formData.travelRadius ||
+            formData.hasRehearsalSpace !== undefined ||
+            formData.hasTransportation !== undefined
+        );
     };
 
     const handleSubmit = (e: React.FormEvent, closeForm: () => void) => {
@@ -73,7 +82,7 @@ export const LogisticsSection = ({ data, canEdit, id }: Props) => {
                 ...formData,
                 city: '',
                 state: undefined,
-                country: 'USA',
+                country: '',
                 latitude: 0,
                 longitude: 0
             });
@@ -134,7 +143,7 @@ export const LogisticsSection = ({ data, canEdit, id }: Props) => {
                 <Button type="button" variant="outline" onClick={closeForm}>
                     Cancel
                 </Button>
-                <Button type="submit" disabled={updateMutation.isPending} aria-busy={updateMutation.isPending}>
+                <Button type="submit" disabled={updateMutation.isPending || !hasChanges()} aria-busy={updateMutation.isPending}>
                     {updateMutation.isPending ? (
                         <>
                             <span className="sr-only">Saving changes, please wait</span>

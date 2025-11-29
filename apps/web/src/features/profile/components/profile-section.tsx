@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { Card } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
-import { Pencil } from 'lucide-react';
+import { Pencil, X } from 'lucide-react';
 import { CompletionBadge } from './completion-badge';
 
 type Props = {
@@ -43,6 +43,18 @@ export const ProfileSection = ({ title, icon, children, editForm, canEdit, isEmp
                     >
                         <Pencil className="h-4 w-4" aria-hidden="true" />
                         <span className="sr-only">Edit {title}</span>
+                    </Button>
+                )}
+                {canEdit && isEditing && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsEditing(false)}
+                        className="h-11 w-11 p-0 sm:h-8 sm:w-8"
+                        aria-label="Close edit mode"
+                    >
+                        <X className="h-4 w-4" aria-hidden="true" />
+                        <span className="sr-only">Close edit mode</span>
                     </Button>
                 )}
             </div>

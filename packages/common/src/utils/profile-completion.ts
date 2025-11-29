@@ -22,8 +22,6 @@ type ProfileData = {
     canOffer: string | null;
     dealBreakers: string | null;
     bio: string | null;
-    musicalGoals: string | null;
-    ageRange: string | null;
 };
 
 export const calculateProfileCompletion = (profile: ProfileData): number => {
