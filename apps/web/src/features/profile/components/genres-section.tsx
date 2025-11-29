@@ -1,15 +1,18 @@
 import { useState } from 'react';
-import { Music } from 'lucide-react';
+import { Music, Check, ChevronsUpDown } from 'lucide-react';
 import { ProfileSection } from './profile-section';
 import { useUpdateGenres } from '@/features/profile/hooks/use-profile';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/shared/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { CharacterCounter } from './character-counter';
 import type { GenresSection as GenresSectionData, UpdateGenres } from '@sound-connect/common/types/profile';
-import { GenreEnum, type Genre } from '@sound-connect/common/types/profile-enums';
-import { formatGenre } from '@/features/profile/lib/profile-utils';
+import { type Genre } from '@sound-connect/common/types/profile-enums';
+import { formatGenre, getSortedGenres } from '@/features/profile/lib/profile-utils';
+import { cn } from '@/shared/lib/utils';
 
 type Props = {
     data: GenresSectionData | null;
@@ -24,6 +27,7 @@ export const GenresSection = ({ data, canEdit, id }: Props) => {
         secondaryGenres: data?.secondaryGenres || [],
         influences: data?.influences || ''
     });
+    const [openPrimary, setOpenPrimary] = useState(false);
 
     const isEmpty = !data?.primaryGenre;
 
@@ -60,49 +64,71 @@ export const GenresSection = ({ data, canEdit, id }: Props) => {
                 <Label htmlFor="primaryGenre">
                     Primary Genre <span className="text-destructive">*</span>
                 </Label>
-                <Select
-                    value={formData.primaryGenre}
-                    onValueChange={(value) => {
-                        const newPrimary = value as Genre;
-                        setFormData({
-                            ...formData,
-                            primaryGenre: newPrimary,
-                            secondaryGenres: formData.secondaryGenres.filter((g) => g !== newPrimary)
-                        });
-                    }}
-                    required
-                >
-                    <SelectTrigger id="primaryGenre" className="w-full" aria-required="true">
-                        <SelectValue placeholder="Select your primary genre" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {GenreEnum.map((genre) => (
-                            <SelectItem key={genre} value={genre}>
-                                {formatGenre(genre)}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <Popover open={openPrimary} onOpenChange={setOpenPrimary}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            id="primaryGenre"
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={openPrimary}
+                            aria-required="true"
+                            className="w-full justify-between"
+                        >
+                            {formData.primaryGenre ? formatGenre(formData.primaryGenre) : 'Select your primary genre'}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                            <CommandInput placeholder="Search genres..." />
+                            <CommandEmpty>No genre found.</CommandEmpty>
+                            <CommandGroup>
+                                <ScrollArea className="h-64">
+                                    {getSortedGenres().map((genre) => (
+                                        <CommandItem
+                                            key={genre}
+                                            value={formatGenre(genre)}
+                                            onSelect={() => {
+                                                const newPrimary = genre;
+                                                setFormData({
+                                                    ...formData,
+                                                    primaryGenre: newPrimary,
+                                                    secondaryGenres: formData.secondaryGenres.filter((g) => g !== newPrimary)
+                                                });
+                                                setOpenPrimary(false);
+                                            }}
+                                        >
+                                            <Check className={cn('mr-2 h-4 w-4', formData.primaryGenre === genre ? 'opacity-100' : 'opacity-0')} />
+                                            {formatGenre(genre)}
+                                        </CommandItem>
+                                    ))}
+                                </ScrollArea>
+                            </CommandGroup>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
             </div>
 
             <div className="space-y-2">
                 <Label>Secondary Genres (up to 3)</Label>
                 <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-                    {GenreEnum.filter((g) => g !== formData.primaryGenre).map((genre) => (
-                        <button
-                            key={genre}
-                            type="button"
-                            onClick={() => toggleSecondaryGenre(genre)}
-                            className={`rounded-md border px-3 py-2 text-sm ${
-                                formData.secondaryGenres.includes(genre)
-                                    ? 'border-primary bg-primary text-primary-foreground'
-                                    : 'border-input bg-background hover:bg-accent'
-                            }`}
-                            disabled={!formData.secondaryGenres.includes(genre) && formData.secondaryGenres.length >= 3}
-                        >
-                            {formatGenre(genre)}
-                        </button>
-                    ))}
+                    {getSortedGenres()
+                        .filter((g) => g !== formData.primaryGenre)
+                        .map((genre) => (
+                            <button
+                                key={genre}
+                                type="button"
+                                onClick={() => toggleSecondaryGenre(genre)}
+                                className={`rounded-md border px-3 py-2 text-sm ${
+                                    formData.secondaryGenres.includes(genre)
+                                        ? 'border-primary bg-primary text-primary-foreground'
+                                        : 'border-input bg-background hover:bg-accent'
+                                }`}
+                                disabled={!formData.secondaryGenres.includes(genre) && formData.secondaryGenres.length >= 3}
+                            >
+                                {formatGenre(genre)}
+                            </button>
+                        ))}
                 </div>
             </div>
 

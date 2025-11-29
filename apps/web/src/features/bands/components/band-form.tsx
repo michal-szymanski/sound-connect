@@ -3,14 +3,17 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
 import { Textarea } from '@/shared/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
 import { CharacterCounter } from '@/features/profile/components/character-counter';
-import { GenreEnum } from '@sound-connect/common/types/profile-enums';
 import { createBandInputSchema, type CreateBandInput, type UpdateBandInput } from '@sound-connect/common/types/bands';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Check, ChevronsUpDown } from 'lucide-react';
 import { LocationAutocomplete } from '@/shared/components/location/location-autocomplete';
 import type { SelectedLocation } from '@sound-connect/common/types/location';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/shared/components/ui/command';
+import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import { getSortedGenres, formatGenre } from '@/features/profile/lib/profile-utils';
+import { cn } from '@/shared/lib/utils';
 
 type Props = {
     initialData?: Partial<UpdateBandInput>;
@@ -45,6 +48,7 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
             : null
     );
 
+    const [genrePopoverOpen, setGenrePopoverOpen] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -89,13 +93,6 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
                 longitude: 0
             });
         }
-    };
-
-    const formatLabel = (value: string) => {
-        return value
-            .split('_')
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
     };
 
     return (
@@ -169,21 +166,48 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
                 <Label htmlFor="primaryGenre">
                     Primary Genre <span className="text-destructive">*</span>
                 </Label>
-                <Select
-                    value={formData.primaryGenre}
-                    onValueChange={(value) => setFormData({ ...formData, primaryGenre: value as typeof formData.primaryGenre })}
-                >
-                    <SelectTrigger id="primaryGenre" aria-required="true" aria-invalid={!!errors['primaryGenre']}>
-                        <SelectValue placeholder="Select a genre" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {GenreEnum.map((genre) => (
-                            <SelectItem key={genre} value={genre}>
-                                {formatLabel(genre)}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <Popover open={genrePopoverOpen} onOpenChange={setGenrePopoverOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            id="primaryGenre"
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={genrePopoverOpen}
+                            aria-required="true"
+                            aria-invalid={!!errors['primaryGenre']}
+                            className="w-full justify-between"
+                        >
+                            {formData.primaryGenre ? formatGenre(formData.primaryGenre) : 'Select a genre'}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0 z-popover" align="start">
+                        <Command>
+                            <CommandInput placeholder="Search genres..." />
+                            <CommandEmpty>No genre found.</CommandEmpty>
+                            <CommandGroup>
+                                <ScrollArea className="h-64">
+                                    {getSortedGenres().map((genre) => (
+                                        <CommandItem
+                                            key={genre}
+                                            value={formatGenre(genre)}
+                                            onSelect={() => {
+                                                setFormData({
+                                                    ...formData,
+                                                    primaryGenre: genre
+                                                });
+                                                setGenrePopoverOpen(false);
+                                            }}
+                                        >
+                                            <Check className={cn('mr-2 h-4 w-4', formData.primaryGenre === genre ? 'opacity-100' : 'opacity-0')} />
+                                            {formatGenre(genre)}
+                                        </CommandItem>
+                                    ))}
+                                </ScrollArea>
+                            </CommandGroup>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
                 {errors['primaryGenre'] && (
                     <p className="text-destructive text-sm" role="alert">
                         {errors['primaryGenre']}

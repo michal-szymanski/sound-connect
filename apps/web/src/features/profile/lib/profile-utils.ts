@@ -74,3 +74,7 @@ export const formatInstrument = (instrument: Instrument): string => {
 export const formatGenre = (genre: Genre): string => {
     return genreLabels[genre] || genre;
 };
+
+export const getSortedGenres = () => [...GenreEnum].sort((a, b) => formatGenre(a).localeCompare(formatGenre(b)));
+
+export const getSortedInstruments = () => [...InstrumentEnum].sort((a, b) => formatInstrument(a).localeCompare(formatInstrument(b)));

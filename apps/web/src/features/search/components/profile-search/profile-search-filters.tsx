@@ -10,19 +10,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/
 import { Badge } from '@/shared/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/shared/components/ui/collapsible';
 import { cn } from '@/shared/lib/utils';
-import {
-    InstrumentEnum,
-    GenreEnum,
-    AvailabilityStatusEnum,
-    type Instrument,
-    type Genre,
-    type AvailabilityStatus
-} from '@sound-connect/common/types/profile-enums';
+import { AvailabilityStatusEnum, type Instrument, type Genre, type AvailabilityStatus } from '@sound-connect/common/types/profile-enums';
 import { searchRadiusEnum } from '@sound-connect/common/types/profile-search';
 import { availabilityStatusConfig } from '@/shared/lib/utils/availability';
 import type { ProfileSearchParams } from '@sound-connect/common/types/profile-search';
 import { LocationAutocomplete } from '@/shared/components/location/location-autocomplete';
 import type { SelectedLocation } from '@sound-connect/common/types/location';
+import { formatInstrument, formatGenre, getSortedGenres, getSortedInstruments } from '@/features/profile/lib/profile-utils';
 
 type Props = {
     filters: ProfileSearchParams;
@@ -35,7 +29,7 @@ type Props = {
 
 export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onClear, isLoading, activeFilterCount }: Props) {
     const [instrumentsOpen, setInstrumentsOpen] = useState(false);
-    const [genresOpen, setGenresOpen] = useState(true);
+    const [genresOpen, setGenresOpen] = useState(false);
     const [availabilityOpen, setAvailabilityOpen] = useState(true);
     const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(
         filters.city ? { city: filters.city, state: undefined, country: '', latitude: filters.latitude || 0, longitude: filters.longitude || 0 } : null
@@ -59,6 +53,11 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
 
     const handleGenreToggle = (genre: Genre) => {
         const newGenres = selectedGenres.includes(genre) ? selectedGenres.filter((g) => g !== genre) : [...selectedGenres, genre];
+        onFiltersChange({ ...filters, genres: newGenres.length > 0 ? newGenres : undefined });
+    };
+
+    const handleGenreRemove = (genre: Genre) => {
+        const newGenres = selectedGenres.filter((g) => g !== genre);
         onFiltersChange({ ...filters, genres: newGenres.length > 0 ? newGenres : undefined });
     };
 
@@ -87,13 +86,6 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
         }
     };
 
-    const formatLabel = (value: string) => {
-        return value
-            .split('_')
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-    };
-
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -117,7 +109,7 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
                                 <CommandEmpty>No instrument found.</CommandEmpty>
                                 <CommandGroup>
                                     <ScrollArea className="h-48">
-                                        {InstrumentEnum.map((instrument) => (
+                                        {getSortedInstruments().map((instrument) => (
                                             <CommandItem
                                                 key={instrument}
                                                 onSelect={() => {
@@ -125,7 +117,7 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
                                                 }}
                                             >
                                                 <Check className={cn('mr-2 h-4 w-4', selectedInstruments.includes(instrument) ? 'opacity-100' : 'opacity-0')} />
-                                                {formatLabel(instrument)}
+                                                {formatInstrument(instrument)}
                                             </CommandItem>
                                         ))}
                                     </ScrollArea>
@@ -137,11 +129,11 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
                         <div className="mt-2 flex flex-wrap gap-1">
                             {selectedInstruments.map((instrument) => (
                                 <Badge key={instrument} variant="secondary" className="gap-1">
-                                    {formatLabel(instrument)}
+                                    {formatInstrument(instrument)}
                                     <button
                                         onClick={() => handleInstrumentRemove(instrument)}
                                         className="ring-offset-background focus:ring-ring ml-1 rounded-full outline-none focus:ring-2 focus:ring-offset-2"
-                                        aria-label={`Remove ${formatLabel(instrument)}`}
+                                        aria-label={`Remove ${formatInstrument(instrument)}`}
                                     >
                                         <X className="h-3 w-3" />
                                     </button>
@@ -179,33 +171,54 @@ export function ProfileSearchFilters({ filters, onFiltersChange, onSearch, onCle
                     </Select>
                 </div>
 
-                <Collapsible open={genresOpen} onOpenChange={setGenresOpen}>
-                    <CollapsibleTrigger className="hover:bg-accent -ml-1 flex w-full items-center justify-between rounded-sm px-1 py-0.5">
-                        <Label className="cursor-pointer">Genres</Label>
-                        <ChevronDown className={cn('h-4 w-4 transition-transform', genresOpen && 'rotate-180')} />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                        <ScrollArea className="mt-2 h-48 rounded-md border p-4">
-                            <div className="space-y-2">
-                                {GenreEnum.map((genre) => (
-                                    <div key={genre} className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id={`genre-${genre}`}
-                                            checked={selectedGenres.includes(genre)}
-                                            onCheckedChange={() => handleGenreToggle(genre)}
-                                        />
-                                        <label
-                                            htmlFor={`genre-${genre}`}
-                                            className="cursor-pointer text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                        >
-                                            {formatLabel(genre)}
-                                        </label>
-                                    </div>
-                                ))}
-                            </div>
-                        </ScrollArea>
-                    </CollapsibleContent>
-                </Collapsible>
+                <div>
+                    <Label htmlFor="genres">Genres</Label>
+                    <Popover open={genresOpen} onOpenChange={setGenresOpen}>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" role="combobox" aria-expanded={genresOpen} className="mt-2 w-full justify-between" id="genres">
+                                {selectedGenres.length > 0 ? `${selectedGenres.length} selected` : 'Select genres...'}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0" align="start">
+                            <Command>
+                                <CommandInput placeholder="Search genres..." />
+                                <CommandEmpty>No genre found.</CommandEmpty>
+                                <CommandGroup>
+                                    <ScrollArea className="h-48">
+                                        {getSortedGenres().map((genre) => (
+                                            <CommandItem
+                                                key={genre}
+                                                onSelect={() => {
+                                                    handleGenreToggle(genre);
+                                                }}
+                                            >
+                                                <Check className={cn('mr-2 h-4 w-4', selectedGenres.includes(genre) ? 'opacity-100' : 'opacity-0')} />
+                                                {formatGenre(genre)}
+                                            </CommandItem>
+                                        ))}
+                                    </ScrollArea>
+                                </CommandGroup>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+                    {selectedGenres.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                            {selectedGenres.map((genre) => (
+                                <Badge key={genre} variant="secondary" className="gap-1">
+                                    {formatGenre(genre)}
+                                    <button
+                                        onClick={() => handleGenreRemove(genre)}
+                                        className="ring-offset-background focus:ring-ring ml-1 rounded-full outline-none focus:ring-2 focus:ring-offset-2"
+                                        aria-label={`Remove ${formatGenre(genre)}`}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </Badge>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
                 <Collapsible open={availabilityOpen} onOpenChange={setAvailabilityOpen}>
                     <CollapsibleTrigger className="hover:bg-accent -ml-1 flex w-full items-center justify-between rounded-sm px-1 py-0.5">
