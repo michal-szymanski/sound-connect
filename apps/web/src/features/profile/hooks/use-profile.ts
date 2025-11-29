@@ -10,7 +10,8 @@ import {
     updateLookingFor,
     updateBio,
     completeSetup,
-    updateProfileImage
+    updateProfileImage,
+    updateBackgroundImage
 } from '@/features/profile/server-functions/profile';
 import type {
     UpdateInstruments,
@@ -21,7 +22,8 @@ import type {
     UpdateLookingFor,
     UpdateBio,
     CompleteSetup,
-    UpdateProfileImage
+    UpdateProfileImage,
+    UpdateBackgroundImage
 } from '@sound-connect/common/types/profile';
 
 export const useProfile = (userId: string) => {
@@ -222,6 +224,29 @@ export const useUpdateProfileImage = () => {
             queryClient.invalidateQueries({ queryKey: ['profile'] });
             queryClient.invalidateQueries({ queryKey: ['user'] });
             toast.success('Profile image updated');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message);
+        }
+    });
+};
+
+export const useUpdateBackgroundImage = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: UpdateBackgroundImage) => {
+            const result = await updateBackgroundImage({ data });
+            if (!result.success) {
+                throw new Error(result.body?.message || 'Failed to update background image');
+            }
+            return result.body;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['auth'] });
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+            queryClient.invalidateQueries({ queryKey: ['user'] });
+            toast.success('Cover image updated');
         },
         onError: (error: Error) => {
             toast.error(error.message);

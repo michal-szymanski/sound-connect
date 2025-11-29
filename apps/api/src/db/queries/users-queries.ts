@@ -108,3 +108,17 @@ export const updateUserImage = async (userId: string, imageUrl: string) => {
 
     return updated;
 };
+
+export const updateUserBackgroundImage = async (userId: string, backgroundImageUrl: string) => {
+    const [updated] = await db
+        .update(users)
+        .set({ backgroundImage: backgroundImageUrl, updatedAt: new Date() })
+        .where(eq(users.id, userId))
+        .returning({
+            id: users.id,
+            name: users.name,
+            backgroundImage: users.backgroundImage
+        });
+
+    return updated;
+};

@@ -163,6 +163,8 @@ uploadsRoutes.post('/uploads/confirm', async (c) => {
 
     if (session.uploadType === 'profile-image') {
         permanentKey = `profiles/${user.id}/avatar-${timestamp}.${extension}`;
+    } else if (session.uploadType === 'background-image') {
+        permanentKey = `backgrounds/${user.id}/cover-${timestamp}.${extension}`;
     } else if (session.uploadType === 'band-image') {
         if (!session.bandId) {
             throw new HTTPException(400, { message: 'Band ID is missing' });

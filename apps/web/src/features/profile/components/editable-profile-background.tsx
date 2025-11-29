@@ -1,37 +1,34 @@
 import { useState, useRef, useCallback } from 'react';
 import { Camera, Loader2 } from 'lucide-react';
-import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { ImageCropModal } from '@/shared/components/image-cropper';
 import { usePresignedUpload } from '@/hooks/use-presigned-upload';
-import { useUpdateProfileImage } from '@/features/profile/hooks/use-profile';
-import { cn } from '@/shared/lib/utils';
+import { useUpdateBackgroundImage } from '@/features/profile/hooks/use-profile';
 
 type Props = {
-    userId: string;
     currentImage: string | null;
-    name: string;
-    className?: string;
-    fallbackClassName?: string;
+    onImageUpdated?: (imageUrl: string) => void;
 };
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const DEFAULT_GRADIENT = 'linear-gradient(135deg, hsl(var(--primary)/0.1), hsl(var(--secondary)/0.1))';
 
-export const EditableProfileAvatar = ({ userId, currentImage, name, className, fallbackClassName }: Props) => {
+export const EditableProfileBackground = ({ currentImage, onImageUpdated }: Props) => {
     const [cropModalOpen, setCropModalOpen] = useState(false);
     const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const updateProfileImageMutation = useUpdateProfileImage();
+    const updateBackgroundImageMutation = useUpdateBackgroundImage();
 
     const { upload, state: uploadState } = usePresignedUpload({
-        purpose: 'profile-image',
+        purpose: 'background-image',
         onSuccess: async (result) => {
-            await updateProfileImageMutation.mutateAsync({ imageUrl: result.publicUrl });
+            await updateBackgroundImageMutation.mutateAsync({ backgroundImage: result.publicUrl });
             setIsUploading(false);
             setCropModalOpen(false);
             setSelectedImageSrc(null);
+            onImageUpdated?.(result.publicUrl);
         },
         onError: () => {
             setIsUploading(false);
@@ -69,7 +66,7 @@ export const EditableProfileAvatar = ({ userId, currentImage, name, className, f
         async (croppedBlob: Blob) => {
             setIsUploading(true);
 
-            const file = new File([croppedBlob], 'profile-image.jpg', { type: 'image/jpeg' });
+            const file = new File([croppedBlob], 'background-image.jpg', { type: 'image/jpeg' });
             await upload(file);
         },
         [upload]
@@ -88,33 +85,30 @@ export const EditableProfileAvatar = ({ userId, currentImage, name, className, f
 
     return (
         <>
-            <div className="group relative z-20 w-fit">
+            <div className="group relative z-0 h-48 overflow-hidden sm:h-60">
+                {currentImage ? (
+                    <img
+                        src={currentImage}
+                        alt="Profile background"
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                    />
+                ) : (
+                    <div className="h-full w-full" style={{ background: DEFAULT_GRADIENT }} />
+                )}
+
                 <button
                     type="button"
                     onClick={handleClick}
-                    className="relative cursor-pointer focus:outline-none"
+                    className="absolute bottom-4 right-4 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-black/50 transition-colors hover:bg-black/70 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={isProcessing}
-                    aria-label="Change profile picture"
+                    aria-label="Change cover image"
                 >
-                    <ProfileAvatar
-                        profile={{ id: userId, name, image: currentImage }}
-                        type="user"
-                        className={className}
-                        fallbackClassName={fallbackClassName}
-                    />
-
-                    <div
-                        className={cn(
-                            'absolute inset-0 flex items-center justify-center rounded-full bg-black/50 transition-opacity',
-                            isProcessing ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                        )}
-                    >
-                        {isProcessing ? (
-                            <Loader2 className="h-8 w-8 animate-spin text-white" />
-                        ) : (
-                            <Camera className="h-8 w-8 text-white" />
-                        )}
-                    </div>
+                    {isProcessing ? (
+                        <Loader2 className="h-5 w-5 animate-spin text-white" />
+                    ) : (
+                        <Camera className="h-5 w-5 text-white" />
+                    )}
                 </button>
 
                 <input
@@ -134,6 +128,9 @@ export const EditableProfileAvatar = ({ userId, currentImage, name, className, f
                     imageSrc={selectedImageSrc}
                     onCropComplete={handleCropComplete}
                     isUploading={isProcessing}
+                    aspectRatio={16 / 9}
+                    cropShape="rect"
+                    title="Crop Cover Image"
                 />
             )}
         </>

@@ -420,7 +420,7 @@ export const bandApplicationsRelations = relations(bandApplicationsTable, ({ one
     user: one(users, { fields: [bandApplicationsTable.userId], references: [users.id] })
 }));
 
-export const uploadTypeEnum = ['profile-image', 'band-image', 'post-media', 'music-sample'] as const;
+export const uploadTypeEnum = ['profile-image', 'band-image', 'post-media', 'music-sample', 'background-image'] as const;
 
 export const uploadSessionsTable = sqliteTable(
     'upload_sessions',

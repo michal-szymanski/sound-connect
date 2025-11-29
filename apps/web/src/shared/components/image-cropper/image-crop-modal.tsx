@@ -13,9 +13,21 @@ type Props = {
     imageSrc: string;
     onCropComplete: (croppedBlob: Blob) => void;
     isUploading?: boolean;
+    aspectRatio?: number;
+    cropShape?: 'round' | 'rect';
+    title?: string;
 };
 
-export const ImageCropModal = ({ open, onOpenChange, imageSrc, onCropComplete, isUploading = false }: Props) => {
+export const ImageCropModal = ({
+    open,
+    onOpenChange,
+    imageSrc,
+    onCropComplete,
+    isUploading = false,
+    aspectRatio = 1,
+    cropShape = 'round',
+    title = 'Crop Profile Picture'
+}: Props) => {
     const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -54,7 +66,7 @@ export const ImageCropModal = ({ open, onOpenChange, imageSrc, onCropComplete, i
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="z-dialog sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Crop Profile Picture</DialogTitle>
+                    <DialogTitle>{title}</DialogTitle>
                 </DialogHeader>
 
                 <div className="relative h-64 w-full overflow-hidden rounded-lg bg-black">
@@ -62,8 +74,8 @@ export const ImageCropModal = ({ open, onOpenChange, imageSrc, onCropComplete, i
                         image={imageSrc}
                         crop={crop}
                         zoom={zoom}
-                        aspect={1}
-                        cropShape="round"
+                        aspect={aspectRatio}
+                        cropShape={cropShape}
                         showGrid={false}
                         onCropChange={onCropChange}
                         onZoomChange={onZoomChange}
@@ -81,7 +93,7 @@ export const ImageCropModal = ({ open, onOpenChange, imageSrc, onCropComplete, i
                         min={1}
                         max={3}
                         step={0.1}
-                        onValueChange={([value]) => setZoom(value)}
+                        onValueChange={([value]) => value !== undefined && setZoom(value)}
                         disabled={isUploading}
                     />
                 </div>

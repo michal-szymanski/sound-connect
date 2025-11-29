@@ -7,6 +7,7 @@ export const createUserSchema = z.object({
     email: z.string().email(),
     emailVerified: z.boolean(),
     image: z.string().nullable(),
+    backgroundImage: z.string().nullish(),
     lastActiveAt: z.string().nullish(),
     createdAt: z.date(),
     updatedAt: z.date()
@@ -18,6 +19,7 @@ export const userSchema = z.object({
     email: z.string().email(),
     emailVerified: z.boolean(),
     image: z.string().nullable(),
+    backgroundImage: z.string().nullish(),
     lastActiveAt: z.string().nullish(),
     createdAt: z.string(),
     updatedAt: z.string()

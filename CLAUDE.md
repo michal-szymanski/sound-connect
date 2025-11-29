@@ -415,6 +415,43 @@ For design and branding:
 - **branding** skill - Visual identity, color palette, terminology, voice
 - **frontend-design** skill - Sound Connect UI patterns, Magic UI components
 
+#### Better Auth Configuration
+
+**CRITICAL: Custom Users Table Columns**
+
+When adding new columns to the `users` table in `packages/drizzle/src/better-auth.ts`, you MUST also add them to better-auth's `user.additionalFields` configuration in `apps/api/auth.ts`. This ensures the fields are included in authentication session responses.
+
+**Example:**
+
+1. Add column to schema (`packages/drizzle/src/better-auth.ts`):
+```typescript
+export const users = sqliteTable('users', {
+    // ... existing fields
+    backgroundImage: text('background_image'),
+});
+```
+
+2. Add to better-auth config (`apps/api/auth.ts`):
+```typescript
+user: {
+    additionalFields: {
+        backgroundImage: {
+            type: 'string',
+            required: false,
+            input: false
+        }
+    }
+}
+```
+
+**Why this matters:**
+- Without additionalFields configuration, new columns won't appear in `auth.user` responses
+- Frontend components relying on reactive auth data will not receive the new fields
+- API server must be restarted after modifying `auth.ts` for changes to take effect
+
+**Recent examples:**
+- `backgroundImage` field added for profile cover images (apps/web/src/features/profile/CLAUDE.md)
+
 #### R2 Asset Storage (`sound-connect-assets`)
 
 **Current Setup:**

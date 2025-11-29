@@ -100,6 +100,16 @@ export const updateProfileImageResponseSchema = z.object({
     image: z.string().nullable()
 });
 
+export const updateBackgroundImageSchema = z.object({
+    backgroundImage: z.string().url()
+});
+
+export const updateBackgroundImageResponseSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    backgroundImage: z.string().nullable()
+});
+
 export const profileResponseSchema = z.object({
     success: z.boolean(),
     profileCompletion: z.number().int().min(0).max(100)
@@ -156,6 +166,7 @@ export const fullProfileSchema = z.object({
     id: z.string(),
     name: z.string(),
     image: z.string().nullable(),
+    backgroundImage: z.string().nullish(),
     lastActiveAt: z.string().nullable(),
     profileCompletion: z.number().int().min(0).max(100),
     instruments: instrumentsSectionSchema.nullable(),
@@ -178,6 +189,8 @@ export type UpdateBio = z.infer<typeof updateBioSchema>;
 export type CompleteSetup = z.infer<typeof completeSetupSchema>;
 export type UpdateProfileImage = z.infer<typeof updateProfileImageSchema>;
 export type UpdateProfileImageResponse = z.infer<typeof updateProfileImageResponseSchema>;
+export type UpdateBackgroundImage = z.infer<typeof updateBackgroundImageSchema>;
+export type UpdateBackgroundImageResponse = z.infer<typeof updateBackgroundImageResponseSchema>;
 export type ProfileResponse = z.infer<typeof profileResponseSchema>;
 export type InstrumentsSection = z.infer<typeof instrumentsSectionSchema>;
 export type GenresSection = z.infer<typeof genresSectionSchema>;

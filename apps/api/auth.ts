@@ -63,6 +63,11 @@ const createAuthInstance = ({ queue, apiUrl, clientUrl, secret }: CreateAuthOpti
                 lastActiveAt: {
                     type: 'string',
                     input: false
+                },
+                backgroundImage: {
+                    type: 'string',
+                    required: false,
+                    input: false
                 }
             }
         },

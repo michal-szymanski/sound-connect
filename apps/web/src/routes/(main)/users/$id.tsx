@@ -36,6 +36,7 @@ import { FollowingModal } from '@/features/profile/components/following-modal';
 import { ProfileTabs } from '@/features/profile/components/profile-tabs';
 import { BioSection } from '@/features/profile/components/bio-section';
 import { EditableProfileAvatar } from '@/features/profile/components/editable-profile-avatar';
+import { EditableProfileBackground } from '@/features/profile/components/editable-profile-background';
 import { Link } from '@tanstack/react-router';
 
 const loaderSchema = z.object({
@@ -203,14 +204,22 @@ function RouteComponent() {
             )}
 
             <Card className="border-border/40 overflow-hidden">
-                <div className="relative h-48 overflow-hidden sm:h-60">
-                    <img
-                        src="https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?w=800&dpr=2&q=80"
-                        alt="Photo by Drew Beamer"
-                        className="h-full w-full object-cover"
-                        loading="lazy"
+                {isOwnProfile ? (
+                    <EditableProfileBackground currentImage={auth?.user?.backgroundImage ?? null} />
+                ) : user.backgroundImage ? (
+                    <div className="relative h-48 overflow-hidden sm:h-60">
+                        <img
+                            src={user.backgroundImage}
+                            alt={`${user.name}'s background`}
+                            className="h-full w-full object-cover"
+                        />
+                    </div>
+                ) : (
+                    <div
+                        className="relative h-48 overflow-hidden sm:h-60"
+                        style={{ background: 'linear-gradient(135deg, hsl(var(--primary)/0.1), hsl(var(--secondary)/0.1))' }}
                     />
-                </div>
+                )}
 
                 <div className="px-4 pb-4 sm:px-6 sm:pb-6">
                     <div className="-mt-12 mb-4 sm:-mt-16">
