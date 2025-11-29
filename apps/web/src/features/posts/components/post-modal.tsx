@@ -11,6 +11,7 @@ import { useLikeToggle, useComments, useCreateComment } from '../hooks/use-posts
 import { useAuth } from '@/shared/lib/react-query';
 import { CommentItem } from './comment-item';
 import { VideoPlayer } from './video-player';
+import { AudioPlayer } from './audio-player';
 import type { Media } from '@sound-connect/common/types/drizzle';
 
 type Props = {
@@ -171,6 +172,10 @@ export function PostModal({
                     <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black">
                         {displayMedia[currentMediaIndex]!.type === 'video' ? (
                             <VideoPlayer src={`/media/${displayMedia[currentMediaIndex]!.key}`} controls className="max-h-full max-w-full" />
+                        ) : displayMedia[currentMediaIndex]!.type === 'audio' ? (
+                            <div className="w-full max-w-2xl px-8">
+                                <AudioPlayer src={`/media/${displayMedia[currentMediaIndex]!.key}`} />
+                            </div>
                         ) : (
                             <img src={`/media/${displayMedia[currentMediaIndex]!.key}`} alt="Post content" className="max-h-full max-w-full object-contain" />
                         )}
