@@ -16,11 +16,11 @@ type Props = {
     aspectRatio?: string;
 };
 
-export function VideoPlayer({ src, className, autoPlay = false, muted = false, aspectRatio = '16/9' }: Props) {
+export function VideoPlayer({ src, className, autoPlay = false, aspectRatio = '16/9' }: Props) {
     const containerRef = useRef<HTMLDivElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const hideControlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const instanceIdRef = useRef<string>(`video-${Math.random().toString(36).substring(2, 11)}`);
+    const instanceIdRef = useRef<string>(`video-${src}`);
 
     const [isPlaying, setIsPlaying] = useState(autoPlay);
     const [currentTime, setCurrentTime] = useState(0);
@@ -28,8 +28,8 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const [isVolumeOpen, setIsVolumeOpen] = useState(false);
-    const volumeOpenTimeoutRef = useRef<NodeJS.Timeout>();
-    const volumeCloseTimeoutRef = useRef<NodeJS.Timeout>();
+    const volumeOpenTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+    const volumeCloseTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const volumeContainerRef = useRef<HTMLDivElement>(null);
 
     const { volume, isMuted, setVolume, setMuted, register, unregister, notifyPlay } = useMediaPlayback();
@@ -316,11 +316,7 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
                                 />
                             </>
                         ) : (
-                            <div
-                                ref={volumeContainerRef}
-                                onMouseEnter={handleVolumeMouseEnter}
-                                onMouseLeave={handleVolumeMouseLeave}
-                            >
+                            <div ref={volumeContainerRef} onMouseEnter={handleVolumeMouseEnter} onMouseLeave={handleVolumeMouseLeave}>
                                 <Popover open={isVolumeOpen} onOpenChange={setIsVolumeOpen}>
                                     <PopoverTrigger asChild>
                                         <Button
@@ -366,7 +362,11 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
                                                 className="h-6 w-6"
                                                 aria-label={isMuted ? 'Unmute' : 'Mute'}
                                             >
-                                                {isMuted ? <VolumeX className="h-3 w-3" aria-hidden="true" /> : <Volume2 className="h-3 w-3" aria-hidden="true" />}
+                                                {isMuted ? (
+                                                    <VolumeX className="h-3 w-3" aria-hidden="true" />
+                                                ) : (
+                                                    <Volume2 className="h-3 w-3" aria-hidden="true" />
+                                                )}
                                             </Button>
                                         </div>
                                     </PopoverContent>

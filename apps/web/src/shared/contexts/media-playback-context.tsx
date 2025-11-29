@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef, useCallback, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useRef, useCallback, useState, type ReactNode } from 'react';
 import type WaveSurfer from 'wavesurfer.js';
 import { isServer } from '@/web/utils/env-utils';
 import { appConfig } from '@sound-connect/common/app-config';

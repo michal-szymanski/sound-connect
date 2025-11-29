@@ -24,8 +24,8 @@ export function AudioPlayer({ src, className }: Props) {
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0, displayWidth: 0, displayHeight: 64 });
     const [duration, setDuration] = useState(0);
     const [isVolumeOpen, setIsVolumeOpen] = useState(false);
-    const volumeOpenTimeoutRef = useRef<NodeJS.Timeout>();
-    const volumeCloseTimeoutRef = useRef<NodeJS.Timeout>();
+    const volumeOpenTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+    const volumeCloseTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const volumeContainerRef = useRef<HTMLDivElement>(null);
     const { volume, isMuted, setVolume, setMuted, register, unregister, notifyPlay } = useMediaPlayback();
 
@@ -357,7 +357,7 @@ export function AudioPlayer({ src, className }: Props) {
                     size="icon"
                     onClick={togglePlayPause}
                     className={cn(
-                        'h-10 w-10 shrink-0 rounded-full border bg-background transition-none hover:border-primary hover:bg-primary/20',
+                        'bg-background hover:border-primary hover:bg-primary/20 h-10 w-10 shrink-0 rounded-full border transition-none',
                         isPlaying ? 'border-primary' : 'border-border'
                     )}
                     aria-label={isPlaying ? 'Pause' : 'Play'}
@@ -388,11 +388,7 @@ export function AudioPlayer({ src, className }: Props) {
                     </div>
                 </div>
 
-                <div
-                    ref={volumeContainerRef}
-                    onMouseEnter={handleVolumeMouseEnter}
-                    onMouseLeave={handleVolumeMouseLeave}
-                >
+                <div ref={volumeContainerRef} onMouseEnter={handleVolumeMouseEnter} onMouseLeave={handleVolumeMouseLeave}>
                     <Popover open={isVolumeOpen} onOpenChange={setIsVolumeOpen}>
                         <PopoverTrigger asChild>
                             <Button
@@ -431,13 +427,7 @@ export function AudioPlayer({ src, className }: Props) {
                                     aria-valuemax={100}
                                     aria-valuenow={Math.round((isMuted ? 0 : volume) * 100)}
                                 />
-                                <Button
-                                    variant="ghost"
-                                    size="icon-sm"
-                                    onClick={toggleMute}
-                                    className="h-6 w-6"
-                                    aria-label={isMuted ? 'Unmute' : 'Mute'}
-                                >
+                                <Button variant="ghost" size="icon-sm" onClick={toggleMute} className="h-6 w-6" aria-label={isMuted ? 'Unmute' : 'Mute'}>
                                     {isMuted ? <VolumeX className="h-3 w-3" aria-hidden="true" /> : <Volume2 className="h-3 w-3" aria-hidden="true" />}
                                 </Button>
                             </div>
