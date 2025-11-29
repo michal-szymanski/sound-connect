@@ -46,6 +46,10 @@ export function AudioPlayer({ src, className }: Props) {
             setCurrentTime(wavesurfer.getCurrentTime());
         });
 
+        wavesurfer.on('seeking', (currentTime) => {
+            setCurrentTime(currentTime);
+        });
+
         wavesurfer.on('finish', () => {
             setIsPlaying(false);
         });
