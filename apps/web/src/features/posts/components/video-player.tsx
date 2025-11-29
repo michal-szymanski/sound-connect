@@ -45,20 +45,34 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
         if (!video) return;
 
         const updateTime = () => setCurrentTime(video.currentTime);
-        const updateDuration = () => setDuration(video.duration);
+        const updateDuration = () => {
+            if (video.duration && isFinite(video.duration)) {
+                setDuration(video.duration);
+            }
+        };
         const handlePlay = () => setIsPlaying(true);
         const handlePause = () => setIsPlaying(false);
         const handleEnded = () => setIsPlaying(false);
 
         video.addEventListener('timeupdate', updateTime);
         video.addEventListener('loadedmetadata', updateDuration);
+        video.addEventListener('durationchange', updateDuration);
+        video.addEventListener('loadeddata', updateDuration);
+        video.addEventListener('canplay', updateDuration);
         video.addEventListener('play', handlePlay);
         video.addEventListener('pause', handlePause);
         video.addEventListener('ended', handleEnded);
 
+        if (video.readyState >= 1) {
+            updateDuration();
+        }
+
         return () => {
             video.removeEventListener('timeupdate', updateTime);
             video.removeEventListener('loadedmetadata', updateDuration);
+            video.removeEventListener('durationchange', updateDuration);
+            video.removeEventListener('loadeddata', updateDuration);
+            video.removeEventListener('canplay', updateDuration);
             video.removeEventListener('play', handlePlay);
             video.removeEventListener('pause', handlePause);
             video.removeEventListener('ended', handleEnded);
@@ -187,11 +201,12 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
                     <div className="flex flex-1 items-center gap-2">
                         <Slider
                             value={[currentTime]}
-                            max={duration || 100}
+                            max={duration > 0 ? duration : 1}
                             step={0.1}
                             onValueChange={handleProgressChange}
                             className="flex-1 cursor-pointer"
                             aria-label="Video progress"
+                            disabled={duration === 0}
                         />
 
                         <div className="flex items-center gap-2 text-xs text-white">

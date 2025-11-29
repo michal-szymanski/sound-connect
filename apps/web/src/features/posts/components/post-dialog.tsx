@@ -240,9 +240,11 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
     const isDisabled = isSubmitting || isEditPending || isUploading;
     const canAddMore = previews.length < appConfig.maxPostMediaCount && !isUploading;
 
-    const currentContentLength = getCharacterCount(form.watch('content'));
+    const currentContent = form.watch('content');
+    const currentContentLength = getCharacterCount(currentContent);
     const isOverLimit = currentContentLength > appConfig.postTextMaxLength;
     const isNearLimit = currentContentLength > appConfig.postTextMaxLength * 0.9;
+    const hasContent = currentContent.trim().length > 0;
 
     const visiblePreviews = previews.filter((p) => !p.isExisting || !removedMediaKeys.includes(p.key!));
 
@@ -371,7 +373,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                     </div>
 
                     {mode === 'create' ? (
-                        <Button type="submit" disabled={isDisabled || isOverLimit} className="w-full">
+                        <Button type="submit" disabled={isDisabled || isOverLimit || !hasContent} className="w-full">
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {isSubmitting ? 'Publishing...' : 'Publish'}
                         </Button>
@@ -380,7 +382,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                             <Button type="button" variant="outline" onClick={() => onSuccess?.()} disabled={isDisabled}>
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={isDisabled || isOverLimit}>
+                            <Button type="submit" disabled={isDisabled || isOverLimit || !hasContent}>
                                 {isEditPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {isEditPending ? 'Saving...' : 'Save Changes'}
                             </Button>
