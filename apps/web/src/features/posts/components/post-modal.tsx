@@ -10,9 +10,21 @@ import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { useLikeToggle, useComments, useCreateComment } from '../hooks/use-posts';
 import { useAuth } from '@/shared/lib/react-query';
 import { CommentItem } from './comment-item';
+import { cn } from '@/shared/lib/utils';
 import { VideoPlayer } from './video-player';
 import { AudioPlayer } from './audio-player';
 import type { Media } from '@sound-connect/common/types/drizzle';
+
+const formatCount = (count: number): string => {
+    if (count === 0) return '';
+    if (count < 1000) return count.toString();
+    if (count < 1000000) {
+        const k = count / 1000;
+        return k % 1 === 0 ? `${k}K` : `${k.toFixed(1)}K`;
+    }
+    const m = count / 1000000;
+    return m % 1 === 0 ? `${m}M` : `${m.toFixed(1)}M`;
+};
 
 type Props = {
     open: boolean;
@@ -287,30 +299,52 @@ export function PostModal({
                     </ScrollArea>
 
                     {/* Action Buttons */}
-                    <div className="border-border flex-shrink-0 space-y-2 border-t p-3">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
+                    <div className="border-border flex-shrink-0 border-t p-3">
+                        <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1">
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={handleLikeToggle}
                                     disabled={!canLike}
-                                    className={`h-8 px-2 ${!canLike ? `${isLiked ? 'text-red-500 opacity-75' : 'opacity-50'}` : isLiked ? 'text-red-500 transition-colors' : 'text-muted-foreground transition-colors hover:text-red-500'}`}
+                                    className={cn(
+                                        'h-8 rounded-full px-2',
+                                        canLike && 'hover:bg-red-500/10 hover:text-red-500',
+                                        isLiked ? 'text-red-500' : 'text-muted-foreground',
+                                        !canLike && 'cursor-default opacity-60'
+                                    )}
+                                    aria-label={isLiked ? 'Unlike post' : 'Like post'}
+                                    aria-pressed={isLiked}
                                 >
-                                    <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
+                                    <Heart className={cn('size-[18px]', isLiked && 'fill-current')} aria-hidden="true" />
                                 </Button>
-                                <Button variant="ghost" size="sm" onClick={handleCommentButtonClick} className="text-muted-foreground h-8 px-2">
-                                    <MessageCircle className="h-5 w-5" />
-                                </Button>
-                                <Button variant="ghost" size="sm" className="text-muted-foreground h-8 px-2">
-                                    <Share2 className="h-5 w-5" />
-                                </Button>
+                                <span className={cn('min-w-[2ch] text-xs tabular-nums', isLiked ? 'text-red-500' : 'text-muted-foreground')}>
+                                    {formatCount(likes)}
+                                </span>
                             </div>
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleCommentButtonClick}
+                                    className="text-muted-foreground hover:bg-primary/10 hover:text-primary h-8 rounded-full px-2"
+                                    aria-label="View comments"
+                                >
+                                    <MessageCircle className="size-[18px]" aria-hidden="true" />
+                                </Button>
+                                <span className="text-muted-foreground min-w-[2ch] text-xs tabular-nums">
+                                    {formatCount(comments.length)}
+                                </span>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-muted-foreground hover:bg-primary/10 hover:text-primary h-8 rounded-full px-2"
+                                aria-label="Share post"
+                            >
+                                <Share2 className="size-[18px]" aria-hidden="true" />
+                            </Button>
                         </div>
-                        <div className="text-foreground text-sm font-semibold tabular-nums">
-                            {likes} {likes === 1 ? 'like' : 'likes'}
-                        </div>
-                        <div className="text-muted-foreground text-xs">{timestamp}</div>
                     </div>
 
                     {/* Comment Input */}
