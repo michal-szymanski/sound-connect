@@ -52,6 +52,7 @@
         "@tanstack/react-virtual": "^3.13.12",
         "@types/node": "^24.9.1",
         "@vercel/analytics": "^1.5.0",
+        "@wavesurfer/react": "^1.0.11",
         "better-auth": "catalog:",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -78,7 +79,6 @@
         "vinxi": "^0.5.8",
         "vite": "^7.1.12",
         "vite-plugin-svgr": "^4.5.0",
-        "wavesurfer.js": "^7.11.1",
         "wrangler": "catalog:",
         "zod": "catalog:"
     },

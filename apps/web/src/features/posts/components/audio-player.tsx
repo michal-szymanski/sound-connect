@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect } from 'react';
-import WaveSurfer from 'wavesurfer.js';
+import { useRef, useState, useCallback } from 'react';
+import { useWavesurfer } from '@wavesurfer/react';
 import { Button } from '@/shared/components/ui/button';
 import { Slider } from '@/shared/components/ui/slider';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
@@ -12,67 +12,60 @@ type Props = {
 
 export function AudioPlayer({ src, className }: Props) {
     const waveformRef = useRef<HTMLDivElement>(null);
-    const wavesurferRef = useRef<WaveSurfer | null>(null);
-    const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
 
-    useEffect(() => {
-        if (!waveformRef.current) return;
+    const { wavesurfer, isPlaying } = useWavesurfer({
+        container: waveformRef,
+        url: src,
+        progressColor: 'oklch(0.72 0.14 200)',
+        barWidth: 3,
+        barGap: 1,
+        barRadius: 2,
+        height: 64,
+        normalize: true,
+        hideScrollbar: true,
+        cursorWidth: 0,
+        barHeight: 1
+    });
 
-        const wavesurfer = WaveSurfer.create({
-            container: waveformRef.current,
-            url: src,
-            progressColor: 'oklch(0.72 0.14 200)',
-            barWidth: 3,
-            barGap: 1,
-            barRadius: 2,
-            height: 64,
-            normalize: true,
-            hideScrollbar: true,
-            cursorWidth: 0,
-            barHeight: 1
-        });
-
-        wavesurferRef.current = wavesurfer;
-
-        wavesurfer.on('ready', () => {
+    const onReady = useCallback(() => {
+        if (wavesurfer) {
             setDuration(wavesurfer.getDuration());
-        });
+        }
+    }, [wavesurfer]);
 
-        wavesurfer.on('audioprocess', () => {
+    const onAudioProcess = useCallback(() => {
+        if (wavesurfer) {
             setCurrentTime(wavesurfer.getCurrentTime());
-        });
+        }
+    }, [wavesurfer]);
 
-        wavesurfer.on('seeking', (currentTime) => {
-            setCurrentTime(currentTime);
-        });
+    const onSeeking = useCallback((currentTime: number) => {
+        setCurrentTime(currentTime);
+    }, []);
 
-        wavesurfer.on('finish', () => {
-            setIsPlaying(false);
-        });
+    const onFinish = useCallback(() => {
+        if (wavesurfer) {
+            wavesurfer.pause();
+        }
+    }, [wavesurfer]);
 
-        return () => {
-            wavesurfer.destroy();
-        };
-    }, [src]);
+    if (wavesurfer) {
+        wavesurfer.once('ready', onReady);
+        wavesurfer.on('audioprocess', onAudioProcess);
+        wavesurfer.on('seeking', onSeeking);
+        wavesurfer.on('finish', onFinish);
+    }
 
     const togglePlayPause = () => {
-        const wavesurfer = wavesurferRef.current;
         if (!wavesurfer) return;
-
-        if (isPlaying) {
-            wavesurfer.pause();
-        } else {
-            wavesurfer.play();
-        }
-        setIsPlaying(!isPlaying);
+        wavesurfer.playPause();
     };
 
     const handleVolumeChange = (value: number[]) => {
-        const wavesurfer = wavesurferRef.current;
         if (!wavesurfer || value[0] === undefined) return;
 
         const newVolume = value[0];
@@ -82,7 +75,6 @@ export function AudioPlayer({ src, className }: Props) {
     };
 
     const toggleMute = () => {
-        const wavesurfer = wavesurferRef.current;
         if (!wavesurfer) return;
 
         if (isMuted) {
