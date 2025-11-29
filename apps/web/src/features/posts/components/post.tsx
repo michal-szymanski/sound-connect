@@ -12,7 +12,9 @@ import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/shared/components/ui/dropdown-menu';
-import { useLikeToggle } from '../hooks/use-posts';
+import { Input } from '@/shared/components/ui/input';
+import { EmojiPicker } from '@/web/components/emoji-picker';
+import { useLikeToggle, useCreateComment } from '../hooks/use-posts';
 import { useAuth } from '@/shared/lib/react-query';
 import { useElapsedTime } from '@/shared/lib/utils';
 import { useUserBands } from '@/features/bands/hooks/use-bands';
@@ -51,6 +53,8 @@ export function Post({ item }: Props) {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [commentText, setCommentText] = useState('');
     const elapsedTime = useElapsedTime(post.createdAt);
 
     const isBandPost = post.authorType === 'band';
@@ -69,6 +73,7 @@ export function Post({ item }: Props) {
     const isEdited = post.updatedAt && post.updatedAt !== post.createdAt;
 
     const likeMutation = useLikeToggle(post.id, auth?.user ?? null);
+    const createCommentMutation = useCreateComment(post.id);
 
     const handleLikeToggle = () => {
         if (!canLike || !auth?.user || likeMutation.isPending) return;
@@ -104,6 +109,23 @@ export function Post({ item }: Props) {
     const handleMediaClick = (index: number) => {
         setLightboxIndex(index);
         setIsModalOpen(true);
+    };
+
+    const handleEmojiSelect = (emoji: string) => {
+        setCommentText((prev) => prev + emoji);
+    };
+
+    const handleCommentSubmit = () => {
+        if (!commentText.trim() || createCommentMutation.isPending) return;
+        createCommentMutation.mutate(
+            { content: commentText.trim(), parentCommentId: null },
+            {
+                onSuccess: () => {
+                    setCommentText('');
+                    setIsModalOpen(true);
+                }
+            }
+        );
     };
 
     const username = isBandPost ? '' : (user?.name.toLowerCase().replace(/\s+/g, '') ?? '');
@@ -184,18 +206,12 @@ export function Post({ item }: Props) {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </header>
-            <div className="mb-2">
-                <div
-                    className="text-foreground text-sm leading-normal break-words whitespace-pre-wrap"
-                    dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
-                />
-            </div>
             {media && media.length > 0 && (
                 <div className="-mx-4 mb-2 sm:mx-0 sm:overflow-hidden sm:rounded-xl">
                     <MediaGrid media={media} onMediaClick={handleMediaClick} />
                 </div>
             )}
-            <footer className="flex items-center gap-1">
+            <footer className="mb-2 flex items-center gap-1">
                 <div className="flex items-center gap-1">
                     <Button
                         variant="ghost"
@@ -241,6 +257,53 @@ export function Post({ item }: Props) {
                     <Share2 className="size-[18px]" aria-hidden="true" />
                 </Button>
             </footer>
+            <div className="mb-2 text-sm">
+                <Link
+                    to={isBandPost ? '/bands/$id' : '/users/$id'}
+                    params={{ id: authorId }}
+                    className="font-semibold hover:underline"
+                >
+                    {authorName}
+                </Link>{' '}
+                {isExpanded ? (
+                    <span
+                        className="text-foreground break-words whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
+                    />
+                ) : (
+                    <>
+                        <span
+                            className="text-foreground line-clamp-2 break-words"
+                            dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
+                        />
+                        {post.content.length > 100 && (
+                            <button onClick={() => setIsExpanded(true)} className="text-muted-foreground ml-1">
+                                more
+                            </button>
+                        )}
+                    </>
+                )}
+            </div>
+            <div className="border-border/40 flex items-center gap-2 border-t pt-2">
+                <Input
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleCommentSubmit();
+                        }
+                    }}
+                    placeholder="Add a comment..."
+                    className="border-0 px-0 focus-visible:ring-0"
+                />
+                {commentText.trim() && (
+                    <Button variant="ghost" size="sm" onClick={handleCommentSubmit} disabled={createCommentMutation.isPending} className="text-primary h-8 px-2 font-semibold">
+                        Post
+                    </Button>
+                )}
+                <EmojiPicker onEmojiSelect={handleEmojiSelect} popoverProps={{ align: 'end' }} />
+            </div>
             <LikesDialog isOpen={isLikesDialogOpen} onClose={() => setIsLikesDialogOpen(false)} postId={post.id} />
             <PostModal
                 open={isModalOpen}
