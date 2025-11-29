@@ -4,7 +4,7 @@ import { fullProfileSchema } from '@sound-connect/common/types/profile';
 import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
 import { useState } from 'react';
 import z from 'zod';
-import { MoreVertical, AlertCircle, ChevronDown } from 'lucide-react';
+import { MoreVertical, AlertCircle, ChevronDown, Guitar } from 'lucide-react';
 import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
@@ -27,19 +27,15 @@ import { getUser } from '@/shared/server-functions/users';
 import { useFollowUser, useUnfollowUser } from '@/shared/hooks/use-follow';
 import { getProfile } from '@/features/profile/server-functions/profile';
 import { useProfile } from '@/features/profile/hooks/use-profile';
-import { InstrumentsSection } from '@/features/profile/components/instruments-section';
-import { GenresSection } from '@/features/profile/components/genres-section';
-import { AvailabilitySection } from '@/features/profile/components/availability-section';
-import { ExperienceSection } from '@/features/profile/components/experience-section';
-import { LogisticsSection } from '@/features/profile/components/logistics-section';
-import { LookingForSection } from '@/features/profile/components/looking-for-section';
-import { BioSection } from '@/features/profile/components/bio-section';
-import { UserBandsSection } from '@/features/bands/components/user-bands-section';
+import { formatInstrument } from '@/features/profile/lib/profile-utils';
+import { useUserBands } from '@/features/bands/hooks/use-bands';
 import { useBlockedUsers, useBlockUser, useUnblockUser } from '@/features/settings/hooks/use-settings';
 import { MessageButton } from '@/features/chat/components/message-button';
 import { FollowersModal } from '@/features/profile/components/followers-modal';
 import { FollowingModal } from '@/features/profile/components/following-modal';
-import { MusicPortfolioSection } from '@/features/profile/components/music-portfolio-section';
+import { ProfileTabs } from '@/features/profile/components/profile-tabs';
+import { BioSection } from '@/features/profile/components/bio-section';
+import { Link } from '@tanstack/react-router';
 
 const loaderSchema = z.object({
     currentUser: userDTOSchema,
@@ -107,6 +103,7 @@ function RouteComponent() {
     const { data: currentUserFollowings } = useFollowings(currentUser);
     const { data: followRequestStatus } = useFollowRequestStatus(user.id);
     const { data: blockedUsers } = useBlockedUsers();
+    const { data: userBands } = useUserBands(user.id);
     const { mutate: blockUser, isPending: isBlocking } = useBlockUser();
     const { mutate: unblockUser, isPending: isUnblocking } = useUnblockUser();
     const followUserMutation = useFollowUser(user.id);
@@ -117,6 +114,11 @@ function RouteComponent() {
     const [followingModalOpen, setFollowingModalOpen] = useState(false);
     const isOwnProfile = currentUser.id === user.id;
     const isBlocked = blockedUsers?.some((u) => u.id === user.id) ?? false;
+
+    const bands = userBands?.bands || [];
+    const primaryInstrument = profile?.instruments?.primaryInstrument;
+    const location = profile?.logistics?.city;
+    const locationState = profile?.logistics?.state;
 
     const handleFollow = () => {
         followUserMutation.mutate();
@@ -223,6 +225,13 @@ function RouteComponent() {
                             <div className="flex flex-wrap items-center gap-2">
                                 <h1 className="truncate text-xl font-bold sm:text-2xl">{user.name}</h1>
 
+                                {primaryInstrument && (
+                                    <Badge variant="secondary" className="gap-1.5">
+                                        <Guitar className="h-3 w-3" aria-hidden="true" />
+                                        <span>{formatInstrument(primaryInstrument)}</span>
+                                    </Badge>
+                                )}
+
                                 {profile?.availability?.status && (
                                     <Badge variant="outline" className="gap-1.5 whitespace-nowrap" role="status">
                                         <span
@@ -233,7 +242,57 @@ function RouteComponent() {
                                     </Badge>
                                 )}
                             </div>
-                            <p className="text-muted-foreground text-sm">@{user.id.slice(0, 8)}</p>
+                            <p className="text-muted-foreground mt-1 text-sm">@{user.id.slice(0, 8)}</p>
+                            {location && (
+                                <p className="text-muted-foreground mt-1 text-sm">
+                                    {location}
+                                    {locationState && `, ${locationState}`}
+                                </p>
+                            )}
+
+                            <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm md:hidden">
+                                <button className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2">
+                                    <span className="text-foreground font-semibold">{posts.length}</span>
+                                    <span className="text-muted-foreground ml-1">posts</span>
+                                </button>
+                                <button
+                                    onClick={() => setFollowersModalOpen(true)}
+                                    className="focus-visible:ring-ring cursor-pointer rounded-sm outline-none hover:underline focus-visible:ring-2"
+                                >
+                                    <span className="text-foreground font-semibold">{followers.length}</span>
+                                    <span className="text-muted-foreground ml-1">followers</span>
+                                </button>
+                                <button
+                                    onClick={() => setFollowingModalOpen(true)}
+                                    className="focus-visible:ring-ring cursor-pointer rounded-sm outline-none hover:underline focus-visible:ring-2"
+                                >
+                                    <span className="text-foreground font-semibold">{followings ? followings.length : 0}</span>
+                                    <span className="text-muted-foreground ml-1">following</span>
+                                </button>
+                            </div>
+
+                            {bands.length > 0 && (
+                                <div className="mt-3 md:hidden">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span className="text-muted-foreground text-sm">Bands:</span>
+                                        {bands.slice(0, 3).map((band) => (
+                                            <Link key={band.id} to="/bands/$id" params={{ id: band.id.toString() }} className="hover:opacity-80">
+                                                <ProfileAvatar
+                                                    profile={{ id: band.id.toString(), name: band.name, image: band.profileImageUrl }}
+                                                    type="band"
+                                                    className="ring-background h-6 w-6 ring-2"
+                                                    fallbackClassName="bg-muted text-muted-foreground text-xs"
+                                                />
+                                            </Link>
+                                        ))}
+                                        {bands.length > 3 && (
+                                            <div className="bg-muted text-muted-foreground flex h-6 w-6 items-center justify-center rounded-md text-xs font-medium">
+                                                +{bands.length - 3}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -266,7 +325,7 @@ function RouteComponent() {
                         </div>
                     </div>
 
-                    <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                    <div className="mt-4 hidden flex-wrap items-center gap-x-6 gap-y-2 text-sm md:flex">
                         <button className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2">
                             <span className="text-foreground font-semibold">{posts.length}</span>
                             <span className="text-muted-foreground ml-1">posts</span>
@@ -337,20 +396,11 @@ function RouteComponent() {
             )}
 
             {profile && (
-                <>
-                    <InstrumentsSection data={profile.instruments} canEdit={isOwnProfile} id="instruments-section" />
-                    <GenresSection data={profile.genres} canEdit={isOwnProfile} id="genres-section" />
-                    <LogisticsSection data={profile.logistics} canEdit={isOwnProfile} id="logistics-section" />
-                    <AvailabilitySection data={profile.availability} canEdit={isOwnProfile} />
-                    <ExperienceSection data={profile.experience} canEdit={isOwnProfile} />
-                    <LookingForSection data={profile.lookingFor} canEdit={isOwnProfile} />
+                <div className="space-y-6">
                     <BioSection data={profile.bio} canEdit={isOwnProfile} />
-                </>
+                    <ProfileTabs userId={user.id} profile={profile} canEdit={isOwnProfile} />
+                </div>
             )}
-
-            <UserBandsSection userId={user.id} isOwnProfile={isOwnProfile} />
-
-            <MusicPortfolioSection userId={user.id} canEdit={isOwnProfile} />
 
             <AlertDialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
                 <AlertDialogContent className="z-dialog">

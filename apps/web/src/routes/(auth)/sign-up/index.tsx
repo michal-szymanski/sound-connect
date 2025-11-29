@@ -134,8 +134,7 @@ function RouteComponent() {
                 <Alert className="border-green-500/30 bg-green-500/10">
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                     <AlertDescription className="text-sm">
-                        We&apos;ve sent a verification link to <strong>{signUpEmail}</strong>. Click the link in the email to verify your account and get
-                        started.
+                        We&apos;ve sent a verification link to <strong>{signUpEmail}</strong>Click the link in the email to verify your account and get started.
                     </AlertDescription>
                 </Alert>
                 <div className="text-muted-foreground space-y-2 text-sm">
