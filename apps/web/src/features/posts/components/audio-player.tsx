@@ -300,16 +300,19 @@ export function AudioPlayer({ src, className }: Props) {
     };
 
     return (
-        <div className={cn('border-border/40 bg-card flex w-full flex-col gap-3 rounded-lg border p-4', className)}>
+        <div className={cn('border-border/40 bg-muted/30 flex w-full flex-col gap-3 rounded-lg border p-4', className)}>
             <div className="flex items-center gap-3">
                 <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     onClick={togglePlayPause}
-                    className="h-10 w-10 shrink-0 rounded-full"
+                    className={cn(
+                        'h-10 w-10 shrink-0 rounded-full border bg-background transition-none hover:border-primary hover:bg-primary/20',
+                        isPlaying ? 'border-primary' : 'border-border'
+                    )}
                     aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
-                    {isPlaying ? <Pause className="h-5 w-5" aria-hidden="true" /> : <Play className="h-5 w-5" aria-hidden="true" />}
+                    {isPlaying ? <Pause className="text-primary h-5 w-5" aria-hidden="true" /> : <Play className="text-primary h-5 w-5" aria-hidden="true" />}
                 </Button>
 
                 <div className="flex flex-1 flex-col gap-2">
