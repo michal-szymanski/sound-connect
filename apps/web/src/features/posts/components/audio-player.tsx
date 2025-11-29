@@ -23,10 +23,13 @@ export function AudioPlayer({ src, className }: Props) {
     const barDataRef = useRef<Array<{ x: number; y: number; height: number }>>([]);
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0, displayWidth: 0, displayHeight: 64 });
     const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(1);
-    const [isMuted, setIsMuted] = useState(false);
     const [isVolumeOpen, setIsVolumeOpen] = useState(false);
-    const mediaPlayback = useMediaPlayback();
+    const volumeOpenTimeoutRef = useRef<NodeJS.Timeout>();
+    const volumeCloseTimeoutRef = useRef<NodeJS.Timeout>();
+    const volumeContainerRef = useRef<HTMLDivElement>(null);
+    const { volume, isMuted, setVolume, setMuted, register, unregister, notifyPlay } = useMediaPlayback();
+
+    const isTouchDevice = !isServer() && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
     const plugins = useMemo(() => {
         if (isServer()) return [];
@@ -166,8 +169,10 @@ export function AudioPlayer({ src, className }: Props) {
     useEffect(() => {
         if (!wavesurfer) return;
 
+        wavesurfer.setVolume(isMuted ? 0 : volume);
+
         const instanceId = instanceIdRef.current;
-        mediaPlayback.register(instanceId, wavesurfer, 'audio');
+        register(instanceId, wavesurfer, 'audio');
 
         const onReady = () => {
             setDuration(wavesurfer.getDuration());
@@ -234,7 +239,7 @@ export function AudioPlayer({ src, className }: Props) {
         };
 
         const onPlay = () => {
-            mediaPlayback.notifyPlay(instanceId);
+            notifyPlay(instanceId);
         };
 
         wavesurfer.on('ready', onReady);
@@ -245,9 +250,53 @@ export function AudioPlayer({ src, className }: Props) {
             wavesurfer.un('ready', onReady);
             wavesurfer.un('seeking', onSeeking);
             wavesurfer.un('play', onPlay);
-            mediaPlayback.unregister(instanceId);
+            unregister(instanceId);
         };
-    }, [wavesurfer, mediaPlayback]);
+    }, [wavesurfer, register, unregister, notifyPlay, volume, isMuted]);
+
+    useEffect(() => {
+        return () => {
+            clearTimeout(volumeOpenTimeoutRef.current);
+            clearTimeout(volumeCloseTimeoutRef.current);
+        };
+    }, []);
+
+    const handleVolumeMouseEnter = () => {
+        if (isTouchDevice) return;
+        clearTimeout(volumeCloseTimeoutRef.current);
+        volumeOpenTimeoutRef.current = setTimeout(() => {
+            setIsVolumeOpen(true);
+        }, 150);
+    };
+
+    const handleVolumeMouseLeave = () => {
+        if (isTouchDevice) return;
+        clearTimeout(volumeOpenTimeoutRef.current);
+        volumeCloseTimeoutRef.current = setTimeout(() => {
+            setIsVolumeOpen(false);
+        }, 100);
+    };
+
+    const handleVolumeFocus = () => {
+        if (isTouchDevice) return;
+        setIsVolumeOpen(true);
+    };
+
+    const handleVolumeBlur = (e: React.FocusEvent) => {
+        if (isTouchDevice) return;
+        const container = volumeContainerRef.current;
+        if (container && e.relatedTarget && container.contains(e.relatedTarget as Node)) {
+            return;
+        }
+        volumeCloseTimeoutRef.current = setTimeout(() => {
+            setIsVolumeOpen(false);
+        }, 100);
+    };
+
+    const toggleVolumePopover = () => {
+        if (!isTouchDevice) return;
+        setIsVolumeOpen((prev) => !prev);
+    };
 
     const togglePlayPause = () => {
         if (!wavesurfer) return;
@@ -260,7 +309,6 @@ export function AudioPlayer({ src, className }: Props) {
         const newVolume = value[0];
         wavesurfer.setVolume(newVolume);
         setVolume(newVolume);
-        setIsMuted(newVolume === 0);
     };
 
     const toggleMute = () => {
@@ -268,10 +316,10 @@ export function AudioPlayer({ src, className }: Props) {
 
         if (isMuted) {
             wavesurfer.setVolume(volume || 1);
-            setIsMuted(false);
+            setMuted(false);
         } else {
             wavesurfer.setVolume(0);
-            setIsMuted(true);
+            setMuted(true);
         }
     };
 
@@ -340,41 +388,62 @@ export function AudioPlayer({ src, className }: Props) {
                     </div>
                 </div>
 
-                <Popover open={isVolumeOpen} onOpenChange={setIsVolumeOpen}>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            className="h-8 w-8 shrink-0"
-                            aria-label={`Volume: ${Math.round(volume * 100)}%${isMuted ? ' (muted)' : ''}`}
-                        >
-                            {isMuted ? <VolumeX className="h-4 w-4" aria-hidden="true" /> : <Volume2 className="h-4 w-4" aria-hidden="true" />}
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent side="top" align="center" className="w-12 p-2" sideOffset={8}>
-                        <div className="flex flex-col items-center gap-2">
-                            <span className="text-muted-foreground text-xs">{Math.round((isMuted ? 0 : volume) * 100)}%</span>
-                            <Slider
-                                orientation="vertical"
-                                value={[isMuted ? 0 : volume]}
-                                max={1}
-                                step={0.01}
-                                onValueChange={handleVolumeChange}
-                                className="h-24"
-                                aria-label="Volume"
-                            />
+                <div
+                    ref={volumeContainerRef}
+                    onMouseEnter={handleVolumeMouseEnter}
+                    onMouseLeave={handleVolumeMouseLeave}
+                >
+                    <Popover open={isVolumeOpen} onOpenChange={setIsVolumeOpen}>
+                        <PopoverTrigger asChild>
                             <Button
                                 variant="ghost"
                                 size="icon-sm"
-                                onClick={toggleMute}
-                                className="h-6 w-6"
-                                aria-label={isMuted ? 'Unmute' : 'Mute'}
+                                className="h-8 w-8 shrink-0"
+                                aria-label={`Volume: ${Math.round(volume * 100)}%${isMuted ? ' (muted)' : ''}`}
+                                aria-expanded={isVolumeOpen}
+                                onFocus={handleVolumeFocus}
+                                onBlur={handleVolumeBlur}
+                                onClick={toggleVolumePopover}
                             >
-                                {isMuted ? <VolumeX className="h-3 w-3" aria-hidden="true" /> : <Volume2 className="h-3 w-3" aria-hidden="true" />}
+                                {isMuted ? <VolumeX className="h-4 w-4" aria-hidden="true" /> : <Volume2 className="h-4 w-4" aria-hidden="true" />}
                             </Button>
-                        </div>
-                    </PopoverContent>
-                </Popover>
+                        </PopoverTrigger>
+                        <PopoverContent
+                            side="top"
+                            align="center"
+                            className="w-12 p-2"
+                            sideOffset={8}
+                            onMouseEnter={handleVolumeMouseEnter}
+                            onMouseLeave={handleVolumeMouseLeave}
+                            onOpenAutoFocus={(e) => e.preventDefault()}
+                        >
+                            <div className="flex flex-col items-center gap-2">
+                                <span className="text-muted-foreground text-xs">{Math.round((isMuted ? 0 : volume) * 100)}%</span>
+                                <Slider
+                                    orientation="vertical"
+                                    value={[isMuted ? 0 : volume]}
+                                    max={1}
+                                    step={0.01}
+                                    onValueChange={handleVolumeChange}
+                                    className="h-24"
+                                    aria-label="Volume"
+                                    aria-valuemin={0}
+                                    aria-valuemax={100}
+                                    aria-valuenow={Math.round((isMuted ? 0 : volume) * 100)}
+                                />
+                                <Button
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    onClick={toggleMute}
+                                    className="h-6 w-6"
+                                    aria-label={isMuted ? 'Unmute' : 'Mute'}
+                                >
+                                    {isMuted ? <VolumeX className="h-3 w-3" aria-hidden="true" /> : <Volume2 className="h-3 w-3" aria-hidden="true" />}
+                                </Button>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                </div>
             </div>
         </div>
     );

@@ -1,9 +1,11 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Slider } from '@/shared/components/ui/slider';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
+import { isServer } from '@/web/utils/env-utils';
 
 type Props = {
     src: string;
@@ -23,12 +25,16 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
     const [isPlaying, setIsPlaying] = useState(autoPlay);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(1);
-    const [isMuted, setIsMuted] = useState(muted);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
+    const [isVolumeOpen, setIsVolumeOpen] = useState(false);
+    const volumeOpenTimeoutRef = useRef<NodeJS.Timeout>();
+    const volumeCloseTimeoutRef = useRef<NodeJS.Timeout>();
+    const volumeContainerRef = useRef<HTMLDivElement>(null);
 
-    const mediaPlayback = useMediaPlayback();
+    const { volume, isMuted, setVolume, setMuted, register, unregister, notifyPlay } = useMediaPlayback();
+
+    const isTouchDevice = !isServer() && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
     const resetHideControlsTimer = useCallback(() => {
         if (hideControlsTimeoutRef.current) {
@@ -104,20 +110,66 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
         const video = videoRef.current;
         if (!video) return;
 
+        video.volume = isMuted ? 0 : volume;
+
         const instanceId = instanceIdRef.current;
-        mediaPlayback.register(instanceId, video, 'video');
+        register(instanceId, video, 'video');
 
         const handlePlay = () => {
-            mediaPlayback.notifyPlay(instanceId);
+            notifyPlay(instanceId);
         };
 
         video.addEventListener('play', handlePlay);
 
         return () => {
             video.removeEventListener('play', handlePlay);
-            mediaPlayback.unregister(instanceId);
+            unregister(instanceId);
         };
-    }, [mediaPlayback]);
+    }, [register, unregister, notifyPlay, volume, isMuted]);
+
+    useEffect(() => {
+        return () => {
+            clearTimeout(volumeOpenTimeoutRef.current);
+            clearTimeout(volumeCloseTimeoutRef.current);
+        };
+    }, []);
+
+    const handleVolumeMouseEnter = () => {
+        if (isTouchDevice) return;
+        clearTimeout(volumeCloseTimeoutRef.current);
+        volumeOpenTimeoutRef.current = setTimeout(() => {
+            setIsVolumeOpen(true);
+        }, 150);
+    };
+
+    const handleVolumeMouseLeave = () => {
+        if (isTouchDevice) return;
+        clearTimeout(volumeOpenTimeoutRef.current);
+        volumeCloseTimeoutRef.current = setTimeout(() => {
+            setIsVolumeOpen(false);
+        }, 100);
+    };
+
+    const handleVolumeFocus = () => {
+        if (isTouchDevice) return;
+        setIsVolumeOpen(true);
+    };
+
+    const handleVolumeBlur = (e: React.FocusEvent) => {
+        if (isTouchDevice) return;
+        const container = volumeContainerRef.current;
+        if (container && e.relatedTarget && container.contains(e.relatedTarget as Node)) {
+            return;
+        }
+        volumeCloseTimeoutRef.current = setTimeout(() => {
+            setIsVolumeOpen(false);
+        }, 100);
+    };
+
+    const toggleVolumePopover = () => {
+        if (!isTouchDevice) return;
+        setIsVolumeOpen((prev) => !prev);
+    };
 
     const togglePlayPause = () => {
         const video = videoRef.current;
@@ -147,7 +199,6 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
         const newVolume = value[0];
         video.volume = newVolume;
         setVolume(newVolume);
-        setIsMuted(newVolume === 0);
         resetHideControlsTimer();
     };
 
@@ -157,10 +208,10 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
 
         if (isMuted) {
             video.volume = volume || 1;
-            setIsMuted(false);
+            setMuted(false);
         } else {
             video.volume = 0;
-            setIsMuted(true);
+            setMuted(true);
         }
         resetHideControlsTimer();
     };
@@ -240,24 +291,88 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            onClick={toggleMute}
-                            className="h-8 w-8 shrink-0 text-white hover:bg-white/20 hover:text-white"
-                            aria-label={isMuted ? 'Unmute' : 'Mute'}
-                        >
-                            {isMuted ? <VolumeX className="h-4 w-4" aria-hidden="true" /> : <Volume2 className="h-4 w-4" aria-hidden="true" />}
-                        </Button>
+                        {isFullscreen ? (
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    onClick={toggleMute}
+                                    className="h-8 w-8 shrink-0 text-white hover:bg-white/20 hover:text-white"
+                                    aria-label={isMuted ? 'Unmute' : 'Mute'}
+                                >
+                                    {isMuted ? <VolumeX className="h-4 w-4" aria-hidden="true" /> : <Volume2 className="h-4 w-4" aria-hidden="true" />}
+                                </Button>
 
-                        <Slider
-                            value={[isMuted ? 0 : volume]}
-                            max={1}
-                            step={0.01}
-                            onValueChange={handleVolumeChange}
-                            className="w-20 cursor-pointer"
-                            aria-label="Volume"
-                        />
+                                <Slider
+                                    value={[isMuted ? 0 : volume]}
+                                    max={1}
+                                    step={0.01}
+                                    onValueChange={handleVolumeChange}
+                                    className="w-20 cursor-pointer"
+                                    aria-label="Volume"
+                                    aria-valuemin={0}
+                                    aria-valuemax={100}
+                                    aria-valuenow={Math.round((isMuted ? 0 : volume) * 100)}
+                                />
+                            </>
+                        ) : (
+                            <div
+                                ref={volumeContainerRef}
+                                onMouseEnter={handleVolumeMouseEnter}
+                                onMouseLeave={handleVolumeMouseLeave}
+                            >
+                                <Popover open={isVolumeOpen} onOpenChange={setIsVolumeOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon-sm"
+                                            className="h-8 w-8 shrink-0 text-white hover:bg-white/20 hover:text-white"
+                                            aria-label={`Volume: ${Math.round(volume * 100)}%${isMuted ? ' (muted)' : ''}`}
+                                            aria-expanded={isVolumeOpen}
+                                            onFocus={handleVolumeFocus}
+                                            onBlur={handleVolumeBlur}
+                                            onClick={toggleVolumePopover}
+                                        >
+                                            {isMuted ? <VolumeX className="h-4 w-4" aria-hidden="true" /> : <Volume2 className="h-4 w-4" aria-hidden="true" />}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                        side="top"
+                                        align="center"
+                                        className="w-12 p-2"
+                                        sideOffset={8}
+                                        onMouseEnter={handleVolumeMouseEnter}
+                                        onMouseLeave={handleVolumeMouseLeave}
+                                        onOpenAutoFocus={(e) => e.preventDefault()}
+                                    >
+                                        <div className="flex flex-col items-center gap-2">
+                                            <span className="text-muted-foreground text-xs">{Math.round((isMuted ? 0 : volume) * 100)}%</span>
+                                            <Slider
+                                                orientation="vertical"
+                                                value={[isMuted ? 0 : volume]}
+                                                max={1}
+                                                step={0.01}
+                                                onValueChange={handleVolumeChange}
+                                                className="h-24"
+                                                aria-label="Volume"
+                                                aria-valuemin={0}
+                                                aria-valuemax={100}
+                                                aria-valuenow={Math.round((isMuted ? 0 : volume) * 100)}
+                                            />
+                                            <Button
+                                                variant="ghost"
+                                                size="icon-sm"
+                                                onClick={toggleMute}
+                                                className="h-6 w-6"
+                                                aria-label={isMuted ? 'Unmute' : 'Mute'}
+                                            >
+                                                {isMuted ? <VolumeX className="h-3 w-3" aria-hidden="true" /> : <Volume2 className="h-3 w-3" aria-hidden="true" />}
+                                            </Button>
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+                        )}
 
                         <Button
                             variant="ghost"

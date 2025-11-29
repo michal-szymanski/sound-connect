@@ -116,6 +116,7 @@ Before marking complete:
 - [ ] Loading/error states handled
 - [ ] Props type named "Props"
 - [ ] Files are kebab-case
+- [ ] Use `isServer()` from `@/web/utils/env-utils` instead of `typeof window === 'undefined'`
 - [ ] **MANDATORY:** Code-quality-enforcer invoked
 - [ ] **MANDATORY:** Violations fixed or max attempts reached
 
