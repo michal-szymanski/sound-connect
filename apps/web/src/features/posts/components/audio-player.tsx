@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { useWavesurfer } from '@wavesurfer/react';
 import Hover from 'wavesurfer.js/plugins/hover';
 import { Button } from '@/shared/components/ui/button';
@@ -13,9 +13,12 @@ type Props = {
 
 export function AudioPlayer({ src, className }: Props) {
     const waveformRef = useRef<HTMLDivElement>(null);
+    const hoverCanvasRef = useRef<HTMLCanvasElement>(null);
+    const peaksRef = useRef<number[] | null>(null);
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
+    const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0, displayWidth: 0, displayHeight: 64 });
 
     const plugins = useMemo(
         () => [
@@ -45,11 +48,82 @@ export function AudioPlayer({ src, className }: Props) {
         plugins
     });
 
+    const drawHoverWaveform = useCallback(
+        (hoverX: number) => {
+            const canvas = hoverCanvasRef.current;
+            const peaks = peaksRef.current;
+            if (!canvas || !peaks || peaks.length === 0 || canvasSize.displayWidth === 0) return;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            const dpr = window.devicePixelRatio || 1;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (hoverX <= 0) return;
+
+            ctx.save();
+            ctx.scale(dpr, dpr);
+            ctx.beginPath();
+            ctx.rect(0, 0, hoverX, canvasSize.displayHeight);
+            ctx.clip();
+
+            ctx.fillStyle = 'oklch(0.80 0.12 200)';
+
+            const barWidth = 3;
+            const barGap = 1;
+            const barRadius = 2;
+            const totalBarWidth = barWidth + barGap;
+            const numBars = Math.round(canvasSize.displayWidth / totalBarWidth);
+            const samplesPerBar = peaks.length / numBars;
+
+            for (let i = 0; i < numBars; i++) {
+                const startSample = Math.floor(i * samplesPerBar);
+                const endSample = Math.floor((i + 1) * samplesPerBar);
+
+                let maxPeak = 0;
+                for (let j = startSample; j < endSample; j++) {
+                    maxPeak = Math.max(maxPeak, Math.abs(peaks[j] ?? 0));
+                }
+
+                const barHeight = Math.max(barRadius * 2, maxPeak * canvasSize.displayHeight);
+                const x = i * totalBarWidth + barGap / 2;
+                const y = (canvasSize.displayHeight - barHeight) / 2;
+
+                ctx.beginPath();
+                ctx.roundRect(x, y, barWidth, barHeight, barRadius);
+                ctx.fill();
+            }
+
+            ctx.restore();
+        },
+        [canvasSize.displayWidth, canvasSize.displayHeight]
+    );
+
     useEffect(() => {
         if (!wavesurfer) return;
 
         const onReady = () => {
             setDuration(wavesurfer.getDuration());
+
+            const exportedPeaks = wavesurfer.exportPeaks();
+            if (exportedPeaks && exportedPeaks[0]) {
+                peaksRef.current = Array.from(exportedPeaks[0]);
+            }
+
+            const wrapper = wavesurfer.getWrapper();
+            if (wrapper) {
+                const dpr = window.devicePixelRatio || 1;
+                const displayWidth = wrapper.clientWidth;
+                const displayHeight = 64;
+                setCanvasSize({
+                    width: displayWidth * dpr,
+                    height: displayHeight * dpr,
+                    displayWidth,
+                    displayHeight
+                });
+            }
         };
 
         wavesurfer.on('ready', onReady);
@@ -92,6 +166,25 @@ export function AudioPlayer({ src, className }: Props) {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!waveformRef.current) return;
+
+        const rect = waveformRef.current.getBoundingClientRect();
+        const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+
+        drawHoverWaveform(x);
+    };
+
+    const handleMouseLeave = () => {
+        const canvas = hoverCanvasRef.current;
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+    };
+
     return (
         <div className={cn('border-border/40 bg-card flex w-full flex-col gap-3 rounded-lg border p-4', className)}>
             <div className="flex items-center gap-3">
@@ -106,7 +199,25 @@ export function AudioPlayer({ src, className }: Props) {
                 </Button>
 
                 <div className="flex flex-1 flex-col gap-2">
-                    <div ref={waveformRef} className="cursor-pointer" aria-label="Audio waveform, click to seek" role="slider" tabIndex={0} />
+                    <div
+                        className="relative"
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={handleMouseLeave}
+                    >
+                        <div ref={waveformRef} className="cursor-pointer" aria-label="Audio waveform, click to seek" role="slider" tabIndex={0} />
+                        {canvasSize.width > 0 && (
+                            <canvas
+                                ref={hoverCanvasRef}
+                                width={canvasSize.width}
+                                height={canvasSize.height}
+                                style={{
+                                    width: `${canvasSize.displayWidth}px`,
+                                    height: `${canvasSize.displayHeight}px`
+                                }}
+                                className="pointer-events-none absolute inset-0 z-50"
+                            />
+                        )}
+                    </div>
 
                     <div className="text-muted-foreground flex items-center justify-between text-xs">
                         <span>{formatTime(currentTime)}</span>
