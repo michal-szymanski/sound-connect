@@ -27,6 +27,8 @@ export function AudioPlayer({ src, className }: Props) {
     const volumeOpenTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const volumeCloseTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
     const volumeContainerRef = useRef<HTMLDivElement>(null);
+    const isHoveringVolumeRef = useRef(false);
+    const isClosingRef = useRef(false);
     const { volume, isMuted, setVolume, setMuted, register, unregister, notifyPlay } = useMediaPlayback();
 
     const isTouchDevice = !isServer() && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
@@ -261,8 +263,57 @@ export function AudioPlayer({ src, className }: Props) {
         };
     }, []);
 
+    useEffect(() => {
+        if (!isVolumeOpen) return;
+
+        const handlePointerMove = (e: PointerEvent) => {
+            const trigger = volumeContainerRef.current;
+            if (!trigger) return;
+
+            const triggerRect = trigger.getBoundingClientRect();
+            const isOverTrigger =
+                e.clientX >= triggerRect.left &&
+                e.clientX <= triggerRect.right &&
+                e.clientY >= triggerRect.top &&
+                e.clientY <= triggerRect.bottom;
+
+            const popover = document.querySelector('[data-radix-popper-content-wrapper]');
+            let isOverPopover = false;
+            if (popover) {
+                const popoverRect = popover.getBoundingClientRect();
+                isOverPopover =
+                    e.clientX >= popoverRect.left &&
+                    e.clientX <= popoverRect.right &&
+                    e.clientY >= popoverRect.top &&
+                    e.clientY <= popoverRect.bottom;
+            }
+
+            if (!isOverTrigger && !isOverPopover) {
+                isHoveringVolumeRef.current = false;
+                isClosingRef.current = true;
+                clearTimeout(volumeOpenTimeoutRef.current);
+                clearTimeout(volumeCloseTimeoutRef.current);
+                volumeCloseTimeoutRef.current = setTimeout(() => {
+                    setIsVolumeOpen(false);
+                    setTimeout(() => {
+                        isClosingRef.current = false;
+                    }, 300);
+                }, 100);
+            } else {
+                isHoveringVolumeRef.current = true;
+                isClosingRef.current = false;
+                clearTimeout(volumeCloseTimeoutRef.current);
+            }
+        };
+
+        document.addEventListener('pointermove', handlePointerMove);
+        return () => document.removeEventListener('pointermove', handlePointerMove);
+    }, [isVolumeOpen]);
+
     const handleVolumeMouseEnter = () => {
         if (isTouchDevice) return;
+        isHoveringVolumeRef.current = true;
+        isClosingRef.current = false;
         clearTimeout(volumeCloseTimeoutRef.current);
         volumeOpenTimeoutRef.current = setTimeout(() => {
             setIsVolumeOpen(true);
@@ -271,14 +322,22 @@ export function AudioPlayer({ src, className }: Props) {
 
     const handleVolumeMouseLeave = () => {
         if (isTouchDevice) return;
+        isHoveringVolumeRef.current = false;
         clearTimeout(volumeOpenTimeoutRef.current);
+        isClosingRef.current = true;
         volumeCloseTimeoutRef.current = setTimeout(() => {
-            setIsVolumeOpen(false);
+            if (!isHoveringVolumeRef.current) {
+                setIsVolumeOpen(false);
+            }
+            setTimeout(() => {
+                isClosingRef.current = false;
+            }, 300);
         }, 100);
     };
 
     const handleVolumeFocus = () => {
         if (isTouchDevice) return;
+        if (isClosingRef.current) return;
         setIsVolumeOpen(true);
     };
 
@@ -389,7 +448,13 @@ export function AudioPlayer({ src, className }: Props) {
                 </div>
 
                 <div ref={volumeContainerRef} onMouseEnter={handleVolumeMouseEnter} onMouseLeave={handleVolumeMouseLeave}>
-                    <Popover open={isVolumeOpen} onOpenChange={setIsVolumeOpen}>
+                    <Popover
+                        open={isVolumeOpen}
+                        onOpenChange={(open) => {
+                            if (open && isClosingRef.current) return;
+                            setIsVolumeOpen(open);
+                        }}
+                    >
                         <PopoverTrigger asChild>
                             <Button
                                 variant="ghost"
