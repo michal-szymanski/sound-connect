@@ -1,5 +1,6 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useWavesurfer } from '@wavesurfer/react';
+import Hover from 'wavesurfer.js/plugins/hover';
 import { Button } from '@/shared/components/ui/button';
 import { Slider } from '@/shared/components/ui/slider';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
@@ -12,12 +13,24 @@ type Props = {
 
 export function AudioPlayer({ src, className }: Props) {
     const waveformRef = useRef<HTMLDivElement>(null);
-    const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
 
-    const { wavesurfer, isPlaying } = useWavesurfer({
+    const plugins = useMemo(
+        () => [
+            Hover.create({
+                lineColor: 'oklch(0.72 0.14 200 / 0.35)',
+                lineWidth: 2,
+                labelBackground: 'oklch(0.72 0.14 200)',
+                labelColor: 'oklch(0.965 0.005 240)',
+                labelSize: '11px'
+            })
+        ],
+        []
+    );
+
+    const { wavesurfer, isPlaying, currentTime } = useWavesurfer({
         container: waveformRef,
         url: src,
         progressColor: 'oklch(0.72 0.14 200)',
@@ -28,37 +41,23 @@ export function AudioPlayer({ src, className }: Props) {
         normalize: true,
         hideScrollbar: true,
         cursorWidth: 0,
-        barHeight: 1
+        barHeight: 1,
+        plugins
     });
 
-    const onReady = useCallback(() => {
-        if (wavesurfer) {
+    useEffect(() => {
+        if (!wavesurfer) return;
+
+        const onReady = () => {
             setDuration(wavesurfer.getDuration());
-        }
+        };
+
+        wavesurfer.on('ready', onReady);
+
+        return () => {
+            wavesurfer.un('ready', onReady);
+        };
     }, [wavesurfer]);
-
-    const onAudioProcess = useCallback(() => {
-        if (wavesurfer) {
-            setCurrentTime(wavesurfer.getCurrentTime());
-        }
-    }, [wavesurfer]);
-
-    const onSeeking = useCallback((currentTime: number) => {
-        setCurrentTime(currentTime);
-    }, []);
-
-    const onFinish = useCallback(() => {
-        if (wavesurfer) {
-            wavesurfer.pause();
-        }
-    }, [wavesurfer]);
-
-    if (wavesurfer) {
-        wavesurfer.once('ready', onReady);
-        wavesurfer.on('audioprocess', onAudioProcess);
-        wavesurfer.on('seeking', onSeeking);
-        wavesurfer.on('finish', onFinish);
-    }
 
     const togglePlayPause = () => {
         if (!wavesurfer) return;

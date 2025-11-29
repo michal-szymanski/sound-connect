@@ -157,20 +157,13 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
     return (
         <div
             ref={containerRef}
-            className={cn('bg-black relative w-full overflow-hidden rounded-lg', className)}
+            className={cn('relative w-full overflow-hidden rounded-lg bg-black', className)}
             style={{ aspectRatio }}
             onMouseMove={handleMouseMove}
             onMouseLeave={() => isPlaying && setShowControls(false)}
         >
             <div onClick={handleContainerClick} className="absolute inset-0 cursor-pointer">
-                <video
-                    ref={videoRef}
-                    src={src}
-                    autoPlay={autoPlay}
-                    muted={isMuted}
-                    preload="metadata"
-                    className="h-full w-full object-contain"
-                />
+                <video ref={videoRef} src={src} autoPlay={autoPlay} muted={isMuted} preload="metadata" className="h-full w-full object-contain" />
             </div>
 
             <div

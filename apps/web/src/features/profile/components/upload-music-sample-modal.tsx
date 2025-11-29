@@ -264,7 +264,11 @@ export const UploadMusicSampleModal = ({ open, onOpenChange }: Props) => {
                         <Button type="button" variant="outline" onClick={handleCancel}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={createMutation.isPending || !uploadComplete || !formData.title.trim()} aria-busy={createMutation.isPending}>
+                        <Button
+                            type="submit"
+                            disabled={createMutation.isPending || !uploadComplete || !formData.title.trim()}
+                            aria-busy={createMutation.isPending}
+                        >
                             {createMutation.isPending ? 'Saving...' : 'Save Sample'}
                         </Button>
                     </div>
