@@ -207,7 +207,7 @@ export function Post({ item }: Props) {
                 </DropdownMenu>
             </header>
             {media && media.length > 0 && (
-                <div className="-mx-4 mb-2 sm:mx-0 sm:overflow-hidden sm:rounded-xl">
+                <div className="-mx-4 mb-2 sm:mx-0 sm:overflow-hidden">
                     <MediaGrid media={media} onMediaClick={handleMediaClick} />
                 </div>
             )}

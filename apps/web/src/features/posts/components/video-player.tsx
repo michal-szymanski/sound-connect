@@ -194,7 +194,7 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
     return (
         <div
             ref={containerRef}
-            className={cn('relative w-full overflow-hidden rounded-lg bg-black', className)}
+            className={cn('relative w-full overflow-hidden bg-black', className)}
             style={{ aspectRatio }}
             onMouseMove={handleMouseMove}
             onMouseLeave={() => isPlaying && setShowControls(false)}
@@ -205,7 +205,7 @@ export function VideoPlayer({ src, className, autoPlay = false, muted = false, a
 
             <div
                 className={cn(
-                    'absolute inset-x-0 bottom-0 flex flex-col gap-2 rounded-b-lg bg-black/60 p-4 transition-opacity duration-300',
+                    'absolute inset-x-0 bottom-0 flex flex-col gap-2 bg-black/60 p-4 transition-opacity duration-300',
                     showControls ? 'opacity-100' : 'opacity-0'
                 )}
                 onClick={(e) => e.stopPropagation()}
