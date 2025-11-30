@@ -78,6 +78,8 @@ For detailed information about each feature, see the feature-level documentation
 
 Code quality is automatically enforced by the `code-quality-enforcer` agent. This agent validates all code changes against the rules below, runs automated checks (oxlint, oxfmt, TypeScript), and blocks completion until standards are met. Agents working on code should invoke the code-quality-enforcer AFTER writing code and BEFORE marking tasks complete.
 
+**CRITICAL: Work is NOT complete until `pnpm code:check` passes with 0 errors and 0 warnings.** This command runs oxlint and TypeScript checks across the entire codebase. Even if your specific changes are correct, you must fix any violations introduced by your work or uncovered during development. The codebase must always remain in a clean, deployable state.
+
 ### Agent Workflow
 
 Sound Connect uses specialized agents to handle different types of work. Use the correct agent entry point based on your task:

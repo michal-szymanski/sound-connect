@@ -7,7 +7,7 @@ export function useDiscoveryAnalytics() {
 
     useEffect(() => {
         trackPageView();
-    }, []);
+    }, [trackPageView]);
 
     const trackPageView = useCallback(() => {
         const event: DiscoveryAnalyticsEvent = {

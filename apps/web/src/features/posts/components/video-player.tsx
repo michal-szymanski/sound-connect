@@ -157,7 +157,7 @@ export function VideoPlayer({
       video.removeEventListener("play", handlePlay);
       unregister(instanceId);
     };
-  }, [register, unregister, notifyPlay, volume, isMuted]);
+  }, [register, unregister, notifyPlay, volume, isMuted, instanceId]);
 
   useEffect(() => {
     return () => {
@@ -213,7 +213,7 @@ export function VideoPlayer({
 
     document.addEventListener("pointermove", handlePointerMove);
     return () => document.removeEventListener("pointermove", handlePointerMove);
-  }, [isVolumeOpen]);
+  }, [isVolumeOpen, setActiveVolumePopover, instanceId]);
 
   const handleVolumeMouseEnter = () => {
     if (touchDevice) return;

@@ -16,7 +16,6 @@ import { getSortedGenres, formatGenre } from '@/features/profile/lib/profile-uti
 import { cn } from '@/shared/lib/utils';
 import { checkUsernameAvailability } from '@/features/settings/server-functions/settings';
 import { usernameSchema } from '@sound-connect/common/types/settings';
-import { GenreEnum } from '@sound-connect/common/types/profile-enums';
 
 type Props = {
     initialData?: Partial<UpdateBandInput>;

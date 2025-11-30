@@ -362,7 +362,6 @@ export const AudioPlayer = forwardRef<AudioPlayerHandle, Props>(function AudioPl
         wavesurfer.setVolume(isMuted ? 0 : volume);
 
         register(instanceId, wavesurfer, 'audio');
-        console.log('[AudioPlayer] Registered:', instanceId);
 
         const onReadyHandler = () => {
             setDuration(wavesurfer.getDuration());
