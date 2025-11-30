@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Heart, MessageCircle, Share2, Send, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Send } from 'lucide-react';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { VisuallyHidden } from 'radix-ui';
 import ProfileAvatar from '@/shared/components/common/profile-avatar';
@@ -7,6 +7,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/shared/components/ui/dialog';
 import { Input } from '@/shared/components/ui/input';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/shared/components/ui/carousel';
 import { useLikeToggle, useComments, useCreateComment } from '../hooks/use-posts';
 import { useAuth } from '@/shared/lib/react-query';
 import { CommentItem } from './comment-item';
@@ -14,6 +15,7 @@ import { cn } from '@/shared/lib/utils';
 import { VideoPlayer } from './video-player';
 import { AudioPlayer } from './audio-player';
 import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
+import { CarouselDots } from './carousel-dots';
 import type { Media } from '@sound-connect/common/types/drizzle';
 
 const formatCount = (count: number): string => {
@@ -67,6 +69,7 @@ export function PostModal({
     const [expandedReplies, setExpandedReplies] = useState<Set<number>>(new Set());
     const [replyingTo, setReplyingTo] = useState<number | null>(null);
     const [currentMediaIndex, setCurrentMediaIndex] = useState(() => initialMediaIndex ?? 0);
+    const [carouselApi, setCarouselApi] = useState<CarouselApi>();
     const commentInputRef = useRef<HTMLInputElement>(null);
     const { data: auth } = useAuth();
     const { pauseAll } = useMediaPlayback();
@@ -77,31 +80,37 @@ export function PostModal({
     const hasMedia = (media && media.length > 0) || image;
     const displayMedia = media && media.length > 0 ? media : image ? [{ id: 0, postId, type: 'image' as const, key: image.replace('/media/', '') }] : [];
 
-    const handlePreviousMedia = useCallback(() => {
-        setCurrentMediaIndex((prev) => (prev > 0 ? prev - 1 : displayMedia.length - 1));
-    }, [displayMedia.length]);
+    useEffect(() => {
+        if (!carouselApi) return;
 
-    const handleNextMedia = useCallback(() => {
-        setCurrentMediaIndex((prev) => (prev < displayMedia.length - 1 ? prev + 1 : 0));
-    }, [displayMedia.length]);
+        setCurrentMediaIndex(carouselApi.selectedScrollSnap());
+
+        carouselApi.on('select', () => {
+            pauseAll();
+            setCurrentMediaIndex(carouselApi.selectedScrollSnap());
+        });
+    }, [carouselApi, pauseAll]);
 
     const handleOpenChange = useCallback(
         (newOpen: boolean) => {
             if (!newOpen) {
                 setCurrentMediaIndex(0);
-            } else if (initialMediaIndex !== undefined) {
-                setCurrentMediaIndex(initialMediaIndex);
+                if (carouselApi) {
+                    carouselApi.scrollTo(0);
+                }
+            } else if (initialMediaIndex !== undefined && carouselApi) {
+                carouselApi.scrollTo(initialMediaIndex);
             }
             onOpenChange(newOpen);
         },
-        [onOpenChange, initialMediaIndex]
+        [onOpenChange, initialMediaIndex, carouselApi]
     );
 
     useEffect(() => {
-        if (open && initialMediaIndex !== undefined) {
-            setCurrentMediaIndex(initialMediaIndex);
+        if (open && initialMediaIndex !== undefined && carouselApi) {
+            carouselApi.scrollTo(initialMediaIndex);
         }
-    }, [open, initialMediaIndex]);
+    }, [open, initialMediaIndex, carouselApi]);
 
     useEffect(() => {
         if (open) {
@@ -109,23 +118,6 @@ export function PostModal({
             pauseAll();
         }
     }, [open, pauseAll]);
-
-    useEffect(() => {
-        if (!open || displayMedia.length <= 1) return;
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                handlePreviousMedia();
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                handleNextMedia();
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [open, displayMedia.length, handlePreviousMedia, handleNextMedia]);
 
     const handleLikeToggle = () => {
         if (!canLike || !auth?.user || likeMutation.isPending) return;
@@ -191,61 +183,69 @@ export function PostModal({
                     <DialogDescription>View post content, media, and comments. Like and comment on this post.</DialogDescription>
                 </VisuallyHidden.Root>
 
-                {hasMedia && displayMedia[currentMediaIndex] && (
-                    <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black">
-                        {displayMedia[currentMediaIndex]!.type === 'video' ? (
-                            <VideoPlayer
-                                key={displayMedia[currentMediaIndex]!.key}
-                                src={`/media/${displayMedia[currentMediaIndex]!.key}`}
-                                controls
-                                className="max-h-full max-w-full"
-                                context="modal"
-                            />
-                        ) : displayMedia[currentMediaIndex]!.type === 'audio' ? (
-                            <div className="w-full max-w-2xl px-8">
-                                <AudioPlayer
-                                    key={displayMedia[currentMediaIndex]!.key}
-                                    src={`/media/${displayMedia[currentMediaIndex]!.key}`}
-                                    context="modal"
-                                />
-                            </div>
-                        ) : (
-                            <img
-                                key={displayMedia[currentMediaIndex]!.key}
-                                src={`/media/${displayMedia[currentMediaIndex]!.key}`}
-                                alt="Post content"
-                                className="max-h-full max-w-full object-contain"
-                            />
-                        )}
+                {hasMedia && (
+                    <Carousel
+                        setApi={setCarouselApi}
+                        className="relative flex w-full flex-1 items-center justify-center overflow-hidden bg-black"
+                        opts={{
+                            loop: false,
+                            align: 'center',
+                            startIndex: initialMediaIndex ?? 0
+                        }}
+                    >
+                        <CarouselContent className="-ml-0">
+                            {displayMedia.map((item) => (
+                                <CarouselItem key={item.key} className="basis-full pl-0">
+                                    <div className="flex h-[90vh] w-full items-center justify-center">
+                                        {item.type === 'video' ? (
+                                            <VideoPlayer
+                                                key={item.key}
+                                                src={`/media/${item.key}`}
+                                                controls
+                                                className="max-h-full max-w-full object-contain"
+                                                context="modal"
+                                            />
+                                        ) : item.type === 'audio' ? (
+                                            <div className="w-full max-w-2xl px-8">
+                                                <AudioPlayer key={item.key} src={`/media/${item.key}`} context="modal" />
+                                            </div>
+                                        ) : (
+                                            <img key={item.key} src={`/media/${item.key}`} alt="Post content" className="max-h-full max-w-full object-contain" />
+                                        )}
+                                    </div>
+                                </CarouselItem>
+                            ))}
+                        </CarouselContent>
 
                         {displayMedia.length > 1 && (
                             <>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={handlePreviousMedia}
-                                    className="absolute top-1/2 left-4 z-[101] h-12 w-12 -translate-y-1/2 rounded-full bg-black/50 text-white hover:bg-black/70 hover:text-white"
-                                    aria-label="Previous media"
-                                >
-                                    <ChevronLeft className="h-8 w-8" aria-hidden="true" />
-                                </Button>
+                                <CarouselPrevious
+                                    className={cn(
+                                        'absolute left-4 top-1/2 -translate-y-1/2',
+                                        'h-12 w-12 rounded-full',
+                                        'border border-white/10 bg-black/40 backdrop-blur-md',
+                                        'text-white/90 hover:text-white',
+                                        'shadow-lg shadow-black/20',
+                                        'transition-all duration-200 hover:scale-105 hover:bg-black/60',
+                                        'active:scale-95'
+                                    )}
+                                />
+                                <CarouselNext
+                                    className={cn(
+                                        'absolute right-4 top-1/2 -translate-y-1/2',
+                                        'h-12 w-12 rounded-full',
+                                        'border border-white/10 bg-black/40 backdrop-blur-md',
+                                        'text-white/90 hover:text-white',
+                                        'shadow-lg shadow-black/20',
+                                        'transition-all duration-200 hover:scale-105 hover:bg-black/60',
+                                        'active:scale-95'
+                                    )}
+                                />
 
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={handleNextMedia}
-                                    className="absolute top-1/2 right-4 z-[101] h-12 w-12 -translate-y-1/2 rounded-full bg-black/50 text-white hover:bg-black/70 hover:text-white"
-                                    aria-label="Next media"
-                                >
-                                    <ChevronRight className="h-8 w-8" aria-hidden="true" />
-                                </Button>
-
-                                <div className="absolute bottom-4 left-1/2 z-[101] -translate-x-1/2 rounded-full bg-black/50 px-4 py-2 text-sm font-medium text-white">
-                                    {currentMediaIndex + 1} / {displayMedia.length}
-                                </div>
+                                <CarouselDots count={displayMedia.length} current={currentMediaIndex} />
                             </>
                         )}
-                    </div>
+                    </Carousel>
                 )}
 
                 <div className={`bg-card border-border flex w-[500px] flex-shrink-0 flex-col overflow-hidden ${hasMedia ? 'border-l' : ''}`}>
