@@ -17,6 +17,7 @@ type MediaPlaybackContext = {
     register: (id: string, instance: WaveSurfer | HTMLVideoElement, type: 'audio' | 'video') => void;
     unregister: (id: string) => void;
     notifyPlay: (id: string) => void;
+    pauseAll: () => void;
     volume: number;
     isMuted: boolean;
     setVolume: (volume: number) => void;
@@ -84,6 +85,28 @@ export function MediaPlaybackProvider({ children }: Props) {
         });
     }, []);
 
+    const pauseAll = useCallback(() => {
+        console.log('[pauseAll] Called, instances:', instancesRef.current.size);
+        instancesRef.current.forEach((mediaInstance, id) => {
+            console.log('[pauseAll] Instance:', id, 'type:', mediaInstance.type);
+            if (mediaInstance.type === 'audio') {
+                const wavesurfer = mediaInstance.instance as WaveSurfer;
+                console.log('[pauseAll] Audio isPlaying:', wavesurfer.isPlaying());
+                if (wavesurfer.isPlaying()) {
+                    wavesurfer.pause();
+                    console.log('[pauseAll] Audio paused');
+                }
+            } else if (mediaInstance.type === 'video') {
+                const video = mediaInstance.instance as HTMLVideoElement;
+                console.log('[pauseAll] Video paused:', video.paused);
+                if (!video.paused) {
+                    video.pause();
+                    console.log('[pauseAll] Video paused');
+                }
+            }
+        });
+    }, []);
+
     const setVolume = useCallback((volume: number) => {
         setVolumeSettings((prev) => {
             const next = { ...prev, volume, isMuted: volume === 0 };
@@ -114,6 +137,7 @@ export function MediaPlaybackProvider({ children }: Props) {
                 register,
                 unregister,
                 notifyPlay,
+                pauseAll,
                 volume: volumeSettings.volume,
                 isMuted: volumeSettings.isMuted,
                 setVolume,

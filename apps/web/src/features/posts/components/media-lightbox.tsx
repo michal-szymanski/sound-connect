@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { VideoPlayer } from './video-player';
 import { AudioPlayer } from './audio-player';
+import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
 
 type Props = {
     media: Media[];
@@ -15,6 +16,7 @@ type Props = {
 
 export function MediaLightbox({ media, initialIndex, open, onOpenChange }: Props) {
     const [currentIndex, setCurrentIndex] = useState(initialIndex);
+    const { pauseAll } = useMediaPlayback();
 
     const handlePrevious = useCallback(() => {
         setCurrentIndex((prev) => (prev > 0 ? prev - 1 : media.length - 1));
@@ -56,6 +58,7 @@ export function MediaLightbox({ media, initialIndex, open, onOpenChange }: Props
 
     useEffect(() => {
         if (open) {
+            pauseAll();
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
@@ -64,7 +67,7 @@ export function MediaLightbox({ media, initialIndex, open, onOpenChange }: Props
         return () => {
             document.body.style.overflow = '';
         };
-    }, [open]);
+    }, [open, pauseAll]);
 
     if (!open || media.length === 0) return null;
 
@@ -118,10 +121,10 @@ export function MediaLightbox({ media, initialIndex, open, onOpenChange }: Props
                 <div className="flex h-full w-full items-center justify-center p-12">
                     {currentMedia.type === 'audio' ? (
                         <div className="w-full max-w-2xl">
-                            <AudioPlayer src={`/media/${currentMedia.key}`} />
+                            <AudioPlayer src={`/media/${currentMedia.key}`} context="lightbox" />
                         </div>
                     ) : currentMedia.type === 'video' ? (
-                        <VideoPlayer src={`/media/${currentMedia.key}`} className="max-h-full max-w-full" autoPlay />
+                        <VideoPlayer src={`/media/${currentMedia.key}`} className="max-h-full max-w-full" autoPlay context="lightbox" />
                     ) : (
                         <img src={`/media/${currentMedia.key}`} alt={`Media ${currentIndex + 1}`} className="max-h-full max-w-full object-contain" />
                     )}

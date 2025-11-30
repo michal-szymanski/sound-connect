@@ -13,6 +13,7 @@ import { CommentItem } from './comment-item';
 import { cn } from '@/shared/lib/utils';
 import { VideoPlayer } from './video-player';
 import { AudioPlayer } from './audio-player';
+import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
 import type { Media } from '@sound-connect/common/types/drizzle';
 
 const formatCount = (count: number): string => {
@@ -68,6 +69,7 @@ export function PostModal({
     const [currentMediaIndex, setCurrentMediaIndex] = useState(() => initialMediaIndex ?? 0);
     const commentInputRef = useRef<HTMLInputElement>(null);
     const { data: auth } = useAuth();
+    const { pauseAll } = useMediaPlayback();
     const likeMutation = useLikeToggle(postId, auth?.user ?? null);
     const { data: comments = [], isLoading } = useComments(postId, open);
     const createCommentMutation = useCreateComment(postId);
@@ -100,6 +102,13 @@ export function PostModal({
             setCurrentMediaIndex(initialMediaIndex);
         }
     }, [open, initialMediaIndex]);
+
+    useEffect(() => {
+        if (open) {
+            console.log('[PostModal] Dialog opened, calling pauseAll()');
+            pauseAll();
+        }
+    }, [open, pauseAll]);
 
     useEffect(() => {
         if (!open || displayMedia.length <= 1) return;
@@ -185,10 +194,10 @@ export function PostModal({
                 {hasMedia && displayMedia[currentMediaIndex] && (
                     <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black">
                         {displayMedia[currentMediaIndex]!.type === 'video' ? (
-                            <VideoPlayer src={`/media/${displayMedia[currentMediaIndex]!.key}`} controls className="max-h-full max-w-full" />
+                            <VideoPlayer src={`/media/${displayMedia[currentMediaIndex]!.key}`} controls className="max-h-full max-w-full" context="modal" />
                         ) : displayMedia[currentMediaIndex]!.type === 'audio' ? (
                             <div className="w-full max-w-2xl px-8">
-                                <AudioPlayer src={`/media/${displayMedia[currentMediaIndex]!.key}`} />
+                                <AudioPlayer src={`/media/${displayMedia[currentMediaIndex]!.key}`} context="modal" />
                             </div>
                         ) : (
                             <img src={`/media/${displayMedia[currentMediaIndex]!.key}`} alt="Post content" className="max-h-full max-w-full object-contain" />

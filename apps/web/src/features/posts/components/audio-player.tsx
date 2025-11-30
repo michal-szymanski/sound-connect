@@ -12,11 +12,12 @@ import { isServer, isTouchDevice } from '@/utils/env-utils';
 type Props = {
     src: string;
     className?: string;
+    context?: string;
 };
 
 type ChannelData = Array<Float32Array | number[]>;
 
-export function AudioPlayer({ src, className }: Props) {
+export function AudioPlayer({ src, className, context = 'default' }: Props) {
     const waveformRef = useRef<HTMLDivElement>(null);
     const hoverCanvasRef = useRef<HTMLCanvasElement>(null);
     const barDataRef = useRef<Array<{ x: number; y: number; height: number }>>([]);
@@ -30,7 +31,7 @@ export function AudioPlayer({ src, className }: Props) {
     const popoverContentRef = useRef<HTMLDivElement>(null);
     const { volume, isMuted, setVolume, setMuted, register, unregister, notifyPlay, activeVolumePopoverId, setActiveVolumePopover } = useMediaPlayback();
 
-    const instanceId = useMemo(() => `audio-${src}`, [src]);
+    const instanceId = useMemo(() => `audio-${context}-${src}`, [context, src]);
     const isVolumeOpen = activeVolumePopoverId === instanceId;
 
     const touchDevice = isTouchDevice();
@@ -176,6 +177,7 @@ export function AudioPlayer({ src, className }: Props) {
         wavesurfer.setVolume(isMuted ? 0 : volume);
 
         register(instanceId, wavesurfer, 'audio');
+        console.log('[AudioPlayer] Registered:', instanceId);
 
         const onReady = () => {
             setDuration(wavesurfer.getDuration());

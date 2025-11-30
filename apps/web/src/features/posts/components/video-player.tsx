@@ -25,6 +25,7 @@ type Props = {
   muted?: boolean;
   controls?: boolean;
   aspectRatio?: string;
+  context?: string;
 };
 
 export function VideoPlayer({
@@ -32,6 +33,7 @@ export function VideoPlayer({
   className,
   autoPlay = false,
   aspectRatio = "16/9",
+  context = 'default',
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -61,7 +63,7 @@ export function VideoPlayer({
     setActiveVolumePopover,
   } = useMediaPlayback();
 
-  const instanceId = useMemo(() => `video-${src}`, [src]);
+  const instanceId = useMemo(() => `video-${context}-${src}`, [context, src]);
   const isVolumeOpen = activeVolumePopoverId === instanceId;
 
   const touchDevice = isTouchDevice();
