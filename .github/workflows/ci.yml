@@ -118,45 +118,8 @@ jobs:
                   key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
                   fail-on-cache-miss: true
 
-            - name: Run Prettier on API
-              if: needs.detect-changes.outputs.api == 'true'
-              run: pnpm --filter @sound-connect/api prettier
-
-            - name: Run Prettier on Web
-              if: needs.detect-changes.outputs.web == 'true'
-              run: pnpm --filter @sound-connect/web prettier
-
-            - name: Run Prettier on Posts Queue Consumer
-              if: needs.detect-changes.outputs.posts-queue == 'true'
-              run: pnpm --filter @sound-connect/posts-queue-consumer prettier
-
-            - name: Run Prettier on Notifications Queue Consumer
-              if: needs.detect-changes.outputs.notifications-queue == 'true'
-              run: pnpm --filter @sound-connect/notifications-queue-consumer prettier
-
-            - name: Run Prettier on Common packages
-              if: needs.detect-changes.outputs.common == 'true'
-              run: pnpm --filter @sound-connect/common prettier && pnpm --filter @sound-connect/drizzle prettier
-
-            - name: Run ESLint on API
-              if: needs.detect-changes.outputs.api == 'true'
-              run: pnpm --filter @sound-connect/api lint
-
-            - name: Run ESLint on Web
-              if: needs.detect-changes.outputs.web == 'true'
-              run: pnpm --filter @sound-connect/web lint
-
-            - name: Run ESLint on Posts Queue Consumer
-              if: needs.detect-changes.outputs.posts-queue == 'true'
-              run: pnpm --filter @sound-connect/posts-queue-consumer lint
-
-            - name: Run ESLint on Notifications Queue Consumer
-              if: needs.detect-changes.outputs.notifications-queue == 'true'
-              run: pnpm --filter @sound-connect/notifications-queue-consumer lint
-
-            - name: Run ESLint on Common packages
-              if: needs.detect-changes.outputs.common == 'true'
-              run: pnpm --filter @sound-connect/common lint && pnpm --filter @sound-connect/drizzle lint
+            - name: Run oxlint
+              run: pnpm lint
 
             - name: Run TypeScript on API
               if: needs.detect-changes.outputs.api == 'true'
