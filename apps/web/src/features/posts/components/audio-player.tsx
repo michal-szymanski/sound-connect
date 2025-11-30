@@ -494,8 +494,8 @@ export const AudioPlayer = forwardRef<AudioPlayerHandle, Props>(function AudioPl
                     </div>
 
                     <div className="text-muted-foreground flex items-center justify-between text-xs">
-                        <span>{formatTime(currentTime)}</span>
-                        <span>{formatTime(duration)}</span>
+                        <span className="tabular-nums">{formatTime(currentTime)}</span>
+                        <span className="tabular-nums">{formatTime(duration)}</span>
                     </div>
                 </div>
 

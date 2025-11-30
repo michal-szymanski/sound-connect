@@ -12,6 +12,7 @@ type Props = {
 export function AudioPlaylist({ media, context = 'default' }: Props) {
     const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [switchingFromTrack, setSwitchingFromTrack] = useState<number | null>(null);
     const audioPlayerRef = useRef<AudioPlayerHandle>(null);
 
     const currentTrack = media[currentTrackIndex];
@@ -22,9 +23,11 @@ export function AudioPlaylist({ media, context = 'default' }: Props) {
         if (index === currentTrackIndex) {
             audioPlayerRef.current?.togglePlayPause();
         } else {
+            setSwitchingFromTrack(currentTrackIndex);
             setCurrentTrackIndex(index);
             setTimeout(() => {
                 audioPlayerRef.current?.play();
+                setSwitchingFromTrack(null);
             }, 100);
         }
     };
@@ -52,6 +55,7 @@ export function AudioPlaylist({ media, context = 'default' }: Props) {
                     {media.map((track, index) => {
                         const isCurrentTrack = index === currentTrackIndex;
                         const isCurrentTrackPlaying = isCurrentTrack && isPlaying;
+                        const isOldTrackDuringSwitch = switchingFromTrack === index;
 
                         let ariaLabel = '';
                         if (isCurrentTrackPlaying) {
@@ -76,32 +80,35 @@ export function AudioPlaylist({ media, context = 'default' }: Props) {
                                 <div className="relative flex h-8 w-8 shrink-0 items-center justify-center">
                                     <span
                                         className={cn(
-                                            'text-sm tabular-nums transition-opacity',
+                                            'text-sm tabular-nums',
+                                            !isOldTrackDuringSwitch && 'transition-opacity',
                                             isCurrentTrack ? 'text-primary font-medium' : 'text-muted-foreground',
-                                            'group-hover:opacity-0',
-                                            isCurrentTrack && 'opacity-0'
+                                            !isOldTrackDuringSwitch && 'group-hover:opacity-0',
+                                            !isOldTrackDuringSwitch && isCurrentTrack && 'opacity-0'
                                         )}
                                     >
                                         {index + 1}
                                     </span>
 
-                                    <div
-                                        className={cn(
-                                            'absolute inset-0 flex items-center justify-center transition-opacity',
-                                            isCurrentTrack ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                                        )}
-                                    >
-                                        <AudioPlayButton
-                                            isPlaying={isCurrentTrackPlaying}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleTrackPlayPause(index);
-                                            }}
-                                            size="sm"
-                                            variant="minimal"
-                                            aria-label={ariaLabel}
-                                        />
-                                    </div>
+                                    {!isOldTrackDuringSwitch && (
+                                        <div
+                                            className={cn(
+                                                'absolute inset-0 flex items-center justify-center transition-opacity',
+                                                isCurrentTrack ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                                            )}
+                                        >
+                                            <AudioPlayButton
+                                                isPlaying={isCurrentTrackPlaying}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleTrackPlayPause(index);
+                                                }}
+                                                size="sm"
+                                                variant="minimal"
+                                                aria-label={ariaLabel}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
                                 <span className={cn('flex-1 truncate text-sm', isCurrentTrack ? 'text-primary font-medium' : 'text-foreground')}>

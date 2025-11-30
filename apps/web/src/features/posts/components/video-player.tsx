@@ -403,7 +403,7 @@ export function VideoPlayer({
               disabled={duration === 0}
             />
 
-            <div className="flex items-center gap-2 text-xs text-white">
+            <div className="flex items-center gap-2 text-xs text-white tabular-nums">
               <span>{formatTime(currentTime)}</span>
               <span>/</span>
               <span>{formatTime(duration)}</span>
