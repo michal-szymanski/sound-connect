@@ -37,20 +37,43 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
     const [overallProgress, setOverallProgress] = useState(0);
     const [error, setError] = useState<string | null>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
+    const resetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const cancel = useCallback(() => {
+        console.log('[BatchUpload] Cancelling upload');
         if (abortControllerRef.current) {
             abortControllerRef.current.abort();
             abortControllerRef.current = null;
-            setState('idle');
-            setProgress([]);
-            setOverallProgress(0);
-            setError(null);
         }
+        if (resetTimeoutRef.current) {
+            clearTimeout(resetTimeoutRef.current);
+            resetTimeoutRef.current = null;
+        }
+        setState('idle');
+        setProgress([]);
+        setOverallProgress(0);
+        setError(null);
+    }, []);
+
+    const resetToIdle = useCallback(() => {
+        console.log('[BatchUpload] Resetting to idle state');
+        if (resetTimeoutRef.current) {
+            clearTimeout(resetTimeoutRef.current);
+            resetTimeoutRef.current = null;
+        }
+        setState('idle');
+        setProgress([]);
+        setOverallProgress(0);
     }, []);
 
     const upload = useCallback(
         async (files: File[]) => {
+            console.log('[BatchUpload] Starting batch upload process', {
+                fileCount: files.length,
+                files: files.map(f => ({ name: f.name, size: f.size, type: f.type })),
+                purpose
+            });
+
             try {
                 if (files.length > maxFiles) {
                     throw new Error(`Too many files. Maximum ${maxFiles} files allowed.`);
@@ -65,6 +88,7 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
                 setProgress(files.map(() => 0));
                 setOverallProgress(0);
 
+                console.log('[BatchUpload] State: requesting presigned URLs');
                 setState('requesting');
                 const presignedResults = await Promise.all(
                     files.map((file) =>
@@ -79,9 +103,16 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
                     )
                 );
 
+                console.log('[BatchUpload] Presigned URL results:', {
+                    total: presignedResults.length,
+                    successful: presignedResults.filter(r => r.success).length
+                });
+
                 const failedRequest = presignedResults.find((result) => !result.success);
                 if (failedRequest && !failedRequest.success) {
-                    throw new Error(failedRequest.body?.message || 'Failed to request upload URLs');
+                    const errorMsg = failedRequest.body?.message || 'Failed to request upload URLs';
+                    console.error('[BatchUpload] Failed to get presigned URLs:', errorMsg);
+                    throw new Error(errorMsg);
                 }
 
                 const sessions: UploadSession[] = presignedResults.map((result) => {
@@ -94,6 +125,9 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
                     };
                 });
 
+                console.log('[BatchUpload] State: uploading files', {
+                    sessionCount: sessions.length
+                });
                 setState('uploading');
 
                 const uploadPromises = sessions.map(async (session, index) => {
@@ -126,6 +160,7 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
                     await Promise.all(uploadPromises.slice(i, i + batchSize));
                 }
 
+                console.log('[BatchUpload] State: confirming uploads');
                 setState('confirming');
                 setProgress(files.map(() => 100));
                 setOverallProgress(100);
@@ -137,28 +172,49 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
                     }
                 });
 
+                console.log('[BatchUpload] Confirm result:', {
+                    success: confirmResult.success,
+                    hasBody: !!confirmResult.body
+                });
+
                 if (!confirmResult.success) {
-                    throw new Error(confirmResult.body?.message || 'Failed to confirm uploads');
+                    const errorMsg = confirmResult.body?.message || 'Failed to confirm uploads';
+                    console.error('[BatchUpload] Confirmation failed:', errorMsg);
+                    throw new Error(errorMsg);
                 }
 
+                console.log('[BatchUpload] Upload successful!', confirmResult.body);
                 setState('success');
                 onSuccess?.(confirmResult.body.results);
 
-                setTimeout(() => {
-                    setState('idle');
-                    setProgress([]);
-                    setOverallProgress(0);
+                console.log('[BatchUpload] Scheduling reset to idle in 2 seconds');
+                resetTimeoutRef.current = setTimeout(() => {
+                    resetToIdle();
                 }, 2000);
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Upload failed';
+                console.error('[BatchUpload] Error during upload:', {
+                    error: err,
+                    message: errorMessage,
+                    stack: err instanceof Error ? err.stack : undefined
+                });
+
                 setError(errorMessage);
                 setState('error');
                 setProgress([]);
                 setOverallProgress(0);
+
                 onError?.(err instanceof Error ? err : new Error(errorMessage));
+
+                console.log('[BatchUpload] Scheduling reset to idle after error in 5 seconds');
+                resetTimeoutRef.current = setTimeout(() => {
+                    resetToIdle();
+                }, 5000);
+            } finally {
+                abortControllerRef.current = null;
             }
         },
-        [purpose, maxFiles, onSuccess, onError]
+        [purpose, maxFiles, onSuccess, onError, resetToIdle]
     );
 
     return {
