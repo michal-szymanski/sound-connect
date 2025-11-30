@@ -7,7 +7,6 @@ import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Badge } from '@/shared/components/ui/badge';
 import { cn } from '@/shared/lib/utils';
-import { VideoPlayer } from './video-player';
 
 export type MediaWithType = {
     key: string;
@@ -38,6 +37,7 @@ export const PostMediaUpload = (props: Props) => {
 
     const [previews, setPreviews] = useState<MediaPreview[]>([]);
     const [newMediaKeysWithTypes, setNewMediaKeysWithTypes] = useState<MediaWithType[]>([]);
+    const [uploadingPreviewIds, setUploadingPreviewIds] = useState<string[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const pendingUploadTypesRef = useRef<Array<'image' | 'video' | 'audio'>>([]);
 
@@ -58,7 +58,7 @@ export const PostMediaUpload = (props: Props) => {
                 return accumulated;
             });
             setPreviews((prev) => {
-                return prev.map((p, index) => {
+                return prev.map((p) => {
                     if (!p.isExisting && !p.key) {
                         const matchingKeyIndex = prev.filter((preview) => !preview.isExisting && !preview.key).indexOf(p);
                         if (matchingKeyIndex !== -1 && results[matchingKeyIndex]) {
@@ -69,6 +69,7 @@ export const PostMediaUpload = (props: Props) => {
                 });
             });
             pendingUploadTypesRef.current = [];
+            setUploadingPreviewIds([]);
         }
     });
 
@@ -132,6 +133,9 @@ export const PostMediaUpload = (props: Props) => {
         const updatedPreviews = [...previews, ...newPreviews];
         setPreviews(updatedPreviews);
 
+        const uploadingIds = newPreviews.map((p) => p.id);
+        setUploadingPreviewIds(uploadingIds);
+
         pendingUploadTypesRef.current = fileTypes;
         await upload(files);
 
@@ -169,8 +173,7 @@ export const PostMediaUpload = (props: Props) => {
 
     const isUploading = state === 'uploading' || state === 'requesting' || state === 'confirming';
     const hasError = state === 'error';
-    const isSuccess = state === 'success';
-    const canAddMore = previews.length < maxFiles && !isUploading && !disabled;
+    const canAddMore = previews.length < maxFiles;
 
     return (
         <div className={cn('space-y-4', className)}>
@@ -187,44 +190,62 @@ export const PostMediaUpload = (props: Props) => {
             {previews.length > 0 && (
                 <div className="rounded-lg border border-border/40 bg-muted/30">
                     <ScrollArea className="max-h-[200px] md:max-h-[280px]">
-                        <div className="grid grid-cols-3 gap-2 p-2 md:grid-cols-4">
-                            {previews.map((preview, index) => (
-                                <div key={preview.id} className="group relative">
-                                    <div className="border-input bg-muted relative aspect-square overflow-hidden rounded-lg border">
-                                        {preview.type === 'image' ? (
-                                            <img src={preview.previewUrl} alt={`Media ${index + 1}`} className="w-full object-cover" />
-                                        ) : preview.type === 'video' ? (
-                                            <VideoPlayer src={preview.previewUrl} controls={false} muted aspectRatio="1/1" className="w-full" />
-                                        ) : (
-                                            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/20 to-primary/5 p-3">
-                                                <div className="bg-primary/10 rounded-full p-3">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        strokeWidth={1.5}
-                                                        stroke="currentColor"
-                                                        className="text-primary h-8 w-8"
-                                                    >
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z"
-                                                        />
-                                                    </svg>
-                                                </div>
-                                                <span className="text-muted-foreground truncate w-full text-center text-xs font-medium">
-                                                    {preview.file?.name || 'Audio file'}
-                                                </span>
-                                            </div>
-                                        )}
+                        <div className="grid grid-cols-2 gap-2 p-2 md:grid-cols-3">
+                            {previews.map((preview, index) => {
+                                const uploadingIndex = uploadingPreviewIds.indexOf(preview.id);
+                                const isCurrentlyUploading = uploadingIndex !== -1;
+                                const uploadProgress = isCurrentlyUploading ? progress[uploadingIndex] : undefined;
 
-                                        {isUploading && progress[index] !== undefined && (
-                                            <div className="bg-background/90 absolute inset-0 flex flex-col items-center justify-center gap-2 p-2 backdrop-blur-sm">
-                                                <Progress value={progress[index]} className="h-2 w-full" />
-                                                <span className="text-xs font-semibold tabular-nums">{progress[index]}%</span>
-                                            </div>
-                                        )}
+                                return (
+                                    <div key={preview.id} className="group relative">
+                                        <div className="border-input bg-muted relative aspect-square overflow-hidden rounded-lg border">
+                                            {preview.type === 'image' ? (
+                                                <img src={preview.previewUrl} alt={`Media ${index + 1}`} className="w-full object-cover" />
+                                            ) : preview.type === 'video' ? (
+                                                <video
+                                                    src={preview.previewUrl}
+                                                    preload="metadata"
+                                                    muted
+                                                    playsInline
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/20 to-primary/5 p-3">
+                                                    <div className="bg-primary/10 rounded-full p-3">
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="text-primary h-6 w-6"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                    <span className="text-muted-foreground w-full truncate px-2 text-center text-[11px]">
+                                                        {preview.file?.name || 'Audio file'}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {isUploading && uploadProgress !== undefined && (
+                                                <div
+                                                    className={cn(
+                                                        'absolute inset-0 flex flex-col items-center justify-center gap-2 p-2',
+                                                        'bg-background/90 backdrop-blur-sm',
+                                                        'transition-opacity duration-300',
+                                                        uploadProgress === 100 && 'opacity-0'
+                                                    )}
+                                                >
+                                                    <Progress value={uploadProgress} className="h-2 w-full" />
+                                                    <span className="text-xs font-semibold tabular-nums">{uploadProgress}%</span>
+                                                </div>
+                                            )}
 
                                         {!isUploading && !disabled && (
                                             <button
@@ -247,18 +268,19 @@ export const PostMediaUpload = (props: Props) => {
                                         )}
 
                                         {preview.type === 'video' && (
-                                            <Badge variant="secondary" className="absolute bottom-2 left-2 bg-background/90 backdrop-blur-sm">
+                                            <Badge variant="secondary" className="absolute top-2 left-2 bg-background/90 backdrop-blur-sm">
                                                 Video
                                             </Badge>
                                         )}
                                         {preview.type === 'audio' && (
-                                            <Badge variant="secondary" className="absolute bottom-2 left-2 bg-background/90 backdrop-blur-sm">
+                                            <Badge variant="secondary" className="absolute top-2 left-2 bg-background/90 backdrop-blur-sm">
                                                 Audio
                                             </Badge>
                                         )}
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </ScrollArea>
                     <div className="border-t border-border/40 px-3 py-2 text-xs text-muted-foreground">
@@ -267,23 +289,10 @@ export const PostMediaUpload = (props: Props) => {
                 </div>
             )}
 
-            {isUploading && (
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">
-                            {state === 'requesting' && 'Preparing uploads...'}
-                            {state === 'uploading' && `Uploading... ${overallProgress}%`}
-                            {state === 'confirming' && 'Processing...'}
-                        </span>
-                    </div>
-                </div>
-            )}
-
-            {isSuccess && (
-                <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
-                    <AlertDescription className="text-green-700 dark:text-green-300">All files uploaded successfully!</AlertDescription>
-                </Alert>
-            )}
+            <div role="status" aria-live="polite" className="sr-only">
+                {state === 'success' && 'Media uploaded successfully'}
+                {state === 'error' && error && `Upload failed: ${error}`}
+            </div>
 
             {hasError && (
                 <Alert variant="destructive">
@@ -292,7 +301,7 @@ export const PostMediaUpload = (props: Props) => {
             )}
 
             {canAddMore && (
-                <Button onClick={handleClick} variant="outline" className="w-full">
+                <Button type="button" onClick={handleClick} variant="outline" className="w-full" disabled={isUploading || disabled}>
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-5 w-5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
