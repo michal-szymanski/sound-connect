@@ -134,7 +134,9 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
 
     const isSubmitting = form.formState.isSubmitting || form.formState.isSubmitSuccessful;
     const isEditPending = mode === 'edit' && updateMutation.isPending;
-    const isDisabled = isSubmitting || isEditPending || isUploading;
+
+    const textDisabled = isSubmitting || isEditPending;
+    const submitDisabled = isSubmitting || isEditPending || isUploading;
 
     const currentContent = form.watch('content');
     const currentContentLength = getCharacterCount(currentContent);
@@ -170,7 +172,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                                             'text-sm': currentContentLength > 100
                                         }
                                     )}
-                                    disabled={isDisabled}
+                                    disabled={textDisabled}
                                 />
                             </FormItem>
                         )}
@@ -186,7 +188,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                         onMediaKeysChange={(keysWithTypes) => setMediaKeysWithTypes(keysWithTypes)}
                         onExistingMediaRemove={(key) => setRemovedMediaKeys((prev) => [...prev, key])}
                         onUploadStateChange={(state) => setIsUploading(state === 'uploading')}
-                        disabled={isDisabled}
+                        disabled={textDisabled}
                     />
 
                     <div className="flex items-center justify-between gap-3">
@@ -201,16 +203,16 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
                     </div>
 
                     {mode === 'create' ? (
-                        <Button type="submit" disabled={isDisabled || isOverLimit || !hasContent} className="w-full">
+                        <Button type="submit" disabled={submitDisabled || isOverLimit || !hasContent} className="w-full">
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {isSubmitting ? 'Publishing...' : 'Publish'}
                         </Button>
                     ) : (
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => onSuccess?.()} disabled={isDisabled}>
+                            <Button type="button" variant="outline" onClick={() => onSuccess?.()} disabled={textDisabled}>
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={isDisabled || isOverLimit || !hasContent}>
+                            <Button type="submit" disabled={submitDisabled || isOverLimit || !hasContent}>
                                 {isEditPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {isEditPending ? 'Saving...' : 'Save Changes'}
                             </Button>
