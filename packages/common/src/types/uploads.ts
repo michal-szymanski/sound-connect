@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const uploadPurposeEnum = z.enum(['profile-image', 'band-image', 'post-media', 'music-sample', 'background-image', 'band-background']);
+export const uploadPurposeEnum = z.enum(['profile-image', 'band-image', 'post-media', 'music-sample', 'user-background', 'band-background']);
 
 export type UploadPurpose = z.infer<typeof uploadPurposeEnum>;
 

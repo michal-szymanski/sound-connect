@@ -174,7 +174,7 @@ uploadsRoutes.post('/uploads/confirm', async (c) => {
 
     if (session.uploadType === 'profile-image') {
         permanentKey = `users/${user.id}/avatar-${timestamp}.${extension}`;
-    } else if (session.uploadType === 'background-image') {
+    } else if (session.uploadType === 'user-background') {
         permanentKey = `users/${user.id}/cover-${timestamp}.${extension}`;
     } else if (session.uploadType === 'band-image') {
         if (!session.bandId) {

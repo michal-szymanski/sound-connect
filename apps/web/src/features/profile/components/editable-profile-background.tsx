@@ -22,7 +22,7 @@ export const EditableProfileBackground = ({ currentImage, onImageUpdated }: Prop
     const updateBackgroundImageMutation = useUpdateBackgroundImage();
 
     const { upload, state: uploadState } = usePresignedUpload({
-        purpose: 'background-image',
+        purpose: 'user-background',
         onSuccess: async (result) => {
             await updateBackgroundImageMutation.mutateAsync({ backgroundImage: result.publicUrl });
             setIsUploading(false);
