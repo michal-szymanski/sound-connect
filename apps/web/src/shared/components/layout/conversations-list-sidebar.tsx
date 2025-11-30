@@ -99,7 +99,12 @@ export function ConversationsListSidebar({ selectedPeer, onSelectPeer: _onSelect
                                             />
                                             <div className="min-w-0 flex-1 text-left">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="truncate text-sm font-medium">{partner?.name ?? 'Deleted User'}</span>
+                                                    <div className="flex min-w-0 flex-col">
+                                                        <span className="truncate text-sm font-medium">{partner?.name ?? 'Deleted User'}</span>
+                                                        {partner?.username && (
+                                                            <span className="text-muted-foreground truncate text-xs">@{partner.username}</span>
+                                                        )}
+                                                    </div>
                                                     {conversation.isMutualFollow && !isDeleted && (
                                                         <Badge variant="secondary" className="shrink-0 text-xs">
                                                             Mutual

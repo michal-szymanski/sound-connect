@@ -163,10 +163,11 @@ function RouteComponent() {
         <div className="flex h-[calc(100vh-10rem)] flex-col overflow-hidden rounded-lg border">
             <header className="bg-background flex-none border-b px-6 py-4">
                 {selectedPeer ? (
-                    <Link to="/users/$id" params={{ id: selectedPeer.id }} className="flex items-center gap-3 transition-opacity hover:opacity-80">
+                    <Link to="/users/$id" params={{ id: selectedPeer.username || selectedPeer.id }} className="flex items-center gap-3 transition-opacity hover:opacity-80">
                         <ProfileAvatar profile={selectedPeer} type="user" className="h-10 w-10" />
                         <div>
                             <div className="font-semibold">{selectedPeer.name}</div>
+                            <div className="text-muted-foreground text-xs">@{selectedPeer.username || selectedPeer.id.slice(0, 8)}</div>
                         </div>
                     </Link>
                 ) : selectedBand ? (

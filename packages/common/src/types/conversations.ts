@@ -8,7 +8,8 @@ export const conversationPartnerSchema = z
     .object({
         id: z.string(),
         name: z.string(),
-        image: z.string().nullable()
+        image: z.string().nullable(),
+        username: z.string().nullish()
     })
     .nullable();
 

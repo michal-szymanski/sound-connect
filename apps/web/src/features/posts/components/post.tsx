@@ -128,8 +128,6 @@ export function Post({ item }: Props) {
         );
     };
 
-    const username = isBandPost ? '' : (user?.name.toLowerCase().replace(/\s+/g, '') ?? '');
-
     return (
         <article className="border-border/40 bg-card w-full overflow-hidden rounded-xl border px-4 py-3 transition-shadow hover:shadow-md hover:shadow-black/5">
             <header className="mb-2 flex items-start gap-3">
@@ -147,7 +145,7 @@ export function Post({ item }: Props) {
                     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                         <Link
                             to={isBandPost ? '/bands/$id' : '/users/$id'}
-                            params={{ id: isBandPost ? String(post.bandId!) : post.userId }}
+                            params={{ id: isBandPost ? String(post.bandId!) : (user?.username || post.userId) }}
                             className="truncate text-sm font-semibold hover:underline"
                         >
                             {authorName}
@@ -176,7 +174,7 @@ export function Post({ item }: Props) {
                             </>
                         )}
                     </div>
-                    {!isBandPost && <span className="text-muted-foreground text-xs">@{username}</span>}
+                    {!isBandPost && <span className="text-muted-foreground text-xs">@{user?.username || user?.id.slice(0, 8)}</span>}
                 </div>
                 <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
@@ -306,7 +304,7 @@ export function Post({ item }: Props) {
                 author={{
                     id: authorId,
                     name: authorName,
-                    username: username,
+                    username: isBandPost ? '' : (user?.username || user?.id.slice(0, 8) || ''),
                     avatar: authorImage
                 }}
                 content={post.content}

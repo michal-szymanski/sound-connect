@@ -75,7 +75,12 @@ export const SummaryButton = ({ hiddenCount, hiddenWindows, position, onRestoreC
                                                     {window.user.name.charAt(0).toUpperCase()}
                                                 </AvatarFallback>
                                             </Avatar>
-                                            <span className="text-foreground flex-1 truncate text-left text-sm font-medium">{window.user.name}</span>
+                                            <div className="flex min-w-0 flex-1 flex-col items-start">
+                                                <span className="text-foreground truncate text-left text-sm font-medium">{window.user.name}</span>
+                                                {!isBand && (
+                                                    <span className="text-muted-foreground truncate text-xs">@{window.user.username || window.user.id.slice(0, 8)}</span>
+                                                )}
+                                            </div>
                                         </button>
 
                                         <Button
