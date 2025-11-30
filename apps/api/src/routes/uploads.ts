@@ -91,7 +91,7 @@ uploadsRoutes.post('/uploads/presigned-url', async (c) => {
         expiresAt
     });
 
-    const isLocal = !c.env.R2_ACCESS_KEY_ID || c.env.R2_ACCESS_KEY_ID === 'placeholder';
+    const isLocal = !c.env.R2_ACCESS_KEY_ID;
 
     let uploadUrl: string;
 

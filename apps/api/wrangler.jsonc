@@ -15,9 +15,6 @@
         "API_URL": "http://localhost:4000",
         "CLIENT_URL": "http://localhost:3000",
         "BETTER_AUTH_URL": "http://localhost:4000/api/auth",
-        "R2_ACCOUNT_ID": "placeholder",
-        "R2_ACCESS_KEY_ID": "placeholder",
-        "R2_SECRET_ACCESS_KEY": "placeholder",
         "R2_BUCKET_NAME": "sound-connect-assets-dev"
     },
     "version_metadata": {
