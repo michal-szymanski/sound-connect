@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
+import { z } from 'zod';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
 import { success, failure, apiErrorHandler } from '@/shared/server-functions/helpers';
 import {
@@ -37,39 +38,49 @@ export const requestPresignedUrl = createServerFn({ method: 'POST' })
         }
     });
 
-export const uploadToPresignedUrl = async (uploadUrl: string, file: File, onProgress?: (progress: number) => void): Promise<void> => {
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-
-        xhr.upload.addEventListener('progress', (e) => {
-            if (e.lengthComputable && onProgress) {
-                const progress = Math.round((e.loaded / e.total) * 100);
-                onProgress(progress);
+export const uploadFile = createServerFn({ method: 'POST' })
+    .middleware([authMiddleware])
+    .inputValidator(z.any())
+    .handler(async ({ data, context: { env, auth } }) => {
+        try {
+            if (!(data instanceof FormData)) {
+                return failure({ status: 400, message: 'FormData is required' });
             }
-        });
 
-        xhr.addEventListener('load', () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                resolve();
-            } else {
-                reject(new Error(`Upload failed with status ${xhr.status}`));
+            const file = data.get('file');
+            const sessionId = data.get('sessionId');
+
+            if (!file || !(file instanceof File)) {
+                return failure({ status: 400, message: 'File is required' });
             }
-        });
 
-        xhr.addEventListener('error', () => {
-            reject(new Error('Network error during upload'));
-        });
+            if (!sessionId || typeof sessionId !== 'string') {
+                return failure({ status: 400, message: 'Session ID is required' });
+            }
 
-        xhr.addEventListener('abort', () => {
-            reject(new Error('Upload cancelled'));
-        });
+            const response = await env.API.fetch(
+                `${env.API_URL}/api/uploads/upload?sessionId=${sessionId}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': file.type,
+                        ...(auth.cookie && { Cookie: auth.cookie })
+                    },
+                    body: file
+                }
+            );
 
-        xhr.open('POST', uploadUrl);
-        xhr.withCredentials = true;
-        xhr.setRequestHeader('Content-Type', file.type);
-        xhr.send(file);
+            if (!response.ok) {
+                const error = await response.json() as { message?: string };
+                return failure({ status: response.status, message: error.message || 'Upload failed' });
+            }
+
+            return success({ success: true });
+        } catch (error) {
+            console.error('uploadFile error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred during upload' });
+        }
     });
-};
 
 export const confirmUpload = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import type { UploadPurpose } from '@sound-connect/common/types/uploads';
-import { requestPresignedUrl, uploadToPresignedUrl, confirmBatchUpload } from '@/shared/server-functions/uploads';
+import { requestPresignedUrl, uploadFile, confirmBatchUpload } from '@/shared/server-functions/uploads';
 
 type UploadState = 'idle' | 'requesting' | 'uploading' | 'confirming' | 'success' | 'error';
 
@@ -23,7 +23,6 @@ type UseBatchPresignedUploadResult = {
 type UploadSession = {
     sessionId: string;
     key: string;
-    uploadUrl: string;
 };
 
 const sanitizeFileName = (fileName: string): string => {
@@ -91,8 +90,7 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
                     }
                     return {
                         sessionId: result.body.sessionId,
-                        key: result.body.key,
-                        uploadUrl: result.body.uploadUrl
+                        key: result.body.key
                     };
                 });
 
@@ -104,14 +102,22 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
                         throw new Error('File not found for session');
                     }
 
-                    await uploadToPresignedUrl(session.uploadUrl, file, (fileProgress) => {
-                        setProgress((prev) => {
-                            const newProgress = [...prev];
-                            newProgress[index] = fileProgress;
-                            const overall = Math.round(newProgress.reduce((sum, p) => sum + p, 0) / newProgress.length);
-                            setOverallProgress(overall);
-                            return newProgress;
-                        });
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('sessionId', session.sessionId);
+
+                    const uploadResult = await uploadFile({ data: formData });
+
+                    if (!uploadResult.success) {
+                        throw new Error(uploadResult.body?.message || 'Upload failed');
+                    }
+
+                    setProgress((prev) => {
+                        const newProgress = [...prev];
+                        newProgress[index] = 100;
+                        const overall = Math.round(newProgress.reduce((sum, p) => sum + p, 0) / newProgress.length);
+                        setOverallProgress(overall);
+                        return newProgress;
                     });
                 });
 

@@ -15,6 +15,87 @@ This project is a monorepo containing a social media app designed like LinkedIn 
     - Accessible via `c.env.ASSETS` binding in API and queue consumers
 - **Common**: `packages/common` - Shared types, constants, and utilities between frontend and backend
 
+## API Communication Architecture
+
+**CRITICAL: Frontend CANNOT make direct HTTP requests to the API worker.**
+
+All API requests from the frontend (`apps/web`) to the backend (`apps/api`) MUST be routed through **Tanstack Start server functions** in `apps/web/src/shared/server-functions/`.
+
+### Why Server Functions Are Required
+
+- **Authentication**: Cookies are set on the web worker's domain and won't be sent in cross-origin requests to the API worker
+- **Service Binding**: The web worker has a service binding (`env.API`) to the API worker that properly forwards authentication
+- **Consistency**: All API calls follow the same pattern with proper error handling and type safety
+
+### Architecture Flow
+
+```
+✅ CORRECT:
+Browser → Server Function (Web Worker) → Service Binding → API Worker
+
+❌ WRONG (will fail in production):
+Browser → Direct XHR/Fetch → API Worker
+```
+
+### WebSocket Exception
+
+WebSocket connections are the ONLY exception to this rule. The frontend CAN connect directly to the API's WebSocket endpoints because:
+- WebSockets use token-based authentication (JWT in subprotocol header)
+- WebSocket upgrade happens via HTTP headers, not cookies
+- Durable Objects require direct WebSocket connections
+
+```typescript
+// ✅ WebSocket connections are allowed
+const ws = new WebSocket('wss://api.example.com/ws', ['access_token', token]);
+```
+
+### Implementation Pattern
+
+When adding a new API endpoint:
+
+1. **Create the API route** in `apps/api/src/routes/`
+2. **Create a server function** in:
+   - `apps/web/src/features/{feature-name}/server-functions/` for feature-specific endpoints
+   - `apps/web/src/shared/server-functions/` for shared/cross-feature endpoints
+3. **Call the server function** from your frontend hooks/components
+
+**Example:**
+
+```typescript
+// apps/web/src/shared/server-functions/my-feature.ts
+export const myApiCall = createServerFn({ method: 'POST' })
+    .middleware([authMiddleware])
+    .inputValidator(myRequestSchema)
+    .handler(async ({ data, context: { env, auth } }) => {
+        const response = await env.API.fetch(`${env.API_URL}/api/my-endpoint`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(auth.cookie && { Cookie: auth.cookie })
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            return await apiErrorHandler(response);
+        }
+
+        const json = await response.json();
+        return success(myResponseSchema.parse(json));
+    });
+```
+
+**Never do this:**
+
+```typescript
+// ❌ WRONG - Direct fetch from client component
+const response = await fetch('https://api.example.com/api/endpoint', {
+    method: 'POST',
+    credentials: 'include',  // Won't work cross-origin!
+    body: JSON.stringify(data)
+});
+```
+
 ## Quick Reference
 
 ### Development Servers

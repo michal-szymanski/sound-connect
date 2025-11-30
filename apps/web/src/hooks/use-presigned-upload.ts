@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import type { UploadPurpose } from '@sound-connect/common/types/uploads';
-import { requestPresignedUrl, uploadToPresignedUrl, confirmUpload } from '@/shared/server-functions/uploads';
+import { requestPresignedUrl, uploadFile, confirmUpload } from '@/shared/server-functions/uploads';
 
 type UploadState = 'idle' | 'requesting' | 'uploading' | 'confirming' | 'success' | 'error';
 
@@ -63,12 +63,18 @@ export const usePresignedUpload = (options: UsePresignedUploadOptions): UsePresi
                     throw new Error(presignedResult.body?.message || 'Failed to request upload URL');
                 }
 
-                const { uploadUrl, key, sessionId } = presignedResult.body;
+                const { key, sessionId } = presignedResult.body;
 
                 setState('uploading');
-                await uploadToPresignedUrl(uploadUrl, file, (uploadProgress) => {
-                    setProgress(uploadProgress);
-                });
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('sessionId', sessionId);
+
+                const uploadResult = await uploadFile({ data: formData });
+
+                if (!uploadResult.success) {
+                    throw new Error(uploadResult.body?.message || 'Upload failed');
+                }
 
                 setState('confirming');
                 setProgress(100);
