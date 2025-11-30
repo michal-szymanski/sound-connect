@@ -9,16 +9,11 @@
         "test:debug": "playwright test --debug",
         "test:headed": "playwright test --headed",
         "db:reset": "tsx scripts/reset-db.ts",
-        "lint": "eslint .",
-        "lint:fix": "eslint . --fix",
-        "prettier": "prettier . --check",
-        "prettier:fix": "prettier . --write",
         "tsc": "tsc --noEmit"
     },
     "devDependencies": {
         "@playwright/test": "^1.56.1",
         "@types/node": "catalog:",
-        "prettier": "catalog:",
         "typescript": "catalog:"
     }
 }

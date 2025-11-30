@@ -12,10 +12,6 @@
         "types": "wrangler types --env-interface CloudflareBindings",
         "tail": "wrangler tail --env production",
         "tsc": "tsc --noEmit",
-        "lint": "eslint .",
-        "lint:fix": "eslint . --fix",
-        "prettier": "prettier . --check",
-        "prettier:fix": "prettier . --write",
         "sentry:sourcemaps": "_SENTRY_RELEASE=$(git rev-parse HEAD) && sentry-cli releases new $_SENTRY_RELEASE --org=szyman-corp --project=sound-connect-api && sentry-cli sourcemaps upload --org=szyman-corp --project=sound-connect-api --release=$_SENTRY_RELEASE --strip-prefix 'dist/..' dist",
         "postdeploy": "pnpm sentry:sourcemaps"
     },
@@ -45,7 +41,6 @@
         "zod": "catalog:"
     },
     "devDependencies": {
-        "@sentry/cli": "^2.57.0",
-        "prettier": "catalog:"
+        "@sentry/cli": "^2.57.0"
     }
 }

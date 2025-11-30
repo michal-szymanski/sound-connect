@@ -36,18 +36,12 @@
         "./types/location": "./src/types/location.ts"
     },
     "scripts": {
-        "tsc": "tsc --noEmit",
-        "lint": "eslint .",
-        "lint:fix": "eslint . --fix",
-        "prettier": "prettier . --check",
-        "prettier:fix": "prettier . --write"
+        "tsc": "tsc --noEmit"
     },
     "dependencies": {
         "zod": "catalog:"
     },
     "devDependencies": {
-        "eslint": "catalog:",
-        "prettier": "catalog:",
         "typescript": "catalog:"
     }
 }

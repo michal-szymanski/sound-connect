@@ -12,11 +12,7 @@
         "db:studio": "drizzle-kit studio",
         "seed": "tsx src/seed.ts",
         "seed:remote": "tsx src/seed.ts --remote",
-        "tsc": "tsc --noEmit",
-        "lint": "eslint .",
-        "lint:fix": "eslint . --fix",
-        "prettier": "prettier . --check",
-        "prettier:fix": "prettier . --write"
+        "tsc": "tsc --noEmit"
     },
     "dependencies": {
         "@sound-connect/common": "workspace:*",
@@ -31,8 +27,6 @@
         "better-sqlite3": "^12.4.1",
         "drizzle-kit": "^0.31.5",
         "drizzle-seed": "^0.3.1",
-        "eslint": "catalog:",
-        "prettier": "catalog:",
         "tsx": "^4.20.6",
         "typescript": "catalog:",
         "wrangler": "catalog:"
