@@ -194,13 +194,28 @@ export function PostModal({
                 {hasMedia && displayMedia[currentMediaIndex] && (
                     <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black">
                         {displayMedia[currentMediaIndex]!.type === 'video' ? (
-                            <VideoPlayer src={`/media/${displayMedia[currentMediaIndex]!.key}`} controls className="max-h-full max-w-full" context="modal" />
+                            <VideoPlayer
+                                key={displayMedia[currentMediaIndex]!.key}
+                                src={`/media/${displayMedia[currentMediaIndex]!.key}`}
+                                controls
+                                className="max-h-full max-w-full"
+                                context="modal"
+                            />
                         ) : displayMedia[currentMediaIndex]!.type === 'audio' ? (
                             <div className="w-full max-w-2xl px-8">
-                                <AudioPlayer src={`/media/${displayMedia[currentMediaIndex]!.key}`} context="modal" />
+                                <AudioPlayer
+                                    key={displayMedia[currentMediaIndex]!.key}
+                                    src={`/media/${displayMedia[currentMediaIndex]!.key}`}
+                                    context="modal"
+                                />
                             </div>
                         ) : (
-                            <img src={`/media/${displayMedia[currentMediaIndex]!.key}`} alt="Post content" className="max-h-full max-w-full object-contain" />
+                            <img
+                                key={displayMedia[currentMediaIndex]!.key}
+                                src={`/media/${displayMedia[currentMediaIndex]!.key}`}
+                                alt="Post content"
+                                className="max-h-full max-w-full object-contain"
+                            />
                         )}
 
                         {displayMedia.length > 1 && (
