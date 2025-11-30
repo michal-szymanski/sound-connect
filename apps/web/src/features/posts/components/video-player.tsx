@@ -330,7 +330,8 @@ export function VideoPlayer({
     resetHideControlsTimer();
   };
 
-  const handleContainerClick = () => {
+  const handleContainerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     togglePlayPause();
   };
 

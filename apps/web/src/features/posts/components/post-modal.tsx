@@ -96,6 +96,12 @@ export function PostModal({
     );
 
     useEffect(() => {
+        if (open && initialMediaIndex !== undefined) {
+            setCurrentMediaIndex(initialMediaIndex);
+        }
+    }, [open, initialMediaIndex]);
+
+    useEffect(() => {
         if (!open || displayMedia.length <= 1) return;
 
         const handleKeyDown = (e: KeyboardEvent) => {

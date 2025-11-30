@@ -106,9 +106,12 @@ export function Post({ item }: Props) {
         }
     };
 
-    const handleMediaClick = (index: number) => {
-        setLightboxIndex(index);
-        setIsModalOpen(true);
+    const handleMediaClick = (mediaKey: string) => {
+        const index = media.findIndex((m) => m.key === mediaKey);
+        if (index >= 0) {
+            setLightboxIndex(index);
+            setIsModalOpen(true);
+        }
     };
 
     const handleEmojiSelect = (emoji: string) => {
