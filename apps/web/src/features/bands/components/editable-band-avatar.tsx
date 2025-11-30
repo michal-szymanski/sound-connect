@@ -19,7 +19,6 @@ const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 export const EditableBandAvatar = ({ bandId, currentImage, bandName, className }: Props) => {
     const [cropModalOpen, setCropModalOpen] = useState(false);
     const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const updateBandProfileImageMutation = useUpdateBandProfileImage(bandId);
@@ -29,17 +28,17 @@ export const EditableBandAvatar = ({ bandId, currentImage, bandName, className }
         bandId,
         onSuccess: async (result) => {
             await updateBandProfileImageMutation.mutateAsync(result.publicUrl);
-            setIsUploading(false);
             setCropModalOpen(false);
             setSelectedImageSrc(null);
         },
         onError: () => {
-            setIsUploading(false);
         }
     });
 
+    const isProcessing = uploadState === 'requesting' || uploadState === 'uploading' || uploadState === 'confirming';
+
     const handleClick = () => {
-        if (isUploading) return;
+        if (isProcessing) return;
         fileInputRef.current?.click();
     };
 
@@ -67,8 +66,6 @@ export const EditableBandAvatar = ({ bandId, currentImage, bandName, className }
 
     const handleCropComplete = useCallback(
         async (croppedBlob: Blob) => {
-            setIsUploading(true);
-
             const file = new File([croppedBlob], 'band-image.jpg', { type: 'image/jpeg' });
             await upload(file);
         },
@@ -76,7 +73,7 @@ export const EditableBandAvatar = ({ bandId, currentImage, bandName, className }
     );
 
     const handleModalClose = (open: boolean) => {
-        if (!isUploading) {
+        if (!isProcessing) {
             setCropModalOpen(open);
             if (!open) {
                 setSelectedImageSrc(null);
@@ -90,8 +87,6 @@ export const EditableBandAvatar = ({ bandId, currentImage, bandName, className }
         .join('')
         .toUpperCase()
         .slice(0, 2);
-
-    const isProcessing = isUploading || uploadState === 'uploading' || uploadState === 'confirming';
 
     return (
         <>

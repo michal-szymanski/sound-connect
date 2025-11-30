@@ -20,7 +20,6 @@ const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 export const EditableProfileAvatar = ({ userId, currentImage, name, className, fallbackClassName }: Props) => {
     const [cropModalOpen, setCropModalOpen] = useState(false);
     const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const updateProfileImageMutation = useUpdateProfileImage();
@@ -29,17 +28,17 @@ export const EditableProfileAvatar = ({ userId, currentImage, name, className, f
         purpose: 'profile-image',
         onSuccess: async (result) => {
             await updateProfileImageMutation.mutateAsync({ imageUrl: result.publicUrl });
-            setIsUploading(false);
             setCropModalOpen(false);
             setSelectedImageSrc(null);
         },
         onError: () => {
-            setIsUploading(false);
         }
     });
 
+    const isProcessing = uploadState === 'requesting' || uploadState === 'uploading' || uploadState === 'confirming';
+
     const handleClick = () => {
-        if (isUploading) return;
+        if (isProcessing) return;
         fileInputRef.current?.click();
     };
 
@@ -67,8 +66,6 @@ export const EditableProfileAvatar = ({ userId, currentImage, name, className, f
 
     const handleCropComplete = useCallback(
         async (croppedBlob: Blob) => {
-            setIsUploading(true);
-
             const file = new File([croppedBlob], 'profile-image.jpg', { type: 'image/jpeg' });
             await upload(file);
         },
@@ -76,15 +73,13 @@ export const EditableProfileAvatar = ({ userId, currentImage, name, className, f
     );
 
     const handleModalClose = (open: boolean) => {
-        if (!isUploading) {
+        if (!isProcessing) {
             setCropModalOpen(open);
             if (!open) {
                 setSelectedImageSrc(null);
             }
         }
     };
-
-    const isProcessing = isUploading || uploadState === 'uploading' || uploadState === 'confirming';
 
     return (
         <>

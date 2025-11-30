@@ -16,7 +16,6 @@ const DEFAULT_GRADIENT = 'linear-gradient(135deg, hsl(var(--primary)/0.1), hsl(v
 export const EditableProfileBackground = ({ currentImage, onImageUpdated }: Props) => {
     const [cropModalOpen, setCropModalOpen] = useState(false);
     const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const updateBackgroundImageMutation = useUpdateBackgroundImage();
@@ -25,18 +24,18 @@ export const EditableProfileBackground = ({ currentImage, onImageUpdated }: Prop
         purpose: 'user-background',
         onSuccess: async (result) => {
             await updateBackgroundImageMutation.mutateAsync({ backgroundImage: result.publicUrl });
-            setIsUploading(false);
             setCropModalOpen(false);
             setSelectedImageSrc(null);
             onImageUpdated?.(result.publicUrl);
         },
         onError: () => {
-            setIsUploading(false);
         }
     });
 
+    const isProcessing = uploadState === 'requesting' || uploadState === 'uploading' || uploadState === 'confirming';
+
     const handleClick = () => {
-        if (isUploading) return;
+        if (isProcessing) return;
         fileInputRef.current?.click();
     };
 
@@ -64,8 +63,6 @@ export const EditableProfileBackground = ({ currentImage, onImageUpdated }: Prop
 
     const handleCropComplete = useCallback(
         async (croppedBlob: Blob) => {
-            setIsUploading(true);
-
             const file = new File([croppedBlob], 'background-image.jpg', { type: 'image/jpeg' });
             await upload(file);
         },
@@ -73,15 +70,13 @@ export const EditableProfileBackground = ({ currentImage, onImageUpdated }: Prop
     );
 
     const handleModalClose = (open: boolean) => {
-        if (!isUploading) {
+        if (!isProcessing) {
             setCropModalOpen(open);
             if (!open) {
                 setSelectedImageSrc(null);
             }
         }
     };
-
-    const isProcessing = isUploading || uploadState === 'uploading' || uploadState === 'confirming';
 
     return (
         <>

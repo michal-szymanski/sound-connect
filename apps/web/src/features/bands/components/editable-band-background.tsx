@@ -16,7 +16,6 @@ const DEFAULT_GRADIENT = 'linear-gradient(135deg, hsl(var(--primary)/0.1), hsl(v
 export const EditableBandBackground = ({ bandId, currentImage }: Props) => {
     const [cropModalOpen, setCropModalOpen] = useState(false);
     const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const updateBandBackgroundImageMutation = useUpdateBandBackgroundImage(bandId);
@@ -26,17 +25,17 @@ export const EditableBandBackground = ({ bandId, currentImage }: Props) => {
         bandId,
         onSuccess: async (result) => {
             await updateBandBackgroundImageMutation.mutateAsync(result.publicUrl);
-            setIsUploading(false);
             setCropModalOpen(false);
             setSelectedImageSrc(null);
         },
         onError: () => {
-            setIsUploading(false);
         }
     });
 
+    const isProcessing = uploadState === 'requesting' || uploadState === 'uploading' || uploadState === 'confirming';
+
     const handleClick = () => {
-        if (isUploading) return;
+        if (isProcessing) return;
         fileInputRef.current?.click();
     };
 
@@ -64,8 +63,6 @@ export const EditableBandBackground = ({ bandId, currentImage }: Props) => {
 
     const handleCropComplete = useCallback(
         async (croppedBlob: Blob) => {
-            setIsUploading(true);
-
             const file = new File([croppedBlob], 'band-background.jpg', { type: 'image/jpeg' });
             await upload(file);
         },
@@ -73,15 +70,13 @@ export const EditableBandBackground = ({ bandId, currentImage }: Props) => {
     );
 
     const handleModalClose = (open: boolean) => {
-        if (!isUploading) {
+        if (!isProcessing) {
             setCropModalOpen(open);
             if (!open) {
                 setSelectedImageSrc(null);
             }
         }
     };
-
-    const isProcessing = isUploading || uploadState === 'uploading' || uploadState === 'confirming';
 
     return (
         <>
