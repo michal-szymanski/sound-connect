@@ -145,7 +145,6 @@ const createAuthInstance = ({
       defaultCookieAttributes: {
         sameSite: "none",
         secure: true,
-        partitioned: true,
       },
       cookiePrefix: appConfig.appNameNormalized,
     },
