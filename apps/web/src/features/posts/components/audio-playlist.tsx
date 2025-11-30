@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import type { Media } from '@sound-connect/common/types/drizzle';
 import { cn } from '@/shared/lib/utils';
 import { AudioPlayer, type AudioPlayerHandle } from './audio-player';
@@ -13,24 +13,38 @@ export function AudioPlaylist({ media, context = 'default' }: Props) {
     const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [switchingFromTrack, setSwitchingFromTrack] = useState<number | null>(null);
+    const [pendingGrowAnimation, setPendingGrowAnimation] = useState(false);
     const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+
+    const handlePlayerReady = useCallback(() => {
+        if (pendingGrowAnimation) {
+            audioPlayerRef.current?.animateGrow();
+            setPendingGrowAnimation(false);
+            setSwitchingFromTrack(null);
+
+            setTimeout(() => {
+                audioPlayerRef.current?.play();
+            }, 250);
+        }
+    }, [pendingGrowAnimation]);
+
+    const handleTrackPlayPause = async (index: number) => {
+        if (index === currentTrackIndex) {
+            audioPlayerRef.current?.togglePlayPause();
+            return;
+        }
+
+        setSwitchingFromTrack(currentTrackIndex);
+
+        await audioPlayerRef.current?.animateFlatten();
+
+        setPendingGrowAnimation(true);
+        setCurrentTrackIndex(index);
+    };
 
     const currentTrack = media[currentTrackIndex];
 
     if (media.length === 0 || !currentTrack) return null;
-
-    const handleTrackPlayPause = (index: number) => {
-        if (index === currentTrackIndex) {
-            audioPlayerRef.current?.togglePlayPause();
-        } else {
-            setSwitchingFromTrack(currentTrackIndex);
-            setCurrentTrackIndex(index);
-            setTimeout(() => {
-                audioPlayerRef.current?.play();
-                setSwitchingFromTrack(null);
-            }, 100);
-        }
-    };
 
     const currentTrackTitle = currentTrack.title;
 
@@ -44,6 +58,7 @@ export function AudioPlaylist({ media, context = 'default' }: Props) {
                 trackNumber={currentTrackIndex + 1}
                 totalTracks={media.length}
                 onPlayStateChange={setIsPlaying}
+                onReady={handlePlayerReady}
             />
 
             <div className="sr-only" aria-live="polite" aria-atomic="true">

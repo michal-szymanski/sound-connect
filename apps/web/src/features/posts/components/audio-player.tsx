@@ -10,10 +10,88 @@ import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
 import { isServer, isTouchDevice } from '@/utils/env-utils';
 import { AudioPlayButton } from '@/shared/components/audio-play-button';
 
+const MIN_BAR_HEIGHT = 4;
+const BASE_DURATION = 150;
+const MAX_DURATION = 250;
+
+function easeOutCubic(t: number): number {
+    return 1 - Math.pow(1 - t, 3);
+}
+
+function animateWaveformBars(
+    bars: Array<{ x: number; y: number; height: number }>,
+    ctx: CanvasRenderingContext2D,
+    direction: 'flatten' | 'grow',
+    displayHeight: number,
+    barWidth: number,
+    barRadius: number,
+    dpr: number,
+    fillStyle: string,
+    wavesurferWrapper: HTMLElement | null,
+    onComplete: () => void
+): () => void {
+    const startTime = performance.now();
+    const maxHeight = Math.max(...bars.map(b => b.height));
+    let animationId: number;
+
+    function frame(now: number) {
+        const elapsed = now - startTime;
+        const displayWidth = ctx.canvas.width / dpr;
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.save();
+        ctx.scale(dpr, dpr);
+
+        ctx.fillStyle = 'oklch(0.21 0.006 285.75)';
+        ctx.fillRect(0, 0, displayWidth, displayHeight);
+
+        ctx.fillStyle = fillStyle;
+
+        let allComplete = true;
+
+        for (const bar of bars) {
+            const heightRatio = bar.height / maxHeight;
+            const duration = BASE_DURATION + (MAX_DURATION - BASE_DURATION) * heightRatio;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = easeOutCubic(progress);
+
+            let currentHeight: number;
+            if (direction === 'flatten') {
+                currentHeight = bar.height - (bar.height - MIN_BAR_HEIGHT) * eased;
+            } else {
+                currentHeight = MIN_BAR_HEIGHT + (bar.height - MIN_BAR_HEIGHT) * eased;
+            }
+
+            const y = (displayHeight - currentHeight) / 2;
+
+            ctx.beginPath();
+            ctx.roundRect(bar.x, y, barWidth, currentHeight, barRadius);
+            ctx.fill();
+
+            if (progress < 1) allComplete = false;
+        }
+
+        ctx.restore();
+
+        if (allComplete) {
+            onComplete();
+        } else {
+            animationId = requestAnimationFrame(frame);
+        }
+    }
+
+    animationId = requestAnimationFrame(frame);
+
+    return () => {
+        cancelAnimationFrame(animationId);
+    };
+}
+
 export type AudioPlayerHandle = {
     togglePlayPause: () => void;
     play: () => void;
     pause: () => void;
+    animateFlatten: () => Promise<void>;
+    animateGrow: () => void;
 };
 
 type Props = {
@@ -25,16 +103,18 @@ type Props = {
     totalTracks?: number;
     showPlayButton?: boolean;
     onPlayStateChange?: (isPlaying: boolean) => void;
+    onReady?: () => void;
 };
 
 type ChannelData = Array<Float32Array | number[]>;
 
 export const AudioPlayer = forwardRef<AudioPlayerHandle, Props>(function AudioPlayer(
-    { src, className, context = 'default', title, trackNumber, totalTracks, showPlayButton = true, onPlayStateChange },
+    { src, className, context = 'default', title, trackNumber, totalTracks, showPlayButton = true, onPlayStateChange, onReady },
     ref
 ) {
     const waveformRef = useRef<HTMLDivElement>(null);
     const hoverCanvasRef = useRef<HTMLCanvasElement>(null);
+    const wavesurferWrapperRef = useRef<HTMLElement | null>(null);
     const barDataRef = useRef<Array<{ x: number; y: number; height: number }>>([]);
     const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0, displayWidth: 0, displayHeight: 64 });
     const [duration, setDuration] = useState(0);
@@ -44,12 +124,18 @@ export const AudioPlayer = forwardRef<AudioPlayerHandle, Props>(function AudioPl
     const isHoveringVolumeRef = useRef(false);
     const isClosingRef = useRef(false);
     const popoverContentRef = useRef<HTMLDivElement>(null);
+    const animationCancelRef = useRef<(() => void) | null>(null);
     const { volume, isMuted, setVolume, setMuted, register, unregister, notifyPlay, activeVolumePopoverId, setActiveVolumePopover } = useMediaPlayback();
 
     const instanceId = useMemo(() => `audio-${context}-${src}`, [context, src]);
     const isVolumeOpen = activeVolumePopoverId === instanceId;
 
     const touchDevice = isTouchDevice();
+
+    const prefersReducedMotion = useMemo(() => {
+        if (isServer()) return false;
+        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }, []);
 
     const plugins = useMemo(() => {
         if (isServer()) return [];
@@ -139,9 +225,83 @@ export const AudioPlayer = forwardRef<AudioPlayerHandle, Props>(function AudioPl
         () => ({
             togglePlayPause: () => wavesurfer?.playPause(),
             play: () => wavesurfer?.play(),
-            pause: () => wavesurfer?.pause()
+            pause: () => wavesurfer?.pause(),
+            animateFlatten: () => {
+                if (prefersReducedMotion) return Promise.resolve();
+
+                const bars = barDataRef.current;
+                const canvas = hoverCanvasRef.current;
+                const wrapper = wavesurferWrapperRef.current;
+                if (!bars.length || !canvas) return Promise.resolve();
+
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return Promise.resolve();
+
+                const dpr = window.devicePixelRatio || 1;
+
+                return new Promise((resolve) => {
+                    if (animationCancelRef.current) {
+                        animationCancelRef.current();
+                    }
+
+                    animationCancelRef.current = animateWaveformBars(
+                        bars,
+                        ctx,
+                        'flatten',
+                        canvasSize.displayHeight,
+                        3,
+                        2,
+                        dpr,
+                        'oklch(0.55 0.02 240)',
+                        wrapper,
+                        () => {
+                            const ctx = hoverCanvasRef.current?.getContext('2d');
+                            if (ctx) {
+                                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                            }
+                            resolve();
+                        }
+                    );
+                });
+            },
+            animateGrow: () => {
+                if (prefersReducedMotion) return;
+
+                const bars = barDataRef.current;
+                const canvas = hoverCanvasRef.current;
+                const wrapper = wavesurferWrapperRef.current;
+                if (!bars.length || !canvas) return;
+
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return;
+
+                const dpr = window.devicePixelRatio || 1;
+
+                if (animationCancelRef.current) {
+                    animationCancelRef.current();
+                }
+
+                animationCancelRef.current = animateWaveformBars(
+                    bars,
+                    ctx,
+                    'grow',
+                    canvasSize.displayHeight,
+                    3,
+                    2,
+                    dpr,
+                    'oklch(0.55 0.02 240)',
+                    wrapper,
+                    () => {
+                        const ctx = hoverCanvasRef.current?.getContext('2d');
+                        if (ctx) {
+                            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                        }
+                        animationCancelRef.current = null;
+                    }
+                );
+            }
         }),
-        [wavesurfer]
+        [wavesurfer, prefersReducedMotion, canvasSize]
     );
 
     const drawHoverWaveform = useCallback(
@@ -204,11 +364,13 @@ export const AudioPlayer = forwardRef<AudioPlayerHandle, Props>(function AudioPl
         register(instanceId, wavesurfer, 'audio');
         console.log('[AudioPlayer] Registered:', instanceId);
 
-        const onReady = () => {
+        const onReadyHandler = () => {
             setDuration(wavesurfer.getDuration());
 
             const wrapper = wavesurfer.getWrapper();
             if (!wrapper) return;
+
+            wavesurferWrapperRef.current = wrapper;
 
             const dpr = window.devicePixelRatio || 1;
             const displayWidth = wrapper.clientWidth;
@@ -256,6 +418,8 @@ export const AudioPlayer = forwardRef<AudioPlayerHandle, Props>(function AudioPl
                 bars.push({ x, y, height: barHeight });
             }
             barDataRef.current = bars;
+
+            onReady?.();
         };
 
         const onSeeking = () => {
@@ -277,19 +441,19 @@ export const AudioPlayer = forwardRef<AudioPlayerHandle, Props>(function AudioPl
             onPlayStateChange?.(false);
         };
 
-        wavesurfer.on('ready', onReady);
+        wavesurfer.on('ready', onReadyHandler);
         wavesurfer.on('seeking', onSeeking);
         wavesurfer.on('play', onPlay);
         wavesurfer.on('pause', onPause);
 
         return () => {
-            wavesurfer.un('ready', onReady);
+            wavesurfer.un('ready', onReadyHandler);
             wavesurfer.un('seeking', onSeeking);
             wavesurfer.un('play', onPlay);
             wavesurfer.un('pause', onPause);
             unregister(instanceId);
         };
-    }, [wavesurfer, register, unregister, notifyPlay, volume, isMuted, instanceId, onPlayStateChange]);
+    }, [wavesurfer, register, unregister, notifyPlay, volume, isMuted, instanceId, onPlayStateChange, onReady]);
 
     useEffect(() => {
         return () => {
