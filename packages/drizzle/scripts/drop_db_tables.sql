@@ -1,7 +1,11 @@
 -- Drop all tables from Sound Connect D1 database
 -- WARNING: This will permanently delete ALL data and tables!
 
+BEGIN;
+
 DROP TABLE IF EXISTS discovery_analytics;
+DROP TABLE IF EXISTS music_samples;
+DROP TABLE IF EXISTS user_onboarding;
 DROP TABLE IF EXISTS band_applications;
 DROP TABLE IF EXISTS upload_sessions;
 DROP TABLE IF EXISTS geocoding_cache;
@@ -11,6 +15,8 @@ DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS posts_reactions;
 DROP TABLE IF EXISTS posts;
 DROP TABLE IF EXISTS messages;
+DROP TABLE IF EXISTS chat_room_participants;
+DROP TABLE IF EXISTS chat_rooms;
 DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS bands_followers;
 DROP TABLE IF EXISTS bands_members;
@@ -28,3 +34,5 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS users_fts;
 DROP TABLE IF EXISTS d1_migrations;
 DELETE FROM sqlite_sequence;
+
+COMMIT;
