@@ -20,6 +20,7 @@ export type BandMemberPreview = z.infer<typeof bandMemberPreviewSchema>;
 export const bandDiscoveryResultSchema = z.object({
     id: z.number(),
     name: z.string(),
+    username: z.string(),
     profileImageUrl: z.string().nullable(),
     primaryGenre: z.enum(GenreEnum).nullable(),
     city: z.string().nullable(),

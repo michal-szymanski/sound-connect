@@ -44,8 +44,6 @@ export function CommentItem({ commentData, currentUser, postId, onReply, isReply
 
     const isBandComment = commentData.comment.authorType === 'band';
     const authorName = isBandComment ? (commentData.band?.name ?? 'Band') : (commentData.user?.name ?? 'User');
-    const linkTo = isBandComment ? '/bands/$id' : '/users/$id';
-    const linkParams = isBandComment ? { id: String(commentData.comment.bandId!) } : { id: commentData.comment.userId };
 
     return (
         <div className="flex gap-2">
@@ -61,9 +59,13 @@ export function CommentItem({ commentData, currentUser, postId, onReply, isReply
             />
             <div className="flex-1">
                 <div className="flex items-center gap-2">
-                    <Link to={linkTo} params={linkParams} className="text-foreground text-sm font-semibold hover:underline">
-                        {authorName}
-                    </Link>
+                    {isBandComment && commentData.band?.username ? (
+                        <Link to="/profile/$username" params={{ username: commentData.band.username }} className="text-foreground text-sm font-semibold hover:underline">
+                            {authorName}
+                        </Link>
+                    ) : (
+                        <span className="text-foreground text-sm font-semibold">{authorName}</span>
+                    )}
                     {isBandComment && <span className="text-muted-foreground bg-muted rounded px-2 py-0.5 text-xs font-normal">Band</span>}
                     <span className="text-muted-foreground text-xs">{commentElapsedTime}</span>
                 </div>

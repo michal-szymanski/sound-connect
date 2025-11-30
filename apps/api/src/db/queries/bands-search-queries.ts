@@ -48,6 +48,7 @@ export async function searchBands(db: D1Database, params: BandSearchParams) {
         .select({
             id: bandsTable.id,
             name: bandsTable.name,
+            username: bandsTable.username,
             description: bandsTable.description,
             primaryGenre: bandsTable.primaryGenre,
             city: bandsTable.city,
@@ -93,6 +94,7 @@ export async function searchBands(db: D1Database, params: BandSearchParams) {
         data: paginatedResults.map((row) => ({
             id: row.id,
             name: row.name,
+            username: row.username,
             description: row.description,
             primaryGenre: row.primaryGenre,
             city: row.city,

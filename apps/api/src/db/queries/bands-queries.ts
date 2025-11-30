@@ -12,6 +12,7 @@ export const createBand = async (data: CreateBandInput & { latitude: number; lon
         .insert(bandsTable)
         .values({
             name: data.name,
+            username: data.username,
             description: data.description,
             primaryGenre: data.primaryGenre,
             city: data.city,
@@ -21,6 +22,7 @@ export const createBand = async (data: CreateBandInput & { latitude: number; lon
             longitude: data.longitude,
             lookingFor: data.lookingFor ?? null,
             profileImageUrl: null,
+            backgroundImageUrl: null,
             createdAt: now,
             updatedAt: null
         })
@@ -102,6 +104,7 @@ export const updateBand = async (bandId: number, data: UpdateBandInput & { latit
     };
 
     if (data.name !== undefined) updateData['name'] = data.name;
+    if (data.username !== undefined) updateData['username'] = data.username;
     if (data.description !== undefined) updateData['description'] = data.description;
     if (data.city !== undefined) updateData['city'] = data.city;
     if (data.state !== undefined) updateData['state'] = data.state;
@@ -208,6 +211,7 @@ export const getUserBands = async (userId: string): Promise<BandMembership[]> =>
         .select({
             id: bandsTable.id,
             name: bandsTable.name,
+            username: bandsTable.username,
             primaryGenre: bandsTable.primaryGenre,
             city: bandsTable.city,
             state: bandsTable.state,
@@ -223,6 +227,7 @@ export const getUserBands = async (userId: string): Promise<BandMembership[]> =>
     return results.map((r) => ({
         id: r.id,
         name: r.name,
+        username: r.username,
         primaryGenre: r.primaryGenre,
         city: r.city,
         state: r.state,
@@ -274,4 +279,47 @@ export const updateBandBackgroundImage = async (bandId: number, imageUrl: string
     }
 
     return updated;
+};
+
+export const getBandByUsername = async (username: string, currentUserId?: string): Promise<BandWithMembers | null> => {
+    const normalized = username.toLowerCase();
+
+    const [band] = await db.select().from(bandsTable).where(sql`LOWER(${bandsTable.username}) = ${normalized}`).limit(1);
+
+    if (!band) {
+        return null;
+    }
+
+    const membersResults = await db
+        .select({
+            userId: bandsMembersTable.userId,
+            name: users.name,
+            profileImageUrl: users.image,
+            isAdmin: bandsMembersTable.isAdmin,
+            joinedAt: bandsMembersTable.joinedAt
+        })
+        .from(bandsMembersTable)
+        .innerJoin(users, eq(bandsMembersTable.userId, users.id))
+        .where(eq(bandsMembersTable.bandId, band.id))
+        .orderBy(desc(bandsMembersTable.isAdmin), bandsMembersTable.joinedAt);
+
+    const members = membersResults.map((m) => ({
+        userId: m.userId,
+        name: m.name,
+        profileImageUrl: m.profileImageUrl,
+        isAdmin: Boolean(m.isAdmin),
+        joinedAt: m.joinedAt
+    }));
+
+    let isUserAdmin: boolean | undefined = undefined;
+    if (currentUserId) {
+        const adminCheck = members.find((m) => m.userId === currentUserId);
+        isUserAdmin = adminCheck?.isAdmin ?? false;
+    }
+
+    return {
+        ...band,
+        members,
+        isUserAdmin
+    };
 };

@@ -81,15 +81,15 @@ export function FollowersModal({ followers, isLoading, open, onOpenChange }: Pro
                             {followers.map((follower) => (
                                 <div key={follower.id} className="flex items-center justify-between gap-3 rounded-lg p-2">
                                     <Link
-                                        to="/users/$username"
-                                        params={{ username: follower.username }}
+                                        to="/profile/$username"
+                                        params={{ username: follower.username ?? follower.id.slice(0, 8) }}
                                         className="hover:bg-accent flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2 transition-colors"
                                         onClick={() => onOpenChange(false)}
                                     >
                                         <ProfileAvatar profile={follower} type="user" className="h-10 w-10 shrink-0" />
                                         <div className="min-w-0 flex-1">
                                             <p className="truncate text-sm font-medium">{follower.name}</p>
-                                            <p className="text-muted-foreground truncate text-xs">@{follower.username}</p>
+                                            <p className="text-muted-foreground truncate text-xs">@{follower.username ?? follower.id.slice(0, 8)}</p>
                                         </div>
                                     </Link>
                                     {canFollow(follower.id) && (

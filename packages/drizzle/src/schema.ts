@@ -92,6 +92,7 @@ export const bandsTable = sqliteTable(
     {
         id: integer('id', { mode: 'number' }).primaryKey({ autoIncrement: true }),
         name: text('name').notNull(),
+        username: text('username'),
         description: text('description'),
         primaryGenre: text('primary_genre', { enum: GenreEnum }),
         city: text('city'),
@@ -108,7 +109,8 @@ export const bandsTable = sqliteTable(
     (table) => ({
         primaryGenreIdx: index('idx_bands_primary_genre').on(table.primaryGenre),
         locationIdx: index('idx_bands_location').on(table.latitude, table.longitude),
-        cityIdx: index('idx_bands_city').on(table.city)
+        cityIdx: index('idx_bands_city').on(table.city),
+        usernameIdx: index('idx_bands_username_lower').on(sql`LOWER(${table.username})`)
     })
 );
 

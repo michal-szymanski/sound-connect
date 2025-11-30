@@ -1,10 +1,8 @@
-import { createFileRoute, notFound, redirect, Link } from '@tanstack/react-router';
 import { useState } from 'react';
-import type { CreateBandInput, UpdateBandInput, BandWithMembers } from '@sound-connect/common/types/bands';
-import type { GetBandApplicationsResponse } from '@sound-connect/common/types/band-applications';
+import type { BandWithMembers } from '@sound-connect/common/types/bands';
+import type { CreateBandInput, UpdateBandInput } from '@sound-connect/common/types/bands';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { Button } from '@/shared/components/ui/button';
-import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { NavigationTabs, NavigationTabsContent } from '@/shared/components/common/navigation-tabs';
 import {
     AlertDialog,
@@ -26,78 +24,19 @@ import { ApplyToBandButton } from '@/features/bands/components/apply-to-band-but
 import { BandApplicationsList } from '@/features/bands/components/band-applications-list';
 import { EditableBandBackground } from '@/features/bands/components/editable-band-background';
 import { useBand, useUpdateBand, useDeleteBand, useAddBandMember, useRemoveBandMember } from '@/features/bands/hooks/use-bands';
-import { getBand } from '@/features/bands/server-functions/bands';
-import { getBandApplications, getUserApplicationStatus } from '@/features/bands/server-functions/band-applications';
 import { useAuth } from '@/shared/lib/react-query';
 import { ProfileSection } from '@/features/profile/components/profile-section';
-import { Music2, Users, Search, AlertCircle, UserSearch, FileText } from 'lucide-react';
+import { Music2, Users, Search, UserSearch, FileText } from 'lucide-react';
 import { Badge } from '@/shared/components/ui/badge';
+import { Link } from '@tanstack/react-router';
 
-type LoaderSuccess = {
-    type: 'success';
-    data: {
-        band: BandWithMembers;
-        applications: GetBandApplicationsResponse | null;
-        applicationStatus: { hasApplied: boolean; isRejected: boolean } | null;
-    };
+type Props = {
+    profileData: BandWithMembers;
 };
 
-type LoaderError = {
-    type: 'error';
-    message: string;
-};
-
-type LoaderData = LoaderSuccess | LoaderError;
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export const Route = createFileRoute('/(main)/bands/$id' as any)({
-    component: RouteComponent,
-    beforeLoad: async ({ context: _context }: any) => {
-        const { user } = _context;
-        if (!user) {
-            throw redirect({
-                to: '/sign-in'
-            });
-        }
-    },
-    loader: async ({ params, context: _context }: any): Promise<LoaderData> => {
-        const bandId = parseInt(params.id, 10);
-        if (isNaN(bandId)) {
-            throw notFound();
-        }
-
-        const bandResult = await getBand({ data: { bandId } });
-        if (!bandResult.success) {
-            return {
-                type: 'error',
-                message: bandResult.body?.message || 'Failed to load band'
-            };
-        }
-
-        const band = bandResult.body;
-        const isUserAdmin = band.isUserAdmin || false;
-
-        const [applicationsResult, applicationStatusResult] = await Promise.all([
-            isUserAdmin ? getBandApplications({ data: { bandId, status: 'pending', limit: 100 } }) : Promise.resolve(null),
-            !isUserAdmin ? getUserApplicationStatus({ data: { bandId } }) : Promise.resolve(null)
-        ]);
-
-        return {
-            type: 'success',
-            data: {
-                band,
-                applications: applicationsResult?.success ? applicationsResult.body : null,
-                applicationStatus: applicationStatusResult?.success ? applicationStatusResult.body : null
-            }
-        };
-    }
-});
-
-function RouteComponent() {
-    const loaderData = Route.useLoaderData();
+export function BandProfile({ profileData: initialBand }: Props) {
     const { data: auth } = useAuth();
-
-    const bandId = loaderData.type === 'success' ? loaderData.data.band.id : 0;
+    const bandId = initialBand.id;
     const { data: freshBand } = useBand(bandId);
     const updateBand = useUpdateBand(bandId);
     const deleteBand = useDeleteBand();
@@ -109,22 +48,10 @@ function RouteComponent() {
     const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-    if (loaderData.type === 'error') {
-        return (
-            <div className="w-full">
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>{loaderData.message}</AlertDescription>
-                </Alert>
-            </div>
-        );
-    }
-
-    const band = freshBand || loaderData.data.band;
-    const { applications, applicationStatus } = loaderData.data;
+    const band = freshBand || initialBand;
     const isUserAdmin = band.isUserAdmin || false;
 
-    const pendingApplicationsCount = applications?.total || 0;
+    const pendingApplicationsCount = 0;
 
     const isUserMember = auth?.user ? band.members.some((m: { userId: string }) => m.userId === auth.user?.id) : false;
     const existingMemberIds = band.members.map((m: { userId: string }) => m.userId);
@@ -225,6 +152,7 @@ function RouteComponent() {
                         <BandForm
                             initialData={{
                                 name: band.name,
+                                username: band.username ?? undefined,
                                 description: band.description ?? undefined,
                                 city: band.city ?? undefined,
                                 state: band.state ?? undefined,
@@ -291,8 +219,8 @@ function RouteComponent() {
                                                         bandName={band.name}
                                                         lookingFor={band.lookingFor}
                                                         isUserMember={isUserMember}
-                                                        hasApplied={applicationStatus?.hasApplied || false}
-                                                        isRejected={applicationStatus?.isRejected || false}
+                                                        hasApplied={false}
+                                                        isRejected={false}
                                                     />
                                                 </div>
                                             )}

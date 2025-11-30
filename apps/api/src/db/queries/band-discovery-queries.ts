@@ -16,6 +16,7 @@ import type { DiscoveryAnalyticsEvent } from '@sound-connect/common/types/band-d
 type BandWithCounts = {
     id: number;
     name: string;
+    username: string | null;
     profileImageUrl: string | null;
     primaryGenre: string | null;
     city: string | null;
@@ -156,6 +157,7 @@ export const discoverBands = async (db: D1Database, userId: string, params: Band
         .select({
             id: bandsTable.id,
             name: bandsTable.name,
+            username: bandsTable.username,
             profileImageUrl: bandsTable.profileImageUrl,
             primaryGenre: bandsTable.primaryGenre,
             city: bandsTable.city,
@@ -184,6 +186,7 @@ export const discoverBands = async (db: D1Database, userId: string, params: Band
             return {
                 id: band.id,
                 name: band.name,
+                username: band.username,
                 profileImageUrl: band.profileImageUrl,
                 primaryGenre: band.primaryGenre,
                 city: band.city,

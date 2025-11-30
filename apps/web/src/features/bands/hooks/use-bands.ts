@@ -67,7 +67,7 @@ export const useCreateBand = () => {
         onSuccess: (band) => {
             queryClient.invalidateQueries({ queryKey: ['user-bands'] });
             toast.success('Band created successfully');
-            navigate({ to: `/bands/${band.id}` });
+            navigate({ to: `/profile/${band.username}` });
         },
         onError: (error: Error) => {
             toast.error(error.message);

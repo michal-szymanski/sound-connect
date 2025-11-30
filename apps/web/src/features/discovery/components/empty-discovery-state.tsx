@@ -1,11 +1,10 @@
 import { AlertCircle, ArrowRight, Search } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/shared/components/ui/alert';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { BlurFade } from '@/shared/components/ui/blur-fade';
 import { DotPattern } from '@/shared/components/ui/dot-pattern';
 import { cn } from '@/shared/lib/utils';
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useAuth } from '@/shared/lib/react-query';
 
 type Props = {
@@ -37,14 +36,14 @@ export function EmptyDiscoveryState({ type }: Props) {
                     <BlurFade delay={0.4} inView>
                         <Button
                             onClick={() => {
-                                if (auth?.user?.id) {
-                                    navigate({ to: '/users/$id', params: { id: auth.user.id } });
+                                if (auth?.user?.username) {
+                                    navigate({ to: '/profile/$username', params: { username: auth.user.username } });
                                 }
                             }}
                             size="lg"
                             variant="default"
                             className="group w-full sm:w-auto"
-                            disabled={!auth?.user?.id}
+                            disabled={!auth?.user?.username}
                         >
                             Set Up Your Profile
                             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
@@ -56,15 +55,28 @@ export function EmptyDiscoveryState({ type }: Props) {
     }
 
     return (
-        <Alert>
-            <Search className="h-4 w-4" />
-            <AlertTitle>No bands match your profile right now</AlertTitle>
-            <AlertDescription className="mt-2">Try checking back later or search all bands manually.</AlertDescription>
-            <div className="col-start-2 mt-4">
-                <Button onClick={() => navigate({ to: '/bands/search' })} size="lg" className="w-full sm:w-auto">
-                    Search All Bands
-                </Button>
-            </div>
-        </Alert>
+        <Card className="border-border/40 relative w-full overflow-hidden">
+            <DotPattern className={cn('text-primary/20 [mask-image:radial-gradient(300px_circle_at_center,white,transparent)]')} />
+            <CardContent className="relative flex flex-col items-center justify-center py-12">
+                <BlurFade delay={0.1} inView>
+                    <div className="bg-primary/10 mb-4 rounded-full p-4">
+                        <Search className="text-primary h-12 w-12" aria-hidden="true" />
+                    </div>
+                </BlurFade>
+                <BlurFade delay={0.2} inView>
+                    <h3 className="mb-2 text-lg font-semibold">No bands match your profile right now</h3>
+                </BlurFade>
+                <BlurFade delay={0.3} inView>
+                    <p className="text-muted-foreground mb-6 max-w-sm text-center text-sm">
+                        Try checking back later or search all bands manually.
+                    </p>
+                </BlurFade>
+                <BlurFade delay={0.4} inView>
+                    <Button asChild size="lg">
+                        <Link to="/bands/search">Search All Bands</Link>
+                    </Button>
+                </BlurFade>
+            </CardContent>
+        </Card>
     );
 }

@@ -44,8 +44,8 @@ export function BandFollowersModal({ bandId, open, onOpenChange }: Props) {
                             {data.followers.map((follower) => (
                                 <Link
                                     key={follower.userId}
-                                    to="/users/$id"
-                                    params={{ id: follower.userId }}
+                                    to="/profile/$username"
+                                    params={{ username: follower.username }}
                                     className="hover:bg-accent flex items-center gap-3 rounded-lg p-2 transition-colors"
                                     onClick={() => onOpenChange(false)}
                                 >

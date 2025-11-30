@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const bandFollowerSchema = z.object({
     userId: z.string(),
+    username: z.string(),
     name: z.string(),
     profileImageUrl: z.string().nullable(),
     primaryInstrument: z.string().nullable(),

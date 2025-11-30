@@ -1,5 +1,5 @@
 import { schema } from '@/drizzle';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, isNotNull } from 'drizzle-orm';
 import type { CreateBandApplicationInput, BandApplicationWithUser, BandApplication } from '@sound-connect/common/types/band-applications';
 import { db } from '../index';
 
@@ -41,6 +41,7 @@ export const getBandApplications = async (
             id: bandApplicationsTable.id,
             bandId: bandApplicationsTable.bandId,
             userId: bandApplicationsTable.userId,
+            username: users.username,
             userName: users.name,
             userImage: users.image,
             message: bandApplicationsTable.message,
@@ -53,7 +54,7 @@ export const getBandApplications = async (
         })
         .from(bandApplicationsTable)
         .innerJoin(users, eq(bandApplicationsTable.userId, users.id))
-        .where(and(eq(bandApplicationsTable.bandId, bandId), eq(bandApplicationsTable.status, status)))
+        .where(and(eq(bandApplicationsTable.bandId, bandId), eq(bandApplicationsTable.status, status), isNotNull(users.username)))
         .orderBy(desc(bandApplicationsTable.createdAt))
         .limit(limit)
         .offset(offset);
@@ -62,6 +63,7 @@ export const getBandApplications = async (
         id: app.id,
         bandId: app.bandId,
         userId: app.userId,
+        username: app.username as string,
         userName: app.userName,
         userImage: app.userImage,
         message: app.message,

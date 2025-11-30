@@ -48,6 +48,7 @@ export const createBandPost = async (bandId: number, userId: string, data: Creat
         band: {
             id: band.id,
             name: band.name,
+            username: band.username,
             profileImageUrl: band.profileImageUrl
         },
         media
@@ -68,6 +69,7 @@ export const getBandPosts = async (bandId: number, page: number = 1, limit: numb
             createdAt: postsTable.createdAt,
             updatedAt: postsTable.updatedAt,
             bandName: bandsTable.name,
+            bandUsername: bandsTable.username,
             bandProfileImageUrl: bandsTable.profileImageUrl
         })
         .from(postsTable)
@@ -138,6 +140,7 @@ export const getBandPosts = async (bandId: number, page: number = 1, limit: numb
         band: {
             id: post.bandId!,
             name: post.bandName!,
+            username: post.bandUsername!,
             profileImageUrl: post.bandProfileImageUrl
         },
         reactions: reactions.filter((r) => r.postId === post.id),

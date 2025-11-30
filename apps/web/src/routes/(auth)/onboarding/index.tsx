@@ -292,7 +292,7 @@ function RouteComponent() {
                     />
                 );
             case 7:
-                return <StepUsername value={formData.username} onChange={(value) => setFormData({ ...formData, username: value })} currentUsername={auth?.user?.username} />;
+                return <StepUsername value={formData.username} onChange={(value) => setFormData({ ...formData, username: value })} currentUsername={auth?.user?.username ?? undefined} />;
             default:
                 return null;
         }

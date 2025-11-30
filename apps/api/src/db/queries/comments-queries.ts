@@ -26,6 +26,7 @@ export async function getCommentsByPostId(postId: number) {
             band: {
                 id: bandsTable.id,
                 name: bandsTable.name,
+                username: bandsTable.username,
                 profileImageUrl: bandsTable.profileImageUrl
             }
         })
@@ -72,6 +73,7 @@ export async function getCommentsByPostId(postId: number) {
             band: {
                 id: bandsTable.id,
                 name: bandsTable.name,
+                username: bandsTable.username,
                 profileImageUrl: bandsTable.profileImageUrl
             }
         })

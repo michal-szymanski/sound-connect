@@ -227,6 +227,7 @@ export type Media = z.infer<typeof mediaSchema>;
 export const createBandSchema = z.object({
     id: z.number(),
     name: z.string(),
+    username: z.string().nullable(),
     description: z.string().nullable(),
     primaryGenre: z.string().nullable(),
     city: z.string().nullable(),
@@ -236,6 +237,7 @@ export const createBandSchema = z.object({
     longitude: z.number().nullable(),
     lookingFor: z.string().nullable(),
     profileImageUrl: z.string().nullable(),
+    backgroundImageUrl: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string().nullable()
 });
@@ -243,6 +245,7 @@ export const createBandSchema = z.object({
 export const bandSchema = z.object({
     id: z.number(),
     name: z.string(),
+    username: z.string().nullable(),
     description: z.string().nullable(),
     primaryGenre: z.string().nullable(),
     city: z.string().nullable(),
@@ -252,6 +255,7 @@ export const bandSchema = z.object({
     longitude: z.number().nullable(),
     lookingFor: z.string().nullable(),
     profileImageUrl: z.string().nullable(),
+    backgroundImageUrl: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string().nullable()
 });

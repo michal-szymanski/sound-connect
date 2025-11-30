@@ -16,6 +16,7 @@ import { notificationQueueMessageSchema } from '@sound-connect/common/types/noti
 import { bandSearchParamsSchema } from '@sound-connect/common/types/band-search';
 import { sendBandMessageSchema, chatHistoryResponseSchema } from '@sound-connect/common/types/messaging';
 import { messageSchema } from '@sound-connect/common/types/drizzle';
+import { isUsernameGloballyAvailable } from '@/api/db/queries/profile-queries';
 import {
     createBand,
     getBandById,
@@ -89,6 +90,11 @@ bandsRoutes.post('/bands', async (c) => {
     const body = await c.req.json();
     const data = createBandInputSchema.parse(body);
 
+    const usernameCheck = await isUsernameGloballyAvailable(data.username);
+    if (!usernameCheck.available) {
+        throw new HTTPException(409, { message: 'Username is already taken' });
+    }
+
     const band = await createBand(data, user.id);
 
     return c.json(band, 201);
@@ -121,6 +127,13 @@ bandsRoutes.patch('/bands/:id', async (c) => {
 
     const body = await c.req.json();
     const data = updateBandInputSchema.parse(body);
+
+    if (data.username) {
+        const usernameCheck = await isUsernameGloballyAvailable(data.username, undefined, id);
+        if (!usernameCheck.available) {
+            throw new HTTPException(409, { message: 'Username is already taken' });
+        }
+    }
 
     const band = await getBandById(id);
     if (!band) {

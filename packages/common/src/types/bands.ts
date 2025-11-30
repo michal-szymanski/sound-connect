@@ -1,8 +1,10 @@
 import { z } from 'zod';
 import { GenreEnum } from './profile-enums';
+import { usernameSchema } from './settings';
 
 export const createBandInputSchema = z.object({
     name: z.string().min(1, 'Band name is required').max(100, 'Band name must be 100 characters or less'),
+    username: usernameSchema,
     description: z.string().min(1, 'Bio is required').max(500, 'Bio must be 500 characters or less'),
     city: z.string().min(1, 'City is required').max(100),
     state: z.string().min(1, 'State is required').max(100),
@@ -17,6 +19,7 @@ export type CreateBandInput = z.infer<typeof createBandInputSchema>;
 
 export const updateBandInputSchema = z.object({
     name: z.string().min(1).max(100).optional(),
+    username: usernameSchema.optional(),
     description: z.string().min(1).max(500).optional(),
     city: z.string().min(1).max(100).optional(),
     state: z.string().min(1).max(100).optional(),
@@ -32,6 +35,7 @@ export type UpdateBandInput = z.infer<typeof updateBandInputSchema>;
 export const bandSchema = z.object({
     id: z.number(),
     name: z.string(),
+    username: z.string().nullable(),
     description: z.string().nullable(),
     city: z.string().nullable(),
     state: z.string().nullable(),
@@ -74,6 +78,7 @@ export type AddBandMemberInput = z.infer<typeof addBandMemberInputSchema>;
 export const bandMembershipSchema = z.object({
     id: z.number(),
     name: z.string(),
+    username: z.string().nullable(),
     primaryGenre: z.enum(GenreEnum).nullable(),
     city: z.string().nullable(),
     state: z.string().nullable(),

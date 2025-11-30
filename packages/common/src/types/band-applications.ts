@@ -46,6 +46,7 @@ export const bandApplicationSchema = z.object({
 export type BandApplication = z.infer<typeof bandApplicationSchema>;
 
 export const bandApplicationWithUserSchema = bandApplicationSchema.extend({
+    username: z.string(),
     userName: z.string(),
     userImage: z.string().nullable()
 });

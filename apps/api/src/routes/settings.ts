@@ -29,7 +29,8 @@ import {
 import { schema } from '@/drizzle';
 import { db } from '@/api/db';
 import { eq, and, sql } from 'drizzle-orm';
-import { getUserById, isUsernameAvailable, updateUsername } from '@/api/db/queries/users-queries';
+import { getUserById, updateUsername } from '@/api/db/queries/users-queries';
+import { isUsernameGloballyAvailable } from '@/api/db/queries/profile-queries';
 
 const settingsRoutes = new Hono<HonoContext>();
 
@@ -430,10 +431,10 @@ settingsRoutes.post('/users/username/check', async (c) => {
     const body = await c.req.json();
     const { username } = checkUsernameAvailabilitySchema.parse(body);
 
-    const available = await isUsernameAvailable(username);
+    const result = await isUsernameGloballyAvailable(username);
 
     const response = checkUsernameAvailabilityResponseSchema.parse({
-        available,
+        available: result.available,
         username
     });
 
@@ -446,9 +447,9 @@ settingsRoutes.patch('/users/me/username', async (c) => {
     const { username } = updateUsernameSchema.parse(body);
 
     if (username !== null) {
-        const available = await isUsernameAvailable(username);
+        const result = await isUsernameGloballyAvailable(username, currentUser.id);
 
-        if (!available) {
+        if (!result.available) {
             throw new HTTPException(409, { message: 'Username is already taken' });
         }
     }

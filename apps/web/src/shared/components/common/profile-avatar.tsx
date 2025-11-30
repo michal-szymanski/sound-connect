@@ -31,12 +31,9 @@ const ProfileAvatar = ({ profile, type = 'user', className, fallbackClassName, l
         </Avatar>
     );
 
-    if (linkToProfile) {
-        const to = isBand ? '/bands/$id' : '/users/$id';
-        const params = { id: isBand ? profile.id.toString() : (profile.username ?? '') };
-
+    if (linkToProfile && profile.username) {
         return (
-            <Link to={to} params={params} className="shrink-0">
+            <Link to="/profile/$username" params={{ username: profile.username }} className="shrink-0">
                 {avatarContent}
             </Link>
         );

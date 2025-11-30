@@ -99,6 +99,7 @@ export type PostStatus = z.infer<typeof postStatusSchema>;
 export const bandInfoSchema = z.object({
     id: z.number(),
     name: z.string(),
+    username: z.string(),
     profileImageUrl: z.string().nullable()
 });
 

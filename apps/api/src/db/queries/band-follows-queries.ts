@@ -1,5 +1,5 @@
 import { schema } from '@/drizzle';
-import { eq, and, count as drizzleCount, sql } from 'drizzle-orm';
+import { eq, and, count as drizzleCount, sql, isNotNull } from 'drizzle-orm';
 import { db } from '../index';
 
 const { bandsFollowersTable, users, userProfilesTable, bandsTable } = schema;
@@ -51,6 +51,7 @@ export const getBandFollowers = async (bandId: number, page: number = 1, limit: 
     const followers = await db
         .select({
             userId: users.id,
+            username: users.username,
             name: users.name,
             profileImageUrl: users.image,
             primaryInstrument: userProfilesTable.primaryInstrument,
@@ -59,7 +60,7 @@ export const getBandFollowers = async (bandId: number, page: number = 1, limit: 
         .from(bandsFollowersTable)
         .innerJoin(users, eq(bandsFollowersTable.followerId, users.id))
         .leftJoin(userProfilesTable, eq(users.id, userProfilesTable.userId))
-        .where(eq(bandsFollowersTable.bandId, bandId))
+        .where(and(eq(bandsFollowersTable.bandId, bandId), isNotNull(users.username)))
         .orderBy(sql`${bandsFollowersTable.createdAt} DESC`)
         .limit(limit)
         .offset(offset);
@@ -72,6 +73,7 @@ export const getBandFollowers = async (bandId: number, page: number = 1, limit: 
     return {
         followers: followers.map((f) => ({
             userId: f.userId,
+            username: f.username as string,
             name: f.name,
             profileImageUrl: f.profileImageUrl,
             primaryInstrument: f.primaryInstrument,

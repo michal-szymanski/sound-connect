@@ -6,7 +6,8 @@
             "@/api/*": ["src/*"],
             "@/common/*": ["../../packages/common/src/*"],
             "@/drizzle": ["../../packages/drizzle/src"],
-            "@/drizzle/*": ["../../packages/drizzle/src/*"]
+            "@/drizzle/*": ["../../packages/drizzle/src/*"],
+            "@sound-connect/common/*": ["../../packages/common/src/*"]
         }
     },
     "types": ["@cloudflare/workers-types/2023-07-01"],

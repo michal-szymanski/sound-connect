@@ -76,7 +76,7 @@ export function BandSearchCard({ result }: Props) {
                                 variant="outline"
                                 size="sm"
                                 className="flex-1"
-                                onClick={() => navigate({ to: `/bands/$id`, params: { id: result.id.toString() } })}
+                                onClick={() => navigate({ to: `/profile/$username`, params: { username: result.username } })}
                             >
                                 View Band
                             </Button>

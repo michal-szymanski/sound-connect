@@ -57,6 +57,13 @@
       "when": 1764464892972,
       "tag": "0007_bouncy_whistler",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1764470617002,
+      "tag": "0008_faithful_saracen",
+      "breakpoints": true
     }
   ]
 }

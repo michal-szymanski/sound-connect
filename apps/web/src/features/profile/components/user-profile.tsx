@@ -1,15 +1,13 @@
-import { UserDTO, userDTOSchema } from '@/common/types/models';
-import { postSchema } from '@/common/types/drizzle';
-import { fullProfileSchema } from '@sound-connect/common/types/profile';
-import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
 import { useState } from 'react';
-import z from 'zod';
-import { MoreVertical, AlertCircle, ChevronDown, Guitar } from 'lucide-react';
+import type { FullProfile } from '@sound-connect/common/types/profile';
+import type { UserDTO } from '@/common/types/models';
+import { Guitar } from 'lucide-react';
 import ProfileAvatar from '@/shared/components/common/profile-avatar';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
 import { Badge } from '@/shared/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/shared/components/ui/dropdown-menu';
+import { ChevronDown, MoreVertical, AlertCircle } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -21,11 +19,8 @@ import {
     AlertDialogTitle
 } from '@/shared/components/ui/alert-dialog';
 import { availabilityStatusConfig } from '@/shared/lib/utils/availability';
-import { useFollowers, useFollowings, useFollowRequestStatus, followingsQuery, followersQuery, followRequestStatusQuery, useAuth } from '@/shared/lib/react-query';
-import { getPosts } from '@/features/posts/server-functions/posts';
-import { getUser } from '@/shared/server-functions/users';
+import { useFollowers, useFollowings, useFollowRequestStatus, useAuth } from '@/shared/lib/react-query';
 import { useFollowUser, useUnfollowUser } from '@/shared/hooks/use-follow';
-import { getProfile } from '@/features/profile/server-functions/profile';
 import { useProfile } from '@/features/profile/hooks/use-profile';
 import { formatInstrument } from '@/features/profile/lib/profile-utils';
 import { useUserBands } from '@/features/bands/hooks/use-bands';
@@ -39,71 +34,27 @@ import { EditableProfileAvatar } from '@/features/profile/components/editable-pr
 import { EditableProfileBackground } from '@/features/profile/components/editable-profile-background';
 import { Link } from '@tanstack/react-router';
 
-const loaderSchema = z.object({
-    currentUser: userDTOSchema,
-    user: userDTOSchema,
-    posts: z.array(postSchema),
-    profile: fullProfileSchema.nullable()
-});
+type Props = {
+    profileData: FullProfile;
+};
 
-export const Route = createFileRoute('/(main)/users/$username')({
-    component: RouteComponent,
-    loader: async ({ context: { queryClient, user: currentUser }, params }) => {
-        if (!currentUser) {
-            const path = '/sign-in';
-
-            throw redirect({
-                to: path
-            });
-        }
-
-        const userId = params.username;
-
-        let user: UserDTO;
-
-        const queryDataUser = queryClient.getQueryData<UserDTO>(['user', userId]);
-
-        if (queryDataUser) {
-            user = userDTOSchema.parse(queryDataUser);
-        } else if (currentUser?.id === userId) {
-            user = userDTOSchema.parse(currentUser);
-        } else {
-            const result = await getUser({ data: { userId } });
-
-            if (!result.success) {
-                throw notFound();
-            }
-
-            user = result.body;
-            queryClient.setQueryData(['user', user.id], user);
-        }
-
-        const postsResult = await getPosts({ data: { userId } });
-        const posts = postsResult.success ? postsResult.body : [];
-
-        const profileResult = await getProfile({ data: { userId } });
-        const profile = profileResult.success ? profileResult.body : null;
-
-        await Promise.all([
-            queryClient.ensureQueryData(followingsQuery(currentUser)),
-            queryClient.ensureQueryData(followersQuery(user)),
-            queryClient.ensureQueryData(followingsQuery(user)),
-            queryClient.ensureQueryData(followRequestStatusQuery(user.id))
-        ]);
-
-        return loaderSchema.parse({ currentUser, user, posts, profile });
-    }
-});
-
-function RouteComponent() {
-    const loaderData = loaderSchema.parse(Route.useLoaderData());
-    const { currentUser, user, posts } = loaderData;
-
+export function UserProfile({ profileData }: Props) {
     const { data: auth } = useAuth();
+    const currentUser = auth?.user;
+
+    const user: UserDTO = {
+        id: profileData.id,
+        username: profileData.username,
+        name: profileData.name,
+        image: profileData.image,
+        backgroundImage: profileData.backgroundImage,
+        lastActiveAt: profileData.lastActiveAt
+    };
+
     const { data: profile } = useProfile(user.id);
     const { data: followings } = useFollowings(user);
     const { data: followers } = useFollowers(user);
-    const { data: currentUserFollowings } = useFollowings(currentUser);
+    const { data: currentUserFollowings } = useFollowings(currentUser ?? null);
     const { data: followRequestStatus } = useFollowRequestStatus(user.id);
     const { data: blockedUsers } = useBlockedUsers();
     const { data: userBands } = useUserBands(user.id);
@@ -115,8 +66,12 @@ function RouteComponent() {
     const [unblockDialogOpen, setUnblockDialogOpen] = useState(false);
     const [followersModalOpen, setFollowersModalOpen] = useState(false);
     const [followingModalOpen, setFollowingModalOpen] = useState(false);
-    const isOwnProfile = currentUser.id === user.id;
+    const isOwnProfile = currentUser?.id === user.id;
     const isBlocked = blockedUsers?.some((u) => u.id === user.id) ?? false;
+
+    if (!currentUser) {
+        return null;
+    }
 
     const bands = userBands?.bands || [];
     const primaryInstrument = profile?.instruments?.primaryInstrument;
@@ -272,15 +227,11 @@ function RouteComponent() {
                             )}
 
                             <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm md:hidden">
-                                <button className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2">
-                                    <span className="text-foreground font-semibold">{posts.length}</span>
-                                    <span className="text-muted-foreground ml-1">posts</span>
-                                </button>
                                 <button
                                     onClick={() => setFollowersModalOpen(true)}
                                     className="focus-visible:ring-ring cursor-pointer rounded-sm outline-none hover:underline focus-visible:ring-2"
                                 >
-                                    <span className="text-foreground font-semibold">{followers.length}</span>
+                                    <span className="text-foreground font-semibold">{followers?.length || 0}</span>
                                     <span className="text-muted-foreground ml-1">followers</span>
                                 </button>
                                 <button
@@ -297,7 +248,7 @@ function RouteComponent() {
                                     <div className="flex flex-wrap items-center gap-2">
                                         <span className="text-muted-foreground text-sm">Bands:</span>
                                         {bands.slice(0, 3).map((band) => (
-                                            <Link key={band.id} to="/bands/$id" params={{ id: band.id.toString() }} className="hover:opacity-80">
+                                            <Link key={band.id} to="/profile/$username" params={{ username: band.username ?? band.id.toString() }} className="hover:opacity-80">
                                                 <ProfileAvatar
                                                     profile={{ id: band.id.toString(), name: band.name, image: band.profileImageUrl }}
                                                     type="band"
@@ -347,15 +298,11 @@ function RouteComponent() {
                     </div>
 
                     <div className="mt-4 hidden flex-wrap items-center gap-x-6 gap-y-2 text-sm md:flex">
-                        <button className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2">
-                            <span className="text-foreground font-semibold">{posts.length}</span>
-                            <span className="text-muted-foreground ml-1">posts</span>
-                        </button>
                         <button
                             onClick={() => setFollowersModalOpen(true)}
                             className="focus-visible:ring-ring cursor-pointer rounded-sm outline-none hover:underline focus-visible:ring-2"
                         >
-                            <span className="text-foreground font-semibold">{followers.length}</span>
+                            <span className="text-foreground font-semibold">{followers?.length || 0}</span>
                             <span className="text-muted-foreground ml-1">followers</span>
                         </button>
                         <button
@@ -455,7 +402,7 @@ function RouteComponent() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            <FollowersModal followers={followers} open={followersModalOpen} onOpenChange={setFollowersModalOpen} />
+            <FollowersModal followers={followers || []} open={followersModalOpen} onOpenChange={setFollowersModalOpen} />
 
             <FollowingModal user={user} following={followings || []} open={followingModalOpen} onOpenChange={setFollowingModalOpen} />
         </div>

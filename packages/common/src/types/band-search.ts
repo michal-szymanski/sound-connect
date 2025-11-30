@@ -46,6 +46,7 @@ export type BandSearchParams = z.infer<typeof bandSearchParamsSchema>;
 export const bandSearchResultSchema = z.object({
     id: z.number(),
     name: z.string(),
+    username: z.string(),
     description: z.string().nullable(),
     primaryGenre: z.enum(GenreEnum).nullable(),
     city: z.string().nullable(),

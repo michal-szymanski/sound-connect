@@ -165,8 +165,9 @@ export const bioSectionSchema = z.object({
 export const fullProfileSchema = z.object({
     id: z.string(),
     name: z.string(),
+    username: z.string().nullable(),
     image: z.string().nullable(),
-    backgroundImage: z.string().nullish(),
+    backgroundImage: z.string().nullable(),
     lastActiveAt: z.string().nullable(),
     profileCompletion: z.number().int().min(0).max(100),
     instruments: instrumentsSectionSchema.nullable(),

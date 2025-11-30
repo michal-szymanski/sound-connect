@@ -33,6 +33,7 @@ type FeedPostRow = {
     userName: string | null;
     userImage: string | null;
     bandName: string | null;
+    bandUsername: string | null;
     bandProfileImageUrl: string | null;
 };
 
@@ -80,6 +81,7 @@ export const getPostById = async (postId: number) => {
             band: {
                 id: bandsTable.id,
                 name: bandsTable.name,
+                username: bandsTable.username,
                 profileImageUrl: bandsTable.profileImageUrl
             }
         })
@@ -167,6 +169,7 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
                           userName: users.name,
                           userImage: users.image,
                           bandName: sql<string | null>`NULL`,
+                          bandUsername: sql<string | null>`NULL`,
                           bandProfileImageUrl: sql<string | null>`NULL`
                       })
                       .from(postsTable)
@@ -189,6 +192,7 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
                           userName: sql<string | null>`NULL`,
                           userImage: sql<string | null>`NULL`,
                           bandName: bandsTable.name,
+                          bandUsername: bandsTable.username,
                           bandProfileImageUrl: bandsTable.profileImageUrl
                       })
                       .from(postsTable)
@@ -224,6 +228,7 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
                                 userName: users.name,
                                 userImage: users.image,
                                 bandName: sql<string | null>`NULL`,
+                                bandUsername: sql<string | null>`NULL`,
                                 bandProfileImageUrl: sql<string | null>`NULL`
                             })
                             .from(postsTable)
@@ -245,6 +250,7 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
                                 userName: sql<string | null>`NULL`,
                                 userImage: sql<string | null>`NULL`,
                                 bandName: bandsTable.name,
+                                bandUsername: bandsTable.username,
                                 bandProfileImageUrl: bandsTable.profileImageUrl
                             })
                             .from(postsTable)
@@ -307,6 +313,7 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
                                 userName: users.name,
                                 userImage: users.image,
                                 bandName: sql<string | null>`NULL`,
+                                bandUsername: sql<string | null>`NULL`,
                                 bandProfileImageUrl: sql<string | null>`NULL`
                             })
                             .from(postsTable)
@@ -328,6 +335,7 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
                                 userName: sql<string | null>`NULL`,
                                 userImage: sql<string | null>`NULL`,
                                 bandName: bandsTable.name,
+                                bandUsername: bandsTable.username,
                                 bandProfileImageUrl: bandsTable.profileImageUrl
                             })
                             .from(postsTable)
@@ -357,6 +365,7 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
                 userName: users.name,
                 userImage: users.image,
                 bandName: sql<string | null>`NULL`,
+                bandUsername: sql<string | null>`NULL`,
                 bandProfileImageUrl: sql<string | null>`NULL`
             })
             .from(postsTable)
@@ -427,6 +436,7 @@ export const getFeed = async (limit: number = 10, offset: number = 0, currentUse
                     ? {
                           id: post.bandId!,
                           name: post.bandName!,
+                          username: post.bandUsername!,
                           profileImageUrl: post.bandProfileImageUrl
                       }
                     : null,

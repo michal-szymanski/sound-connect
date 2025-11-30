@@ -1,10 +1,14 @@
 import { schema } from '@/drizzle';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db } from '../index';
 import { calculateProfileCompletion } from '@/common/utils/profile-completion';
 import type { Instrument, Genre, AvailabilityStatus, CommitmentLevel, RehearsalFrequency, GiggingLevel } from '@/common/types/profile-enums';
+import { isReservedUsername } from '@sound-connect/common/reserved-usernames';
+import { getUserByUsername } from './users-queries';
+import { getBandByUsername } from './bands-queries';
+import type { ProfileLookupResult } from '@/common/types/profile-lookup';
 
-const { users, userProfilesTable, userAdditionalInstrumentsTable } = schema;
+const { users, userProfilesTable, userAdditionalInstrumentsTable, bandsTable } = schema;
 
 const autoCompleteSetupIfReady = async (userId: string) => {
     const [profile] = await db.select().from(userProfilesTable).where(eq(userProfilesTable.userId, userId)).limit(1);
@@ -337,7 +341,9 @@ export const getUserProfile = async (userId: string) => {
         .select({
             id: users.id,
             name: users.name,
+            username: users.username,
             image: users.image,
+            backgroundImage: users.backgroundImage,
             lastActiveAt: users.lastActiveAt
         })
         .from(users)
@@ -362,7 +368,9 @@ export const getUserProfile = async (userId: string) => {
         return {
             id: user.id,
             name: user.name,
+            username: user.username,
             image: user.image,
+            backgroundImage: user.backgroundImage,
             lastActiveAt: user.lastActiveAt,
             profileCompletion: 0,
             instruments: null,
@@ -381,7 +389,173 @@ export const getUserProfile = async (userId: string) => {
     return {
         id: user.id,
         name: user.name,
+        username: user.username,
         image: user.image,
+        backgroundImage: user.backgroundImage,
+        lastActiveAt: user.lastActiveAt,
+        profileCompletion: profile.profileCompletion,
+        instruments: profile.primaryInstrument
+            ? {
+                  primaryInstrument: profile.primaryInstrument,
+                  yearsPlayingPrimary: profile.yearsPlayingPrimary,
+                  additionalInstruments,
+                  seekingToPlay
+              }
+            : null,
+        genres: profile.primaryGenre
+            ? {
+                  primaryGenre: profile.primaryGenre,
+                  secondaryGenres,
+                  influences: profile.influences
+              }
+            : null,
+        availability: profile.status
+            ? {
+                  status: profile.status,
+                  commitmentLevel: profile.commitmentLevel,
+                  weeklyAvailability: profile.weeklyAvailability,
+                  rehearsalFrequency: profile.rehearsalFrequency
+              }
+            : null,
+        experience:
+            profile.giggingLevel || profile.pastBands || profile.hasStudioExperience !== null
+                ? {
+                      giggingLevel: profile.giggingLevel,
+                      pastBands: profile.pastBands,
+                      hasStudioExperience: profile.hasStudioExperience
+                  }
+                : null,
+        logistics: profile.city
+            ? {
+                  city: profile.city,
+                  state: profile.state,
+                  country: profile.country,
+                  latitude: profile.latitude,
+                  longitude: profile.longitude,
+                  travelRadius: profile.travelRadius,
+                  hasRehearsalSpace: profile.hasRehearsalSpace,
+                  hasTransportation: profile.hasTransportation
+              }
+            : null,
+        lookingFor:
+            profile.seeking || profile.canOffer || profile.dealBreakers
+                ? {
+                      seeking: profile.seeking,
+                      canOffer: profile.canOffer,
+                      dealBreakers: profile.dealBreakers
+                  }
+                : null,
+        bio: profile.bio
+            ? {
+                  bio: profile.bio
+              }
+            : null
+    };
+};
+
+export const lookupProfileByUsername = async (username: string): Promise<ProfileLookupResult | null> => {
+    const normalized = username.toLowerCase();
+
+    const user = await getUserByUsername(normalized);
+    if (user) {
+        const fullProfile = await getUserFullProfile(user.id);
+        if (!fullProfile) {
+            return null;
+        }
+        return {
+            type: 'user',
+            data: fullProfile
+        };
+    }
+
+    const band = await getBandByUsername(normalized);
+    if (band) {
+        return {
+            type: 'band',
+            data: band
+        };
+    }
+
+    return null;
+};
+
+export const isUsernameGloballyAvailable = async (
+    username: string,
+    excludeUserId?: string,
+    excludeBandId?: number
+): Promise<{ available: boolean; takenBy: 'user' | 'band' | 'reserved' | null }> => {
+    const normalized = username.toLowerCase();
+
+    if (isReservedUsername(normalized)) {
+        return { available: false, takenBy: 'reserved' };
+    }
+
+    let userCondition = sql`LOWER(${users.username}) = ${normalized}`;
+    if (excludeUserId) {
+        userCondition = sql`${userCondition} AND ${users.id} != ${excludeUserId}`;
+    }
+
+    const [existingUser] = await db.select({ id: users.id }).from(users).where(userCondition).limit(1);
+
+    if (existingUser) {
+        return { available: false, takenBy: 'user' };
+    }
+
+    let bandCondition = sql`LOWER(${bandsTable.username}) = ${normalized}`;
+    if (excludeBandId) {
+        bandCondition = sql`${bandCondition} AND ${bandsTable.id} != ${excludeBandId}`;
+    }
+
+    const [existingBand] = await db.select({ id: bandsTable.id }).from(bandsTable).where(bandCondition).limit(1);
+
+    if (existingBand) {
+        return { available: false, takenBy: 'band' };
+    }
+
+    return { available: true, takenBy: null };
+};
+
+const getUserFullProfile = async (userId: string) => {
+    const [user] = await db
+        .select({
+            id: users.id,
+            name: users.name,
+            username: users.username,
+            image: users.image,
+            backgroundImage: users.backgroundImage,
+            lastActiveAt: users.lastActiveAt
+        })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+    if (!user) {
+        return null;
+    }
+
+    const [profile] = await db.select().from(userProfilesTable).where(eq(userProfilesTable.userId, userId)).limit(1);
+
+    if (!profile) {
+        return null;
+    }
+
+    const additionalInstruments = await db
+        .select({
+            instrument: userAdditionalInstrumentsTable.instrument,
+            years: userAdditionalInstrumentsTable.years
+        })
+        .from(userAdditionalInstrumentsTable)
+        .where(eq(userAdditionalInstrumentsTable.userId, userId));
+
+    const seekingToPlay = profile.seekingToPlay ? JSON.parse(profile.seekingToPlay) : [];
+    const secondaryGenres = profile.secondaryGenres ? JSON.parse(profile.secondaryGenres) : [];
+
+    return {
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        image: user.image,
+        backgroundImage: user.backgroundImage,
         lastActiveAt: user.lastActiveAt,
         profileCompletion: profile.profileCompletion,
         instruments: profile.primaryInstrument

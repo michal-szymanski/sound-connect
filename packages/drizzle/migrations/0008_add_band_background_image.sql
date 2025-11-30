@@ -1,1 +1,0 @@
-ALTER TABLE bands ADD COLUMN background_image_url TEXT;

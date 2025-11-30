@@ -9,7 +9,7 @@ import { AlertCircle, CheckCircle2, Loader2, AtSign } from 'lucide-react';
 import { useUpdateEmail, useUpdatePassword, useCheckUsernameAvailability, useUpdateUsername } from '@/features/settings/hooks/use-settings';
 import { updateEmailSchema, updatePasswordSchema, usernameSchema } from '@sound-connect/common/types/settings';
 import type { AccountInfo } from '@sound-connect/common/types/settings';
-import { useAuth } from '@/shared/hooks/use-auth';
+import { useAuth } from '@/shared/lib/react-query';
 
 type Props = {
     accountInfo: AccountInfo;
@@ -18,7 +18,8 @@ type Props = {
 type ValidationState = 'idle' | 'validating' | 'valid' | 'invalid' | 'taken';
 
 export function AccountSettings({ accountInfo }: Props) {
-    const { user } = useAuth();
+    const { data: auth } = useAuth();
+    const user = auth?.user;
     const updateEmailMutation = useUpdateEmail();
     const updatePasswordMutation = useUpdatePassword();
     const checkAvailabilityMutation = useCheckUsernameAvailability();
@@ -27,7 +28,7 @@ export function AccountSettings({ accountInfo }: Props) {
     const [username, setUsername] = useState(user?.username || '');
     const [usernameValidationState, setUsernameValidationState] = useState<ValidationState>('idle');
     const [usernameError, setUsernameError] = useState<string>('');
-    const debounceTimerRef = useRef<NodeJS.Timeout>();
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const [emailData, setEmailData] = useState({ email: '' });
     const [emailErrors, setEmailErrors] = useState<Record<string, string>>({});

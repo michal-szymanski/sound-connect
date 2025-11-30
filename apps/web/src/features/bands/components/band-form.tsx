@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
@@ -6,7 +6,7 @@ import { Textarea } from '@/shared/components/ui/textarea';
 import { CharacterCounter } from '@/features/profile/components/character-counter';
 import { createBandInputSchema, type CreateBandInput, type UpdateBandInput } from '@sound-connect/common/types/bands';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
-import { AlertCircle, Check, ChevronsUpDown } from 'lucide-react';
+import { AlertCircle, Check, ChevronsUpDown, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { LocationAutocomplete } from '@/shared/components/location/location-autocomplete';
 import type { SelectedLocation } from '@sound-connect/common/types/location';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
@@ -14,6 +14,9 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { getSortedGenres, formatGenre } from '@/features/profile/lib/profile-utils';
 import { cn } from '@/shared/lib/utils';
+import { checkUsernameAvailability } from '@/features/settings/server-functions/settings';
+import { usernameSchema } from '@sound-connect/common/types/settings';
+import { GenreEnum } from '@sound-connect/common/types/profile-enums';
 
 type Props = {
     initialData?: Partial<UpdateBandInput>;
@@ -23,16 +26,21 @@ type Props = {
     isEdit?: boolean;
 };
 
+type BandFormData = Omit<CreateBandInput, 'primaryGenre'> & {
+    primaryGenre: CreateBandInput['primaryGenre'] | '';
+};
+
 export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = false }: Props) {
-    const [formData, setFormData] = useState<CreateBandInput>({
+    const [formData, setFormData] = useState<BandFormData>({
         name: initialData?.name || '',
+        username: initialData?.username || '',
         description: initialData?.description || '',
         city: initialData?.city || '',
         state: initialData?.state || '',
         country: initialData?.country || 'USA',
         latitude: initialData?.latitude ?? 0,
         longitude: initialData?.longitude ?? 0,
-        primaryGenre: initialData?.primaryGenre || ('' as const),
+        primaryGenre: initialData?.primaryGenre || '',
         lookingFor: initialData?.lookingFor || ''
     });
 
@@ -50,6 +58,8 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
 
     const [genrePopoverOpen, setGenrePopoverOpen] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [usernameCheckStatus, setUsernameCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+    const [usernameCheckTimer, setUsernameCheckTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -69,7 +79,7 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
         }
 
         setErrors({});
-        onSubmit(isEdit ? formData : result.data);
+        onSubmit(result.data);
     };
 
     const handleLocationChange = (location: SelectedLocation | null) => {
@@ -95,6 +105,50 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
         }
     };
 
+    const handleUsernameChange = (value: string) => {
+        const rawValue = value.startsWith('@') ? value.slice(1) : value;
+        setFormData({ ...formData, username: rawValue });
+
+        if (usernameCheckTimer) {
+            clearTimeout(usernameCheckTimer);
+        }
+
+        if (!rawValue) {
+            setUsernameCheckStatus('idle');
+            return;
+        }
+
+        const validationResult = usernameSchema.safeParse(rawValue);
+        if (!validationResult.success) {
+            setUsernameCheckStatus('invalid');
+            setErrors({ ...errors, username: validationResult.error.issues[0]?.message || 'Invalid username' });
+            return;
+        }
+
+        setUsernameCheckStatus('checking');
+        setErrors({ ...errors, username: '' });
+
+        const timer = setTimeout(async () => {
+            const result = await checkUsernameAvailability({ data: { username: rawValue } });
+            if (result.success && result.body.available) {
+                setUsernameCheckStatus('available');
+            } else {
+                setUsernameCheckStatus('taken');
+                setErrors({ ...errors, username: 'Username is already taken' });
+            }
+        }, 500);
+
+        setUsernameCheckTimer(timer);
+    };
+
+    useEffect(() => {
+        return () => {
+            if (usernameCheckTimer) {
+                clearTimeout(usernameCheckTimer);
+            }
+        };
+    }, [usernameCheckTimer]);
+
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -114,6 +168,52 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
                 {errors['name'] && (
                     <p id="name-error" className="text-destructive text-sm" role="alert">
                         {errors['name']}
+                    </p>
+                )}
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="username">
+                    Username <span className="text-destructive">*</span>
+                </Label>
+                <div className="relative">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <span className="text-muted-foreground text-sm">@</span>
+                    </div>
+                    <Input
+                        id="username"
+                        value={formData.username}
+                        onChange={(e) => handleUsernameChange(e.target.value)}
+                        placeholder="bandname"
+                        maxLength={30}
+                        className="pl-7 pr-10"
+                        aria-required="true"
+                        aria-invalid={usernameCheckStatus === 'invalid' || usernameCheckStatus === 'taken'}
+                        aria-describedby={errors['username'] ? 'username-error' : 'username-help'}
+                    />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        {usernameCheckStatus === 'checking' && (
+                            <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" aria-hidden="true" />
+                        )}
+                        {usernameCheckStatus === 'available' && (
+                            <CheckCircle2 className="h-4 w-4 text-green-500" aria-hidden="true" />
+                        )}
+                        {usernameCheckStatus === 'taken' && (
+                            <XCircle className="h-4 w-4 text-red-500" aria-hidden="true" />
+                        )}
+                        {usernameCheckStatus === 'invalid' && (
+                            <XCircle className="h-4 w-4 text-red-500" aria-hidden="true" />
+                        )}
+                    </div>
+                </div>
+                {!errors['username'] && (
+                    <p id="username-help" className="text-muted-foreground text-xs">
+                        3-30 characters, letters, numbers, underscores, and hyphens only
+                    </p>
+                )}
+                {errors['username'] && (
+                    <p id="username-error" className="text-destructive text-sm" role="alert">
+                        {errors['username']}
                     </p>
                 )}
             </div>

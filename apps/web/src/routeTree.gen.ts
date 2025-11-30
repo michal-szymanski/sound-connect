@@ -23,12 +23,11 @@ import { Route as authSignInIndexRouteImport } from './routes/(auth)/sign-in/ind
 import { Route as authResetPasswordIndexRouteImport } from './routes/(auth)/reset-password/index'
 import { Route as authOnboardingIndexRouteImport } from './routes/(auth)/onboarding/index'
 import { Route as authForgotPasswordIndexRouteImport } from './routes/(auth)/forgot-password/index'
-import { Route as mainUsersUsernameRouteImport } from './routes/(main)/users/$username'
+import { Route as mainProfileUsernameRouteImport } from './routes/(main)/profile/$username'
 import { Route as mainPostsPostIdRouteImport } from './routes/(main)/posts/$postId'
 import { Route as mainDiscoverBandsRouteImport } from './routes/(main)/discover/bands'
 import { Route as mainBandsSearchRouteImport } from './routes/(main)/bands/search'
 import { Route as mainBandsNewRouteImport } from './routes/(main)/bands/new'
-import { Route as mainBandsIdRouteImport } from './routes/(main)/bands/$id'
 
 const mainRouteRoute = mainRouteRouteImport.update({
   id: '/(main)',
@@ -98,9 +97,9 @@ const authForgotPasswordIndexRoute = authForgotPasswordIndexRouteImport.update({
   path: '/forgot-password/',
   getParentRoute: () => authRouteRoute,
 } as any)
-const mainUsersUsernameRoute = mainUsersUsernameRouteImport.update({
-  id: '/users/$username',
-  path: '/users/$username',
+const mainProfileUsernameRoute = mainProfileUsernameRouteImport.update({
+  id: '/profile/$username',
+  path: '/profile/$username',
   getParentRoute: () => mainRouteRoute,
 } as any)
 const mainPostsPostIdRoute = mainPostsPostIdRouteImport.update({
@@ -123,22 +122,16 @@ const mainBandsNewRoute = mainBandsNewRouteImport.update({
   path: '/bands/new',
   getParentRoute: () => mainRouteRoute,
 } as any)
-const mainBandsIdRoute = mainBandsIdRouteImport.update({
-  id: '/bands/$id',
-  path: '/bands/$id',
-  getParentRoute: () => mainRouteRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/musicians': typeof mainMusiciansRoute
   '/media/$': typeof MediaSplatRoute
   '/': typeof mainIndexRoute
-  '/bands/$id': typeof mainBandsIdRoute
   '/bands/new': typeof mainBandsNewRoute
   '/bands/search': typeof mainBandsSearchRoute
   '/discover/bands': typeof mainDiscoverBandsRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
-  '/users/$username': typeof mainUsersUsernameRoute
+  '/profile/$username': typeof mainProfileUsernameRoute
   '/forgot-password': typeof authForgotPasswordIndexRoute
   '/onboarding': typeof authOnboardingIndexRoute
   '/reset-password': typeof authResetPasswordIndexRoute
@@ -153,12 +146,11 @@ export interface FileRoutesByTo {
   '/musicians': typeof mainMusiciansRoute
   '/media/$': typeof MediaSplatRoute
   '/': typeof mainIndexRoute
-  '/bands/$id': typeof mainBandsIdRoute
   '/bands/new': typeof mainBandsNewRoute
   '/bands/search': typeof mainBandsSearchRoute
   '/discover/bands': typeof mainDiscoverBandsRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
-  '/users/$username': typeof mainUsersUsernameRoute
+  '/profile/$username': typeof mainProfileUsernameRoute
   '/forgot-password': typeof authForgotPasswordIndexRoute
   '/onboarding': typeof authOnboardingIndexRoute
   '/reset-password': typeof authResetPasswordIndexRoute
@@ -176,12 +168,11 @@ export interface FileRoutesById {
   '/(main)/musicians': typeof mainMusiciansRoute
   '/media/$': typeof MediaSplatRoute
   '/(main)/': typeof mainIndexRoute
-  '/(main)/bands/$id': typeof mainBandsIdRoute
   '/(main)/bands/new': typeof mainBandsNewRoute
   '/(main)/bands/search': typeof mainBandsSearchRoute
   '/(main)/discover/bands': typeof mainDiscoverBandsRoute
   '/(main)/posts/$postId': typeof mainPostsPostIdRoute
-  '/(main)/users/$username': typeof mainUsersUsernameRoute
+  '/(main)/profile/$username': typeof mainProfileUsernameRoute
   '/(auth)/forgot-password/': typeof authForgotPasswordIndexRoute
   '/(auth)/onboarding/': typeof authOnboardingIndexRoute
   '/(auth)/reset-password/': typeof authResetPasswordIndexRoute
@@ -198,12 +189,11 @@ export interface FileRouteTypes {
     | '/musicians'
     | '/media/$'
     | '/'
-    | '/bands/$id'
     | '/bands/new'
     | '/bands/search'
     | '/discover/bands'
     | '/posts/$postId'
-    | '/users/$username'
+    | '/profile/$username'
     | '/forgot-password'
     | '/onboarding'
     | '/reset-password'
@@ -218,12 +208,11 @@ export interface FileRouteTypes {
     | '/musicians'
     | '/media/$'
     | '/'
-    | '/bands/$id'
     | '/bands/new'
     | '/bands/search'
     | '/discover/bands'
     | '/posts/$postId'
-    | '/users/$username'
+    | '/profile/$username'
     | '/forgot-password'
     | '/onboarding'
     | '/reset-password'
@@ -240,12 +229,11 @@ export interface FileRouteTypes {
     | '/(main)/musicians'
     | '/media/$'
     | '/(main)/'
-    | '/(main)/bands/$id'
     | '/(main)/bands/new'
     | '/(main)/bands/search'
     | '/(main)/discover/bands'
     | '/(main)/posts/$postId'
-    | '/(main)/users/$username'
+    | '/(main)/profile/$username'
     | '/(auth)/forgot-password/'
     | '/(auth)/onboarding/'
     | '/(auth)/reset-password/'
@@ -363,11 +351,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authForgotPasswordIndexRouteImport
       parentRoute: typeof authRouteRoute
     }
-    '/(main)/users/$username': {
-      id: '/(main)/users/$username'
-      path: '/users/$username'
-      fullPath: '/users/$username'
-      preLoaderRoute: typeof mainUsersUsernameRouteImport
+    '/(main)/profile/$username': {
+      id: '/(main)/profile/$username'
+      path: '/profile/$username'
+      fullPath: '/profile/$username'
+      preLoaderRoute: typeof mainProfileUsernameRouteImport
       parentRoute: typeof mainRouteRoute
     }
     '/(main)/posts/$postId': {
@@ -398,13 +386,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof mainBandsNewRouteImport
       parentRoute: typeof mainRouteRoute
     }
-    '/(main)/bands/$id': {
-      id: '/(main)/bands/$id'
-      path: '/bands/$id'
-      fullPath: '/bands/$id'
-      preLoaderRoute: typeof mainBandsIdRouteImport
-      parentRoute: typeof mainRouteRoute
-    }
   }
 }
 
@@ -433,12 +414,11 @@ const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
 interface mainRouteRouteChildren {
   mainMusiciansRoute: typeof mainMusiciansRoute
   mainIndexRoute: typeof mainIndexRoute
-  mainBandsIdRoute: typeof mainBandsIdRoute
   mainBandsNewRoute: typeof mainBandsNewRoute
   mainBandsSearchRoute: typeof mainBandsSearchRoute
   mainDiscoverBandsRoute: typeof mainDiscoverBandsRoute
   mainPostsPostIdRoute: typeof mainPostsPostIdRoute
-  mainUsersUsernameRoute: typeof mainUsersUsernameRoute
+  mainProfileUsernameRoute: typeof mainProfileUsernameRoute
   mainBandsIndexRoute: typeof mainBandsIndexRoute
   mainMessagesIndexRoute: typeof mainMessagesIndexRoute
   mainSettingsIndexRoute: typeof mainSettingsIndexRoute
@@ -447,12 +427,11 @@ interface mainRouteRouteChildren {
 const mainRouteRouteChildren: mainRouteRouteChildren = {
   mainMusiciansRoute: mainMusiciansRoute,
   mainIndexRoute: mainIndexRoute,
-  mainBandsIdRoute: mainBandsIdRoute,
   mainBandsNewRoute: mainBandsNewRoute,
   mainBandsSearchRoute: mainBandsSearchRoute,
   mainDiscoverBandsRoute: mainDiscoverBandsRoute,
   mainPostsPostIdRoute: mainPostsPostIdRoute,
-  mainUsersUsernameRoute: mainUsersUsernameRoute,
+  mainProfileUsernameRoute: mainProfileUsernameRoute,
   mainBandsIndexRoute: mainBandsIndexRoute,
   mainMessagesIndexRoute: mainMessagesIndexRoute,
   mainSettingsIndexRoute: mainSettingsIndexRoute,

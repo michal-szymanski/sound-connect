@@ -30,8 +30,7 @@ export function UserBandCard({ band }: Props) {
     });
 
     return (
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        <Link to={`/bands/${band.id}` as any} aria-label={`View ${band.name}`}>
+        <Link to="/profile/$username" params={{ username: band.username ?? band.id.toString() }} aria-label={`View ${band.name}`}>
             <Card className="group border-border/40 hover:border-border/60 cursor-pointer overflow-hidden transition-all hover:shadow-lg">
                 <CardContent className="p-5">
                     <div className="flex gap-5">

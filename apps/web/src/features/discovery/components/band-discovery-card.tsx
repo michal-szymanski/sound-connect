@@ -33,7 +33,7 @@ export function BandDiscoveryCard({ result, onCardClick }: Props) {
 
     const handleClick = () => {
         onCardClick();
-        navigate({ to: `/bands/$id`, params: { id: result.id.toString() } });
+        navigate({ to: `/profile/$username`, params: { username: result.username } });
     };
 
     const topReasons = result.matchReasons.slice(0, 2);
@@ -118,7 +118,7 @@ export function BandDiscoveryCard({ result, onCardClick }: Props) {
                     </span>
                 </div>
                 <Button variant="default" size="sm" className="w-full" asChild>
-                    <Link to="/bands/$id" params={{ id: result.id.toString() }}>
+                    <Link to="/profile/$username" params={{ username: result.username }}>
                         View Band
                     </Link>
                 </Button>

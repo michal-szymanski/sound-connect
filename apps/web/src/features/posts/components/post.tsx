@@ -144,8 +144,8 @@ export function Post({ item }: Props) {
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                         <Link
-                            to={isBandPost ? '/bands/$id' : '/users/$username'}
-                            params={isBandPost ? { id: String(post.bandId!) } : { username: user?.username ?? '' }}
+                            to="/profile/$username"
+                            params={{ username: isBandPost ? (band?.username ?? '') : (user?.username ?? '') }}
                             className="truncate text-sm font-semibold hover:underline"
                         >
                             {authorName}
@@ -254,7 +254,7 @@ export function Post({ item }: Props) {
                 </Button>
             </footer>
             <div className="mb-2 text-sm">
-                <Link to={isBandPost ? '/bands/$id' : '/users/$username'} params={isBandPost ? { id: authorId } : { username: user?.username ?? '' }} className="font-semibold hover:underline">
+                <Link to="/profile/$username" params={{ username: isBandPost ? (band?.username ?? '') : (user?.username ?? '') }} className="font-semibold hover:underline">
                     {authorName}
                 </Link>{' '}
                 {isExpanded ? (

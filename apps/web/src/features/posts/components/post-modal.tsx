@@ -224,7 +224,7 @@ export function PostModal({
                         <div className="flex items-center gap-2">
                             <ProfileAvatar profile={{ id: author.id, name: author.name, image: author.avatar }} type="user" className="h-9 w-9" linkToProfile />
                             <div className="flex flex-col">
-                                <Link to="/users/$username" params={{ username: author.username }} className="text-foreground text-sm font-semibold hover:underline">
+                                <Link to="/profile/$username" params={{ username: author.username }} className="text-foreground text-sm font-semibold hover:underline">
                                     {author.name}
                                 </Link>
                                 {author.username && <span className="text-muted-foreground text-xs">@{author.username}</span>}
@@ -238,7 +238,7 @@ export function PostModal({
                             <ProfileAvatar profile={{ id: author.id, name: author.name, image: author.avatar }} type="user" className="h-9 w-9" linkToProfile />
                             <div className="flex-1">
                                 <div className="flex items-center gap-2">
-                                    <Link to="/users/$username" params={{ username: author.username }} className="text-foreground text-sm font-semibold hover:underline">
+                                    <Link to="/profile/$username" params={{ username: author.username }} className="text-foreground text-sm font-semibold hover:underline">
                                         {author.name}
                                     </Link>
                                     <span className="text-muted-foreground text-xs">{timestamp}</span>

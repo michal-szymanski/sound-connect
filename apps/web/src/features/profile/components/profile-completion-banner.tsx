@@ -68,7 +68,7 @@ export function ProfileCompletionBanner({ profile, userId, username }: Props) {
                     </div>
                     <div className="shrink-0">
                         <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-                            <Link to="/users/$username" params={{ username: username || userId }}>
+                            <Link to="/profile/$username" params={{ username: username || userId }}>
                                 Complete Now
                             </Link>
                         </Button>

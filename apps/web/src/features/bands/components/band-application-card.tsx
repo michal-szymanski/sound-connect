@@ -54,7 +54,7 @@ export function BandApplicationCard({ application, bandId }: Props) {
             <Card>
                 <CardContent className="p-6">
                     <div className="flex flex-col gap-4 sm:flex-row">
-                        <Link to="/users/$id" params={{ id: application.userId }} className="flex-shrink-0">
+                        <Link to="/profile/$username" params={{ username: application.username }} className="flex-shrink-0">
                             <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
                                 <AvatarImage src={application.userImage || undefined} alt={application.userName} />
                                 <AvatarFallback>{initials}</AvatarFallback>
@@ -64,7 +64,7 @@ export function BandApplicationCard({ application, bandId }: Props) {
                         <div className="flex-1 space-y-3">
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                 <div>
-                                    <Link to="/users/$id" params={{ id: application.userId }} className="hover:underline">
+                                    <Link to="/profile/$username" params={{ username: application.username }} className="hover:underline">
                                         <h3 className="text-lg font-semibold">{application.userName}</h3>
                                     </Link>
                                     {application.position && (

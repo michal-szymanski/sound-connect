@@ -160,3 +160,11 @@ export type UpdateUsername = z.infer<typeof updateUsernameSchema>;
 export type CheckUsernameAvailability = z.infer<typeof checkUsernameAvailabilitySchema>;
 export type CheckUsernameAvailabilityResponse = z.infer<typeof checkUsernameAvailabilityResponseSchema>;
 export type UpdateUsernameResponse = z.infer<typeof updateUsernameResponseSchema>;
+
+export const globalUsernameAvailabilityResponseSchema = z.object({
+    available: z.boolean(),
+    username: z.string(),
+    takenBy: z.enum(['user', 'band', 'reserved']).nullable()
+});
+
+export type GlobalUsernameAvailabilityResponse = z.infer<typeof globalUsernameAvailabilityResponseSchema>;
