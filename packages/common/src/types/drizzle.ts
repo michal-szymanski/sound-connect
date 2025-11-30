@@ -8,6 +8,7 @@ export const createUserSchema = z.object({
     emailVerified: z.boolean(),
     image: z.string().nullable(),
     backgroundImage: z.string().nullish(),
+    username: z.string().nullish(),
     lastActiveAt: z.string().nullish(),
     createdAt: z.date(),
     updatedAt: z.date()
@@ -20,6 +21,7 @@ export const userSchema = z.object({
     emailVerified: z.boolean(),
     image: z.string().nullable(),
     backgroundImage: z.string().nullish(),
+    username: z.string().nullish(),
     lastActiveAt: z.string().nullish(),
     createdAt: z.string(),
     updatedAt: z.string()
@@ -660,7 +662,7 @@ export type DiscoveryEventType = z.infer<typeof discoveryEventTypeEnum>;
 export const createUserOnboardingSchema = z.object({
     id: z.string(),
     userId: z.string(),
-    currentStep: z.number().int().min(1).max(6),
+    currentStep: z.number().int().min(1).max(7),
     completedAt: z.number().nullable(),
     skippedAt: z.number().nullable(),
     createdAt: z.number(),
@@ -670,7 +672,7 @@ export const createUserOnboardingSchema = z.object({
 export const userOnboardingSchema = z.object({
     id: z.string(),
     userId: z.string(),
-    currentStep: z.number().int().min(1).max(6),
+    currentStep: z.number().int().min(1).max(7),
     completedAt: z.number().nullable(),
     skippedAt: z.number().nullable(),
     createdAt: z.number(),

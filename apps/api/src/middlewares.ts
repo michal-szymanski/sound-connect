@@ -26,6 +26,7 @@ export const authMiddleware = async (c: Context<HonoContext>, next: Next) => {
         c.req.path.startsWith('/api/auth/') ||
         c.req.path.startsWith('/debug') ||
         c.req.path === '/health' ||
+        c.req.path === '/api/users/username/check' ||
         (c.req.path.match(/^\/bands\/\d+$/) && c.req.method === 'GET') ||
         (c.req.path.match(/^\/users\/[^/]+\/bands$/) && c.req.method === 'GET')
     ) {

@@ -65,14 +65,14 @@ export function FollowingModal({ user, following, isLoading, open, onOpenChange 
                                 <div key={followedUser.id} className="flex items-center justify-between gap-3 rounded-lg p-2">
                                     <Link
                                         to="/users/$id"
-                                        params={{ id: followedUser.id }}
+                                        params={{ id: followedUser.username || followedUser.id }}
                                         className="hover:bg-accent flex min-w-0 flex-1 items-center gap-3 rounded-lg p-2 transition-colors"
                                         onClick={() => onOpenChange(false)}
                                     >
                                         <ProfileAvatar profile={followedUser} type="user" className="h-10 w-10 shrink-0" />
                                         <div className="min-w-0 flex-1">
                                             <p className="truncate text-sm font-medium">{followedUser.name}</p>
-                                            <p className="text-muted-foreground truncate text-xs">@{followedUser.id.slice(0, 8)}</p>
+                                            <p className="text-muted-foreground truncate text-xs">@{followedUser.username || followedUser.id.slice(0, 8)}</p>
                                         </div>
                                     </Link>
                                     {isOwnProfile && (

@@ -9,8 +9,10 @@ import { StepLocation } from '@/features/onboarding/components/step-location';
 import { StepBio } from '@/features/onboarding/components/step-bio';
 import { StepAvailability } from '@/features/onboarding/components/step-availability';
 import { StepProfilePhoto } from '@/features/onboarding/components/step-profile-photo';
+import { StepUsername } from '@/features/onboarding/components/step-username';
 import { useUpdateOnboardingProgress, useCompleteOnboarding, useSkipOnboarding } from '@/features/onboarding/hooks/use-onboarding';
 import { useUpdateInstruments, useUpdateGenres, useUpdateLogistics, useUpdateBio, useUpdateAvailability } from '@/features/profile/hooks/use-profile';
+import { useUpdateUsername } from '@/features/settings/hooks/use-settings';
 import type { Instrument, Genre, AvailabilityStatus } from '@sound-connect/common/types/profile-enums';
 
 export const Route = createFileRoute('/(auth)/onboarding/')({
@@ -37,6 +39,7 @@ type OnboardingData = {
     bio: string;
     status: AvailabilityStatus | null;
     profileImageUrl: string | null;
+    username: string;
 };
 
 function RouteComponent() {
@@ -49,7 +52,8 @@ function RouteComponent() {
         location: { city: '', country: '', latitude: 0, longitude: 0 },
         bio: '',
         status: null,
-        profileImageUrl: null
+        profileImageUrl: null,
+        username: ''
     });
 
     const updateProgressMutation = useUpdateOnboardingProgress();
@@ -61,9 +65,10 @@ function RouteComponent() {
     const updateLogisticsMutation = useUpdateLogistics();
     const updateBioMutation = useUpdateBio();
     const updateAvailabilityMutation = useUpdateAvailability();
+    const updateUsernameMutation = useUpdateUsername();
 
-    const totalSteps = 6;
-    const progressPercentage = currentStep === 0 || currentStep === 7 ? 0 : ((currentStep - 1) / totalSteps) * 100;
+    const totalSteps = 7;
+    const progressPercentage = currentStep === 0 || currentStep === 8 ? 0 : ((currentStep - 1) / totalSteps) * 100;
 
     const isStep1Valid = formData.primaryInstrument !== null;
     const isStep2Valid = formData.primaryGenre !== null;
@@ -72,7 +77,7 @@ function RouteComponent() {
     const hasCompletedOnboardingRef = useRef(false);
 
     useEffect(() => {
-        if (currentStep === 7 && !hasCompletedOnboardingRef.current) {
+        if (currentStep === 8 && !hasCompletedOnboardingRef.current) {
             hasCompletedOnboardingRef.current = true;
             completeOnboardingMutation.mutate(undefined, {
                 onSuccess: () => {
@@ -90,7 +95,7 @@ function RouteComponent() {
             return;
         }
 
-        if (currentStep >= 1 && currentStep <= 6) {
+        if (currentStep >= 1 && currentStep <= 7) {
             let saveSuccess = true;
 
             if (currentStep === 1 && formData.primaryInstrument) {
@@ -158,6 +163,16 @@ function RouteComponent() {
                 }
             }
 
+            if (currentStep === 7 && formData.username) {
+                try {
+                    await updateUsernameMutation.mutateAsync({
+                        username: formData.username
+                    });
+                } catch {
+                    saveSuccess = false;
+                }
+            }
+
             if (!saveSuccess) {
                 return;
             }
@@ -168,7 +183,7 @@ function RouteComponent() {
     };
 
     const handleSkip = () => {
-        if (currentStep >= 1 && currentStep <= 6) {
+        if (currentStep >= 1 && currentStep <= 7) {
             updateProgressMutation.mutate(currentStep);
             setCurrentStep(currentStep + 1);
         } else if (currentStep === 0) {
@@ -218,13 +233,17 @@ function RouteComponent() {
                                 <span className="text-primary">✓</span>
                                 <span>Upload a profile photo</span>
                             </li>
+                            <li className="flex items-center gap-2">
+                                <span className="text-primary">✓</span>
+                                <span>Choose a username</span>
+                            </li>
                         </ul>
                     </div>
                 </div>
             );
         }
 
-        if (currentStep === 7) {
+        if (currentStep === 8) {
             return (
                 <div className="space-y-6 text-center">
                     <div className="bg-primary/10 mx-auto flex h-20 w-20 items-center justify-center rounded-full">
@@ -270,6 +289,8 @@ function RouteComponent() {
                         onUploadComplete={(result) => setFormData({ ...formData, profileImageUrl: result.publicUrl })}
                     />
                 );
+            case 7:
+                return <StepUsername value={formData.username} onChange={(value) => setFormData({ ...formData, username: value })} />;
             default:
                 return null;
         }
@@ -281,6 +302,7 @@ function RouteComponent() {
         if (currentStep === 3) return !isStep3Valid || updateLogisticsMutation.isPending;
         if (currentStep === 4) return updateBioMutation.isPending;
         if (currentStep === 5) return updateAvailabilityMutation.isPending;
+        if (currentStep === 7) return updateUsernameMutation.isPending;
         return false;
     };
 
@@ -291,6 +313,7 @@ function RouteComponent() {
             updateLogisticsMutation.isPending ||
             updateBioMutation.isPending ||
             updateAvailabilityMutation.isPending ||
+            updateUsernameMutation.isPending ||
             updateProgressMutation.isPending
         );
     };
@@ -298,7 +321,7 @@ function RouteComponent() {
     return (
         <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-12">
             <Card className="w-full max-w-2xl">
-                {currentStep > 0 && currentStep < 7 && (
+                {currentStep > 0 && currentStep < 8 && (
                     <CardHeader className="space-y-4">
                         <div className="flex items-center justify-between">
                             <span className="text-muted-foreground text-sm font-medium">
@@ -323,7 +346,7 @@ function RouteComponent() {
                                 <div className="motion-safe:group-hover:animate-shimmer-sweep pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                             </Button>
                         </>
-                    ) : currentStep === 7 ? (
+                    ) : currentStep === 8 ? (
                         <Button onClick={() => navigate({ to: redirect || '/' })} className="w-full">
                             Go to Home
                         </Button>
@@ -335,14 +358,14 @@ function RouteComponent() {
                                         Back
                                     </Button>
                                 )}
-                                {currentStep >= 1 && currentStep <= 6 && (
+                                {currentStep >= 1 && currentStep <= 7 && (
                                     <Button variant="ghost" onClick={handleSkip} disabled={isPending()}>
                                         Skip
                                     </Button>
                                 )}
                             </div>
                             <Button onClick={handleNext} disabled={isContinueDisabled()} className="group relative overflow-hidden">
-                                <span className="relative z-10">{isPending() ? 'Saving...' : currentStep === 6 ? 'Finish' : 'Continue'}</span>
+                                <span className="relative z-10">{isPending() ? 'Saving...' : currentStep === 7 ? 'Finish' : 'Continue'}</span>
                                 <div className="motion-safe:group-hover:animate-shimmer-sweep pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                             </Button>
                         </>

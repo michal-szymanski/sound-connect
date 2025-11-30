@@ -16,7 +16,7 @@ const onboardingStatusSchema = z.discriminatedUnion('exists', [
 ]);
 
 const updateProgressSchema = z.object({
-    step: z.number().min(1).max(6)
+    step: z.number().min(1).max(7)
 });
 
 export const getOnboardingStatus = createServerFn()

@@ -13,7 +13,9 @@ import {
     blockUser,
     unblockUser,
     exportData,
-    deleteAccount
+    deleteAccount,
+    checkUsernameAvailability,
+    updateUsername
 } from '@/features/settings/server-functions/settings';
 import type {
     UpdateEmail,
@@ -22,7 +24,9 @@ import type {
     UpdateNotificationSettings,
     DeleteAccount,
     PrivacySettings,
-    NotificationSettings
+    NotificationSettings,
+    CheckUsernameAvailability,
+    UpdateUsername
 } from '@sound-connect/common/types/settings';
 
 export const useAccountInfo = () => {
@@ -278,6 +282,39 @@ export const useDeleteAccount = () => {
         onSuccess: () => {
             toast.success('Account deleted successfully');
             router.navigate({ to: '/' });
+        },
+        onError: (error: Error) => {
+            toast.error(error.message);
+        }
+    });
+};
+
+export const useCheckUsernameAvailability = () => {
+    return useMutation({
+        mutationFn: async (data: CheckUsernameAvailability) => {
+            const result = await checkUsernameAvailability({ data });
+            if (!result.success) {
+                throw new Error(result.body?.message || 'Failed to check username availability');
+            }
+            return result.body;
+        }
+    });
+};
+
+export const useUpdateUsername = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: UpdateUsername) => {
+            const result = await updateUsername({ data });
+            if (!result.success) {
+                throw new Error(result.body?.message || 'Failed to update username');
+            }
+            return result.body;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['auth'] });
+            queryClient.invalidateQueries({ queryKey: ['accountInfo'] });
         },
         onError: (error: Error) => {
             toast.error(error.message);

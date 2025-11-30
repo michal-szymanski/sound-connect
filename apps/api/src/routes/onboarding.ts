@@ -31,7 +31,7 @@ onboardingRoutes.post('/onboarding/progress', async (c) => {
     const body = await c.req.json();
     const { step } = z
         .object({
-            step: z.number().int().min(1).max(6)
+            step: z.number().int().min(1).max(7)
         })
         .parse(body);
 

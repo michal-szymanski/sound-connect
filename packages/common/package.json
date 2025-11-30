@@ -27,6 +27,7 @@
         "./types/uploads": "./src/types/uploads.ts",
         "./types/music-samples": "./src/types/music-samples.ts",
         "./types/settings": "./src/types/settings.ts",
+        "./reserved-usernames": "./src/reserved-usernames.ts",
         "./types/conversations": "./src/types/conversations.ts",
         "./utils/profile-completion": "./src/utils/profile-completion.ts",
         "./utils/geo": "./src/utils/geo.ts",

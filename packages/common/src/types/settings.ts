@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isReservedUsername } from '../reserved-usernames';
 
 export const ProfileVisibilityEnum = ['public', 'followers_only', 'private'] as const;
 export const MessagingPermissionEnum = ['anyone', 'followers', 'none'] as const;
@@ -125,3 +126,37 @@ export type DeleteAccount = z.infer<typeof deleteAccountSchema>;
 export type DeleteAccountResponse = z.infer<typeof deleteAccountResponseSchema>;
 
 export type AccountInfo = z.infer<typeof accountInfoSchema>;
+
+export const usernameSchema = z
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username cannot exceed 30 characters')
+    .regex(/^[a-zA-Z0-9]/, 'Username must start with a letter or number')
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens')
+    .transform((val) => val.toLowerCase())
+    .refine((val) => !isReservedUsername(val), {
+        message: 'This username is reserved and cannot be used'
+    });
+
+export const updateUsernameSchema = z.object({
+    username: usernameSchema.nullable()
+});
+
+export const checkUsernameAvailabilitySchema = z.object({
+    username: usernameSchema
+});
+
+export const checkUsernameAvailabilityResponseSchema = z.object({
+    available: z.boolean(),
+    username: z.string()
+});
+
+export const updateUsernameResponseSchema = z.object({
+    message: z.string(),
+    username: z.string().nullable()
+});
+
+export type UpdateUsername = z.infer<typeof updateUsernameSchema>;
+export type CheckUsernameAvailability = z.infer<typeof checkUsernameAvailabilitySchema>;
+export type CheckUsernameAvailabilityResponse = z.infer<typeof checkUsernameAvailabilityResponseSchema>;
+export type UpdateUsernameResponse = z.infer<typeof updateUsernameResponseSchema>;

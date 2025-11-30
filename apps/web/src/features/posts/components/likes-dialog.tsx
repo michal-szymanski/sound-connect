@@ -75,7 +75,7 @@ const LikesDialog = ({ isOpen, onClose, postId }: Props) => {
                                 <div key={user.id} className="flex items-center justify-between">
                                     <Link
                                         to="/users/$id"
-                                        params={{ id: user.id }}
+                                        params={{ id: user.username || user.id }}
                                         className="hover:bg-muted/50 flex flex-1 items-center space-x-3 rounded-lg p-2 transition-colors"
                                         onClick={onClose}
                                     >

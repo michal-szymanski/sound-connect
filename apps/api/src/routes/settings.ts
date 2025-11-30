@@ -20,12 +20,16 @@ import {
     updateEmailSchema,
     updatePasswordSchema,
     deleteAccountSchema,
-    accountInfoSchema
+    accountInfoSchema,
+    checkUsernameAvailabilitySchema,
+    checkUsernameAvailabilityResponseSchema,
+    updateUsernameSchema,
+    updateUsernameResponseSchema
 } from '@sound-connect/common/types/settings';
 import { schema } from '@/drizzle';
 import { db } from '@/api/db';
 import { eq, and, sql } from 'drizzle-orm';
-import { getUserById } from '@/api/db/queries/users-queries';
+import { getUserById, isUsernameAvailable, updateUsername } from '@/api/db/queries/users-queries';
 
 const settingsRoutes = new Hono<HonoContext>();
 
@@ -420,6 +424,47 @@ settingsRoutes.delete('/users/me', async (c) => {
     return c.json({
         message: 'Account deleted successfully'
     });
+});
+
+settingsRoutes.post('/users/username/check', async (c) => {
+    const body = await c.req.json();
+    const { username } = checkUsernameAvailabilitySchema.parse(body);
+
+    const available = await isUsernameAvailable(username);
+
+    const response = checkUsernameAvailabilityResponseSchema.parse({
+        available,
+        username
+    });
+
+    return c.json(response);
+});
+
+settingsRoutes.patch('/users/me/username', async (c) => {
+    const currentUser = c.get('user');
+    const body = await c.req.json();
+    const { username } = updateUsernameSchema.parse(body);
+
+    if (username !== null) {
+        const available = await isUsernameAvailable(username);
+
+        if (!available) {
+            throw new HTTPException(409, { message: 'Username is already taken' });
+        }
+    }
+
+    const updated = await updateUsername(currentUser.id, username);
+
+    if (!updated) {
+        throw new HTTPException(500, { message: 'Failed to update username' });
+    }
+
+    const response = updateUsernameResponseSchema.parse({
+        message: username === null ? 'Username removed successfully' : 'Username updated successfully',
+        username: updated.username
+    });
+
+    return c.json(response);
 });
 
 export { settingsRoutes };

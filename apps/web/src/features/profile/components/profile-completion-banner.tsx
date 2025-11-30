@@ -11,9 +11,10 @@ import { isServer } from '@/utils/env-utils';
 type Props = {
     profile: FullProfile;
     userId: string;
+    username?: string | null;
 };
 
-export function ProfileCompletionBanner({ profile, userId }: Props) {
+export function ProfileCompletionBanner({ profile, userId, username }: Props) {
     const [dismissed, setDismissed] = useState(() => {
         if (isServer()) return false;
         return localStorage.getItem('profile-completion-banner-dismissed') === 'true';
@@ -67,7 +68,7 @@ export function ProfileCompletionBanner({ profile, userId }: Props) {
                     </div>
                     <div className="shrink-0">
                         <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-                            <Link to="/users/$id" params={{ id: userId }}>
+                            <Link to="/users/$id" params={{ id: username || userId }}>
                                 Complete Now
                             </Link>
                         </Button>

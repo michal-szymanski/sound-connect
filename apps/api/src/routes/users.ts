@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 import { HonoContext } from 'types';
-import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getContacts, followUser, updateUserImage, updateUserBackgroundImage } from '@/api/db/queries/users-queries';
+import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getContacts, followUser, updateUserImage, updateUserBackgroundImage, getUserByUsername } from '@/api/db/queries/users-queries';
 import { notificationQueueMessageSchema } from '@/common/types/notifications';
 import { canViewProfile, canFollow } from '@/api/db/queries/settings-queries';
 import { profileSearchParamsSchema } from '@sound-connect/common/types/profile-search';
@@ -156,16 +156,31 @@ usersRoutes.get('/users/:userId', async (c) => {
     const { userId } = z.object({ userId: z.string() }).parse(c.req.param());
     const currentUser = c.get('user');
 
-    const allowed = await canViewProfile(currentUser.id, userId);
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUUID = uuidPattern.test(userId);
+
+    let user = null;
+    let targetUserId = userId;
+
+    if (!isUUID) {
+        user = await getUserByUsername(userId);
+        if (user) {
+            targetUserId = user.id;
+        }
+    }
+
+    if (!user) {
+        user = await getUserById(targetUserId);
+    }
+
+    if (!user) {
+        throw new HTTPException(404, { message: `User not found` });
+    }
+
+    const allowed = await canViewProfile(currentUser.id, user.id);
 
     if (!allowed) {
         throw new HTTPException(403, { message: 'Cannot view this profile' });
-    }
-
-    const user = await getUserById(userId);
-
-    if (!user) {
-        throw new HTTPException(404, { message: `User with ID ${userId} not found` });
     }
 
     return c.json(user);

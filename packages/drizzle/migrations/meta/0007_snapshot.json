@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "bfebee1b-41e2-432a-a4b1-bfbb76a797d4",
-  "prevId": "68882e84-69d0-483f-9686-7bc584b84511",
+  "id": "b7c51849-a74f-477c-b9a1-32065c332ad3",
+  "prevId": "bfebee1b-41e2-432a-a4b1-bfbb76a797d4",
   "tables": {
     "band_applications": {
       "name": "band_applications",
@@ -348,6 +348,13 @@
         },
         "profile_image_url": {
           "name": "profile_image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "background_image_url": {
+          "name": "background_image_url",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -2664,6 +2671,20 @@
         },
         "image": {
           "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "background_image": {
+          "name": "background_image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "username": {
+          "name": "username",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

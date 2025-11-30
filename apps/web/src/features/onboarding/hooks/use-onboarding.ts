@@ -49,7 +49,6 @@ export const useCompleteOnboarding = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['onboarding-status'] });
-            toast.success('Profile setup complete!');
         },
         onError: (error: Error) => {
             toast.error(error.message);

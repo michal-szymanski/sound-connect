@@ -1,5 +1,6 @@
 import { Label } from '@/shared/components/ui/label';
-import { ProfileImageUpload } from '@/features/profile/components/profile-image-upload';
+import { OnboardingProfileImageUpload } from '@/features/onboarding/components/onboarding-profile-image-upload';
+import { useAuth } from '@/shared/lib/react-query';
 
 type Props = {
     currentImageUrl?: string | null;
@@ -7,6 +8,12 @@ type Props = {
 };
 
 export const StepProfilePhoto = ({ currentImageUrl, onUploadComplete }: Props) => {
+    const { data: auth } = useAuth();
+
+    if (!auth?.user) {
+        return null;
+    }
+
     return (
         <div className="space-y-4">
             <div className="space-y-2">
@@ -17,7 +24,7 @@ export const StepProfilePhoto = ({ currentImageUrl, onUploadComplete }: Props) =
             </div>
 
             <div className="flex justify-center py-6">
-                <ProfileImageUpload currentImageUrl={currentImageUrl} onUploadComplete={onUploadComplete} />
+                <OnboardingProfileImageUpload currentImageUrl={currentImageUrl} userName={auth.user.name} onUploadComplete={onUploadComplete} />
             </div>
         </div>
     );

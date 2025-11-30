@@ -48,7 +48,7 @@ function RouteComponent() {
 
     return (
         <div className="flex w-full flex-col gap-5">
-            {profile && auth?.user && <ProfileCompletionBanner profile={profile} userId={auth.user.id} />}
+            {profile && auth?.user && <ProfileCompletionBanner profile={profile} userId={auth.user.id} username={auth.user.username} />}
 
             <Dialog open={isPostDialogOpen} onOpenChange={setIsPostDialogOpen}>
                 <Card className="border-border/40 w-full">

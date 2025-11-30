@@ -263,7 +263,7 @@ function RouteComponent() {
                                     </Badge>
                                 )}
                             </div>
-                            <p className="text-muted-foreground mt-1 text-sm">@{user.id.slice(0, 8)}</p>
+                            <p className="text-muted-foreground mt-1 text-sm">@{user.username || user.id.slice(0, 8)}</p>
                             {location && (
                                 <p className="text-muted-foreground mt-1 text-sm">
                                     {location}

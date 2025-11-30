@@ -53,7 +53,6 @@ export const useUpdateInstruments = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile'] });
-            toast.success('Instruments updated successfully');
         },
         onError: (error: Error) => {
             toast.error(error.message);
@@ -74,7 +73,6 @@ export const useUpdateGenres = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile'] });
-            toast.success('Genres updated successfully');
         },
         onError: (error: Error) => {
             toast.error(error.message);
@@ -95,7 +93,6 @@ export const useUpdateAvailability = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile'] });
-            toast.success('Availability updated successfully');
         },
         onError: (error: Error) => {
             toast.error(error.message);
@@ -116,7 +113,6 @@ export const useUpdateExperience = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile'] });
-            toast.success('Experience updated successfully');
         },
         onError: (error: Error) => {
             toast.error(error.message);
@@ -137,7 +133,6 @@ export const useUpdateLogistics = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile'] });
-            toast.success('Logistics updated successfully');
         },
         onError: (error: Error) => {
             toast.error(error.message);
@@ -158,7 +153,6 @@ export const useUpdateLookingFor = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile'] });
-            toast.success('Looking for updated successfully');
         },
         onError: (error: Error) => {
             toast.error(error.message);
@@ -179,7 +173,6 @@ export const useUpdateBio = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['profile'] });
-            toast.success('Bio updated successfully');
         },
         onError: (error: Error) => {
             toast.error(error.message);

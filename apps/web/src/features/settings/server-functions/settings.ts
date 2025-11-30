@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
-import { authMiddleware } from '@/shared/server-functions/middlewares';
+import { authMiddleware, envMiddleware } from '@/shared/server-functions/middlewares';
 import { success, failure, apiErrorHandler } from '@/shared/server-functions/helpers';
 import {
     updateEmailSchema,
@@ -19,7 +19,11 @@ import {
     exportDataResponseSchema,
     deleteAccountSchema,
     deleteAccountResponseSchema,
-    accountInfoSchema
+    accountInfoSchema,
+    checkUsernameAvailabilitySchema,
+    checkUsernameAvailabilityResponseSchema,
+    updateUsernameSchema,
+    updateUsernameResponseSchema
 } from '@sound-connect/common/types/settings';
 
 export const getAccountInfo = createServerFn()
@@ -330,6 +334,58 @@ export const deleteAccount = createServerFn({ method: 'POST' })
             return success(deleteAccountResponseSchema.parse(json));
         } catch (error) {
             console.error('deleteAccount error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred' });
+        }
+    });
+
+export const checkUsernameAvailability = createServerFn({ method: 'POST' })
+    .middleware([envMiddleware])
+    .inputValidator(checkUsernameAvailabilitySchema)
+    .handler(async ({ data, context: { env } }) => {
+        try {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/username/check`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                return await apiErrorHandler(response);
+            }
+
+            const json = await response.json();
+            return success(checkUsernameAvailabilityResponseSchema.parse(json));
+        } catch (error) {
+            console.error('checkUsernameAvailability error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred' });
+        }
+    });
+
+export const updateUsername = createServerFn({ method: 'POST' })
+    .middleware([authMiddleware])
+    .inputValidator(updateUsernameSchema)
+    .handler(async ({ data, context: { env, auth } }) => {
+        try {
+            const response = await env.API.fetch(`${env.API_URL}/api/users/me/username`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(auth.cookie && { Cookie: auth.cookie })
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                return await apiErrorHandler(response);
+            }
+
+            const json = await response.json();
+            return success(updateUsernameResponseSchema.parse(json));
+        } catch (error) {
+            console.error('updateUsername error:', error);
             return failure({ status: 500, message: 'An unexpected error occurred' });
         }
     });

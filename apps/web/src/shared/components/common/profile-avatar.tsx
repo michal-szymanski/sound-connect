@@ -10,6 +10,7 @@ type Props = {
         id: string;
         name: string;
         image: string | null;
+        username?: string | null;
     };
     type?: ProfileType;
     className?: string;
@@ -32,7 +33,7 @@ const ProfileAvatar = ({ profile, type = 'user', className, fallbackClassName, l
 
     if (linkToProfile) {
         const to = isBand ? '/bands/$id' : '/users/$id';
-        const params = { id: isBand ? profile.id.toString() : profile.id };
+        const params = { id: isBand ? profile.id.toString() : profile.username || profile.id };
 
         return (
             <Link to={to} params={params} className="shrink-0">

@@ -68,6 +68,11 @@ const createAuthInstance = ({ queue, apiUrl, clientUrl, secret }: CreateAuthOpti
                     type: 'string',
                     required: false,
                     input: false
+                },
+                username: {
+                    type: 'string',
+                    required: false,
+                    input: false
                 }
             }
         },
