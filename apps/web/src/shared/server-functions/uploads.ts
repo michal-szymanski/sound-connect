@@ -1,5 +1,4 @@
 import { createServerFn } from '@tanstack/react-start';
-import { z } from 'zod';
 import { authMiddleware } from '@/shared/server-functions/middlewares';
 import { success, failure, apiErrorHandler } from '@/shared/server-functions/helpers';
 import {
