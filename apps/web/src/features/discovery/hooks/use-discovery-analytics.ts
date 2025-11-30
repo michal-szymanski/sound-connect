@@ -5,10 +5,6 @@ import { trackDiscoveryAnalytics } from '../server-functions/band-discovery';
 export function useDiscoveryAnalytics() {
     const [sessionId] = useState(() => crypto.randomUUID());
 
-    useEffect(() => {
-        trackPageView();
-    }, [trackPageView]);
-
     const trackPageView = useCallback(() => {
         const event: DiscoveryAnalyticsEvent = {
             sessionId,
@@ -17,6 +13,10 @@ export function useDiscoveryAnalytics() {
 
         trackDiscoveryAnalytics({ data: event }).catch(() => {});
     }, [sessionId]);
+
+    useEffect(() => {
+        trackPageView();
+    }, [trackPageView]);
 
     const trackCardClick = useCallback(
         (bandId: number, matchScore: number, matchReasons: MatchReason[], positionInFeed: number) => {
