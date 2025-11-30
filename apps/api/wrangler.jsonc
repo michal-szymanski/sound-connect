@@ -14,7 +14,11 @@
     "vars": {
         "API_URL": "http://localhost:4000",
         "CLIENT_URL": "http://localhost:3000",
-        "BETTER_AUTH_URL": "http://localhost:4000/api/auth"
+        "BETTER_AUTH_URL": "http://localhost:4000/api/auth",
+        "R2_ACCOUNT_ID": "placeholder",
+        "R2_ACCESS_KEY_ID": "placeholder",
+        "R2_SECRET_ACCESS_KEY": "placeholder",
+        "R2_BUCKET_NAME": "sound-connect-assets-dev"
     },
     "version_metadata": {
         "binding": "CF_VERSION_METADATA"
@@ -47,7 +51,9 @@
     "r2_buckets": [
         {
             "binding": "ASSETS",
-            "bucket_name": "sound-connect-assets"
+            "bucket_name": "sound-connect-assets",
+            "preview_bucket_name": "sound-connect-assets-dev",
+            "remote": true
         }
     ],
     "queues": {
@@ -67,7 +73,8 @@
             "vars": {
                 "API_URL": "https://sound-connect-api-production.michal-szymanski92.workers.dev",
                 "CLIENT_URL": "https://sound-connect-web-production.michal-szymanski92.workers.dev",
-                "BETTER_AUTH_URL": "https://sound-connect-api-production.michal-szymanski92.workers.dev/api/auth"
+                "BETTER_AUTH_URL": "https://sound-connect-api-production.michal-szymanski92.workers.dev/api/auth",
+                "R2_BUCKET_NAME": "sound-connect-assets"
             },
             "version_metadata": {
                 "binding": "CF_VERSION_METADATA"

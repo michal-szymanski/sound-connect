@@ -12,7 +12,7 @@ import {
     deleteUploadSessions
 } from '@/api/db/queries/upload-sessions-queries';
 import {
-    generateUploadUrl,
+    generatePresignedPutUrl,
     moveR2Object,
     deleteR2Object,
     validateR2Object,
@@ -91,7 +91,25 @@ uploadsRoutes.post('/uploads/presigned-url', async (c) => {
         expiresAt
     });
 
-    const uploadUrl = await generateUploadUrl(c.env.API_URL, sessionId);
+    const isLocal = c.env.ENVIRONMENT === 'development' || !c.env.R2_ACCESS_KEY_ID;
+
+    let uploadUrl: string;
+
+    if (isLocal) {
+        uploadUrl = `${c.env.API_URL}/api/uploads/upload?sessionId=${sessionId}`;
+        console.log('[Presigned URL] Using local upload endpoint', { uploadUrl });
+    } else {
+        uploadUrl = await generatePresignedPutUrl(
+            c.env.R2_ACCOUNT_ID,
+            c.env.R2_ACCESS_KEY_ID,
+            c.env.R2_SECRET_ACCESS_KEY,
+            c.env.R2_BUCKET_NAME,
+            tempKey,
+            data.fileType,
+            appConfig.presignedUrlExpiryMinutes * 60
+        );
+        console.log('[Presigned URL] Using R2 presigned URL');
+    }
 
     return c.json({
         uploadUrl,

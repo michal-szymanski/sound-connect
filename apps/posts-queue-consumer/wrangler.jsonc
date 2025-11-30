@@ -28,7 +28,9 @@
     "r2_buckets": [
         {
             "binding": "ASSETS",
-            "bucket_name": "sound-connect-assets"
+            "bucket_name": "sound-connect-assets",
+            "preview_bucket_name": "sound-connect-assets-dev",
+            "remote": true
         }
     ],
     "env": {

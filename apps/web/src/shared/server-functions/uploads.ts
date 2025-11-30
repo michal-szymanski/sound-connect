@@ -38,50 +38,6 @@ export const requestPresignedUrl = createServerFn({ method: 'POST' })
         }
     });
 
-export const uploadFile = createServerFn({ method: 'POST' })
-    .middleware([authMiddleware])
-    .inputValidator(z.any())
-    .handler(async ({ data, context: { env, auth } }) => {
-        try {
-            if (!(data instanceof FormData)) {
-                return failure({ status: 400, message: 'FormData is required' });
-            }
-
-            const file = data.get('file');
-            const sessionId = data.get('sessionId');
-
-            if (!file || !(file instanceof File)) {
-                return failure({ status: 400, message: 'File is required' });
-            }
-
-            if (!sessionId || typeof sessionId !== 'string') {
-                return failure({ status: 400, message: 'Session ID is required' });
-            }
-
-            const response = await env.API.fetch(
-                `${env.API_URL}/api/uploads/upload?sessionId=${sessionId}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': file.type,
-                        ...(auth.cookie && { Cookie: auth.cookie })
-                    },
-                    body: file
-                }
-            );
-
-            if (!response.ok) {
-                const error = await response.json() as { message?: string };
-                return failure({ status: response.status, message: error.message || 'Upload failed' });
-            }
-
-            return success({ success: true });
-        } catch (error) {
-            console.error('uploadFile error:', error);
-            return failure({ status: 500, message: 'An unexpected error occurred during upload' });
-        }
-    });
-
 export const confirmUpload = createServerFn({ method: 'POST' })
     .middleware([authMiddleware])
     .inputValidator(uploadConfirmRequestSchema)

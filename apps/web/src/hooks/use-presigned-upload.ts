@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import type { UploadPurpose } from '@sound-connect/common/types/uploads';
-import { requestPresignedUrl, uploadFile, confirmUpload } from '@/shared/server-functions/uploads';
+import { requestPresignedUrl, confirmUpload } from '@/shared/server-functions/uploads';
 
 type UploadState = 'idle' | 'requesting' | 'uploading' | 'confirming' | 'success' | 'error';
 
@@ -95,35 +95,50 @@ export const usePresignedUpload = (options: UsePresignedUploadOptions): UsePresi
                     throw new Error(errorMsg);
                 }
 
-                const { key, sessionId } = presignedResult.body;
+                const { uploadUrl, key, sessionId } = presignedResult.body;
                 console.log('[Upload] Got presigned URL', { sessionId, key });
 
-                console.log('[Upload] State: uploading file');
+                console.log('[Upload] State: uploading file directly to R2');
                 setState('uploading');
                 setProgress(50);
 
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('sessionId', sessionId);
+                console.log('[Upload] Uploading directly to R2 via presigned URL');
 
-                console.log('[Upload] Calling uploadFile server function');
-                const uploadResult = await uploadFile({ data: formData });
+                await new Promise<void>((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
 
-                console.log('[Upload] Upload result:', {
-                    success: uploadResult.success,
-                    hasBody: !!uploadResult.body,
-                    bodyContent: uploadResult.body
+                    xhr.upload.addEventListener('progress', (e) => {
+                        if (e.lengthComputable) {
+                            const percentComplete = Math.round((e.loaded / e.total) * 100);
+                            const mappedProgress = 50 + Math.round(percentComplete * 0.4);
+                            setProgress(mappedProgress);
+                        }
+                    });
+
+                    xhr.addEventListener('load', () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            setProgress(90);
+                            resolve();
+                        } else {
+                            reject(new Error(`Upload failed with status ${xhr.status}`));
+                        }
+                    });
+
+                    xhr.addEventListener('error', () => {
+                        reject(new Error('Upload to R2 failed'));
+                    });
+
+                    xhr.addEventListener('abort', () => {
+                        reject(new Error('Upload aborted'));
+                    });
+
+                    xhr.open('PUT', uploadUrl);
+                    xhr.setRequestHeader('Content-Type', file.type);
+                    xhr.send(file);
                 });
-
-                if (!uploadResult.success) {
-                    const errorMsg = uploadResult.body?.message || 'Upload failed';
-                    console.error('[Upload] Upload failed:', errorMsg, uploadResult);
-                    throw new Error(errorMsg);
-                }
 
                 console.log('[Upload] State: confirming upload');
                 setState('confirming');
-                setProgress(90);
 
                 const confirmResult = await confirmUpload({
                     data: {
@@ -149,10 +164,9 @@ export const usePresignedUpload = (options: UsePresignedUploadOptions): UsePresi
 
                 onSuccess?.(confirmResult.body);
 
-                console.log('[Upload] Scheduling reset to idle in 2 seconds');
-                resetTimeoutRef.current = setTimeout(() => {
-                    resetToIdle();
-                }, 2000);
+                console.log('[Upload] Resetting to idle immediately');
+                setState('idle');
+                setProgress(0);
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Upload failed';
                 console.error('[Upload] Error during upload:', {

@@ -94,9 +94,9 @@ export const PostMediaUpload = (props: Props) => {
     }, [existingMedia]);
 
     useEffect(() => {
-        if (state === 'uploading' || state === 'requesting' || state === 'confirming') {
+        if (state === 'uploading' || state === 'requesting') {
             onUploadStateChange?.('uploading');
-        } else if (state === 'success') {
+        } else if (state === 'success' || state === 'confirming') {
             onUploadStateChange?.('success');
         } else if (state === 'error') {
             onUploadStateChange?.('error');
@@ -203,7 +203,7 @@ export const PostMediaUpload = (props: Props) => {
         }
     };
 
-    const isUploading = state === 'uploading' || state === 'requesting' || state === 'confirming';
+    const isUploading = state === 'uploading' || state === 'requesting';
     const hasError = state === 'error';
     const canAddMore = previews.length < maxFiles;
 
@@ -270,13 +270,17 @@ export const PostMediaUpload = (props: Props) => {
                                                     <div
                                                         className={cn(
                                                             'absolute inset-0 flex flex-col items-center justify-center gap-2 p-2',
-                                                            'bg-background/90 backdrop-blur-sm',
-                                                            'transition-opacity duration-300',
-                                                            uploadProgress === 100 && 'opacity-0'
+                                                            'bg-background/90 backdrop-blur-sm'
                                                         )}
                                                     >
-                                                        <Progress value={uploadProgress} className="h-2 w-full" />
-                                                        <span className="text-xs font-semibold tabular-nums">{uploadProgress}%</span>
+                                                        {uploadProgress < 100 ? (
+                                                            <>
+                                                                <Progress value={uploadProgress} className="h-2 w-full" />
+                                                                <span className="text-xs font-semibold tabular-nums">{uploadProgress}%</span>
+                                                            </>
+                                                        ) : (
+                                                            <span className="text-xs text-muted-foreground">Finalizing...</span>
+                                                        )}
                                                     </div>
                                                 )}
 

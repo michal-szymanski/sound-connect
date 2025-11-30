@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import type { UploadPurpose } from '@sound-connect/common/types/uploads';
-import { requestPresignedUrl, uploadFile, confirmBatchUpload } from '@/shared/server-functions/uploads';
+import { requestPresignedUrl, confirmBatchUpload } from '@/shared/server-functions/uploads';
 
 type UploadState = 'idle' | 'requesting' | 'uploading' | 'confirming' | 'success' | 'error';
 
@@ -21,6 +21,7 @@ type UseBatchPresignedUploadResult = {
 };
 
 type UploadSession = {
+    uploadUrl: string;
     sessionId: string;
     key: string;
 };
@@ -120,12 +121,13 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
                         throw new Error('Unexpected error in presigned URL results');
                     }
                     return {
+                        uploadUrl: result.body.uploadUrl,
                         sessionId: result.body.sessionId,
                         key: result.body.key
                     };
                 });
 
-                console.log('[BatchUpload] State: uploading files', {
+                console.log('[BatchUpload] State: uploading files directly to R2', {
                     sessionCount: sessions.length
                 });
                 setState('uploading');
@@ -136,22 +138,54 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
                         throw new Error('File not found for session');
                     }
 
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('sessionId', session.sessionId);
+                    console.log(`[BatchUpload] Uploading file ${index + 1} directly to R2`);
 
-                    const uploadResult = await uploadFile({ data: formData });
+                    await new Promise<void>((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
 
-                    if (!uploadResult.success) {
-                        throw new Error(uploadResult.body?.message || 'Upload failed');
-                    }
+                        xhr.upload.addEventListener('progress', (e) => {
+                            if (e.lengthComputable) {
+                                const percentComplete = Math.round((e.loaded / e.total) * 100);
+                                setProgress((prev) => {
+                                    const newProgress = [...prev];
+                                    newProgress[index] = percentComplete;
+                                    const overall = Math.round(
+                                        newProgress.reduce((sum, p) => sum + p, 0) / newProgress.length
+                                    );
+                                    setOverallProgress(overall);
+                                    return newProgress;
+                                });
+                            }
+                        });
 
-                    setProgress((prev) => {
-                        const newProgress = [...prev];
-                        newProgress[index] = 100;
-                        const overall = Math.round(newProgress.reduce((sum, p) => sum + p, 0) / newProgress.length);
-                        setOverallProgress(overall);
-                        return newProgress;
+                        xhr.addEventListener('load', () => {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                setProgress((prev) => {
+                                    const newProgress = [...prev];
+                                    newProgress[index] = 100;
+                                    const overall = Math.round(
+                                        newProgress.reduce((sum, p) => sum + p, 0) / newProgress.length
+                                    );
+                                    setOverallProgress(overall);
+                                    return newProgress;
+                                });
+                                resolve();
+                            } else {
+                                reject(new Error(`Upload failed with status ${xhr.status} for file ${index + 1}`));
+                            }
+                        });
+
+                        xhr.addEventListener('error', () => {
+                            reject(new Error(`Upload to R2 failed for file ${index + 1}`));
+                        });
+
+                        xhr.addEventListener('abort', () => {
+                            reject(new Error(`Upload aborted for file ${index + 1}`));
+                        });
+
+                        xhr.open('PUT', session.uploadUrl);
+                        xhr.setRequestHeader('Content-Type', file.type);
+                        xhr.send(file);
                     });
                 });
 
@@ -160,37 +194,35 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
                     await Promise.all(uploadPromises.slice(i, i + batchSize));
                 }
 
-                console.log('[BatchUpload] State: confirming uploads');
-                setState('confirming');
-                setProgress(files.map(() => 100));
-                setOverallProgress(100);
+                console.log('[BatchUpload] Upload complete, calling onSuccess with pending keys');
+                const pendingResults = sessions.map((session) => ({
+                    publicUrl: `/media/${session.key}`,
+                    key: session.key
+                }));
+                onSuccess?.(pendingResults);
 
-                const confirmResult = await confirmBatchUpload({
+                console.log('[BatchUpload] Resetting state to enable buttons');
+                setState('idle');
+                setProgress([]);
+                setOverallProgress(0);
+
+                console.log('[BatchUpload] Running confirmation in background');
+                confirmBatchUpload({
                     data: {
                         sessionIds: sessions.map((s) => s.sessionId),
                         keys: sessions.map((s) => s.key)
                     }
-                });
-
-                console.log('[BatchUpload] Confirm result:', {
-                    success: confirmResult.success,
-                    hasBody: !!confirmResult.body
-                });
-
-                if (!confirmResult.success) {
-                    const errorMsg = confirmResult.body?.message || 'Failed to confirm uploads';
-                    console.error('[BatchUpload] Confirmation failed:', errorMsg);
-                    throw new Error(errorMsg);
-                }
-
-                console.log('[BatchUpload] Upload successful!', confirmResult.body);
-                setState('success');
-                onSuccess?.(confirmResult.body.results);
-
-                console.log('[BatchUpload] Scheduling reset to idle in 2 seconds');
-                resetTimeoutRef.current = setTimeout(() => {
-                    resetToIdle();
-                }, 2000);
+                })
+                    .then((result) => {
+                        if (!result.success) {
+                            console.error('[BatchUpload] Background confirmation failed:', result.body?.message);
+                        } else {
+                            console.log('[BatchUpload] Background confirmation successful');
+                        }
+                    })
+                    .catch((err) => {
+                        console.error('[BatchUpload] Background confirmation error:', err);
+                    });
             } catch (err) {
                 const errorMessage = err instanceof Error ? err.message : 'Upload failed';
                 console.error('[BatchUpload] Error during upload:', {
