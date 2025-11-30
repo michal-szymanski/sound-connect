@@ -60,6 +60,17 @@ uploadsRoutes.post('/uploads/presigned-url', async (c) => {
         }
     }
 
+    if (data.purpose === 'band-background') {
+        if (!data.bandId) {
+            throw new HTTPException(400, { message: 'Band ID is required for band background uploads' });
+        }
+
+        const isAdmin = await isBandAdmin(data.bandId, user.id);
+        if (!isAdmin) {
+            throw new HTTPException(403, { message: 'You must be a band admin to upload band backgrounds' });
+        }
+    }
+
     const sessionId = crypto.randomUUID();
     const sanitizedName = sanitizeFileName(data.fileName);
     const extension = sanitizedName.split('.').pop() || 'bin';
@@ -170,6 +181,11 @@ uploadsRoutes.post('/uploads/confirm', async (c) => {
             throw new HTTPException(400, { message: 'Band ID is missing' });
         }
         permanentKey = `bands/${session.bandId}/avatar-${timestamp}.${extension}`;
+    } else if (session.uploadType === 'band-background') {
+        if (!session.bandId) {
+            throw new HTTPException(400, { message: 'Band ID is missing' });
+        }
+        permanentKey = `bands/${session.bandId}/cover-${timestamp}.${extension}`;
     } else if (session.uploadType === 'music-sample') {
         permanentKey = `music-samples/${user.id}/${timestamp}-${data.sessionId}.${extension}`;
     } else {

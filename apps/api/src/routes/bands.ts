@@ -27,7 +27,9 @@ import {
     isBandMember,
     getAdminCount,
     getUserBands,
-    userExists
+    userExists,
+    updateBandProfileImage,
+    updateBandBackgroundImage
 } from '@/api/db/queries/bands-queries';
 import { createBandPost, getBandPosts } from '@/api/db/queries/band-posts-queries';
 import {
@@ -135,6 +137,42 @@ bandsRoutes.patch('/bands/:id', async (c) => {
     }
 
     const updatedBand = await updateBand(id, data);
+
+    return c.json(updatedBand);
+});
+
+bandsRoutes.patch('/bands/:id/profile-image', async (c) => {
+    const { id } = z.object({ id: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const isAdmin = await isBandAdmin(id, user.id);
+    if (!isAdmin) {
+        throw new HTTPException(403, { message: 'Not authorized to update this band' });
+    }
+
+    const body = await c.req.json();
+    const { profileImageUrl } = z.object({ profileImageUrl: z.string() }).parse(body);
+
+    const updatedBand = await updateBandProfileImage(id, profileImageUrl);
+
+    return c.json(updatedBand);
+});
+
+bandsRoutes.patch('/bands/:id/background-image', async (c) => {
+    const { id } = z.object({ id: z.coerce.number().positive() }).parse(c.req.param());
+
+    const user = c.get('user');
+
+    const isAdmin = await isBandAdmin(id, user.id);
+    if (!isAdmin) {
+        throw new HTTPException(403, { message: 'Not authorized to update this band' });
+    }
+
+    const body = await c.req.json();
+    const { backgroundImageUrl } = z.object({ backgroundImageUrl: z.string() }).parse(body);
+
+    const updatedBand = await updateBandBackgroundImage(id, backgroundImageUrl);
 
     return c.json(updatedBand);
 });

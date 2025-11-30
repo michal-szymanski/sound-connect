@@ -237,3 +237,41 @@ export const userExists = async (userId: string): Promise<boolean> => {
 
     return Boolean(result);
 };
+
+export const updateBandProfileImage = async (bandId: number, imageUrl: string): Promise<Band> => {
+    const now = new Date().toISOString();
+
+    const [updated] = await db
+        .update(bandsTable)
+        .set({
+            profileImageUrl: imageUrl,
+            updatedAt: now
+        })
+        .where(eq(bandsTable.id, bandId))
+        .returning();
+
+    if (!updated) {
+        throw new Error('Failed to update band profile image');
+    }
+
+    return updated;
+};
+
+export const updateBandBackgroundImage = async (bandId: number, imageUrl: string): Promise<Band> => {
+    const now = new Date().toISOString();
+
+    const [updated] = await db
+        .update(bandsTable)
+        .set({
+            backgroundImageUrl: imageUrl,
+            updatedAt: now
+        })
+        .where(eq(bandsTable.id, bandId))
+        .returning();
+
+    if (!updated) {
+        throw new Error('Failed to update band background image');
+    }
+
+    return updated;
+};

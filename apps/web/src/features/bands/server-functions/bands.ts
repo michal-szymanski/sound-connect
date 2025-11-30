@@ -390,3 +390,61 @@ export const getIsFollowingBand = createServerFn()
             return failure({ status: 500, message: 'An unexpected error occurred' });
         }
     });
+
+export const updateBandProfileImage = createServerFn({ method: 'POST' })
+    .middleware([authMiddleware])
+    .inputValidator(z.object({ bandId: z.number(), profileImageUrl: z.string() }))
+    .handler(async ({ data, context: { env, auth } }) => {
+        try {
+            const { bandId, profileImageUrl } = data;
+
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${bandId}/profile-image`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(auth.cookie && { Cookie: auth.cookie })
+                },
+                body: JSON.stringify({ profileImageUrl }),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                return await apiErrorHandler(response);
+            }
+
+            const json = await response.json();
+            return success(bandSchema.parse(json));
+        } catch (error) {
+            console.error('updateBandProfileImage error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred' });
+        }
+    });
+
+export const updateBandBackgroundImage = createServerFn({ method: 'POST' })
+    .middleware([authMiddleware])
+    .inputValidator(z.object({ bandId: z.number(), backgroundImageUrl: z.string() }))
+    .handler(async ({ data, context: { env, auth } }) => {
+        try {
+            const { bandId, backgroundImageUrl } = data;
+
+            const response = await env.API.fetch(`${env.API_URL}/api/bands/${bandId}/background-image`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(auth.cookie && { Cookie: auth.cookie })
+                },
+                body: JSON.stringify({ backgroundImageUrl }),
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                return await apiErrorHandler(response);
+            }
+
+            const json = await response.json();
+            return success(bandSchema.parse(json));
+        } catch (error) {
+            console.error('updateBandBackgroundImage error:', error);
+            return failure({ status: 500, message: 'An unexpected error occurred' });
+        }
+    });

@@ -24,7 +24,8 @@ import { BandPostComposer } from '@/features/bands/components/band-post-composer
 import { BandPostFeed } from '@/features/bands/components/band-post-feed';
 import { ApplyToBandButton } from '@/features/bands/components/apply-to-band-button';
 import { BandApplicationsList } from '@/features/bands/components/band-applications-list';
-import { useUpdateBand, useDeleteBand, useAddBandMember, useRemoveBandMember } from '@/features/bands/hooks/use-bands';
+import { EditableBandBackground } from '@/features/bands/components/editable-band-background';
+import { useBand, useUpdateBand, useDeleteBand, useAddBandMember, useRemoveBandMember } from '@/features/bands/hooks/use-bands';
 import { getBand } from '@/features/bands/server-functions/bands';
 import { getBandApplications, getUserApplicationStatus } from '@/features/bands/server-functions/band-applications';
 import { useAuth } from '@/shared/lib/react-query';
@@ -97,6 +98,7 @@ function RouteComponent() {
     const { data: auth } = useAuth();
 
     const bandId = loaderData.type === 'success' ? loaderData.data.band.id : 0;
+    const { data: freshBand } = useBand(bandId);
     const updateBand = useUpdateBand(bandId);
     const deleteBand = useDeleteBand();
     const addMember = useAddBandMember(bandId);
@@ -118,7 +120,8 @@ function RouteComponent() {
         );
     }
 
-    const { band, applications, applicationStatus } = loaderData.data;
+    const band = freshBand || loaderData.data.band;
+    const { applications, applicationStatus } = loaderData.data;
     const isUserAdmin = band.isUserAdmin || false;
 
     const pendingApplicationsCount = applications?.total || 0;
@@ -168,9 +171,28 @@ function RouteComponent() {
         return `/musicians?${params.toString()}`;
     };
 
+    const DEFAULT_GRADIENT = 'linear-gradient(135deg, hsl(var(--primary)/0.1), hsl(var(--secondary)/0.1))';
+
     return (
         <div className="w-full space-y-6">
-            <Card>
+            <Card className="border-border/40 overflow-hidden">
+                {isUserAdmin ? (
+                    <EditableBandBackground bandId={band.id} currentImage={band.backgroundImageUrl ?? null} />
+                ) : band.backgroundImageUrl ? (
+                    <div className="relative h-48 overflow-hidden sm:h-60">
+                        <img
+                            src={band.backgroundImageUrl}
+                            alt={`${band.name} background`}
+                            className="h-full w-full object-cover"
+                        />
+                    </div>
+                ) : (
+                    <div
+                        className="relative h-48 overflow-hidden sm:h-60"
+                        style={{ background: DEFAULT_GRADIENT }}
+                    />
+                )}
+
                 <CardContent className="p-6">
                     <BandHeader band={band} isUserAdmin={isUserAdmin} isUserMember={isUserMember} onEdit={() => setIsEditing(true)} />
                 </CardContent>

@@ -6,6 +6,7 @@ import { MapPin, Music2, Pencil, Users } from 'lucide-react';
 import { BandFollowButton } from './band-follow-button';
 import { BandMessageButton } from './band-message-button';
 import { BandFollowersModal } from './band-followers-modal';
+import { EditableBandAvatar } from './editable-band-avatar';
 import { useBandFollowerCount } from '@/features/bands/hooks/use-bands';
 import type { BandWithMembers } from '@sound-connect/common/types/bands';
 
@@ -41,10 +42,18 @@ export function BandHeader({ band, isUserAdmin, isUserMember, onEdit }: Props) {
         <>
             <div className="flex flex-col gap-4">
                 <div className="flex items-start gap-4">
-                    <Avatar className="h-20 w-20 flex-shrink-0 sm:h-24 sm:w-24">
-                        <AvatarImage src={band.profileImageUrl || undefined} alt={band.name} />
-                        <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-                    </Avatar>
+                    {isUserAdmin ? (
+                        <EditableBandAvatar
+                            bandId={band.id}
+                            currentImage={band.profileImageUrl}
+                            bandName={band.name}
+                        />
+                    ) : (
+                        <Avatar className="h-20 w-20 flex-shrink-0 rounded-lg sm:h-24 sm:w-24">
+                            <AvatarImage src={band.profileImageUrl || undefined} alt={band.name} />
+                            <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
+                        </Avatar>
+                    )}
 
                     <div className="min-w-0 flex-1 space-y-2">
                         <h1 className="text-2xl font-bold sm:text-3xl">{band.name}</h1>

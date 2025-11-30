@@ -32,7 +32,7 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
         country: initialData?.country || 'USA',
         latitude: initialData?.latitude ?? 0,
         longitude: initialData?.longitude ?? 0,
-        primaryGenre: initialData?.primaryGenre || ('rock' as const),
+        primaryGenre: initialData?.primaryGenre || ('' as const),
         lookingFor: initialData?.lookingFor || ''
     });
 

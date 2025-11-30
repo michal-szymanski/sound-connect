@@ -41,6 +41,7 @@ export const bandSchema = z.object({
     primaryGenre: z.enum(GenreEnum).nullable(),
     lookingFor: z.string().nullable(),
     profileImageUrl: z.string().nullable(),
+    backgroundImageUrl: z.string().nullable(),
     createdAt: z.string(),
     updatedAt: z.string().nullable()
 });

@@ -15,7 +15,9 @@ import {
     unfollowBand,
     getBandFollowers,
     getBandFollowerCount,
-    getIsFollowingBand
+    getIsFollowingBand,
+    updateBandProfileImage,
+    updateBandBackgroundImage
 } from '@/features/bands/server-functions/bands';
 import type { CreateBandInput, UpdateBandInput } from '@sound-connect/common/types/bands';
 import type { CreateBandPostInput } from '@sound-connect/common/types/band-posts';
@@ -327,5 +329,49 @@ export const useIsFollowingBand = (bandId: number) => {
             return result.body;
         },
         staleTime: 5 * 60 * 1000
+    });
+};
+
+export const useUpdateBandProfileImage = (bandId: number) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (profileImageUrl: string) => {
+            const result = await updateBandProfileImage({ data: { bandId, profileImageUrl } });
+            if (!result.success) {
+                throw new Error(result.body?.message || 'Failed to update band profile image');
+            }
+            return result.body;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['band', bandId] });
+            queryClient.invalidateQueries({ queryKey: ['user-bands'] });
+            toast.success('Profile image updated successfully');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message);
+        }
+    });
+};
+
+export const useUpdateBandBackgroundImage = (bandId: number) => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (backgroundImageUrl: string) => {
+            const result = await updateBandBackgroundImage({ data: { bandId, backgroundImageUrl } });
+            if (!result.success) {
+                throw new Error(result.body?.message || 'Failed to update band background image');
+            }
+            return result.body;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['band', bandId] });
+            queryClient.invalidateQueries({ queryKey: ['user-bands'] });
+            toast.success('Background image updated successfully');
+        },
+        onError: (error: Error) => {
+            toast.error(error.message);
+        }
     });
 };

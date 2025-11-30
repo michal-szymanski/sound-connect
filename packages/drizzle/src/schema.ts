@@ -101,6 +101,7 @@ export const bandsTable = sqliteTable(
         longitude: integer('longitude', { mode: 'number' }),
         lookingFor: text('looking_for'),
         profileImageUrl: text('profile_image_url'),
+        backgroundImageUrl: text('background_image_url'),
         createdAt: text('created_at').notNull(),
         updatedAt: text('updated_at')
     },
@@ -420,7 +421,7 @@ export const bandApplicationsRelations = relations(bandApplicationsTable, ({ one
     user: one(users, { fields: [bandApplicationsTable.userId], references: [users.id] })
 }));
 
-export const uploadTypeEnum = ['profile-image', 'band-image', 'post-media', 'music-sample', 'background-image'] as const;
+export const uploadTypeEnum = ['profile-image', 'band-image', 'post-media', 'music-sample', 'background-image', 'band-background'] as const;
 
 export const uploadSessionsTable = sqliteTable(
     'upload_sessions',

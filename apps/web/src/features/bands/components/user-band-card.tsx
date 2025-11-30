@@ -35,7 +35,7 @@ export function UserBandCard({ band }: Props) {
             <Card className="group border-border/40 hover:border-border/60 cursor-pointer overflow-hidden transition-all hover:shadow-lg">
                 <CardContent className="p-5">
                     <div className="flex gap-5">
-                        <Avatar className="group-hover:ring-primary/20 h-16 w-16 flex-shrink-0 ring-2 ring-transparent transition-all">
+                        <Avatar className="group-hover:ring-primary/20 h-16 w-16 flex-shrink-0 rounded-lg ring-2 ring-transparent transition-all">
                             <AvatarImage src={band.profileImageUrl || undefined} alt={band.name} />
                             <AvatarFallback>{initials}</AvatarFallback>
                         </Avatar>
