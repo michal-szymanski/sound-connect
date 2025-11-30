@@ -6,18 +6,20 @@ import { Progress } from '@/shared/components/ui/progress';
 import { Alert, AlertDescription } from '@/shared/components/ui/alert';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
 import { Badge } from '@/shared/components/ui/badge';
+import { Input } from '@/shared/components/ui/input';
 import { cn } from '@/shared/lib/utils';
 
 export type MediaWithType = {
     key: string;
     type: 'image' | 'video' | 'audio';
+    title?: string;
 };
 
 type Props = {
     onMediaKeysChange?: (keysWithTypes: MediaWithType[]) => void;
     maxFiles?: number;
     className?: string;
-    existingMedia?: Array<{ id: string; key: string; type: 'image' | 'video' | 'audio' }>;
+    existingMedia?: Array<{ id: string; key: string; type: 'image' | 'video' | 'audio'; title?: string | null }>;
     onExistingMediaRemove?: (key: string) => void;
     onUploadStateChange?: (state: 'idle' | 'uploading' | 'success' | 'error') => void;
     disabled?: boolean;
@@ -30,6 +32,7 @@ type MediaPreview = {
     type: 'image' | 'video' | 'audio';
     key?: string;
     isExisting?: boolean;
+    title?: string;
 };
 
 export const PostMediaUpload = (props: Props) => {
@@ -41,15 +44,18 @@ export const PostMediaUpload = (props: Props) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const pendingUploadTypesRef = useRef<Array<'image' | 'video' | 'audio'>>([]);
 
-    const { upload, progress, overallProgress, state, error } = useBatchPresignedUpload({
+    const { upload, progress, state, error } = useBatchPresignedUpload({
         purpose: 'post-media',
         maxFiles,
         onSuccess: (results: Array<{ publicUrl: string; key: string }>) => {
             const keys = results.map((r, index) => {
                 const type = pendingUploadTypesRef.current[index];
+                const previewsWithoutKeys = previews.filter((preview) => !preview.isExisting && !preview.key);
+                const preview = previewsWithoutKeys[index];
                 return {
                     key: r.key,
-                    type: type || 'image'
+                    type: type || 'image',
+                    title: preview?.title
                 };
             });
             setNewMediaKeysWithTypes((prev) => {
@@ -80,7 +86,8 @@ export const PostMediaUpload = (props: Props) => {
                 previewUrl: `/media/${m.key}`,
                 type: m.type,
                 key: m.key,
-                isExisting: true
+                isExisting: true,
+                title: m.title || undefined
             }));
             setPreviews(existingPreviews);
         }
@@ -171,6 +178,31 @@ export const PostMediaUpload = (props: Props) => {
         fileInputRef.current?.click();
     };
 
+    const handleTitleChange = (id: string, newTitle: string) => {
+        setPreviews((prev) => {
+            return prev.map((p) => {
+                if (p.id === id) {
+                    return { ...p, title: newTitle };
+                }
+                return p;
+            });
+        });
+
+        if (previews.find((p) => p.id === id)?.key) {
+            setNewMediaKeysWithTypes((prev) => {
+                const updated = prev.map((k) => {
+                    const preview = previews.find((p) => p.key === k.key && p.id === id);
+                    if (preview) {
+                        return { ...k, title: newTitle };
+                    }
+                    return k;
+                });
+                onMediaKeysChange?.(updated);
+                return updated;
+            });
+        }
+    };
+
     const isUploading = state === 'uploading' || state === 'requesting' || state === 'confirming';
     const hasError = state === 'error';
     const canAddMore = previews.length < maxFiles;
@@ -197,88 +229,102 @@ export const PostMediaUpload = (props: Props) => {
                                 const uploadProgress = isCurrentlyUploading ? progress[uploadingIndex] : undefined;
 
                                 return (
-                                    <div key={preview.id} className="group relative">
-                                        <div className="border-input bg-muted relative aspect-square overflow-hidden rounded-lg border">
-                                            {preview.type === 'image' ? (
-                                                <img src={preview.previewUrl} alt={`Media ${index + 1}`} className="w-full object-cover" />
-                                            ) : preview.type === 'video' ? (
-                                                <video
-                                                    src={preview.previewUrl}
-                                                    preload="metadata"
-                                                    muted
-                                                    playsInline
-                                                    className="h-full w-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/20 to-primary/5 p-3">
-                                                    <div className="bg-primary/10 rounded-full p-3">
+                                    <div key={preview.id} className="group">
+                                        <div className="flex flex-col gap-2">
+                                            <div className="border-input bg-muted relative aspect-square overflow-hidden rounded-lg border">
+                                                {preview.type === 'image' ? (
+                                                    <img src={preview.previewUrl} alt={`Media ${index + 1}`} className="w-full object-cover" />
+                                                ) : preview.type === 'video' ? (
+                                                    <video
+                                                        src={preview.previewUrl}
+                                                        preload="metadata"
+                                                        muted
+                                                        playsInline
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/20 to-primary/5 p-3">
+                                                        <div className="bg-primary/10 rounded-full p-3">
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={1.5}
+                                                                stroke="currentColor"
+                                                                className="text-primary h-6 w-6"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z"
+                                                                />
+                                                            </svg>
+                                                        </div>
+                                                        <span className="text-muted-foreground w-full truncate px-2 text-center text-[11px]">
+                                                            {preview.file?.name || 'Audio file'}
+                                                        </span>
+                                                    </div>
+                                                )}
+
+                                                {isUploading && uploadProgress !== undefined && (
+                                                    <div
+                                                        className={cn(
+                                                            'absolute inset-0 flex flex-col items-center justify-center gap-2 p-2',
+                                                            'bg-background/90 backdrop-blur-sm',
+                                                            'transition-opacity duration-300',
+                                                            uploadProgress === 100 && 'opacity-0'
+                                                        )}
+                                                    >
+                                                        <Progress value={uploadProgress} className="h-2 w-full" />
+                                                        <span className="text-xs font-semibold tabular-nums">{uploadProgress}%</span>
+                                                    </div>
+                                                )}
+
+                                                {!isUploading && !disabled && (
+                                                    <button
+                                                        onClick={() => handleRemove(preview.id)}
+                                                        className="bg-destructive absolute top-2 right-2 rounded-full p-1.5 text-white shadow-lg transition-opacity md:opacity-0 md:group-hover:opacity-100"
+                                                        type="button"
+                                                        aria-label={`Remove ${preview.type}`}
+                                                    >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
+                                                            strokeWidth={2}
                                                             stroke="currentColor"
-                                                            className="text-primary h-6 w-6"
+                                                            className="h-4 w-4"
                                                         >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z"
-                                                            />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                                                         </svg>
-                                                    </div>
-                                                    <span className="text-muted-foreground w-full truncate px-2 text-center text-[11px]">
-                                                        {preview.file?.name || 'Audio file'}
-                                                    </span>
-                                                </div>
+                                                    </button>
+                                                )}
+
+                                                {preview.type === 'video' && (
+                                                    <Badge variant="secondary" className="absolute top-2 left-2 bg-background/90 backdrop-blur-sm">
+                                                        Video
+                                                    </Badge>
+                                                )}
+                                                {preview.type === 'audio' && (
+                                                    <Badge variant="secondary" className="absolute top-2 left-2 bg-background/90 backdrop-blur-sm">
+                                                        Audio
+                                                    </Badge>
+                                                )}
+                                            </div>
+
+                                            {preview.type === 'audio' && (
+                                                <Input
+                                                    type="text"
+                                                    placeholder="Title (optional)"
+                                                    value={preview.title || ''}
+                                                    onChange={(e) => handleTitleChange(preview.id, e.target.value)}
+                                                    maxLength={100}
+                                                    disabled={isUploading || disabled}
+                                                    className="h-8 text-xs"
+                                                />
                                             )}
-
-                                            {isUploading && uploadProgress !== undefined && (
-                                                <div
-                                                    className={cn(
-                                                        'absolute inset-0 flex flex-col items-center justify-center gap-2 p-2',
-                                                        'bg-background/90 backdrop-blur-sm',
-                                                        'transition-opacity duration-300',
-                                                        uploadProgress === 100 && 'opacity-0'
-                                                    )}
-                                                >
-                                                    <Progress value={uploadProgress} className="h-2 w-full" />
-                                                    <span className="text-xs font-semibold tabular-nums">{uploadProgress}%</span>
-                                                </div>
-                                            )}
-
-                                        {!isUploading && !disabled && (
-                                            <button
-                                                onClick={() => handleRemove(preview.id)}
-                                                className="bg-destructive absolute top-2 right-2 rounded-full p-1.5 text-white shadow-lg transition-opacity md:opacity-0 md:group-hover:opacity-100"
-                                                type="button"
-                                                aria-label={`Remove ${preview.type}`}
-                                            >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={2}
-                                                    stroke="currentColor"
-                                                    className="h-4 w-4"
-                                                >
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
-                                        )}
-
-                                        {preview.type === 'video' && (
-                                            <Badge variant="secondary" className="absolute top-2 left-2 bg-background/90 backdrop-blur-sm">
-                                                Video
-                                            </Badge>
-                                        )}
-                                        {preview.type === 'audio' && (
-                                            <Badge variant="secondary" className="absolute top-2 left-2 bg-background/90 backdrop-blur-sm">
-                                                Audio
-                                            </Badge>
-                                        )}
+                                        </div>
                                     </div>
-                                </div>
                                 );
                             })}
                         </div>

@@ -6,8 +6,9 @@ export const createBandPostInputSchema = z.object({
     media: z
         .array(
             z.object({
-                type: z.enum(['image', 'video']),
-                key: z.string()
+                type: z.enum(['image', 'video', 'audio']),
+                key: z.string(),
+                title: z.string().max(100).optional()
             })
         )
         .max(4, 'Maximum 4 media items allowed')
@@ -38,8 +39,9 @@ export const bandPostSchema = z.object({
         .array(
             z.object({
                 id: z.number(),
-                type: z.enum(['image', 'video']),
-                key: z.string()
+                type: z.enum(['image', 'video', 'audio']),
+                key: z.string(),
+                title: z.string().nullable()
             })
         )
         .optional()

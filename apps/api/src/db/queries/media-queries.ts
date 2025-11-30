@@ -5,7 +5,7 @@ import z from 'zod';
 
 const { mediaTable } = schema;
 
-export const addMedia = async (postId: number, mediaKeys: string[]) => {
+export const addMedia = async (postId: number, mediaKeys: string[], title?: string | null) => {
     if (mediaKeys.length === 0) {
         return [];
     }
@@ -13,7 +13,8 @@ export const addMedia = async (postId: number, mediaKeys: string[]) => {
     const values = mediaKeys.map((mediaKey) => ({
         postId,
         key: mediaKey,
-        type: 'image' as const
+        type: 'image' as const,
+        title: title ?? null
     }));
 
     const results = await db.insert(mediaTable).values(values).returning();

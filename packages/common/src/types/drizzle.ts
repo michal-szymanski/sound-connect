@@ -211,14 +211,16 @@ export const createMediaSchema = z.object({
     id: z.number(),
     postId: z.number(),
     type: z.enum(['image', 'video', 'audio']),
-    key: z.string()
+    key: z.string(),
+    title: z.string().max(100).nullable().optional()
 });
 
 export const mediaSchema = z.object({
     id: z.number(),
     postId: z.number(),
     type: z.enum(['image', 'video', 'audio']),
-    key: z.string()
+    key: z.string(),
+    title: z.string().nullable()
 });
 
 export type CreateMedia = z.infer<typeof createMediaSchema>;

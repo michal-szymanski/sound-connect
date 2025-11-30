@@ -492,7 +492,8 @@ export const addPost = async (userId: string, data: CreateUserPostInput) => {
             data.media.map((m) => ({
                 postId: post.id,
                 type: m.type,
-                key: m.key
+                key: m.key,
+                title: m.title ?? null
             }))
         );
     }

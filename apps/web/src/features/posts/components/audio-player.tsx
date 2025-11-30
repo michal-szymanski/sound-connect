@@ -1,23 +1,38 @@
-import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { useWavesurfer } from '@wavesurfer/react';
 import Hover from 'wavesurfer.js/plugins/hover';
 import { Button } from '@/shared/components/ui/button';
 import { Slider } from '@/shared/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
 import { isServer, isTouchDevice } from '@/utils/env-utils';
+import { AudioPlayButton } from '@/shared/components/audio-play-button';
+
+export type AudioPlayerHandle = {
+    togglePlayPause: () => void;
+    play: () => void;
+    pause: () => void;
+};
 
 type Props = {
     src: string;
     className?: string;
     context?: string;
+    title?: string | null;
+    trackNumber?: number;
+    totalTracks?: number;
+    showPlayButton?: boolean;
+    onPlayStateChange?: (isPlaying: boolean) => void;
 };
 
 type ChannelData = Array<Float32Array | number[]>;
 
-export function AudioPlayer({ src, className, context = 'default' }: Props) {
+export const AudioPlayer = forwardRef<AudioPlayerHandle, Props>(function AudioPlayer(
+    { src, className, context = 'default', title, trackNumber, totalTracks, showPlayButton = true, onPlayStateChange },
+    ref
+) {
     const waveformRef = useRef<HTMLDivElement>(null);
     const hoverCanvasRef = useRef<HTMLCanvasElement>(null);
     const barDataRef = useRef<Array<{ x: number; y: number; height: number }>>([]);
@@ -118,6 +133,16 @@ export function AudioPlayer({ src, className, context = 'default' }: Props) {
         plugins,
         renderFunction
     });
+
+    useImperativeHandle(
+        ref,
+        () => ({
+            togglePlayPause: () => wavesurfer?.playPause(),
+            play: () => wavesurfer?.play(),
+            pause: () => wavesurfer?.pause()
+        }),
+        [wavesurfer]
+    );
 
     const drawHoverWaveform = useCallback(
         (hoverX: number) => {
@@ -245,19 +270,26 @@ export function AudioPlayer({ src, className, context = 'default' }: Props) {
 
         const onPlay = () => {
             notifyPlay(instanceId);
+            onPlayStateChange?.(true);
+        };
+
+        const onPause = () => {
+            onPlayStateChange?.(false);
         };
 
         wavesurfer.on('ready', onReady);
         wavesurfer.on('seeking', onSeeking);
         wavesurfer.on('play', onPlay);
+        wavesurfer.on('pause', onPause);
 
         return () => {
             wavesurfer.un('ready', onReady);
             wavesurfer.un('seeking', onSeeking);
             wavesurfer.un('play', onPlay);
+            wavesurfer.un('pause', onPause);
             unregister(instanceId);
         };
-    }, [wavesurfer, register, unregister, notifyPlay, volume, isMuted]);
+    }, [wavesurfer, register, unregister, notifyPlay, volume, isMuted, instanceId, onPlayStateChange]);
 
     useEffect(() => {
         return () => {
@@ -305,7 +337,7 @@ export function AudioPlayer({ src, className, context = 'default' }: Props) {
 
         document.addEventListener('pointermove', handlePointerMove);
         return () => document.removeEventListener('pointermove', handlePointerMove);
-    }, [isVolumeOpen]);
+    }, [isVolumeOpen, instanceId, setActiveVolumePopover]);
 
     const handleVolumeMouseEnter = () => {
         if (touchDevice) return;
@@ -409,25 +441,44 @@ export function AudioPlayer({ src, className, context = 'default' }: Props) {
         }
     };
 
+    const handleWaveformKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            togglePlayPause();
+        }
+    };
+
+    const displayTitle = title || (totalTracks && totalTracks > 1 ? `Track ${trackNumber}` : null);
+    const hidePlayButton = totalTracks !== undefined && totalTracks > 1;
+
     return (
         <div className={cn('border-border/40 bg-muted/30 flex w-full flex-col gap-3 rounded-lg border p-4', className)}>
+            {displayTitle && (
+                <div className="text-sm font-semibold">
+                    {displayTitle}
+                </div>
+            )}
             <div className="flex items-center gap-3">
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={togglePlayPause}
-                    className={cn(
-                        'bg-background hover:border-primary hover:bg-primary/20 h-10 w-10 shrink-0 rounded-full border transition-none',
-                        isPlaying ? 'border-primary' : 'border-border'
-                    )}
-                    aria-label={isPlaying ? 'Pause' : 'Play'}
-                >
-                    {isPlaying ? <Pause className="text-primary h-5 w-5" aria-hidden="true" /> : <Play className="text-primary h-5 w-5" aria-hidden="true" />}
-                </Button>
+                {showPlayButton && !hidePlayButton && (
+                    <AudioPlayButton
+                        isPlaying={isPlaying}
+                        onClick={togglePlayPause}
+                        size="md"
+                        variant="default"
+                        aria-label={isPlaying ? 'Pause' : 'Play'}
+                    />
+                )}
 
                 <div className="flex flex-1 flex-col gap-2">
                     <div className="relative" onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
-                        <div ref={waveformRef} className="cursor-pointer" aria-label="Audio waveform, click to seek" role="slider" tabIndex={0} />
+                        <div
+                            ref={waveformRef}
+                            className="cursor-pointer"
+                            aria-label={`Audio waveform, click to seek. Press Space or Enter to ${isPlaying ? 'pause' : 'play'}`}
+                            role="slider"
+                            tabIndex={0}
+                            onKeyDown={handleWaveformKeyDown}
+                        />
                         {canvasSize.width > 0 && (
                             <canvas
                                 ref={hoverCanvasRef}
@@ -508,4 +559,4 @@ export function AudioPlayer({ src, className, context = 'default' }: Props) {
             </div>
         </div>
     );
-}
+});

@@ -7,7 +7,8 @@ export const createUserPostInputSchema = z.object({
         .array(
             z.object({
                 type: z.enum(['image', 'video', 'audio']),
-                key: z.string()
+                key: z.string(),
+                title: z.string().max(100).optional()
             })
         )
         .max(appConfig.maxPostMediaCount, `Maximum ${appConfig.maxPostMediaCount} media items allowed`)

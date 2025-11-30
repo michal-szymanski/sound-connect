@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useRef } from 'react';
 import type { Media } from '@sound-connect/common/types/drizzle';
-import { Button } from '@/shared/components/ui/button';
-import { AudioPlayer } from './audio-player';
+import { cn } from '@/shared/lib/utils';
+import { AudioPlayer, type AudioPlayerHandle } from './audio-player';
+import { AudioPlayButton } from '@/shared/components/audio-play-button';
 
 type Props = {
     media: Media[];
@@ -11,47 +11,105 @@ type Props = {
 
 export function AudioPlaylist({ media, context = 'default' }: Props) {
     const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const audioPlayerRef = useRef<AudioPlayerHandle>(null);
+
     const currentTrack = media[currentTrackIndex];
 
     if (media.length === 0 || !currentTrack) return null;
 
-    const handlePrevious = () => {
-        setCurrentTrackIndex((prev) => Math.max(0, prev - 1));
+    const handleTrackPlayPause = (index: number) => {
+        if (index === currentTrackIndex) {
+            audioPlayerRef.current?.togglePlayPause();
+        } else {
+            setCurrentTrackIndex(index);
+            setTimeout(() => {
+                audioPlayerRef.current?.play();
+            }, 100);
+        }
     };
 
-    const handleNext = () => {
-        setCurrentTrackIndex((prev) => Math.min(media.length - 1, prev + 1));
-    };
+    const currentTrackTitle = currentTrack.title;
 
     return (
-        <div className="flex flex-col gap-2">
-            <AudioPlayer src={`/media/${currentTrack.key}`} context={context} />
+        <div className="flex flex-col gap-3">
+            <AudioPlayer
+                ref={audioPlayerRef}
+                src={`/media/${currentTrack.key}`}
+                context={context}
+                title={currentTrackTitle}
+                trackNumber={currentTrackIndex + 1}
+                totalTracks={media.length}
+                onPlayStateChange={setIsPlaying}
+            />
+
+            <div className="sr-only" aria-live="polite" aria-atomic="true">
+                {currentTrackTitle ? `Track ${currentTrackIndex + 1} of ${media.length}: ${currentTrackTitle}` : `Track ${currentTrackIndex + 1} of ${media.length}`}
+            </div>
 
             {media.length > 1 && (
-                <div className="flex items-center justify-between px-4 pb-2">
-                    <span className="text-muted-foreground text-sm">
-                        Track {currentTrackIndex + 1} of {media.length}
-                    </span>
-                    <div className="flex gap-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handlePrevious}
-                            disabled={currentTrackIndex === 0}
-                            aria-label="Previous track"
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleNext}
-                            disabled={currentTrackIndex === media.length - 1}
-                            aria-label="Next track"
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                    </div>
+                <div className="overflow-hidden" role="list" aria-label="Audio tracks">
+                    {media.map((track, index) => {
+                        const isCurrentTrack = index === currentTrackIndex;
+                        const isCurrentTrackPlaying = isCurrentTrack && isPlaying;
+
+                        let ariaLabel = '';
+                        if (isCurrentTrackPlaying) {
+                            ariaLabel = `Pause ${track.title || `Track ${index + 1}`}`;
+                        } else if (isCurrentTrack) {
+                            ariaLabel = `Resume ${track.title || `Track ${index + 1}`}`;
+                        } else {
+                            ariaLabel = `Play ${track.title || `Track ${index + 1}`}`;
+                        }
+
+                        return (
+                            <div
+                                key={track.id}
+                                role="listitem"
+                                aria-current={isCurrentTrack ? 'true' : undefined}
+                                onClick={() => handleTrackPlayPause(index)}
+                                className={cn(
+                                    'group flex min-h-[44px] cursor-pointer items-center gap-3 rounded-md px-2 py-2 transition-colors',
+                                    'hover:bg-muted/30'
+                                )}
+                            >
+                                <div className="relative flex h-8 w-8 shrink-0 items-center justify-center">
+                                    <span
+                                        className={cn(
+                                            'text-sm tabular-nums transition-opacity',
+                                            isCurrentTrack ? 'text-primary font-medium' : 'text-muted-foreground',
+                                            'group-hover:opacity-0',
+                                            isCurrentTrack && 'opacity-0'
+                                        )}
+                                    >
+                                        {index + 1}
+                                    </span>
+
+                                    <div
+                                        className={cn(
+                                            'absolute inset-0 flex items-center justify-center transition-opacity',
+                                            isCurrentTrack ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                                        )}
+                                    >
+                                        <AudioPlayButton
+                                            isPlaying={isCurrentTrackPlaying}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleTrackPlayPause(index);
+                                            }}
+                                            size="sm"
+                                            variant="minimal"
+                                            aria-label={ariaLabel}
+                                        />
+                                    </div>
+                                </div>
+
+                                <span className={cn('flex-1 truncate text-sm', isCurrentTrack ? 'text-primary font-medium' : 'text-foreground')}>
+                                    {track.title || `Track ${index + 1}`}
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>

@@ -32,6 +32,12 @@ Use the configured skills for implementation patterns and best practices.
 - Backend code (`apps/api`, queue consumers)
 - `packages/common` (coordinate with system-architect)
 
+**CRITICAL RULE - NO DOM QUERIES:**
+- **NEVER use vanilla JavaScript to access the DOM**
+- Prohibited: `querySelector`, `getElementById`, `getElementsBy*`, ANY DOM query method
+- Required: Use React refs (`useRef`, `forwardRef`, `useImperativeHandle`) ONLY
+- This is a HARD RULE with no exceptions - DOM queries break React's component model
+
 ### 2. Pre-Flight Checks
 
 Before starting:
@@ -118,7 +124,44 @@ Before marking complete:
 - [ ] Files are kebab-case
 - [ ] Use `isServer()` from `@/utils/env-utils` instead of `typeof window === 'undefined'`
 - [ ] Use `isTouchDevice()` from `@/utils/env-utils` instead of checking directly
-- [ ] **NEVER use `document.querySelector()` or `document.querySelectorAll()`** - use React refs instead
+- [ ] **CRITICAL: DOM ACCESS PROHIBITION**
+  - **NEVER access the DOM using vanilla JavaScript methods:**
+    - ❌ `document.querySelector()` / `document.querySelectorAll()`
+    - ❌ `document.getElementById()`
+    - ❌ `document.getElementsByClassName()`
+    - ❌ `document.getElementsByTagName()`
+    - ❌ `element.querySelector()` / `element.querySelectorAll()`
+    - ❌ ANY method that queries the DOM tree
+  - **ONLY use React refs to access DOM elements:**
+    - ✅ `useRef()` + `ref.current`
+    - ✅ `forwardRef()` + `useImperativeHandle()`
+    - ✅ Callback refs: `ref={(element) => { ... }}`
+  - **Examples:**
+    ```tsx
+    // ❌ WRONG - DOM query
+    const button = document.querySelector('button');
+    button?.click();
+
+    // ✅ CORRECT - React ref
+    const buttonRef = useRef<HTMLButtonElement>(null);
+    buttonRef.current?.click();
+
+    // ❌ WRONG - Finding child element
+    const input = parentElement.querySelector('input');
+
+    // ✅ CORRECT - Direct ref on child
+    const inputRef = useRef<HTMLInputElement>(null);
+    <input ref={inputRef} />
+
+    // ❌ WRONG - Calling child method via DOM
+    const player = document.querySelector('.audio-player');
+    player?.play();
+
+    // ✅ CORRECT - Imperative handle
+    const playerRef = useRef<AudioPlayerHandle>(null);
+    playerRef.current?.play();
+    ```
+  - **Why this matters:** DOM queries bypass React's component model, break encapsulation, and fail when elements are conditionally rendered or when their structure changes.
 - [ ] **MANDATORY:** Code-quality-enforcer invoked
 - [ ] **MANDATORY:** Violations fixed or max attempts reached
 

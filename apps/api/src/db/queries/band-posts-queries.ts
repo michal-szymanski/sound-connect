@@ -30,7 +30,8 @@ export const createBandPost = async (bandId: number, userId: string, data: Creat
             data.media.map((m) => ({
                 postId: post.id,
                 type: m.type,
-                key: m.key
+                key: m.key,
+                title: m.title ?? null
             }))
         );
     }

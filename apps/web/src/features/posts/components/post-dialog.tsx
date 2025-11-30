@@ -96,7 +96,7 @@ export function PostDialogContent({ mode, post, existingMedia = [], isBandPost =
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         if (mode === 'create') {
             try {
-                const media = mediaKeysWithTypes.map(({ key, type }) => ({ type, key }));
+                const media = mediaKeysWithTypes.map(({ key, type, title }) => ({ type, key, title }));
 
                 const result = await addPost({
                     data: {
