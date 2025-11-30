@@ -77,8 +77,8 @@ export const SummaryButton = ({ hiddenCount, hiddenWindows, position, onRestoreC
                                             </Avatar>
                                             <div className="flex min-w-0 flex-1 flex-col items-start">
                                                 <span className="text-foreground truncate text-left text-sm font-medium">{window.user.name}</span>
-                                                {!isBand && (
-                                                    <span className="text-muted-foreground truncate text-xs">@{window.user.username || window.user.id.slice(0, 8)}</span>
+                                                {!isBand && window.user.username && (
+                                                    <span className="text-muted-foreground truncate text-xs">@{window.user.username}</span>
                                                 )}
                                             </div>
                                         </button>

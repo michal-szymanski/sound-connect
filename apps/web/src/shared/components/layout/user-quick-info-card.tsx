@@ -51,7 +51,7 @@ export function UserQuickInfoCard() {
                             <DropdownMenuLabel>Account</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
-                                <Link to="/users/$id" params={{ id: auth.user.username || auth.user.id }}>
+                                <Link to="/users/$username" params={{ username: auth.user.username }}>
                                     <User className="mr-2 h-4 w-4" aria-hidden="true" />
                                     View Profile
                                 </Link>
@@ -70,27 +70,27 @@ export function UserQuickInfoCard() {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-                <Link to="/users/$id" params={{ id: auth.user.username || auth.user.id }} className="group block">
+                <Link to="/users/$username" params={{ username: auth.user.username }} className="group block">
                     <div className="flex items-center gap-3">
                         <ProfileAvatar profile={auth.user} type="user" className="h-12 w-12" />
                         <div className="min-w-0 flex-1 pr-8">
                             <p className="truncate text-sm font-semibold group-hover:underline">{auth.user.name}</p>
-                            <p className="text-muted-foreground truncate text-xs">@{auth.user.username || auth.user.id.slice(0, 8)}</p>
+                            <p className="text-muted-foreground truncate text-xs">@{auth.user.username}</p>
                         </div>
                     </div>
                 </Link>
                 <div className="mt-3 flex items-center gap-4 text-sm">
                     <Link
-                        to="/users/$id"
-                        params={{ id: auth.user.username || auth.user.id }}
+                        to="/users/$username"
+                        params={{ username: auth.user.username }}
                         className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2"
                     >
                         <span className="text-foreground font-semibold">{followers.length}</span>
                         <span className="text-muted-foreground ml-1">followers</span>
                     </Link>
                     <Link
-                        to="/users/$id"
-                        params={{ id: auth.user.username || auth.user.id }}
+                        to="/users/$username"
+                        params={{ username: auth.user.username }}
                         className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2"
                     >
                         <span className="text-foreground font-semibold">{followings.length}</span>

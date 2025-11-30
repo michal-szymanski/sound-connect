@@ -8,11 +8,12 @@ import { useCheckUsernameAvailability } from '@/features/settings/hooks/use-sett
 type Props = {
     value: string;
     onChange: (value: string) => void;
+    currentUsername?: string;
 };
 
 type ValidationState = 'idle' | 'validating' | 'valid' | 'invalid' | 'taken';
 
-export const StepUsername = ({ value, onChange }: Props) => {
+export const StepUsername = ({ value, onChange, currentUsername }: Props) => {
     const [validationState, setValidationState] = useState<ValidationState>('idle');
     const [error, setError] = useState<string>('');
     const debounceTimerRef = useRef<NodeJS.Timeout | undefined>(undefined);
@@ -40,6 +41,12 @@ export const StepUsername = ({ value, onChange }: Props) => {
                 return;
             }
 
+            if (currentUsername && result.data === currentUsername) {
+                setValidationState('valid');
+                setError('');
+                return;
+            }
+
             try {
                 const availabilityResult = await checkAvailability({ username: result.data });
 
@@ -61,7 +68,7 @@ export const StepUsername = ({ value, onChange }: Props) => {
                 clearTimeout(debounceTimerRef.current);
             }
         };
-    }, [value, checkAvailability]);
+    }, [value, checkAvailability, currentUsername]);
 
     const getValidationIcon = () => {
         switch (validationState) {
@@ -82,7 +89,7 @@ export const StepUsername = ({ value, onChange }: Props) => {
             <div className="space-y-2">
                 <Label className="text-base">Choose a username</Label>
                 <p className="text-muted-foreground text-sm">
-                    Optional - you can skip this step.
+                    We&apos;ve created a username for you. Keep it or choose a new one.
                 </p>
             </div>
 

@@ -144,8 +144,8 @@ export function Post({ item }: Props) {
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                         <Link
-                            to={isBandPost ? '/bands/$id' : '/users/$id'}
-                            params={{ id: isBandPost ? String(post.bandId!) : (user?.username || post.userId) }}
+                            to={isBandPost ? '/bands/$id' : '/users/$username'}
+                            params={isBandPost ? { id: String(post.bandId!) } : { username: user?.username ?? '' }}
                             className="truncate text-sm font-semibold hover:underline"
                         >
                             {authorName}
@@ -174,7 +174,7 @@ export function Post({ item }: Props) {
                             </>
                         )}
                     </div>
-                    {!isBandPost && <span className="text-muted-foreground text-xs">@{user?.username || user?.id.slice(0, 8)}</span>}
+                    {!isBandPost && user?.username && <span className="text-muted-foreground text-xs">@{user.username}</span>}
                 </div>
                 <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
@@ -254,7 +254,7 @@ export function Post({ item }: Props) {
                 </Button>
             </footer>
             <div className="mb-2 text-sm">
-                <Link to={isBandPost ? '/bands/$id' : '/users/$id'} params={{ id: authorId }} className="font-semibold hover:underline">
+                <Link to={isBandPost ? '/bands/$id' : '/users/$username'} params={isBandPost ? { id: authorId } : { username: user?.username ?? '' }} className="font-semibold hover:underline">
                     {authorName}
                 </Link>{' '}
                 {isExpanded ? (
@@ -304,7 +304,7 @@ export function Post({ item }: Props) {
                 author={{
                     id: authorId,
                     name: authorName,
-                    username: isBandPost ? '' : (user?.username || user?.id.slice(0, 8) || ''),
+                    username: isBandPost ? '' : (user?.username || ''),
                     avatar: authorImage
                 }}
                 content={post.content}

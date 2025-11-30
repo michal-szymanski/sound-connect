@@ -23,7 +23,7 @@ import { Route as authSignInIndexRouteImport } from './routes/(auth)/sign-in/ind
 import { Route as authResetPasswordIndexRouteImport } from './routes/(auth)/reset-password/index'
 import { Route as authOnboardingIndexRouteImport } from './routes/(auth)/onboarding/index'
 import { Route as authForgotPasswordIndexRouteImport } from './routes/(auth)/forgot-password/index'
-import { Route as mainUsersIdRouteImport } from './routes/(main)/users/$id'
+import { Route as mainUsersUsernameRouteImport } from './routes/(main)/users/$username'
 import { Route as mainPostsPostIdRouteImport } from './routes/(main)/posts/$postId'
 import { Route as mainDiscoverBandsRouteImport } from './routes/(main)/discover/bands'
 import { Route as mainBandsSearchRouteImport } from './routes/(main)/bands/search'
@@ -98,9 +98,9 @@ const authForgotPasswordIndexRoute = authForgotPasswordIndexRouteImport.update({
   path: '/forgot-password/',
   getParentRoute: () => authRouteRoute,
 } as any)
-const mainUsersIdRoute = mainUsersIdRouteImport.update({
-  id: '/users/$id',
-  path: '/users/$id',
+const mainUsersUsernameRoute = mainUsersUsernameRouteImport.update({
+  id: '/users/$username',
+  path: '/users/$username',
   getParentRoute: () => mainRouteRoute,
 } as any)
 const mainPostsPostIdRoute = mainPostsPostIdRouteImport.update({
@@ -138,7 +138,7 @@ export interface FileRoutesByFullPath {
   '/bands/search': typeof mainBandsSearchRoute
   '/discover/bands': typeof mainDiscoverBandsRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
-  '/users/$id': typeof mainUsersIdRoute
+  '/users/$username': typeof mainUsersUsernameRoute
   '/forgot-password': typeof authForgotPasswordIndexRoute
   '/onboarding': typeof authOnboardingIndexRoute
   '/reset-password': typeof authResetPasswordIndexRoute
@@ -158,7 +158,7 @@ export interface FileRoutesByTo {
   '/bands/search': typeof mainBandsSearchRoute
   '/discover/bands': typeof mainDiscoverBandsRoute
   '/posts/$postId': typeof mainPostsPostIdRoute
-  '/users/$id': typeof mainUsersIdRoute
+  '/users/$username': typeof mainUsersUsernameRoute
   '/forgot-password': typeof authForgotPasswordIndexRoute
   '/onboarding': typeof authOnboardingIndexRoute
   '/reset-password': typeof authResetPasswordIndexRoute
@@ -181,7 +181,7 @@ export interface FileRoutesById {
   '/(main)/bands/search': typeof mainBandsSearchRoute
   '/(main)/discover/bands': typeof mainDiscoverBandsRoute
   '/(main)/posts/$postId': typeof mainPostsPostIdRoute
-  '/(main)/users/$id': typeof mainUsersIdRoute
+  '/(main)/users/$username': typeof mainUsersUsernameRoute
   '/(auth)/forgot-password/': typeof authForgotPasswordIndexRoute
   '/(auth)/onboarding/': typeof authOnboardingIndexRoute
   '/(auth)/reset-password/': typeof authResetPasswordIndexRoute
@@ -203,7 +203,7 @@ export interface FileRouteTypes {
     | '/bands/search'
     | '/discover/bands'
     | '/posts/$postId'
-    | '/users/$id'
+    | '/users/$username'
     | '/forgot-password'
     | '/onboarding'
     | '/reset-password'
@@ -223,7 +223,7 @@ export interface FileRouteTypes {
     | '/bands/search'
     | '/discover/bands'
     | '/posts/$postId'
-    | '/users/$id'
+    | '/users/$username'
     | '/forgot-password'
     | '/onboarding'
     | '/reset-password'
@@ -245,7 +245,7 @@ export interface FileRouteTypes {
     | '/(main)/bands/search'
     | '/(main)/discover/bands'
     | '/(main)/posts/$postId'
-    | '/(main)/users/$id'
+    | '/(main)/users/$username'
     | '/(auth)/forgot-password/'
     | '/(auth)/onboarding/'
     | '/(auth)/reset-password/'
@@ -363,11 +363,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authForgotPasswordIndexRouteImport
       parentRoute: typeof authRouteRoute
     }
-    '/(main)/users/$id': {
-      id: '/(main)/users/$id'
-      path: '/users/$id'
-      fullPath: '/users/$id'
-      preLoaderRoute: typeof mainUsersIdRouteImport
+    '/(main)/users/$username': {
+      id: '/(main)/users/$username'
+      path: '/users/$username'
+      fullPath: '/users/$username'
+      preLoaderRoute: typeof mainUsersUsernameRouteImport
       parentRoute: typeof mainRouteRoute
     }
     '/(main)/posts/$postId': {
@@ -438,7 +438,7 @@ interface mainRouteRouteChildren {
   mainBandsSearchRoute: typeof mainBandsSearchRoute
   mainDiscoverBandsRoute: typeof mainDiscoverBandsRoute
   mainPostsPostIdRoute: typeof mainPostsPostIdRoute
-  mainUsersIdRoute: typeof mainUsersIdRoute
+  mainUsersUsernameRoute: typeof mainUsersUsernameRoute
   mainBandsIndexRoute: typeof mainBandsIndexRoute
   mainMessagesIndexRoute: typeof mainMessagesIndexRoute
   mainSettingsIndexRoute: typeof mainSettingsIndexRoute
@@ -452,7 +452,7 @@ const mainRouteRouteChildren: mainRouteRouteChildren = {
   mainBandsSearchRoute: mainBandsSearchRoute,
   mainDiscoverBandsRoute: mainDiscoverBandsRoute,
   mainPostsPostIdRoute: mainPostsPostIdRoute,
-  mainUsersIdRoute: mainUsersIdRoute,
+  mainUsersUsernameRoute: mainUsersUsernameRoute,
   mainBandsIndexRoute: mainBandsIndexRoute,
   mainMessagesIndexRoute: mainMessagesIndexRoute,
   mainSettingsIndexRoute: mainSettingsIndexRoute,

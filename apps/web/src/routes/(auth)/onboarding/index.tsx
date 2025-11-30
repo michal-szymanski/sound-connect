@@ -13,6 +13,7 @@ import { StepUsername } from '@/features/onboarding/components/step-username';
 import { useUpdateOnboardingProgress, useCompleteOnboarding, useSkipOnboarding } from '@/features/onboarding/hooks/use-onboarding';
 import { useUpdateInstruments, useUpdateGenres, useUpdateLogistics, useUpdateBio, useUpdateAvailability } from '@/features/profile/hooks/use-profile';
 import { useUpdateUsername } from '@/features/settings/hooks/use-settings';
+import { useAuth } from '@/shared/lib/react-query';
 import type { Instrument, Genre, AvailabilityStatus } from '@sound-connect/common/types/profile-enums';
 
 export const Route = createFileRoute('/(auth)/onboarding/')({
@@ -45,6 +46,7 @@ type OnboardingData = {
 function RouteComponent() {
     const navigate = useNavigate();
     const { redirect } = Route.useSearch();
+    const { data: auth } = useAuth();
     const [currentStep, setCurrentStep] = useState(0);
     const [formData, setFormData] = useState<OnboardingData>({
         primaryInstrument: null,
@@ -53,7 +55,7 @@ function RouteComponent() {
         bio: '',
         status: null,
         profileImageUrl: null,
-        username: ''
+        username: auth.user?.username || ''
     });
 
     const updateProgressMutation = useUpdateOnboardingProgress();
@@ -290,7 +292,7 @@ function RouteComponent() {
                     />
                 );
             case 7:
-                return <StepUsername value={formData.username} onChange={(value) => setFormData({ ...formData, username: value })} />;
+                return <StepUsername value={formData.username} onChange={(value) => setFormData({ ...formData, username: value })} currentUsername={auth?.user?.username} />;
             default:
                 return null;
         }
