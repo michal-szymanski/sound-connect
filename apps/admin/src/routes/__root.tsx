@@ -30,7 +30,11 @@ export const Route = createRootRouteWithContext<{
         ]
     }),
     component: RootComponent,
-    beforeLoad: async ({ context: { queryClient } }) => {
+    beforeLoad: async ({ context: { queryClient }, location }) => {
+        if (location.pathname === '/login') {
+            return;
+        }
+
         try {
             await queryClient.prefetchQuery(adminSessionQuery());
         } catch {}
