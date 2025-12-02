@@ -54,8 +54,7 @@ export function Layout({ children }: Props) {
                     <div className="flex items-center gap-4">
                         {session?.user && (
                             <div className="text-sm">
-                                <span className="text-muted-foreground">Logged in as:</span>{' '}
-                                <span className="font-medium">{session.user.name}</span>
+                                <span className="text-muted-foreground">Logged in as:</span> <span className="font-medium">{session.user.name}</span>
                             </div>
                         )}
                         <Button variant="ghost" size="sm" onClick={handleLogout}>

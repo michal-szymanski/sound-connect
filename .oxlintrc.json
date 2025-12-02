@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/crates/oxc_linter/schema.json",
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "react", "import"],
   "categories": {
     "correctness": "error"
@@ -36,6 +36,7 @@
     "**/migrations/**",
     "apps/**/shared/components/ui/**",
     "e2e/**",
-    "worker-configuration.d.ts"
+    "worker-configuration.d.ts",
+    "trace",
   ]
 }

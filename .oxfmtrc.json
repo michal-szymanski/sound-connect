@@ -1,7 +1,27 @@
 {
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "printWidth": 160,
   "tabWidth": 4,
   "semi": true,
   "singleQuote": true,
-  "trailingComma": "none"
+  "trailingComma": "none",
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    ".wrangler",
+    ".claude",
+    ".cursor",
+    ".tanstack",
+    "*.d.ts",
+    "package.json",
+    "pnpm-lock.yaml",
+    ".gitignore",
+    ".env*",
+    "routeTree.gen.ts",
+    "**/migrations/**",
+    "apps/**/shared/components/ui/**",
+    "e2e/**",
+    "worker-configuration.d.ts",
+    "trace",
+  ]
 }
