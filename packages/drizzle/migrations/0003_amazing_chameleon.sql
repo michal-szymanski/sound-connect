@@ -1,1 +1,0 @@
-ALTER TABLE `messages` ADD `seen` integer DEFAULT false NOT NULL;

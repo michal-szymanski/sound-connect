@@ -39,6 +39,7 @@ CREATE INDEX `idx_bands_members_user_bands` ON `bands_members` (`user_id`,`is_ad
 CREATE TABLE `bands` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
+	`username` text,
 	`description` text,
 	`primary_genre` text,
 	`city` text,
@@ -48,6 +49,7 @@ CREATE TABLE `bands` (
 	`longitude` integer,
 	`looking_for` text,
 	`profile_image_url` text,
+	`background_image_url` text,
 	`created_at` text NOT NULL,
 	`updated_at` text
 );
@@ -55,6 +57,7 @@ CREATE TABLE `bands` (
 CREATE INDEX `idx_bands_primary_genre` ON `bands` (`primary_genre`);--> statement-breakpoint
 CREATE INDEX `idx_bands_location` ON `bands` (`latitude`,`longitude`);--> statement-breakpoint
 CREATE INDEX `idx_bands_city` ON `bands` (`city`);--> statement-breakpoint
+CREATE INDEX `idx_bands_username_lower` ON `bands` (LOWER("username"));--> statement-breakpoint
 CREATE TABLE `blocked_users` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`blocker_id` text NOT NULL,
@@ -148,6 +151,7 @@ CREATE TABLE `media` (
 	`post_id` integer NOT NULL,
 	`type` text NOT NULL,
 	`key` text NOT NULL,
+	`title` text,
 	FOREIGN KEY (`post_id`) REFERENCES `posts`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -157,12 +161,31 @@ CREATE TABLE `messages` (
 	`sender_id` text,
 	`message_type` text NOT NULL,
 	`content` text NOT NULL,
+	`seen` integer DEFAULT false NOT NULL,
 	`created_at` text NOT NULL,
 	FOREIGN KEY (`chat_room_id`) REFERENCES `chat_rooms`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`sender_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
 CREATE INDEX `idx_messages_room_time` ON `messages` (`chat_room_id`,`created_at`);--> statement-breakpoint
+CREATE TABLE `music_samples` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`user_id` text NOT NULL,
+	`title` text NOT NULL,
+	`description` text,
+	`instrument` text,
+	`media_type` text NOT NULL,
+	`r2_key` text NOT NULL,
+	`duration_seconds` integer,
+	`file_size` integer NOT NULL,
+	`sort_order` integer DEFAULT 0 NOT NULL,
+	`created_at` text NOT NULL,
+	`updated_at` text,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE INDEX `idx_music_samples_user_id` ON `music_samples` (`user_id`);--> statement-breakpoint
+CREATE INDEX `idx_music_samples_user_sort` ON `music_samples` (`user_id`,`sort_order`);--> statement-breakpoint
 CREATE TABLE `notifications` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`user_id` text NOT NULL,
@@ -231,6 +254,21 @@ CREATE TABLE `user_additional_instruments` (
 --> statement-breakpoint
 CREATE INDEX `idx_user_additional_instruments_user_id` ON `user_additional_instruments` (`user_id`);--> statement-breakpoint
 CREATE INDEX `idx_user_additional_instruments_instrument` ON `user_additional_instruments` (`instrument`);--> statement-breakpoint
+CREATE TABLE `user_onboarding` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`current_step` integer DEFAULT 1 NOT NULL,
+	`completed_at` integer,
+	`skipped_at` integer,
+	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `user_onboarding_user_id_unique` ON `user_onboarding` (`user_id`);--> statement-breakpoint
+CREATE INDEX `idx_user_onboarding_user_id` ON `user_onboarding` (`user_id`);--> statement-breakpoint
+CREATE INDEX `idx_user_onboarding_completed_at` ON `user_onboarding` (`completed_at`);--> statement-breakpoint
+CREATE INDEX `idx_user_onboarding_skipped_at` ON `user_onboarding` (`skipped_at`);--> statement-breakpoint
 CREATE TABLE `user_profiles` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`user_id` text NOT NULL,
@@ -241,7 +279,6 @@ CREATE TABLE `user_profiles` (
 	`secondary_genres` text,
 	`influences` text,
 	`status` text,
-	`status_expires_at` text,
 	`commitment_level` text,
 	`weekly_availability` text,
 	`rehearsal_frequency` text,
@@ -260,8 +297,6 @@ CREATE TABLE `user_profiles` (
 	`can_offer` text,
 	`deal_breakers` text,
 	`bio` text,
-	`musical_goals` text,
-	`age_range` text,
 	`profile_completion` integer DEFAULT 0 NOT NULL,
 	`setup_completed` integer DEFAULT false NOT NULL,
 	`created_at` text NOT NULL,
@@ -324,6 +359,7 @@ CREATE TABLE `accounts` (
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE INDEX `accounts_userId_idx` ON `accounts` (`user_id`);--> statement-breakpoint
 CREATE TABLE `jwkss` (
 	`id` text PRIMARY KEY NOT NULL,
 	`public_key` text NOT NULL,
@@ -340,10 +376,12 @@ CREATE TABLE `sessions` (
 	`ip_address` text,
 	`user_agent` text,
 	`user_id` text NOT NULL,
+	`impersonated_by` text,
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `sessions_token_unique` ON `sessions` (`token`);--> statement-breakpoint
+CREATE INDEX `sessions_userId_idx` ON `sessions` (`user_id`);--> statement-breakpoint
 CREATE TABLE `users` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
@@ -352,7 +390,14 @@ CREATE TABLE `users` (
 	`image` text,
 	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
 	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
-	`last_active_at` text
+	`role` text,
+	`banned` integer DEFAULT false,
+	`ban_reason` text,
+	`ban_expires` integer,
+	`username` text,
+	`display_username` text,
+	`last_active_at` text,
+	`background_image` text
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `users_email_unique` ON `users` (`email`);--> statement-breakpoint
@@ -364,3 +409,5 @@ CREATE TABLE `verifications` (
 	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
 	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL
 );
+--> statement-breakpoint
+CREATE INDEX `verifications_identifier_idx` ON `verifications` (`identifier`);

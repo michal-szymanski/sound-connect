@@ -9,6 +9,7 @@
     },
     "scripts": {
         "db:generate": "drizzle-kit generate",
+        "db:generate:custom": "drizzle-kit generate",
         "db:studio": "drizzle-kit studio",
         "seed": "tsx src/seed.ts",
         "seed:remote": "tsx src/seed.ts --remote",

@@ -34,7 +34,7 @@
     ".env*",
     "routeTree.gen.ts",
     "**/migrations/**",
-    "apps/web/src/shared/components/ui/**",
+    "apps/**/shared/components/ui/**",
     "e2e/**",
     "worker-configuration.d.ts"
   ]

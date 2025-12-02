@@ -31,7 +31,7 @@ function animateWaveformBars(
     onComplete: () => void
 ): () => void {
     const startTime = performance.now();
-    const maxHeight = Math.max(...bars.map(b => b.height));
+    const maxHeight = Math.max(...bars.map((b) => b.height));
     let animationId: number;
 
     function frame(now: number) {
@@ -616,20 +616,10 @@ export const AudioPlayer = forwardRef<AudioPlayerHandle, Props>(function AudioPl
 
     return (
         <div className={cn('border-border/40 bg-muted/30 flex w-full flex-col gap-3 rounded-lg border p-4', className)}>
-            {displayTitle && (
-                <div className="text-sm font-semibold">
-                    {displayTitle}
-                </div>
-            )}
+            {displayTitle && <div className="text-sm font-semibold">{displayTitle}</div>}
             <div className="flex items-center gap-3">
                 {showPlayButton && !hidePlayButton && (
-                    <AudioPlayButton
-                        isPlaying={isPlaying}
-                        onClick={togglePlayPause}
-                        size="md"
-                        variant="default"
-                        aria-label={isPlaying ? 'Pause' : 'Play'}
-                    />
+                    <AudioPlayButton isPlaying={isPlaying} onClick={togglePlayPause} size="md" variant="default" aria-label={isPlaying ? 'Pause' : 'Play'} />
                 )}
 
                 <div className="flex flex-1 flex-col gap-2">

@@ -1,0 +1,37 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "sound-connect-admin",
+    "main": "@tanstack/react-start/server-entry",
+    "compatibility_date": "2025-10-01",
+    "compatibility_flags": ["nodejs_compat"],
+    "assets": {
+        "directory": ".output/public"
+    },
+    "observability": {
+        "enabled": true
+    },
+    "vars": {
+        "API_URL": "http://localhost:4000",
+        "ADMIN_URL": "http://localhost:3001"
+    },
+    "services": [
+        {
+            "binding": "API",
+            "service": "sound-connect-api"
+        }
+    ],
+    "env": {
+        "production": {
+            "vars": {
+                "API_URL": "https://sound-connect-api-production.michal-szymanski92.workers.dev",
+                "ADMIN_URL": "https://sound-connect-admin-production.michal-szymanski92.workers.dev"
+            },
+            "services": [
+                {
+                    "binding": "API",
+                    "service": "sound-connect-api-production"
+                }
+            ]
+        }
+    }
+}

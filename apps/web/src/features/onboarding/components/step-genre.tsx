@@ -34,14 +34,7 @@ export const StepGenre = ({ value, onChange }: Props) => {
 
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
-                    <Button
-                        id="primaryGenre"
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={open}
-                        aria-required="true"
-                        className="w-full justify-between"
-                    >
+                    <Button id="primaryGenre" variant="outline" role="combobox" aria-expanded={open} aria-required="true" className="w-full justify-between">
                         {selectedGenre ? formatGenre(selectedGenre) : 'Select your primary genre'}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>

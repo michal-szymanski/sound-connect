@@ -163,11 +163,7 @@ export function UserProfile({ profileData }: Props) {
                     <EditableProfileBackground currentImage={auth?.user?.backgroundImage ?? null} />
                 ) : user.backgroundImage ? (
                     <div className="relative h-48 overflow-hidden sm:h-60">
-                        <img
-                            src={user.backgroundImage}
-                            alt={`${user.name}'s background`}
-                            className="h-full w-full object-cover"
-                        />
+                        <img src={user.backgroundImage} alt={`${user.name}'s background`} className="h-full w-full object-cover" />
                     </div>
                 ) : (
                     <div
@@ -248,7 +244,12 @@ export function UserProfile({ profileData }: Props) {
                                     <div className="flex flex-wrap items-center gap-2">
                                         <span className="text-muted-foreground text-sm">Bands:</span>
                                         {bands.slice(0, 3).map((band) => (
-                                            <Link key={band.id} to="/profile/$username" params={{ username: band.username ?? band.id.toString() }} className="hover:opacity-80">
+                                            <Link
+                                                key={band.id}
+                                                to="/profile/$username"
+                                                params={{ username: band.username ?? band.id.toString() }}
+                                                className="hover:opacity-80"
+                                            >
                                                 <ProfileAvatar
                                                     profile={{ id: band.id.toString(), name: band.name, image: band.profileImageUrl }}
                                                     type="band"

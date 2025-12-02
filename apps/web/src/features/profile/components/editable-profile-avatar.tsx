@@ -31,8 +31,7 @@ export const EditableProfileAvatar = ({ userId, currentImage, name, className, f
             setCropModalOpen(false);
             setSelectedImageSrc(null);
         },
-        onError: () => {
-        }
+        onError: () => {}
     });
 
     const isProcessing = uploadState === 'requesting' || uploadState === 'uploading' || uploadState === 'confirming';
@@ -104,22 +103,11 @@ export const EditableProfileAvatar = ({ userId, currentImage, name, className, f
                             isProcessing ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                         )}
                     >
-                        {isProcessing ? (
-                            <Loader2 className="h-8 w-8 animate-spin text-white" />
-                        ) : (
-                            <Camera className="h-8 w-8 text-white" />
-                        )}
+                        {isProcessing ? <Loader2 className="h-8 w-8 animate-spin text-white" /> : <Camera className="h-8 w-8 text-white" />}
                     </div>
                 </button>
 
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept={ACCEPTED_TYPES.join(',')}
-                    onChange={handleFileChange}
-                    className="hidden"
-                    aria-hidden="true"
-                />
+                <input ref={fileInputRef} type="file" accept={ACCEPTED_TYPES.join(',')} onChange={handleFileChange} className="hidden" aria-hidden="true" />
             </div>
 
             {selectedImageSrc && (

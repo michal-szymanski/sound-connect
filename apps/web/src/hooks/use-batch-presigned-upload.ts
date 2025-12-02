@@ -71,7 +71,7 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
         async (files: File[]) => {
             console.log('[BatchUpload] Starting batch upload process', {
                 fileCount: files.length,
-                files: files.map(f => ({ name: f.name, size: f.size, type: f.type })),
+                files: files.map((f) => ({ name: f.name, size: f.size, type: f.type })),
                 purpose
             });
 
@@ -106,7 +106,7 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
 
                 console.log('[BatchUpload] Presigned URL results:', {
                     total: presignedResults.length,
-                    successful: presignedResults.filter(r => r.success).length
+                    successful: presignedResults.filter((r) => r.success).length
                 });
 
                 const failedRequest = presignedResults.find((result) => !result.success);
@@ -149,9 +149,7 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
                                 setProgress((prev) => {
                                     const newProgress = [...prev];
                                     newProgress[index] = percentComplete;
-                                    const overall = Math.round(
-                                        newProgress.reduce((sum, p) => sum + p, 0) / newProgress.length
-                                    );
+                                    const overall = Math.round(newProgress.reduce((sum, p) => sum + p, 0) / newProgress.length);
                                     setOverallProgress(overall);
                                     return newProgress;
                                 });
@@ -163,9 +161,7 @@ export const useBatchPresignedUpload = (options: UseBatchPresignedUploadOptions)
                                 setProgress((prev) => {
                                     const newProgress = [...prev];
                                     newProgress[index] = 100;
-                                    const overall = Math.round(
-                                        newProgress.reduce((sum, p) => sum + p, 0) / newProgress.length
-                                    );
+                                    const overall = Math.round(newProgress.reduce((sum, p) => sum + p, 0) / newProgress.length);
                                     setOverallProgress(overall);
                                     return newProgress;
                                 });

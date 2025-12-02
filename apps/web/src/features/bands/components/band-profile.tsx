@@ -107,17 +107,10 @@ export function BandProfile({ profileData: initialBand }: Props) {
                     <EditableBandBackground bandId={band.id} currentImage={band.backgroundImageUrl ?? null} />
                 ) : band.backgroundImageUrl ? (
                     <div className="relative h-48 overflow-hidden sm:h-60">
-                        <img
-                            src={band.backgroundImageUrl}
-                            alt={`${band.name} background`}
-                            className="h-full w-full object-cover"
-                        />
+                        <img src={band.backgroundImageUrl} alt={`${band.name} background`} className="h-full w-full object-cover" />
                     </div>
                 ) : (
-                    <div
-                        className="relative h-48 overflow-hidden sm:h-60"
-                        style={{ background: DEFAULT_GRADIENT }}
-                    />
+                    <div className="relative h-48 overflow-hidden sm:h-60" style={{ background: DEFAULT_GRADIENT }} />
                 )}
 
                 <CardContent className="p-6">

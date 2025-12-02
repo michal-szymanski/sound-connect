@@ -5,71 +5,15 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1763231578840,
-      "tag": "0000_freezing_electro",
+      "when": 1764666292755,
+      "tag": "0000_pink_moira_mactaggert",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "6",
-      "when": 1763231578841,
-      "tag": "0001_create_users_fts",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1763231578842,
-      "tag": "0002_add_fts_triggers",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1763242803361,
-      "tag": "0003_amazing_chameleon",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1764106817909,
-      "tag": "0004_add_user_onboarding",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1764365998627,
-      "tag": "0005_brown_vivisector",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1764541200000,
-      "tag": "0006_remove_profile_fields",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "6",
-      "when": 1764464892972,
-      "tag": "0007_bouncy_whistler",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "6",
-      "when": 1764470617002,
-      "tag": "0008_faithful_saracen",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "6",
-      "when": 1764521338148,
-      "tag": "0009_overconfident_slyde",
+      "when": 1764666712694,
+      "tag": "0001_bumpy_warpath",
       "breakpoints": true
     }
   ]

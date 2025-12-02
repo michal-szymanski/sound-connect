@@ -2,7 +2,10 @@ import { z } from 'zod';
 import { appConfig } from '../app-config';
 
 export const createUserPostInputSchema = z.object({
-    content: z.string().min(1, 'Post content is required').max(appConfig.postTextMaxLength, `Post content must be ${appConfig.postTextMaxLength} characters or less`),
+    content: z
+        .string()
+        .min(1, 'Post content is required')
+        .max(appConfig.postTextMaxLength, `Post content must be ${appConfig.postTextMaxLength} characters or less`),
     media: z
         .array(
             z.object({

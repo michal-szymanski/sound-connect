@@ -563,9 +563,7 @@ export const userOnboardingTable = sqliteTable(
         currentStep: integer('current_step').notNull().default(1),
         completedAt: integer('completed_at', { mode: 'timestamp_ms' }),
         skippedAt: integer('skipped_at', { mode: 'timestamp_ms' }),
-        createdAt: integer('created_at', { mode: 'timestamp_ms' })
-            .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-            .notNull(),
+        createdAt: integer('created_at', { mode: 'timestamp_ms' }).default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`).notNull(),
         updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
             .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
             .$onUpdate(() => new Date())

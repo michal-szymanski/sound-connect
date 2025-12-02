@@ -15,10 +15,7 @@ export const bandProfileLookupResultSchema = z.object({
     data: bandWithMembersSchema
 });
 
-export const profileLookupResultSchema = z.discriminatedUnion('type', [
-    userProfileLookupResultSchema,
-    bandProfileLookupResultSchema
-]);
+export const profileLookupResultSchema = z.discriminatedUnion('type', [userProfileLookupResultSchema, bandProfileLookupResultSchema]);
 
 export type UserProfileLookupResult = z.infer<typeof userProfileLookupResultSchema>;
 export type BandProfileLookupResult = z.infer<typeof bandProfileLookupResultSchema>;

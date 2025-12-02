@@ -257,7 +257,11 @@ export function Post({ item }: Props) {
                 </Button>
             </footer>
             <div className="mb-2 text-sm">
-                <Link to="/profile/$username" params={{ username: isBandPost ? (band?.username ?? '') : (user?.username ?? '') }} className="font-semibold hover:underline">
+                <Link
+                    to="/profile/$username"
+                    params={{ username: isBandPost ? (band?.username ?? '') : (user?.username ?? '') }}
+                    className="font-semibold hover:underline"
+                >
                     {authorName}
                 </Link>{' '}
                 {isExpanded ? (
@@ -307,7 +311,7 @@ export function Post({ item }: Props) {
                 author={{
                     id: authorId,
                     name: authorName,
-                    username: isBandPost ? '' : (user?.username || ''),
+                    username: isBandPost ? '' : user?.username || '',
                     avatar: authorImage
                 }}
                 content={post.content}

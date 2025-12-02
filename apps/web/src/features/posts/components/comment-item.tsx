@@ -60,7 +60,11 @@ export function CommentItem({ commentData, currentUser, postId, onReply, isReply
             <div className="flex-1">
                 <div className="flex items-center gap-2">
                     {isBandComment && commentData.band?.username ? (
-                        <Link to="/profile/$username" params={{ username: commentData.band.username }} className="text-foreground text-sm font-semibold hover:underline">
+                        <Link
+                            to="/profile/$username"
+                            params={{ username: commentData.band.username }}
+                            className="text-foreground text-sm font-semibold hover:underline"
+                        >
                             {authorName}
                         </Link>
                     ) : (

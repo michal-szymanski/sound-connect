@@ -97,29 +97,21 @@ export const searchUsers = async (query: string) => {
 };
 
 export const updateUserImage = async (userId: string, imageUrl: string) => {
-    const [updated] = await db
-        .update(users)
-        .set({ image: imageUrl, updatedAt: new Date() })
-        .where(eq(users.id, userId))
-        .returning({
-            id: users.id,
-            name: users.name,
-            image: users.image
-        });
+    const [updated] = await db.update(users).set({ image: imageUrl, updatedAt: new Date() }).where(eq(users.id, userId)).returning({
+        id: users.id,
+        name: users.name,
+        image: users.image
+    });
 
     return updated;
 };
 
 export const updateUserBackgroundImage = async (userId: string, backgroundImageUrl: string) => {
-    const [updated] = await db
-        .update(users)
-        .set({ backgroundImage: backgroundImageUrl, updatedAt: new Date() })
-        .where(eq(users.id, userId))
-        .returning({
-            id: users.id,
-            name: users.name,
-            backgroundImage: users.backgroundImage
-        });
+    const [updated] = await db.update(users).set({ backgroundImage: backgroundImageUrl, updatedAt: new Date() }).where(eq(users.id, userId)).returning({
+        id: users.id,
+        name: users.name,
+        backgroundImage: users.backgroundImage
+    });
 
     return updated;
 };
@@ -131,25 +123,17 @@ export const isUsernameAvailable = async (username: string): Promise<boolean> =>
         return false;
     }
 
-    const [existingUser] = await db
-        .select({ id: users.id })
-        .from(users)
-        .where(sql`LOWER(${users.username}) = ${normalized}`)
-        .limit(1);
+    const [existingUser] = await db.select({ id: users.id }).from(users).where(sql`LOWER(${users.username}) = ${normalized}`).limit(1);
 
     return !existingUser;
 };
 
 export const updateUsername = async (userId: string, username: string | null) => {
-    const [updated] = await db
-        .update(users)
-        .set({ username, updatedAt: new Date() })
-        .where(eq(users.id, userId))
-        .returning({
-            id: users.id,
-            name: users.name,
-            username: users.username
-        });
+    const [updated] = await db.update(users).set({ username, updatedAt: new Date() }).where(eq(users.id, userId)).returning({
+        id: users.id,
+        name: users.name,
+        username: users.username
+    });
 
     return updated;
 };

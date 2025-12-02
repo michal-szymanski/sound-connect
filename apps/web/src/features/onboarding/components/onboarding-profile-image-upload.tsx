@@ -94,9 +94,7 @@ export const OnboardingProfileImageUpload = ({ currentImageUrl, userName, onUplo
                 >
                     <Avatar className="h-32 w-32">
                         <AvatarImage src={currentImageUrl ?? undefined} alt={userName} />
-                        <AvatarFallback className="bg-muted text-4xl">
-                            {userName.charAt(0).toUpperCase()}
-                        </AvatarFallback>
+                        <AvatarFallback className="bg-muted text-4xl">{userName.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
 
                     <div
@@ -105,22 +103,11 @@ export const OnboardingProfileImageUpload = ({ currentImageUrl, userName, onUplo
                             isProcessing ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                         )}
                     >
-                        {isProcessing ? (
-                            <Loader2 className="h-8 w-8 animate-spin text-white" />
-                        ) : (
-                            <Camera className="h-8 w-8 text-white" />
-                        )}
+                        {isProcessing ? <Loader2 className="h-8 w-8 animate-spin text-white" /> : <Camera className="h-8 w-8 text-white" />}
                     </div>
                 </button>
 
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept={ACCEPTED_TYPES.join(',')}
-                    onChange={handleFileChange}
-                    className="hidden"
-                    aria-hidden="true"
-                />
+                <input ref={fileInputRef} type="file" accept={ACCEPTED_TYPES.join(',')} onChange={handleFileChange} className="hidden" aria-hidden="true" />
             </div>
 
             {selectedImageSrc && (

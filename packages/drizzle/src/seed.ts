@@ -48,7 +48,18 @@ const PLAYWRIGHT_USERS = [
     }
 ] as const;
 
-const ALL_TEST_USERS = [...TEST_USERS, ...PLAYWRIGHT_USERS];
+const ADMIN_USER = {
+    id: '4qQw1Wlz0F6MUFsFupkPkUcrR5j3oh0i',
+    accountId: 'I88RYhN8JX7g0l2iwTZgVKG6psPxxs17',
+    name: 'Admin',
+    email: 'michal.szymanski92@gmail.com',
+    username: 'admin',
+    role: 'admin',
+    hashedPassword:
+        'c0cf207f052e9fdc9bb6d79b64960d74:f51c949415811855e45e56efce1741a7b34ddaf2528d0432732fc94786f3e13b6d4236d9a2b9feced5fd8c3f846fa00211b70068b3559a269b0651331b7ebb23'
+} as const;
+
+const ALL_TEST_USERS = [...TEST_USERS, ...PLAYWRIGHT_USERS, ADMIN_USER];
 
 function findLocalDatabase(): string {
     const wranglerDir = resolve(__dirname, '../../../apps/api/.wrangler/state/v3/d1/miniflare-D1DatabaseObject');
@@ -93,6 +104,8 @@ async function seedWithDrizzle(db: DbInstance) {
             email: user.email,
             emailVerified: true,
             image: null,
+            username: 'username' in user ? user.username : null,
+            role: 'role' in user ? user.role : null,
             createdAt: now,
             updatedAt: now,
             lastActiveAt: null
@@ -143,7 +156,10 @@ async function seedRemoteWithWrangler() {
     for (const user of ALL_TEST_USERS) {
         const now = Date.now();
 
-        const insertUserSQL = `INSERT INTO users (id, name, email, email_verified, image, created_at, updated_at, last_active_at) VALUES ('${user.id}', '${user.name}', '${user.email}', 1, NULL, ${now}, ${now}, NULL)`;
+        const username = 'username' in user ? user.username : null;
+        const role = 'role' in user ? user.role : null;
+
+        const insertUserSQL = `INSERT INTO users (id, name, email, email_verified, image, username, role, created_at, updated_at, last_active_at) VALUES ('${user.id}', '${user.name}', '${user.email}', 1, NULL, ${username ? `'${username}'` : 'NULL'}, ${role ? `'${role}'` : 'NULL'}, ${now}, ${now}, NULL)`;
 
         execSync(`wrangler d1 execute sound-connect-db --remote --command "${insertUserSQL}" --config wrangler.jsonc`, {
             cwd: apiDir,

@@ -105,14 +105,19 @@ const response = await fetch('https://api.example.com/api/endpoint', {
 
 ### Test Users
 
-| Email         | Password | Name              |
-| ------------- | -------- | ----------------- |
-| t1@asd.asd    | aaaaaaaa | t1                |
-| t2@asd.asd    | aaaaaaaa | t2                |
-| pw1@test.test | Test123! | Playwright User 1 |
-| pw2@test.test | Test123! | Playwright User 2 |
+| Email                        | Password | Username | Role  | Name              |
+| ---------------------------- | -------- | -------- | ----- | ----------------- |
+| t1@asd.asd                   | aaaaaaaa | -        | -     | t1                |
+| t2@asd.asd                   | aaaaaaaa | -        | -     | t2                |
+| pw1@test.test                | Test123! | -        | -     | Playwright User 1 |
+| pw2@test.test                | Test123! | -        | -     | Playwright User 2 |
+| michal.szymanski92@gmail.com | admin    | admin    | admin | Admin             |
 
 Seeded via: `pnpm db:seed:local` (defined in `packages/drizzle/src/seed.ts`)
+
+**Admin Dashboard**: `http://localhost:3001` - Login with **username** `admin` and password `admin`
+
+**Note**: The `role`, `banned`, `banReason`, and `banExpires` fields are managed automatically by better-auth's `admin()` plugin. Do not add these to `user.additionalFields` as this will conflict with the plugin's management.
 
 ## Implemented Features
 
@@ -534,6 +539,63 @@ user: {
 
 **Recent examples:**
 - `backgroundImage` field added for profile cover images (apps/web/src/features/profile/CLAUDE.md)
+
+#### Database Schema & Migration Management
+
+**CRITICAL: Automated Schema Generation - DO NOT Edit Schema Files Manually**
+
+**Better Auth Schema (`packages/drizzle/src/better-auth.ts`):**
+
+Changes to `packages/drizzle/src/better-auth.ts` should ONLY be done via the `auth:generate` script:
+
+```bash
+pnpm --filter @sound-connect/api auth:generate
+```
+
+**When to run this script:**
+- After ANY changes to the `createAuth` function in `apps/api/src/better-auth/auth.ts`
+- After modifying plugins, user.additionalFields, or database hooks in better-auth config
+- The script reads your better-auth configuration and auto-generates the correct schema
+
+**Application Schema (`packages/drizzle/src/schema.ts`):**
+
+After making changes to `packages/drizzle/src/schema.ts`, you MUST run:
+
+```bash
+pnpm --filter @sound-connect/drizzle db:generate
+```
+
+This generates Drizzle migration files based on schema changes.
+
+**Custom Migrations (Triggers, Indexes, Raw SQL):**
+
+For custom SQL that Drizzle schema doesn't support (triggers, indexes, complex queries), use:
+
+```bash
+pnpm --filter @sound-connect/drizzle db:generate:custom
+```
+
+This creates an empty migration file where you can add custom SQL. The file will be created in `packages/drizzle/migrations/` with a timestamp prefix.
+
+**Migration Workflow:**
+
+1. **Modify schema** → `packages/drizzle/src/schema.ts`
+2. **Generate migration** → `pnpm --filter @sound-connect/drizzle db:generate`
+3. **Review migration** → Check generated SQL in `packages/drizzle/migrations/`
+4. **Apply to local DB** → `pnpm db:migrate:local` (from root or apps/api)
+5. **Apply to production** → Invoke `devops` agent (requires user approval)
+
+**PROHIBITED:**
+- ❌ Manually editing `packages/drizzle/src/better-auth.ts` (use `auth:generate` instead)
+- ❌ Manually creating migration files (use `db:generate` or `db:generate:custom`)
+- ❌ Editing generated migration files (regenerate if schema is wrong)
+- ❌ Applying production migrations without user approval (invoke `devops` agent)
+
+**Why this matters:**
+- Manual edits to better-auth schema will be overwritten by `auth:generate`
+- Manual migration creation causes timestamp conflicts and migration ordering issues
+- Drizzle relies on accurate schema representation to generate correct migrations
+- Production migrations are irreversible and require careful review
 
 #### R2 Asset Storage (`sound-connect-assets`)
 

@@ -67,9 +67,7 @@ export function EmptyDiscoveryState({ type }: Props) {
                     <h3 className="mb-2 text-lg font-semibold">No bands match your profile right now</h3>
                 </BlurFade>
                 <BlurFade delay={0.3} inView>
-                    <p className="text-muted-foreground mb-6 max-w-sm text-center text-sm">
-                        Try checking back later or search all bands manually.
-                    </p>
+                    <p className="text-muted-foreground mb-6 max-w-sm text-center text-sm">Try checking back later or search all bands manually.</p>
                 </BlurFade>
                 <BlurFade delay={0.4} inView>
                     <Button asChild size="lg">

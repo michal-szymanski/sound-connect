@@ -120,23 +120,62 @@ const { userId } = await c.req.json();
 const currentUser = c.get('user');
 ```
 
-## Database Migrations
+## Database Schema & Migration Management
 
-**CRITICAL: ALWAYS follow this exact order:**
+**CRITICAL: Automated Schema Generation - DO NOT Edit Schema Files Manually**
+
+### Better Auth Schema (`packages/drizzle/src/better-auth.ts`)
+
+**NEVER manually edit `packages/drizzle/src/better-auth.ts`.** Changes to this file must ONLY be done via:
+
+```bash
+pnpm --filter @sound-connect/api auth:generate
+```
+
+**When to run this script:**
+- After ANY changes to the `createAuth` function in `apps/api/src/better-auth/auth.ts`
+- After modifying plugins, user.additionalFields, or database hooks in better-auth config
+- The script reads your better-auth configuration and auto-generates the correct schema
+
+**Why this matters:**
+- Manual edits to better-auth schema will be overwritten by `auth:generate`
+- Better-auth manages its own table structure based on configuration
+- Plugin changes (admin, username, etc.) affect schema structure
+
+### Application Schema (`packages/drizzle/src/schema.ts`)
+
+**Standard Migration Workflow:**
 
 1. **Update schema FIRST**: Modify `packages/drizzle/src/schema.ts` with new table definitions
-2. **Generate migration**: Run `pnpm db:generate` (auto-generates SQL from schema changes)
-3. **Add data migration** (if needed): Manually append data migration SQL to generated file
+2. **Generate migration**: Run `pnpm --filter @sound-connect/drizzle db:generate` (auto-generates SQL from schema changes)
+3. **Review migration**: Check generated SQL in `packages/drizzle/migrations/`
 4. **Update Zod schemas**: Manually update `packages/common/src/types/drizzle.ts` to match
-5. **Report to user**: "Migration generated. User must run: `pnpm --filter @sound-connect/api db:migrate:local`"
+5. **Report to user**: "Migration generated. User must run: `pnpm db:migrate:local`"
 
-**NEVER:**
-- Create manual migration SQL files for schema changes
-- Update schema.ts AFTER creating migration
-- Apply migrations yourself (user does that)
+**Custom Migrations (Triggers, Indexes, Raw SQL):**
 
-**You CAN manually create:**
-- Data migration SQL files (seed data, one-time updates)
+For custom SQL that Drizzle schema doesn't support (triggers, indexes, complex queries):
+
+```bash
+pnpm --filter @sound-connect/drizzle db:generate:custom
+```
+
+This creates an empty migration file in `packages/drizzle/migrations/` with a timestamp prefix where you can add custom SQL.
+
+**PROHIBITED:**
+- ❌ Manually editing `packages/drizzle/src/better-auth.ts` (use `auth:generate` instead)
+- ❌ Manually creating migration files (use `db:generate` or `db:generate:custom`)
+- ❌ Editing generated migration files (regenerate if schema is wrong)
+- ❌ Applying production migrations without user approval (invoke devops agent)
+- ❌ Updating schema.ts AFTER creating migration
+- ❌ Applying migrations yourself (user does that)
+
+**You CAN:**
+- ✅ Run `auth:generate` after changing better-auth config
+- ✅ Run `db:generate` after changing application schema
+- ✅ Run `db:generate:custom` to create empty migration file for custom SQL
+- ✅ Add custom SQL to custom migration files
+- ✅ Append data migration SQL to generated files (seed data, one-time updates)
 
 ## File Organization
 

@@ -88,9 +88,7 @@ export const StepUsername = ({ value, onChange, currentUsername }: Props) => {
         <div className="space-y-4">
             <div className="space-y-2">
                 <Label className="text-base">Choose a username</Label>
-                <p className="text-muted-foreground text-sm">
-                    We&apos;ve created a username for you. Keep it or choose a new one.
-                </p>
+                <p className="text-muted-foreground text-sm">We&apos;ve created a username for you. Keep it or choose a new one.</p>
             </div>
 
             <div className="space-y-4">

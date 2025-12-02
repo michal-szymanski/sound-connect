@@ -163,7 +163,11 @@ function RouteComponent() {
         <div className="flex h-[calc(100vh-10rem)] flex-col overflow-hidden rounded-lg border">
             <header className="bg-background flex-none border-b px-6 py-4">
                 {selectedPeer ? (
-                    <Link to="/profile/$username" params={{ username: selectedPeer.username ?? selectedPeer.id.slice(0, 8) }} className="flex items-center gap-3 transition-opacity hover:opacity-80">
+                    <Link
+                        to="/profile/$username"
+                        params={{ username: selectedPeer.username ?? selectedPeer.id.slice(0, 8) }}
+                        className="flex items-center gap-3 transition-opacity hover:opacity-80"
+                    >
                         <ProfileAvatar profile={selectedPeer} type="user" className="h-10 w-10" />
                         <div>
                             <div className="font-semibold">{selectedPeer.name}</div>
@@ -171,7 +175,11 @@ function RouteComponent() {
                         </div>
                     </Link>
                 ) : selectedBand ? (
-                    <Link to="/profile/$username" params={{ username: selectedBand.username ?? selectedBand.id.toString() }} className="flex items-center gap-3 transition-opacity hover:opacity-80">
+                    <Link
+                        to="/profile/$username"
+                        params={{ username: selectedBand.username ?? selectedBand.id.toString() }}
+                        className="flex items-center gap-3 transition-opacity hover:opacity-80"
+                    >
                         <ProfileAvatar
                             profile={{ id: selectedBand.id.toString(), name: selectedBand.name, image: selectedBand.profileImageUrl }}
                             type="band"

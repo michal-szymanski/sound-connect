@@ -43,11 +43,7 @@ export function BandHeader({ band, isUserAdmin, isUserMember, onEdit }: Props) {
             <div className="flex flex-col gap-4">
                 <div className="flex items-start gap-4">
                     {isUserAdmin ? (
-                        <EditableBandAvatar
-                            bandId={band.id}
-                            currentImage={band.profileImageUrl}
-                            bandName={band.name}
-                        />
+                        <EditableBandAvatar bandId={band.id} currentImage={band.profileImageUrl} bandName={band.name} />
                     ) : (
                         <Avatar className="h-20 w-20 flex-shrink-0 rounded-lg sm:h-24 sm:w-24">
                             <AvatarImage src={band.profileImageUrl || undefined} alt={band.name} />

@@ -9,6 +9,10 @@ export const createUserSchema = z.object({
     image: z.string().nullable(),
     backgroundImage: z.string().nullish(),
     username: z.string().nullish(),
+    role: z.string().nullish(),
+    banned: z.boolean().nullish(),
+    banReason: z.string().nullish(),
+    banExpires: z.date().nullish(),
     lastActiveAt: z.string().nullish(),
     createdAt: z.date(),
     updatedAt: z.date()
@@ -22,6 +26,10 @@ export const userSchema = z.object({
     image: z.string().nullable(),
     backgroundImage: z.string().nullish(),
     username: z.string().nullish(),
+    role: z.string().nullish(),
+    banned: z.boolean().nullish(),
+    banReason: z.string().nullish(),
+    banExpires: z.string().nullish(),
     lastActiveAt: z.string().nullish(),
     createdAt: z.string(),
     updatedAt: z.string()
@@ -30,7 +38,12 @@ export const userSchema = z.object({
 export type CreateUser = z.infer<typeof createUserSchema>;
 export type User = z.infer<typeof userSchema>;
 
-export const userDTOSchema = userSchema.omit({ email: true, emailVerified: true, createdAt: true, updatedAt: true });
+export const userDTOSchema = userSchema.omit({ email: true, emailVerified: true, createdAt: true, updatedAt: true }).extend({
+    role: z.string().nullish(),
+    banned: z.boolean().nullish(),
+    banReason: z.string().nullish(),
+    banExpires: z.string().nullish()
+});
 export type UserDTO = z.infer<typeof userDTOSchema>;
 
 export const createSessionSchema = z.object({

@@ -1,8 +1,9 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { HonoContext } from 'types';
-import { createAuth } from 'auth';
+import { createAuth } from '@/api/better-auth/auth';
 import { createUserSettings } from '@/api/db/queries/settings-queries';
+import { db } from '../db';
 
 const authRoutes = new Hono<HonoContext>();
 
@@ -20,6 +21,7 @@ authRoutes.use(
 
 authRoutes.on(['POST', 'GET'], '/api/auth/*', async (c) => {
     const auth = createAuth({
+        db,
         queue: c.env.NotificationsQueue,
         apiUrl: c.env.API_URL,
         clientUrl: c.env.CLIENT_URL,

@@ -217,9 +217,7 @@ export const ChatWindow = ({ user, onClose, isMinimized, onToggleMinimize, posit
                             />
                             <div className="flex flex-col">
                                 <span className="text-sm font-medium">{user.name}</span>
-                                {!user.id.startsWith('band-') && user.username && (
-                                    <span className="text-primary-foreground/70 text-xs">@{user.username}</span>
-                                )}
+                                {!user.id.startsWith('band-') && user.username && <span className="text-primary-foreground/70 text-xs">@{user.username}</span>}
                             </div>
                         </div>
 

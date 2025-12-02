@@ -2,12 +2,27 @@ import { Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 import { HonoContext } from 'types';
-import { getFollowedUsers, getUserFollowers, getUserById, unfollowUser, getContacts, followUser, updateUserImage, updateUserBackgroundImage, getUserByUsername } from '@/api/db/queries/users-queries';
+import {
+    getFollowedUsers,
+    getUserFollowers,
+    getUserById,
+    unfollowUser,
+    getContacts,
+    followUser,
+    updateUserImage,
+    updateUserBackgroundImage,
+    getUserByUsername
+} from '@/api/db/queries/users-queries';
 import { notificationQueueMessageSchema } from '@/common/types/notifications';
 import { canViewProfile, canFollow } from '@/api/db/queries/settings-queries';
 import { profileSearchParamsSchema } from '@sound-connect/common/types/profile-search';
 import { searchProfiles } from '@/api/db/queries/profiles-search-queries';
-import { updateProfileImageSchema, updateProfileImageResponseSchema, updateBackgroundImageSchema, updateBackgroundImageResponseSchema } from '@sound-connect/common/types/profile';
+import {
+    updateProfileImageSchema,
+    updateProfileImageResponseSchema,
+    updateBackgroundImageSchema,
+    updateBackgroundImageResponseSchema
+} from '@sound-connect/common/types/profile';
 
 const usersRoutes = new Hono<HonoContext>();
 

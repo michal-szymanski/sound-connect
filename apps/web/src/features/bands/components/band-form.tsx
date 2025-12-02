@@ -191,18 +191,10 @@ export function BandForm({ initialData, onSubmit, onCancel, isLoading, isEdit = 
                         aria-describedby={errors['username'] ? 'username-error' : 'username-help'}
                     />
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                        {usernameCheckStatus === 'checking' && (
-                            <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" aria-hidden="true" />
-                        )}
-                        {usernameCheckStatus === 'available' && (
-                            <CheckCircle2 className="h-4 w-4 text-green-500" aria-hidden="true" />
-                        )}
-                        {usernameCheckStatus === 'taken' && (
-                            <XCircle className="h-4 w-4 text-red-500" aria-hidden="true" />
-                        )}
-                        {usernameCheckStatus === 'invalid' && (
-                            <XCircle className="h-4 w-4 text-red-500" aria-hidden="true" />
-                        )}
+                        {usernameCheckStatus === 'checking' && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" aria-hidden="true" />}
+                        {usernameCheckStatus === 'available' && <CheckCircle2 className="h-4 w-4 text-green-500" aria-hidden="true" />}
+                        {usernameCheckStatus === 'taken' && <XCircle className="h-4 w-4 text-red-500" aria-hidden="true" />}
+                        {usernameCheckStatus === 'invalid' && <XCircle className="h-4 w-4 text-red-500" aria-hidden="true" />}
                     </div>
                 </div>
                 {!errors['username'] && (

@@ -193,7 +193,11 @@ export function AccountSettings({ accountInfo }: Props) {
     };
 
     const profileUrl =
-        usernameValidationState === 'valid' && username ? `${window.location.origin}/users/${username.toLowerCase()}` : user?.username ? `${window.location.origin}/users/${user.username}` : null;
+        usernameValidationState === 'valid' && username
+            ? `${window.location.origin}/users/${username.toLowerCase()}`
+            : user?.username
+              ? `${window.location.origin}/users/${user.username}`
+              : null;
 
     const isUsernameChanged = username !== (user?.username || '');
     const canSaveUsername = isUsernameChanged && (usernameValidationState === 'valid' || !username);

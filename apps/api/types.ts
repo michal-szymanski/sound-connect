@@ -1,4 +1,4 @@
-import type { Auth } from 'auth';
+import type { Auth } from '@/api/better-auth/auth';
 
 export type HonoContext = {
     Bindings: CloudflareBindings;

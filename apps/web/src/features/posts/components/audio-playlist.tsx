@@ -62,7 +62,9 @@ export function AudioPlaylist({ media, context = 'default' }: Props) {
             />
 
             <div className="sr-only" aria-live="polite" aria-atomic="true">
-                {currentTrackTitle ? `Track ${currentTrackIndex + 1} of ${media.length}: ${currentTrackTitle}` : `Track ${currentTrackIndex + 1} of ${media.length}`}
+                {currentTrackTitle
+                    ? `Track ${currentTrackIndex + 1} of ${media.length}: ${currentTrackTitle}`
+                    : `Track ${currentTrackIndex + 1} of ${media.length}`}
             </div>
 
             {media.length > 1 && (

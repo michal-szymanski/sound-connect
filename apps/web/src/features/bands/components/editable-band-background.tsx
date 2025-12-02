@@ -28,8 +28,7 @@ export const EditableBandBackground = ({ bandId, currentImage }: Props) => {
             setCropModalOpen(false);
             setSelectedImageSrc(null);
         },
-        onError: () => {
-        }
+        onError: () => {}
     });
 
     const isProcessing = uploadState === 'requesting' || uploadState === 'uploading' || uploadState === 'confirming';
@@ -82,12 +81,7 @@ export const EditableBandBackground = ({ bandId, currentImage }: Props) => {
         <>
             <div className="group relative z-0 h-48 overflow-hidden sm:h-60">
                 {currentImage ? (
-                    <img
-                        src={currentImage}
-                        alt="Band background"
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                    />
+                    <img src={currentImage} alt="Band background" className="h-full w-full object-cover" loading="lazy" />
                 ) : (
                     <div className="h-full w-full" style={{ background: DEFAULT_GRADIENT }} />
                 )}
@@ -99,21 +93,10 @@ export const EditableBandBackground = ({ bandId, currentImage }: Props) => {
                     disabled={isProcessing}
                     aria-label="Change band cover image"
                 >
-                    {isProcessing ? (
-                        <Loader2 className="h-5 w-5 animate-spin text-white" />
-                    ) : (
-                        <Camera className="h-5 w-5 text-white" />
-                    )}
+                    {isProcessing ? <Loader2 className="h-5 w-5 animate-spin text-white" /> : <Camera className="h-5 w-5 text-white" />}
                 </button>
 
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept={ACCEPTED_TYPES.join(',')}
-                    onChange={handleFileChange}
-                    className="hidden"
-                    aria-hidden="true"
-                />
+                <input ref={fileInputRef} type="file" accept={ACCEPTED_TYPES.join(',')} onChange={handleFileChange} className="hidden" aria-hidden="true" />
             </div>
 
             {selectedImageSrc && (
