@@ -4,6 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 import { Layout } from '@/shared/components/layout';
 import { getStats } from '@/shared/server-functions/admin';
 import { useAdminSession } from '@/shared/hooks/use-admin-session';
+import {
+    UserSignupsChart,
+    InstrumentDistributionChart,
+    ModerationStatsChart,
+    GeographicDistributionChart,
+    OnboardingFunnelChart,
+    BandActivityChart
+} from '@/shared/components/charts';
 
 export const Route = createFileRoute('/')({
     component: DashboardPage,
@@ -78,6 +86,24 @@ function DashboardPage() {
                         </Card>
                     </div>
                 )}
+
+                <div className="w-full">
+                    <UserSignupsChart />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                    <InstrumentDistributionChart />
+                    <ModerationStatsChart />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                    <GeographicDistributionChart />
+                    <OnboardingFunnelChart />
+                </div>
+
+                <div className="w-full">
+                    <BandActivityChart />
+                </div>
             </div>
         </Layout>
     );

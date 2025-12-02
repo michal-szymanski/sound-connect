@@ -35,6 +35,84 @@ const statsSchema = z.object({
     recentSignups: z.number()
 });
 
+const signupsStatsInputSchema = z.object({
+    days: z.number().default(7)
+});
+
+const signupsStatsSchema = z.object({
+    data: z.array(
+        z.object({
+            date: z.string(),
+            count: z.number()
+        })
+    ),
+    total: z.number()
+});
+
+const instrumentsStatsSchema = z.object({
+    data: z.array(
+        z.object({
+            instrument: z.string(),
+            count: z.number(),
+            percentage: z.number()
+        })
+    ),
+    total: z.number()
+});
+
+const moderationStatsSchema = z.object({
+    pending: z.number(),
+    approved: z.number(),
+    rejected: z.number(),
+    total: z.number(),
+    lastModerated: z.string().nullable()
+});
+
+const locationsStatsInputSchema = z.object({
+    limit: z.number().default(10)
+});
+
+const locationsStatsSchema = z.object({
+    data: z.array(
+        z.object({
+            city: z.string(),
+            country: z.string().nullable(),
+            count: z.number()
+        })
+    ),
+    othersCount: z.number(),
+    total: z.number()
+});
+
+const onboardingStatsSchema = z.object({
+    steps: z.array(
+        z.object({
+            step: z.number(),
+            usersAtStep: z.number()
+        })
+    ),
+    completed: z.number(),
+    skipped: z.number(),
+    inProgress: z.number(),
+    notStarted: z.number()
+});
+
+const bandsStatsInputSchema = z.object({
+    weeks: z.number().default(8)
+});
+
+const bandsStatsSchema = z.object({
+    data: z.array(
+        z.object({
+            week: z.string(),
+            bandsCreated: z.number(),
+            applications: z.number()
+        })
+    ),
+    totalBands: z.number(),
+    totalApplications: z.number()
+});
+
 export const getUsers = createServerFn({ method: 'GET' })
     .middleware([adminAuthMiddleware])
     .inputValidator(getUsersInputSchema)
@@ -133,4 +211,121 @@ export const getStats = createServerFn({ method: 'GET' })
 
         const json = await response.json();
         return success(statsSchema.parse(json));
+    });
+
+export const getSignupsStats = createServerFn({ method: 'GET' })
+    .middleware([adminAuthMiddleware])
+    .inputValidator(signupsStatsInputSchema)
+    .handler(async ({ data, context: { env, auth } }) => {
+        const params = new URLSearchParams({
+            days: data.days.toString()
+        });
+
+        const response = await env.API.fetch(`${env.API_URL}/api/admin/stats/signups?${params}`, {
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            }
+        });
+
+        if (!response.ok) {
+            return await apiErrorHandler(response);
+        }
+
+        const json = await response.json();
+        return success(signupsStatsSchema.parse(json));
+    });
+
+export const getInstrumentsStats = createServerFn({ method: 'GET' })
+    .middleware([adminAuthMiddleware])
+    .handler(async ({ context: { env, auth } }) => {
+        const response = await env.API.fetch(`${env.API_URL}/api/admin/stats/instruments`, {
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            }
+        });
+
+        if (!response.ok) {
+            return await apiErrorHandler(response);
+        }
+
+        const json = await response.json();
+        return success(instrumentsStatsSchema.parse(json));
+    });
+
+export const getModerationStats = createServerFn({ method: 'GET' })
+    .middleware([adminAuthMiddleware])
+    .handler(async ({ context: { env, auth } }) => {
+        const response = await env.API.fetch(`${env.API_URL}/api/admin/stats/moderation`, {
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            }
+        });
+
+        if (!response.ok) {
+            return await apiErrorHandler(response);
+        }
+
+        const json = await response.json();
+        return success(moderationStatsSchema.parse(json));
+    });
+
+export const getLocationsStats = createServerFn({ method: 'GET' })
+    .middleware([adminAuthMiddleware])
+    .inputValidator(locationsStatsInputSchema)
+    .handler(async ({ data, context: { env, auth } }) => {
+        const params = new URLSearchParams({
+            limit: data.limit.toString()
+        });
+
+        const response = await env.API.fetch(`${env.API_URL}/api/admin/stats/locations?${params}`, {
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            }
+        });
+
+        if (!response.ok) {
+            return await apiErrorHandler(response);
+        }
+
+        const json = await response.json();
+        return success(locationsStatsSchema.parse(json));
+    });
+
+export const getOnboardingStats = createServerFn({ method: 'GET' })
+    .middleware([adminAuthMiddleware])
+    .handler(async ({ context: { env, auth } }) => {
+        const response = await env.API.fetch(`${env.API_URL}/api/admin/stats/onboarding`, {
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            }
+        });
+
+        if (!response.ok) {
+            return await apiErrorHandler(response);
+        }
+
+        const json = await response.json();
+        return success(onboardingStatsSchema.parse(json));
+    });
+
+export const getBandsStats = createServerFn({ method: 'GET' })
+    .middleware([adminAuthMiddleware])
+    .inputValidator(bandsStatsInputSchema)
+    .handler(async ({ data, context: { env, auth } }) => {
+        const params = new URLSearchParams({
+            weeks: data.weeks.toString()
+        });
+
+        const response = await env.API.fetch(`${env.API_URL}/api/admin/stats/bands?${params}`, {
+            headers: {
+                ...(auth.cookie && { Cookie: auth.cookie })
+            }
+        });
+
+        if (!response.ok) {
+            return await apiErrorHandler(response);
+        }
+
+        const json = await response.json();
+        return success(bandsStatsSchema.parse(json));
     });

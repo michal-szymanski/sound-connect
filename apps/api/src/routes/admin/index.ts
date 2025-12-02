@@ -3,7 +3,20 @@ import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 import { Context, Next } from 'hono';
 import { HonoContext } from 'types';
-import { getAllUsers, getUserByIdAdmin, updateUserAdmin, deleteUserAdmin, getUserStats, countAdmins } from '@/api/db/queries/admin-queries';
+import {
+    getAllUsers,
+    getUserByIdAdmin,
+    updateUserAdmin,
+    deleteUserAdmin,
+    getUserStats,
+    countAdmins,
+    getSignupStats,
+    getInstrumentStats,
+    getModerationStats,
+    getLocationStats,
+    getOnboardingStats,
+    getBandStats
+} from '@/api/db/queries/admin-queries';
 
 const adminRoutes = new Hono<HonoContext>();
 
@@ -111,6 +124,74 @@ adminRoutes.get('/admin/stats', async (c) => {
         totalUsers: stats.totalUsers,
         recentSignups: stats.usersLast7Days
     });
+});
+
+adminRoutes.get('/admin/stats/signups', async (c) => {
+    const { days } = z
+        .object({
+            days: z.coerce.number().int().positive().optional().default(30)
+        })
+        .parse({
+            days: c.req.query('days')
+        });
+
+    if (![7, 30, 90].includes(days)) {
+        throw new HTTPException(400, { message: 'Days must be 7, 30, or 90' });
+    }
+
+    const stats = await getSignupStats(days);
+
+    return c.json(stats);
+});
+
+adminRoutes.get('/admin/stats/instruments', async (c) => {
+    const stats = await getInstrumentStats();
+
+    return c.json(stats);
+});
+
+adminRoutes.get('/admin/stats/moderation', async (c) => {
+    const stats = await getModerationStats();
+
+    return c.json(stats);
+});
+
+adminRoutes.get('/admin/stats/locations', async (c) => {
+    const { limit } = z
+        .object({
+            limit: z.coerce.number().int().positive().max(50).optional().default(10)
+        })
+        .parse({
+            limit: c.req.query('limit')
+        });
+
+    const stats = await getLocationStats(limit);
+
+    return c.json(stats);
+});
+
+adminRoutes.get('/admin/stats/onboarding', async (c) => {
+    const stats = await getOnboardingStats();
+
+    return c.json(stats);
+});
+
+adminRoutes.get('/admin/stats/bands', async (c) => {
+    const { weeks } = z
+        .object({
+            weeks: z.coerce.number().int().positive().optional().default(8)
+        })
+        .parse({
+            weeks: c.req.query('weeks')
+        });
+
+    if (![4, 8, 12].includes(weeks)) {
+        throw new HTTPException(400, { message: 'Weeks must be 4, 8, or 12' });
+    }
+
+    const stats = await getBandStats(weeks);
+
+    return c.json(stats);
 });
 
 export { adminRoutes };
