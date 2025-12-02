@@ -19,7 +19,7 @@ export function Layout({ children }: Props) {
             await signOut();
             toast.success('Logged out successfully');
             navigate({ to: '/login' });
-        } catch (error) {
+        } catch {
             toast.error('Failed to log out');
         }
     };
