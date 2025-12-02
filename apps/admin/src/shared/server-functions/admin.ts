@@ -84,7 +84,7 @@ export const updateUser = createServerFn({ method: 'POST' })
         const { id, ...updateData } = data;
 
         const response = await env.API.fetch(`${env.API_URL}/api/admin/users/${id}`, {
-            method: 'PUT',
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
                 ...(auth.cookie && { Cookie: auth.cookie })

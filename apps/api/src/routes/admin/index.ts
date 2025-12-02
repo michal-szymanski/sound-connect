@@ -3,7 +3,7 @@ import { HTTPException } from 'hono/http-exception';
 import { z } from 'zod';
 import { Context, Next } from 'hono';
 import { HonoContext } from 'types';
-import { getAllUsers, getUserByIdAdmin, updateUserAdmin, deleteUserAdmin, getUserStats } from '@/api/db/queries/admin-queries';
+import { getAllUsers, getUserByIdAdmin, updateUserAdmin, deleteUserAdmin, getUserStats, countAdmins } from '@/api/db/queries/admin-queries';
 
 const adminRoutes = new Hono<HonoContext>();
 
@@ -81,10 +81,22 @@ adminRoutes.patch('/admin/users/:id', async (c) => {
 
 adminRoutes.delete('/admin/users/:id', async (c) => {
     const { id } = z.object({ id: z.string() }).parse(c.req.param());
+    const currentUser = c.get('user');
+
+    if (currentUser.id === id) {
+        throw new HTTPException(400, { message: 'You cannot delete your own account' });
+    }
 
     const user = await getUserByIdAdmin(id);
     if (!user) {
         throw new HTTPException(404, { message: 'User not found' });
+    }
+
+    if (user.role === 'admin') {
+        const adminCount = await countAdmins();
+        if (adminCount <= 1) {
+            throw new HTTPException(400, { message: 'Cannot delete the last admin. At least one admin must exist.' });
+        }
     }
 
     await deleteUserAdmin(id);

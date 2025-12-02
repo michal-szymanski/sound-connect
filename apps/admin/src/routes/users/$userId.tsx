@@ -1,5 +1,5 @@
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 import { Input } from '@/shared/components/ui/input';
@@ -54,13 +54,13 @@ function UserDetailPage() {
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<'user' | 'admin'>('user');
 
-    useState(() => {
+    useEffect(() => {
         if (user) {
             setName(user.name);
             setEmail(user.email);
             setRole((user.role as 'user' | 'admin') || 'user');
         }
-    });
+    }, [user]);
 
     const updateMutation = useMutation({
         mutationFn: async (data: { name: string; email: string; role: 'user' | 'admin' }) => {

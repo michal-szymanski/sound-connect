@@ -52,6 +52,11 @@ export const deleteUserAdmin = async (userId: string) => {
     await db.delete(users).where(eq(users.id, userId));
 };
 
+export const countAdmins = async (): Promise<number> => {
+    const result = await db.select({ count: sql<number>`count(*)` }).from(users).where(eq(users.role, 'admin'));
+    return result[0]?.count ?? 0;
+};
+
 export const getUserStats = async () => {
     const [totalUsersResult] = await db.select({ count: count() }).from(users);
 
