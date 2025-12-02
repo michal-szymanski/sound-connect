@@ -61,6 +61,7 @@ jobs:
         outputs:
             api: ${{ steps.filter.outputs.api }}
             web: ${{ steps.filter.outputs.web }}
+            admin: ${{ steps.filter.outputs.admin }}
             posts-queue: ${{ steps.filter.outputs.posts-queue }}
             notifications-queue: ${{ steps.filter.outputs.notifications-queue }}
             common: ${{ steps.filter.outputs.common }}
@@ -78,6 +79,9 @@ jobs:
                         - 'packages/**'
                       web:
                         - 'apps/web/**'
+                        - 'packages/**'
+                      admin:
+                        - 'apps/admin/**'
                         - 'packages/**'
                       posts-queue:
                         - 'apps/posts-queue-consumer/**'
@@ -128,6 +132,10 @@ jobs:
             - name: Run TypeScript on Web
               if: needs.detect-changes.outputs.web == 'true'
               run: pnpm --filter @sound-connect/web tsc
+
+            - name: Run TypeScript on Admin
+              if: needs.detect-changes.outputs.admin == 'true'
+              run: pnpm --filter @sound-connect/admin tsc
 
             - name: Run TypeScript on Posts Queue Consumer
               if: needs.detect-changes.outputs.posts-queue == 'true'
@@ -216,6 +224,49 @@ jobs:
               with:
                   name: web-build
                   path: apps/web/dist/
+                  retention-days: 1
+
+    build-admin:
+        name: Build Admin
+        needs: [code-quality, detect-changes]
+        if: needs.detect-changes.outputs.admin == 'true'
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
+
+            - name: Build Admin
+              run: pnpm --filter @sound-connect/admin build
+              env:
+                  CLOUDFLARE_ENV: production
+
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: admin-build
+                  path: apps/admin/dist/
                   retention-days: 1
 
     build-posts-queue:
@@ -395,6 +446,55 @@ jobs:
 
             - name: Deploy Web Worker
               run: cd apps/web/dist/server && pnpm dlx wrangler deploy
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+    deploy-admin:
+        name: Deploy Admin
+        needs: [build-admin, detect-changes]
+        if: |
+            needs.detect-changes.outputs.admin == 'true' &&
+            (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+            github.ref == 'refs/heads/master'
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            deployments: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Restore node_modules
+              uses: actions/cache/restore@v4
+              with:
+                  path: |
+                      node_modules
+                      apps/*/node_modules
+                      packages/*/node_modules
+                      e2e/node_modules
+                  key: node-modules-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  fail-on-cache-miss: true
+
+            - name: Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: admin-build
+                  path: apps/admin/dist/
+
+            - name: Deploy Admin Worker
+              run: cd apps/admin/dist/server && pnpm dlx wrangler deploy
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
