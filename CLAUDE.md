@@ -117,8 +117,6 @@ Seeded via: `pnpm db:seed:local` (defined in `packages/drizzle/src/seed.ts`)
 
 **Admin Dashboard**: `http://localhost:3001` - Login with **username** `admin` and password `admin`
 
-**Note**: The `role`, `banned`, `banReason`, and `banExpires` fields are managed automatically by better-auth's `admin()` plugin. Do not add these to `user.additionalFields` as this will conflict with the plugin's management.
-
 ## Implemented Features
 
 For detailed information about each feature, see the feature-level documentation:

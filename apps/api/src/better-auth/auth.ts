@@ -47,10 +47,11 @@ type CreateAuthOptions = {
     queue: Queue;
     apiUrl: string;
     clientUrl: string;
+    adminUrl: string;
     secret: string;
 };
 
-export const createAuth = ({ db, queue, apiUrl, clientUrl, secret }: CreateAuthOptions) => {
+export const createAuth = ({ db, queue, apiUrl, clientUrl, adminUrl, secret }: CreateAuthOptions) => {
     return betterAuth({
         baseURL: apiUrl,
         secret,
@@ -59,7 +60,7 @@ export const createAuth = ({ db, queue, apiUrl, clientUrl, secret }: CreateAuthO
             schema,
             usePlural: true
         }),
-        trustedOrigins: [clientUrl],
+        trustedOrigins: [clientUrl, adminUrl],
         databaseHooks: {
             user: {
                 create: {

@@ -14,6 +14,7 @@
     "vars": {
         "API_URL": "http://localhost:4000",
         "CLIENT_URL": "http://localhost:3000",
+        "ADMIN_URL": "http://localhost:3001",
         "BETTER_AUTH_URL": "http://localhost:4000/api/auth",
         "R2_BUCKET_NAME": "sound-connect-assets-dev"
     },
@@ -70,6 +71,7 @@
             "vars": {
                 "API_URL": "https://sound-connect-api-production.michal-szymanski92.workers.dev",
                 "CLIENT_URL": "https://sound-connect-web-production.michal-szymanski92.workers.dev",
+                "ADMIN_URL": "https://sound-connect-admin-production.michal-szymanski92.workers.dev",
                 "BETTER_AUTH_URL": "https://sound-connect-api-production.michal-szymanski92.workers.dev/api/auth",
                 "R2_BUCKET_NAME": "sound-connect-assets"
             },

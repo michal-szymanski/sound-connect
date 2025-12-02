@@ -12,11 +12,13 @@ export const signIn = createServerFn({ method: 'POST' })
     .inputValidator(signInInputSchema)
     .handler(async ({ data }) => {
         const API_URL = 'http://localhost:4000';
+        const ADMIN_URL = 'http://localhost:3001';
 
         const response = await fetch(`${API_URL}/api/auth/sign-in/username`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                Origin: ADMIN_URL
             },
             body: JSON.stringify(data)
         });
@@ -27,14 +29,26 @@ export const signIn = createServerFn({ method: 'POST' })
 
         setAuthCookies(response);
 
-        const json = (await response.json()) as { user: { role?: string | null } };
+        const sessionResponse = await fetch(`${API_URL}/api/auth/get-session`, {
+            headers: {
+                Origin: ADMIN_URL,
+                Cookie: response.headers.get('set-cookie') || ''
+            }
+        });
 
-        if (json.user.role !== 'admin') {
+        if (!sessionResponse.ok) {
+            deleteAuthCookies();
+            return await apiErrorHandler(sessionResponse);
+        }
+
+        const session = (await sessionResponse.json()) as { user: { role?: string | null } };
+
+        if (session.user.role !== 'admin') {
             deleteAuthCookies();
             return failure({
                 status: 403,
                 message:
-                    json.user.role === undefined || json.user.role === null
+                    session.user.role === undefined || session.user.role === null
                         ? 'Unauthorized: Role field missing. Please restart the API server.'
                         : 'Unauthorized: Admin access required'
             });
@@ -65,6 +79,7 @@ export const signOut = createServerFn({ method: 'POST' })
         const response = await env.API.fetch(`${env.API_URL}/api/auth/sign-out`, {
             method: 'POST',
             headers: {
+                Origin: env.ADMIN_URL,
                 ...(auth.cookie && { Cookie: auth.cookie })
             }
         });

@@ -29,6 +29,7 @@ export const authMiddleware = async (c: Context<HonoContext>, next: Next) => {
         queue: c.env.NotificationsQueue,
         apiUrl: c.env.API_URL,
         clientUrl: c.env.CLIENT_URL,
+        adminUrl: c.env.ADMIN_URL,
         secret: c.env.BETTER_AUTH_SECRET
     });
 

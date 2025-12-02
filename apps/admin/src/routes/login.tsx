@@ -25,7 +25,6 @@ function LoginPage() {
             const result = await signIn({ data: { username, password } });
 
             if (result.success) {
-                toast.success('Signed in successfully');
                 navigate({ to: '/' });
             } else {
                 const errorBody = result.body as { message?: string; status?: number } | null;

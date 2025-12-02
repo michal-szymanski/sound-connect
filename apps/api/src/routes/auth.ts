@@ -25,6 +25,7 @@ authRoutes.on(['POST', 'GET'], '/api/auth/*', async (c) => {
         queue: c.env.NotificationsQueue,
         apiUrl: c.env.API_URL,
         clientUrl: c.env.CLIENT_URL,
+        adminUrl: c.env.ADMIN_URL,
         secret: c.env.BETTER_AUTH_SECRET
     });
 

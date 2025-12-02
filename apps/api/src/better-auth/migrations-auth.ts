@@ -10,6 +10,6 @@ const fakeQueue: Queue = {
     sendBatch: async () => {}
 };
 
-const auth = createAuth({ db: fakeDb, queue: fakeQueue, apiUrl: '', clientUrl: '', secret: '' });
+const auth = createAuth({ db: fakeDb, queue: fakeQueue, apiUrl: '', clientUrl: '', adminUrl: '', secret: '' });
 
 export default auth;

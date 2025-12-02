@@ -40,11 +40,7 @@ adminRoutes.get('/admin/users', async (c) => {
 
     return c.json({
         users: result.users,
-        pagination: {
-            limit: queryParams.limit,
-            offset: queryParams.offset,
-            total: result.total
-        }
+        total: result.total
     });
 });
 
@@ -99,7 +95,10 @@ adminRoutes.delete('/admin/users/:id', async (c) => {
 adminRoutes.get('/admin/stats', async (c) => {
     const stats = await getUserStats();
 
-    return c.json(stats);
+    return c.json({
+        totalUsers: stats.totalUsers,
+        recentSignups: stats.usersLast7Days
+    });
 });
 
 export { adminRoutes };
