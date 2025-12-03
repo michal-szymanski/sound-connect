@@ -84,7 +84,7 @@ export const getContacts = async (userId: string) => {
 
 export const searchUsers = async (query: string) => {
     const sqlQuery = sql.raw(`
-        SELECT u.id, u.name, u.image
+        SELECT u.id, u.name, u.image, u.username
         FROM users_fts f
         JOIN users u ON u.rowid = f.rowid
         WHERE users_fts MATCH '${query}';

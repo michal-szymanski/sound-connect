@@ -6,7 +6,7 @@ import { Slider } from '@/shared/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Volume2, VolumeX } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
-import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
+import { useMediaPlayback } from '@/shared/stores/media-playback-store';
 import { isServer, isTouchDevice } from '@/utils/env-utils';
 import { AudioPlayButton } from '@/shared/components/audio-play-button';
 

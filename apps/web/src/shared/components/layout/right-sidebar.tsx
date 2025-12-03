@@ -8,7 +8,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import { useConversations } from '@/features/chat/hooks/use-conversations';
 import { formatRelativeTime } from '@/shared/lib/utils/date';
 import { cn } from '@/shared/lib/utils';
-import { useChatWindows } from '@/features/chat/components/chat-window-manager';
+import { useChatWindows } from '@/shared/stores/chat-windows-store';
 import type { ConversationDTO, UserConversationDTO, BandConversationDTO } from '@/common/types/conversations';
 import type { UserDTO } from '@/common/types/models';
 import { useMarkMessagesAsRead } from '@/features/chat/hooks/use-chat-queries';

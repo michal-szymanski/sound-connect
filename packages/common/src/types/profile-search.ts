@@ -35,6 +35,7 @@ export type ProfileSearchParams = z.infer<typeof profileSearchParamsSchema>;
 
 export const profileSearchResultSchema = z.object({
     userId: z.string(),
+    username: z.string().nullable(),
     name: z.string(),
     image: z.string().nullable(),
     primaryInstrument: z.enum(InstrumentEnum).nullable(),

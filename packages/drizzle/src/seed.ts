@@ -7,6 +7,7 @@ import { readdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import * as schema from './schema';
+import { userProfilesTable, userSettingsTable } from './schema';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -16,6 +17,9 @@ const TEST_USERS = [
         accountId: 'x7tz5E5psSwqcItSh1ajgHU2b9tz0AdX',
         name: 't1',
         email: 't1@asd.asd',
+        username: 'testuser1',
+        displayUsername: 'TestUser1',
+        role: 'user',
         hashedPassword:
             'f28e7368b7da338841ba16ccd7bb75e0:0af56534358ae85f36137d9a9f92f1e7e8ed8478bc04578a65eab179ca7aed42cee3cfc371ea772612569a38c1438ec5e94ace3fd0d72542d33a1161a6a30c0a'
     },
@@ -24,6 +28,9 @@ const TEST_USERS = [
         accountId: '6tvh7z70mJNq14aoZyndj1yJmXtCDOHv',
         name: 't2',
         email: 't2@asd.asd',
+        username: 'testuser2',
+        displayUsername: 'TestUser2',
+        role: 'user',
         hashedPassword:
             '0f1bc53654ea4574c661c7a4f79f1feb:72957aa8abbc8909625b6c5a47096612eaaaa59e54803c4a957b65961964cdcd58e173e1c4a666793e7cd009e0d0bbf7607ffc5c56af1d8325fa8db3a0d638ed'
     }
@@ -35,6 +42,9 @@ const PLAYWRIGHT_USERS = [
         accountId: 'ngEGUH3YuK6dqqJ46seqmm4qZwlEy0T0',
         name: 'Playwright User 1',
         email: 'pw1@test.test',
+        username: 'playwright1',
+        displayUsername: 'Playwright1',
+        role: 'user',
         hashedPassword:
             '443eb652dd5ce6c2829ef82ec3ecd054:a5566cbc5216a19e204ccc69191f00807a1b2fe9310d94f61e2778ae7dc2a7f0d7648d04779db89aa50c82fca3bcc4e631398d176fa207944d419f921673d8d0'
     },
@@ -43,6 +53,9 @@ const PLAYWRIGHT_USERS = [
         accountId: 'FgEuv9lLVjA43UEE1zE9GyRkZsC5j4YV',
         name: 'Playwright User 2',
         email: 'pw2@test.test',
+        username: 'playwright2',
+        displayUsername: 'Playwright2',
+        role: 'user',
         hashedPassword:
             'e44d68022b74bd067e2667a2f1c8c9f1:bd5a1499d431ca7be8bec84422a452816ff8afbec702e0c290f0f0ab227eeb0b78d88a0b9db32aca667bf0937b6ae8b1a090424b6fa73ed076d717d11e211afe'
     }
@@ -54,6 +67,7 @@ const ADMIN_USER = {
     name: 'Admin',
     email: 'michal.szymanski92@gmail.com',
     username: 'admin',
+    displayUsername: 'Admin',
     role: 'admin',
     hashedPassword:
         'c0cf207f052e9fdc9bb6d79b64960d74:f51c949415811855e45e56efce1741a7b34ddaf2528d0432732fc94786f3e13b6d4236d9a2b9feced5fd8c3f846fa00211b70068b3559a269b0651331b7ebb23'
@@ -104,8 +118,9 @@ async function seedWithDrizzle(db: DbInstance) {
             email: user.email,
             emailVerified: true,
             image: null,
-            username: 'username' in user ? user.username : null,
-            role: 'role' in user ? user.role : null,
+            username: user.username,
+            displayUsername: user.displayUsername,
+            role: user.role,
             createdAt: now,
             updatedAt: now,
             lastActiveAt: null
@@ -125,6 +140,19 @@ async function seedWithDrizzle(db: DbInstance) {
             accessTokenExpiresAt: null,
             refreshTokenExpiresAt: null,
             scope: null
+        });
+
+        await db.insert(userProfilesTable).values({
+            userId: user.id,
+            profileCompletion: 0,
+            setupCompleted: false,
+            createdAt: now.toISOString()
+        });
+
+        await db.insert(userSettingsTable).values({
+            userId: user.id,
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString()
         });
 
         console.log(`  ✓ Created user: ${user.name} (${user.email})`);
@@ -156,10 +184,7 @@ async function seedRemoteWithWrangler() {
     for (const user of ALL_TEST_USERS) {
         const now = Date.now();
 
-        const username = 'username' in user ? user.username : null;
-        const role = 'role' in user ? user.role : null;
-
-        const insertUserSQL = `INSERT INTO users (id, name, email, email_verified, image, username, role, created_at, updated_at, last_active_at) VALUES ('${user.id}', '${user.name}', '${user.email}', 1, NULL, ${username ? `'${username}'` : 'NULL'}, ${role ? `'${role}'` : 'NULL'}, ${now}, ${now}, NULL)`;
+        const insertUserSQL = `INSERT INTO users (id, name, email, email_verified, image, username, display_username, role, created_at, updated_at, last_active_at) VALUES ('${user.id}', '${user.name}', '${user.email}', 1, NULL, '${user.username}', '${user.displayUsername}', '${user.role}', ${now}, ${now}, NULL)`;
 
         execSync(`wrangler d1 execute sound-connect-db --remote --command "${insertUserSQL}" --config wrangler.jsonc`, {
             cwd: apiDir,
@@ -169,6 +194,21 @@ async function seedRemoteWithWrangler() {
         const insertAccountSQL = `INSERT INTO accounts (id, account_id, provider_id, user_id, password, created_at, updated_at, access_token, refresh_token, id_token, access_token_expires_at, refresh_token_expires_at, scope) VALUES ('${user.accountId}', '${user.id}', 'credential', '${user.id}', '${user.hashedPassword}', ${now}, ${now}, NULL, NULL, NULL, NULL, NULL, NULL)`;
 
         execSync(`wrangler d1 execute sound-connect-db --remote --command "${insertAccountSQL}" --config wrangler.jsonc`, {
+            cwd: apiDir,
+            encoding: 'utf-8'
+        });
+
+        const nowISO = new Date(now).toISOString();
+        const insertProfileSQL = `INSERT INTO user_profiles (user_id, profile_completion, setup_completed, created_at) VALUES ('${user.id}', 0, 0, '${nowISO}')`;
+
+        execSync(`wrangler d1 execute sound-connect-db --remote --command "${insertProfileSQL}" --config wrangler.jsonc`, {
+            cwd: apiDir,
+            encoding: 'utf-8'
+        });
+
+        const insertSettingsSQL = `INSERT INTO user_settings (user_id, created_at, updated_at) VALUES ('${user.id}', '${nowISO}', '${nowISO}')`;
+
+        execSync(`wrangler d1 execute sound-connect-db --remote --command "${insertSettingsSQL}" --config wrangler.jsonc`, {
             cwd: apiDir,
             encoding: 'utf-8'
         });

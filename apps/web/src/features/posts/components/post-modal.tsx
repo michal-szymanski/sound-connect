@@ -14,7 +14,7 @@ import { CommentItem } from './comment-item';
 import { cn } from '@/shared/lib/utils';
 import { VideoPlayer } from './video-player';
 import { AudioPlayer } from './audio-player';
-import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
+import { useMediaPlayback } from '@/shared/stores/media-playback-store';
 import { CarouselDots } from './carousel-dots';
 import type { Media } from '@sound-connect/common/types/drizzle';
 

@@ -122,7 +122,12 @@ export function ProfileSearchCard({ result }: Props) {
                         )}
 
                         <div className="mt-2 flex gap-2">
-                            <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate({ to: `/users/${result.userId}` })}>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => navigate({ to: `/profile/${result.username || result.userId}` })}
+                            >
                                 View Profile
                             </Button>
                             <Button

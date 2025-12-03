@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { VideoPlayer } from './video-player';
 import { AudioPlayer } from './audio-player';
-import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
+import { useMediaPlayback } from '@/shared/stores/media-playback-store';
 
 type Props = {
     media: Media[];

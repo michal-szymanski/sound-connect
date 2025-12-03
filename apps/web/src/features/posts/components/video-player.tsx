@@ -4,7 +4,7 @@ import { Slider } from '@/shared/components/ui/slider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { Play, Pause, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
-import { useMediaPlayback } from '@/shared/contexts/media-playback-context';
+import { useMediaPlayback } from '@/shared/stores/media-playback-store';
 import { isTouchDevice } from '@/utils/env-utils';
 
 type Props = {

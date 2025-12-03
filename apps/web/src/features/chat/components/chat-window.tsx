@@ -8,7 +8,7 @@ import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { useAuth } from '@/shared/lib/react-query';
-import { useChat } from '@/shared/components/providers/chat-provider';
+import { useChat } from '@/shared/stores/chat-store';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
 import { useChatMessages, useSendMessage, useMarkMessagesAsRead } from '@/features/chat/hooks/use-chat-queries';
 import { getRoomId } from '@sound-connect/common/helpers';

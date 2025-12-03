@@ -1,9 +1,9 @@
 import { Bell } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { ScrollArea } from '@/shared/components/ui/scroll-area';
-import { useState } from 'react';
-import { useNotifications } from '@/features/notifications/providers/notifications-provider';
+import { useNotifications, useUnreadCount } from '@/shared/stores/notifications-store';
 import { deleteNotification, markAllNotificationsAsSeen } from '@/features/notifications/server-functions/notifications';
 import { formatDistanceToNow } from 'date-fns';
 import type { NotificationType } from '@sound-connect/common/types/drizzle';
@@ -33,7 +33,8 @@ const getNotificationTypeLabel = (type: NotificationType): string => {
 
 export function NotificationsButton() {
     const [open, setOpen] = useState(false);
-    const { notifications, unreadCount, removeNotification, markAllAsSeen } = useNotifications();
+    const { notifications, markAllAsSeen, removeNotification } = useNotifications();
+    const unreadCount = useUnreadCount();
 
     const handleDelete = async (notificationId: number) => {
         const result = await deleteNotification({ data: { notificationId } });

@@ -78,7 +78,8 @@
         "vite-plugin-svgr": "^4.5.0",
         "wavesurfer.js": "^7.11.1",
         "wrangler": "catalog:",
-        "zod": "catalog:"
+        "zod": "catalog:",
+        "zustand": "^5.0.9"
     },
     "devDependencies": {
         "@cloudflare/workers-types": "catalog:",

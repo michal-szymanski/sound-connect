@@ -11,13 +11,13 @@ import { Button } from '@/shared/components/ui/button';
 import { Textarea } from '@/shared/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { useAuth } from '@/shared/lib/react-query';
-import { useChat } from '@/shared/components/providers/chat-provider';
+import { useChat } from '@/shared/stores/chat-store';
 import { EmojiPickerContent } from '@/web/components/emoji-picker-content';
 import { VirtualizedMessageList } from '@/features/chat/components/virtualized-message-list';
 import { MessageStatusIndicator } from '@/features/chat/components/message-status-indicator';
 import { MessageSkeleton } from '@/features/chat/components/message-skeleton';
 import { useChatMessages, useGetRoomId, useSendMessage, useMarkMessagesAsRead } from '@/features/chat/hooks/use-chat-queries';
-import { useMessagingContext } from './context';
+import { useMessaging } from '@/shared/stores/messaging-store';
 import { useDelayedLoading } from '@/web/hooks/use-delayed-loading';
 import { formatTimestamp } from '@/features/chat/utils/format-timestamp';
 import { messageFormSchema, type MessageFormValues } from '@/features/chat/schemas/message-form';
@@ -51,7 +51,7 @@ function RouteComponent() {
     const { subscribeToRoom, unsubscribeFromRoom, sendMessage } = useChat();
     const { data: auth } = useAuth();
     const { room } = Route.useSearch();
-    const { selectedPeer, setSelectedPeer, selectedBand, setSelectedBand } = useMessagingContext();
+    const { selectedPeer, setSelectedPeer, selectedBand, setSelectedBand } = useMessaging();
 
     const { data: conversationMetadata, error: conversationError } = useConversationMetadata({
         roomId: room || '',

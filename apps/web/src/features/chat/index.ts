@@ -1,5 +1,5 @@
 export { ChatWindow } from './components/chat-window';
-export { ChatWindowProvider, useChatWindows } from './components/chat-window-manager';
+export { ChatWindowsUI } from './components/chat-windows-ui';
 
 export { default as useContacts } from './hooks/use-contacts';
 
