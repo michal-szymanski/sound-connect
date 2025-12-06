@@ -4,37 +4,44 @@ User settings for account management, privacy controls, notifications, and data 
 
 ## Key Components
 
-- `SettingsTabs` - Tabbed interface (Account/Privacy/Notifications/Data & Account)
-- `AccountTab` - Email update, password change, account creation date
-- `PrivacyTab` - Profile visibility, search visibility, messaging/follow permissions, block management
-- `NotificationsTab` - Global email toggle + granular per-type controls
-- `DataTab` - Export user data, delete account
-- `BlockedUsersList` - List of blocked users with unblock action
+- `account-settings.tsx` - Email update, password change, username update, account creation date
+- `privacy-settings.tsx` - Profile visibility, search visibility, messaging/follow permissions, block management
+- `notification-settings.tsx` - Global email toggle + granular per-type controls (follows, comments, reactions, etc.)
+- `data-account-settings.tsx` - Export user data, delete account with confirmation
 
 ## Hooks
 
-- `useSettings` - Fetches user settings
+- `useAccountInfo` - Fetches account information (email, username, created date)
 - `useUpdateEmail` - Updates email address
-- `useUpdatePassword` - Changes password
+- `useUpdatePassword` - Changes password with current password verification
+- `useCheckUsernameAvailability` - Checks if username is available (debounced)
+- `useUpdateUsername` - Updates username
+- `usePrivacySettings` - Fetches privacy settings
 - `useUpdatePrivacySettings` - Updates privacy settings
+- `useNotificationSettings` - Fetches notification preferences
 - `useUpdateNotificationSettings` - Updates notification preferences
+- `useBlockedUsers` - Fetches blocked users list
 - `useBlockUser` - Blocks a user
 - `useUnblockUser` - Unblocks a user
 - `useExportData` - Exports all user data as JSON
-- `useDeleteAccount` - Deletes user account
+- `useDeleteAccount` - Deletes user account permanently
 
 ## Server Functions
 
-- `getSettings` - Fetches user settings
+- `getAccountInfo` - Fetches account information (email, username, account creation date)
 - `updateEmail` - Updates email address
 - `updatePassword` - Changes password with current password verification
+- `checkUsernameAvailability` - Checks if username is available (returns boolean)
+- `updateUsername` - Updates username (if available)
+- `getPrivacySettings` - Fetches privacy settings
 - `updatePrivacySettings` - Updates profile visibility, search visibility, messaging/follow permissions
-- `updateNotificationSettings` - Updates email notification preferences
+- `getNotificationSettings` - Fetches notification preferences
+- `updateNotificationSettings` - Updates email notification preferences (global + per-type)
 - `getBlockedUsers` - Fetches blocked users list
 - `blockUser` - Blocks a user
 - `unblockUser` - Unblocks a user
-- `exportUserData` - Generates JSON export of all user data
-- `deleteAccount` - Deletes account with password confirmation
+- `exportData` - Generates JSON export of all user data (profile, posts, comments, messages, bands)
+- `deleteAccount` - Deletes account permanently with password confirmation
 
 ## Data Flow
 

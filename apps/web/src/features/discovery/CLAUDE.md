@@ -4,19 +4,20 @@ Personalized band discovery recommendations based on user profile matching.
 
 ## Key Components
 
-- `BandDiscoveryCard` - Band card with match score and reasons
-- `BandDiscoveryFeed` - Grid of recommended bands with pagination
-- `MatchReasonBadge` - Visual indicator for match reasons (instrument/genre/location)
-- `ProfileCompletionPrompt` - Prompts incomplete profiles to complete setup
+- `band-discovery-card.tsx` - Band card with match score and match reasons
+- `match-score-badge.tsx` - Visual badge showing match score (0-100)
+- `match-reason-tag.tsx` - Tag showing match reason (instrument/genre/location)
+- `empty-discovery-state.tsx` - Empty state when no recommendations available
+- `band-discovery-card-skeleton.tsx` - Loading skeleton for discovery cards
 
 ## Hooks
 
-- `useBandDiscovery` - Fetches personalized band recommendations with pagination
+- `useDiscoveryAnalytics` (from `use-discovery-analytics.ts`) - Tracks discovery interaction analytics
 
 ## Server Functions
 
-- `discoverBands` - Fetches recommended bands based on matching algorithm
-- `trackDiscoveryEvent` - Tracks analytics (page view, card click, profile view)
+- `discoverBands` - Fetches personalized band recommendations based on matching algorithm
+- `trackDiscoveryEvent` - Tracks analytics events (page view, card click, profile view)
 
 ## Data Flow
 

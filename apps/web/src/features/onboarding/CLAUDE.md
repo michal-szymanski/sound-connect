@@ -5,31 +5,30 @@
 ## Key Components
 
 - `OnboardingStep` - Step wrapper with progress indicator
-- `StepInstrument` - Select primary instrument (required)
-- `StepGenre` - Select primary genre (required)
-- `StepLocation` - Select city and country with Mapbox autocomplete (required)
-- `StepBio` - Write bio (optional, max 500 chars)
-- `StepAvailability` - Select availability status (optional)
-- `StepPhoto` - Upload profile photo (optional)
+- `step-instrument.tsx` - Select primary instrument (required)
+- `step-genre.tsx` - Select primary genre (required)
+- `step-location.tsx` - Select city and country with Mapbox autocomplete (required)
+- `step-bio.tsx` - Write bio (optional, max 500 chars)
+- `step-availability.tsx` - Select availability status (optional)
+- `step-profile-photo.tsx` - Upload profile photo (optional)
+- `step-username.tsx` - Choose unique username (required)
+- `onboarding-profile-image-upload.tsx` - Profile image upload component
 
 ## Hooks
 
-- `useOnboarding` - Fetches onboarding status and current step
-- `useUpdateOnboardingStep` - Updates current step
+- `useOnboardingStatus` - Fetches onboarding status and current step
+- `useUpdateOnboardingProgress` - Updates current step progress
 - `useCompleteOnboarding` - Marks onboarding complete
 - `useSkipOnboarding` - Skips entire onboarding flow
 
 ## Server Functions
 
-- `getOnboardingStatus` - Fetches user's onboarding progress
-- `updateInstrument` - Saves primary instrument
-- `updateGenre` - Saves primary genre
-- `updateLocation` - Saves city, country, coordinates
-- `updateBio` - Saves bio text
-- `updateAvailabilityStatus` - Saves availability status
-- `updateProfilePhoto` - Uploads and saves profile photo
-- `completeOnboarding` - Marks onboarding complete
+- `getOnboardingStatus` - Fetches user's onboarding progress (current step, completion status)
+- `updateOnboardingProgress` - Updates onboarding step progress (generic function for all steps)
+- `completeOnboarding` - Marks onboarding complete and redirects to home
 - `skipOnboarding` - Skips onboarding flow
+
+**Note:** Individual step updates (instrument, genre, location, etc.) are handled via the profile server functions in `features/profile/server-functions/profile.ts`, not separate onboarding functions.
 
 ## Data Flow
 

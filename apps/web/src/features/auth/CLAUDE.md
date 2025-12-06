@@ -12,10 +12,14 @@ N/A - Auth features are primarily route-based (sign-in, sign-up pages)
 
 ## Server Functions
 
-- `getSession` - Fetches current user session from better-auth
+- `getAuth` - Fetches current session (authenticated user + permissions)
 - `signIn` - Authenticates user with email/password
-- `signUp` - Creates new user account
-- `signOut` - Ends user session
+- `signUp` - Creates new user account with automatic email verification
+- `signOut` - Ends user session and clears cookies
+- `verifyEmail` - Verifies email address via token link
+- `resendVerificationEmail` - Resends email verification link
+- `forgotPassword` - Initiates password reset flow, sends reset email
+- `resetPassword` - Completes password reset with token and new password
 
 ## Data Flow
 

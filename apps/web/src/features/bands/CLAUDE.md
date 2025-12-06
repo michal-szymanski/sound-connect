@@ -21,6 +21,9 @@ Manages band profiles, including creation, editing, members, followers, applicat
 - `BandImageUpload` - Square image upload for band profile
 - `UserBandsSection` - Grid of bands user belongs to
 - `UserBandCard` - Band card for user's bands list
+- `band-profile.tsx` - Main band profile page with tabs
+- `editable-band-avatar.tsx` - Inline-editable band profile image (hover to edit)
+- `editable-band-background.tsx` - Inline-editable band background/cover image (hover to edit)
 
 ## Hooks
 
@@ -29,22 +32,34 @@ Manages band profiles, including creation, editing, members, followers, applicat
 
 ## Server Functions
 
-- `getBand` - Fetches band profile by ID
-- `createBand` - Creates new band
-- `updateBand` - Updates band profile
-- `deleteBand` - Deletes band (admins only)
+### Band Management (`bands.ts`)
+- `getBand` - Fetches band profile by ID with members and metadata
+- `createBand` - Creates new band (creator becomes admin)
+- `updateBand` - Updates band profile (name, bio, genre, etc.)
+- `deleteBand` - Deletes band and all associated data (admins only)
 - `addBandMember` - Adds user to band (admins only)
 - `removeBandMember` - Removes member from band (admins only)
 - `getUserBands` - Fetches all bands for current user
+- `updateBandProfileImage` - Updates band profile image (R2 key)
+- `updateBandBackgroundImage` - Updates band background/cover image (R2 key)
+
+### Band Posts (`bands.ts`)
+- `createBandPost` - Creates post on behalf of band (admins only)
+- `getBandPosts` - Fetches all posts by the band (paginated)
+
+### Band Following (`bands.ts`)
 - `followBand` - Follows a band
 - `unfollowBand` - Unfollows a band
-- `getBandFollowers` - Fetches band followers list
-- `getBandFollowStatus` - Checks if user follows band
-- `applyToBand` - Submits application to join band
-- `getBandApplications` - Fetches pending applications (admins)
-- `acceptBandApplication` - Accepts application and adds as member
-- `rejectBandApplication` - Rejects application with optional feedback
-- `getBandApplicationStatus` - Checks user's application status
+- `getBandFollowers` - Fetches list of band followers
+- `getBandFollowerCount` - Fetches total follower count
+- `getIsFollowingBand` - Checks if current user follows band (boolean)
+
+### Band Applications (`band-applications.ts`)
+- `submitBandApplication` - Submits application to join band with message
+- `getBandApplications` - Fetches pending applications for band (admins only)
+- `acceptBandApplication` - Accepts application and adds user as member
+- `rejectBandApplication` - Rejects application with optional feedback message
+- `getUserApplicationStatus` - Checks current user's application status for a band
 
 ## Data Flow
 

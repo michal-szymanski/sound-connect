@@ -4,22 +4,19 @@ In-app and email notification system with real-time updates.
 
 ## Key Components
 
-- `NotificationBell` - Bell icon in header with unread count badge
-- `NotificationsList` - Dropdown list of recent notifications
-- `NotificationCard` - Individual notification with action buttons
-- `NotificationProvider` - Context provider for notification state
+- `notifications-button.tsx` - Bell icon in header with unread count badge and dropdown
 
 ## Hooks
 
-- `useNotifications` - Fetches notifications with pagination and unread count
-- `useNotificationContext` - Accesses notification context (mark read, etc.)
+**Note:** Notification hooks are implemented using Tanstack Query directly within components. No dedicated hook files exist.
 
 ## Server Functions
 
-- `getNotifications` - Fetches user's notifications (paginated)
-- `markNotificationRead` - Marks notification as read
-- `markAllRead` - Marks all notifications as read
-- `deleteNotification` - Deletes a notification
+- `getNotifications` - Fetches user's notifications (paginated, sorted by created date)
+- `markNotificationAsSeen` - Marks single notification as seen (updates UI badge)
+- `markAllNotificationsAsSeen` - Marks all notifications as seen
+- `markNotificationsAsRead` - Batch marks multiple notifications as read
+- `deleteNotification` - Deletes a single notification
 
 ## Data Flow
 
