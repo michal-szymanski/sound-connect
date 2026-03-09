@@ -16,7 +16,9 @@
         "CLIENT_URL": "http://localhost:3000",
         "ADMIN_URL": "http://localhost:3001",
         "BETTER_AUTH_URL": "http://localhost:4000/api/auth",
-        "R2_BUCKET_NAME": "sound-connect-assets-dev"
+        "R2_BUCKET_NAME": "sound-connect-assets-dev",
+        "R2_PUBLIC_URL": "https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev",
+        "SENTRY_DSN": ""
     },
     "version_metadata": {
         "binding": "CF_VERSION_METADATA"
@@ -73,7 +75,9 @@
                 "CLIENT_URL": "https://sound-connect-web-production.michal-szymanski92.workers.dev",
                 "ADMIN_URL": "https://sound-connect-admin-production.michal-szymanski92.workers.dev",
                 "BETTER_AUTH_URL": "https://sound-connect-api-production.michal-szymanski92.workers.dev/api/auth",
-                "R2_BUCKET_NAME": "sound-connect-assets"
+                "R2_BUCKET_NAME": "sound-connect-assets",
+                "R2_PUBLIC_URL": "https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev",
+                "SENTRY_DSN": ""
             },
             "version_metadata": {
                 "binding": "CF_VERSION_METADATA"

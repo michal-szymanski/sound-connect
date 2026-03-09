@@ -404,17 +404,17 @@ Before marking migration complete:
 ## Related Files
 
 **Schema Definitions:**
-- `/Users/michal.szymanski/Projects/sound-connect/packages/drizzle/src/schema.ts`
-- `/Users/michal.szymanski/Projects/sound-connect/packages/common/src/types/profile-enums.ts`
+- `/packages/drizzle/src/schema.ts`
+- `/packages/common/src/types/profile-enums.ts`
 
 **Type Definitions:**
-- `/Users/michal.szymanski/Projects/sound-connect/packages/common/src/types/drizzle.ts`
+- `/packages/common/src/types/drizzle.ts`
 
 **Migration:**
-- `/Users/michal.szymanski/Projects/sound-connect/packages/drizzle/migrations/0003_user_profile_enhancements.sql`
+- `/packages/drizzle/migrations/0003_user_profile_enhancements.sql`
 
 **Specification:**
-- `/Users/michal.szymanski/Projects/sound-connect/specs/user-profile-enhancements.md`
+- `/specs/user-profile-enhancements.md`
 
 ---
 

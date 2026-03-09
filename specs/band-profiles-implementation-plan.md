@@ -1,18 +1,18 @@
 # Band Profiles Implementation Plan
 
 ## Overview
-This document defines the implementation requirements for backend and frontend agents to implement the Band Profiles feature per the specification at `/Users/michal.szymanski/Projects/sound-connect/specs/band-profiles.md`.
+This document defines the implementation requirements for backend and frontend agents to implement the Band Profiles feature per the specification at `/specs/band-profiles.md`.
 
 ## Shared Code (COMPLETED)
 ✅ Created by system-architect:
-- `/Users/michal.szymanski/Projects/sound-connect/packages/common/src/types/band-posts.ts` - Band post types and schemas
-- `/Users/michal.szymanski/Projects/sound-connect/packages/common/src/types/band-follows.ts` - Band follow types and schemas
-- Updated `/Users/michal.szymanski/Projects/sound-connect/packages/common/src/types/drizzle.ts` - Added `authorType` and `bandId` to post schemas
-- Updated `/Users/michal.szymanski/Projects/sound-connect/packages/common/src/types/posts.ts` - Added user post creation schema
+- `/packages/common/src/types/band-posts.ts` - Band post types and schemas
+- `/packages/common/src/types/band-follows.ts` - Band follow types and schemas
+- Updated `/packages/common/src/types/drizzle.ts` - Added `authorType` and `bandId` to post schemas
+- Updated `/packages/common/src/types/posts.ts` - Added user post creation schema
 
 ## Database Schema (COMPLETED)
 ✅ Updated by system-architect:
-- `/Users/michal.szymanski/Projects/sound-connect/packages/drizzle/src/schema.ts`:
+- `/packages/drizzle/src/schema.ts`:
   - Added `authorType` and `bandId` columns to `postsTable`
   - Added indexes: `idx_posts_author_type`, `idx_posts_band_id`
   - Added indexes to `bandsFollowersTable`: `idx_bands_followers_band_id`, `idx_bands_followers_follower_band`

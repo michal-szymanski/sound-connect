@@ -83,7 +83,7 @@ export { ChatDurableObject, UserDurableObject, NotificationsDurableObject } from
 export default Sentry.withSentry((env: CloudflareBindings) => {
     const { id: versionId } = env.CF_VERSION_METADATA;
     return {
-        dsn: 'https://2075ba4aa31ed97ffb79114434378798@o4507454398136320.ingest.de.sentry.io/4510244218667088',
+        dsn: env.SENTRY_DSN,
         release: versionId,
         sendDefaultPii: true,
         spotlight: true,

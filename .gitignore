@@ -7,6 +7,9 @@ apps/web/dist
 apps/web/.tanstack
 .nitro
 
+# Claude
+.claude/
+
 # Common
 node_modules
 .wrangler

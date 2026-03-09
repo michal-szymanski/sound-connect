@@ -375,7 +375,7 @@ settingsRoutes.post('/users/me/export', async (c) => {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
 
-    const downloadUrl = `https://pub-fe5ef299f3464b73b8c54144ff278eae.r2.dev/${tempKey}`;
+    const downloadUrl = `${c.env.R2_PUBLIC_URL}/${tempKey}`;
 
     return c.json({
         downloadUrl,
